@@ -30,7 +30,13 @@ What works today (verified with `wrangler dev` + headless Chromium):
   original record — plus “use this sheet's period as the time filter”;
 - a comparison list: pin up to four records, share the list as `?cmp=…`, and put
   two or more of them side by side with their real IIIF/WMTS previews, metadata
-  and links back to the original records;
+  and links back to the original records; the pinned list is also kept in this
+  browser (`kartenzeit.cmp.v1`, only locally, cleared by “Liste leeren”), so a
+  returning visitor finds their own selection again;
+- a map-first shell: the intro is a compact band from 1024 px, so the map and the
+  result controls are on the first screen at desktop sizes (measured: map starts
+  at 604 px of a 900 px viewport), with a “Direkt zur Karte” link and a keyboard
+  route to every map action;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work, with a thumbnail

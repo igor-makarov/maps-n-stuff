@@ -26,7 +26,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo |
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 56 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip, period hand-off, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 60 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip, period hand-off, map-first layout, the device-local remembered list, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
 
 ## Cloudflare Workers deployment
 
@@ -96,7 +96,7 @@ throws is reported in the UI (`#app-notices`) and in
 | `main.js`, `store.js`, `dom.js`, `records.js` | shell, URL-backed state + bus, DOM/format helpers, record loading/indexing/filtering |
 | `map.js`, `search.js`, `results.js` | slippy map with WMTS overlays, place combobox, filters + result list (owner: zurich-maps-2) |
 | `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
-| `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1) |
+| `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1). Also keeps the pinned ids in this browser (`localStorage['kartenzeit.cmp.v1']`, ids only, never sent to a server); a link that carries `?cmp=` always wins over the stored list |
 
 URL state is documented in `store.js`: `q, from, to, p, t, c, vp, place, lat, lon,
 z, sel, sh, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the open
