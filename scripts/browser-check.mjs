@@ -1185,6 +1185,17 @@ try {
     JSON.stringify(firstScreen),
   );
 
+  // Keyboard route from the intro to the map: the link must move focus, not
+  // only scroll, or a keyboard user keeps tabbing through the intro block.
+  await cdp.click('.app-intro__more a[href="#map"]');
+  await sleep(500);
+  const jumpToMap = await cdp.eval(`({ active: document.activeElement?.id || document.activeElement?.tagName || '', scrolled: window.scrollY > 100 })`);
+  check(
+    '“Direkt zur Karte” moves focus into the map',
+    jumpToMap.active === 'map' && jumpToMap.scrolled,
+    JSON.stringify(jumpToMap),
+  );
+
   // The cantonal type curve for the page heading: 32 px base, 28 px at the
   // smallest breakpoint ($fontSizeCurves huge/tiny). Checking the *class* keeps
   // the shell from losing .zh-heading--1 again (a bare h1 gets 32 px anyway).

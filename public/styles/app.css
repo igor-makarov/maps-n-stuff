@@ -23,6 +23,10 @@
   display: none;
 }
 
+.app-intro__more-short {
+  display: none;
+}
+
 /* Map-first composition: from 1024 px the orientation block becomes a compact
    band instead of a full-height page. The headline keeps its cantonal 3 px rule
    across the full width; the stock figures move to the right of the lead
@@ -977,7 +981,28 @@ body.app-compare--open {
     font-size: var(--zh-font-small);
   }
   .zh-facts {
-    gap: var(--zh-size-regular) var(--zh-size-large);
+    /* Stock figures stay complete but compact: one scrollable row instead of a
+       three-row block above the map (the same figures also stand in the intro
+       band at larger widths). */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    gap: var(--zh-size-large);
+    padding-bottom: 4px;
+  }
+  .zh-facts > li {
+    flex: 0 0 auto;
+  }
+  /* The source tags repeat verbatim in “Quellen und Rechte” (#source-list), so
+     the smallest breakpoint keeps the way to the map short instead. */
+  #intro-tags {
+    display: none;
+  }
+  .app-intro__more-long {
+    display: none;
+  }
+  .app-intro__more-short {
+    display: inline;
   }
   /* Quick picks (search) and quick year ranges stay on one scrollable line
      instead of wrapping into a tall block above the map. */
