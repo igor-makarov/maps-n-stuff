@@ -49,10 +49,13 @@ was on `main` and nothing was lost except that draft.
 ## Verified
 
 - `npm run check` ✓ — validation, **85/85** `node --test`, `wrangler deploy
-  --dry-run`.
+  --dry-run`; after the last integration rebase (maps-0's 80 records, maps-1's
+  shell/Merkliste, maps-2's view-switch checks): **90/90** tests.
 - `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **59/59** on a
-  real `wrangler dev`, including the seven new checks and the existing deep-zoom,
-  touch, comparison, contrast, CSP and no-console-error checks.
+  real `wrangler dev` for this member's sheet/pin work, then **67/67 on the
+  integrated tree** (all teammates' checks together). The rebase conflicts in
+  README, `docs/run.md` and the harness were resolved by keeping both sides'
+  facts and re-running everything; nothing of a teammate's was dropped.
 - Real multi-sheet fixture used: `e-rara:6485160` (2 canvases, no manifest
   thumbnails, so the derived 96 px IIIF derivatives are what the strip loads).
 - Integration after maps-0's 80-record harvest (`1b8d849`, rebased): 85/85 tests
@@ -61,9 +64,9 @@ was on `main` and nothing was lost except that draft.
   new first record's cut-out is ~24 MP, so the 10 s budget expired while the very
   next drag check succeeded with the same request. Both touch waits now use the
   same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57,
-  59/59 and finally **63/63 on the integrated tree** (maps-1's map-first shell and
-  device-local Merkliste, maps-0's 80 records, this member's sheet strip and pin
-  button). That
+  59/59 and finally **67/67 on the integrated tree** (maps-1's map-first shell and
+  device-local Merkliste, maps-0's 80 records, maps-2's view-switch/marker-pin
+  checks, this member's sheet strip and pin button). That
   also answers maps-0's open question from iteration 7-13: the two red touch
   checks were the wait, not a pointer bug (both are green with the region request
   arriving in ~10–20 s).
