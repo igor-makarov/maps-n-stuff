@@ -5,7 +5,7 @@
   "generation": 2,
   "iteration": 2,
   "startedAt": "2026-10-18T21:23:29.131Z",
-  "outcome": "running",
+  "outcome": "interrupted",
   "journalId": "2-2",
   "source": "424af9fff6f9e47e248cb935b527681ec964dbfe",
   "runtime": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
@@ -15,5 +15,6 @@
   "workCommit": "424af9fff6f9e47e248cb935b527681ec964dbfe",
   "minEntryId": 7,
   "maxEntryId": 7,
-  "checkpointAt": "2026-10-18T21:23:36.048Z"
+  "checkpointAt": "2026-10-18T21:23:36.048Z",
+  "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint."
 }
