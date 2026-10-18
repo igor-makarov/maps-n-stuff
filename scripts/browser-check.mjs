@@ -412,24 +412,43 @@ try {
   check('detail shows a IIIF preview image', preview.state === 'loaded', JSON.stringify(preview).slice(0, 200));
   await cdp.screenshot(path.join(OUT_DIR, '02-detail.png')).then(() => report.screenshots.push('02-detail.png'));
 
+  /**
+   * Wait until the IIIF viewer settles into a state matching `predicate`.
+   * Returns the last snapshot, so a failing check can report what it saw.
+   */
+  const waitForViewer = async (predicate, timeout = 20_000) => {
+    const deadline = Date.now() + timeout;
+    let last = { src: '', decoded: false, state: '', readout: '', decodeW: 0, decodeH: 0, stageW: 0 };
+    while (Date.now() < deadline) {
+      last = await cdp.eval(`(() => {
+        const img = document.querySelector('.app-viewer__image');
+        const stage = document.querySelector('#viewer-stage');
+        return {
+          src: img?.src || '',
+          decoded: Boolean(img && img.complete && img.naturalWidth > 0),
+          state: stage?.dataset.state || '',
+          readout: document.querySelector('#viewer-resolution')?.textContent || '',
+          decodeW: img?.naturalWidth || 0,
+          decodeH: img?.naturalHeight || 0,
+          stageW: Math.round(stage?.getBoundingClientRect().width || 0),
+        };
+      })()`);
+      if (await cdp.eval(`(${predicate})(${JSON.stringify(last)})`)) return last;
+      await sleep(200);
+    }
+    return last;
+  };
+
   /* --- 3a. IIIF deep zoom (region requests) ---------------------------- */
   const singleSheet = await cdp.eval(`(() => ({ nav: document.querySelector('#page-nav')?.hidden, label: document.querySelector('#page-label')?.textContent }))()`);
   check('sheet navigation is hidden for a single-sheet record', singleSheet.nav === true, JSON.stringify(singleSheet));
 
   const fullSheetSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
   await cdp.eval(`document.querySelector('#viewer-zoom-in').click(); document.querySelector('#viewer-zoom-in').click(); true`);
-  await sleep(2500);
-  const zoomed = await cdp.eval(`(() => {
-    const img = document.querySelector('.app-viewer__image');
-    const stage = document.querySelector('#viewer-stage');
-    return {
-      src: img?.src || '',
-      decodeW: img?.naturalWidth || 0,
-      decodeH: img?.naturalHeight || 0,
-      readout: document.querySelector('#viewer-resolution')?.textContent || '',
-      stageW: Math.round(stage?.getBoundingClientRect().width || 0),
-    };
-  })()`);
+  // Region requests are debounced and then only reflected in `img.src` once the
+  // bitmap has decoded; e-rara latency varies a lot, so wait for the state
+  // instead of guessing a delay (a fixed sleep made this check flaky).
+  const zoomed = await waitForViewer('(v) => v.decoded && !v.src.includes("/full/") && v.src.includes(",")');
   check(
     'detail viewer asks the image service for the visible region (deep zoom)',
     /e-rara\.ch\/i3f\/v\d+\/\d+\/\d+,\d+,\d+,\d+\/\d+,\/0\/default\.jpg$/.test(zoomed.src) && zoomed.decodeW >= Math.min(300, zoomed.stageW),
@@ -441,13 +460,13 @@ try {
   await cdp.eval(`document.querySelector('#viewer-stage').focus()`);
   await cdp.pressKey('ArrowRight');
   await cdp.pressKey('ArrowRight');
-  await sleep(1800);
-  const pannedSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  const panned = await waitForViewer(`(v) => v.decoded && v.src !== ${JSON.stringify(zoomed.src)}`);
+  const pannedSrc = panned.src;
   check('viewer pans with the arrow keys', pannedSrc !== zoomed.src && /\d+,\d+,\d+,\d+\//.test(pannedSrc), pannedSrc.slice(-60));
 
   await cdp.pressKey('Home');
-  await sleep(1800);
-  const resetSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  const reset = await waitForViewer(`(v) => v.decoded && v.src === ${JSON.stringify(fullSheetSrc)}`);
+  const resetSrc = reset.src;
   check('Home returns to the whole sheet', resetSrc === fullSheetSrc && /\/full\//.test(resetSrc), resetSrc.slice(-60));
 
   await cdp.pressKey('Escape');
