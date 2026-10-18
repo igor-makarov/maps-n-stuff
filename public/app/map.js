@@ -53,6 +53,33 @@ export function tileUrl(template, { z, x, y, time }) {
     .replace('{Time}', encodeURIComponent(time ?? 'current'));
 }
 
+/** Grid size (px) used to group markers that would overlap at the current zoom. */
+export const CLUSTER_CELL = 56;
+
+/**
+ * Group already projected pixel points into grid cells.
+ *
+ * Points are global pixel coordinates at one zoom level, so a cell key is
+ * stable while panning: a cluster keeps its members and its count instead of
+ * changing with the viewport. Pure, therefore unit-tested.
+ */
+export function clusterByCell(points, cellPx = CLUSTER_CELL) {
+  const cells = new Map();
+  for (const point of points ?? []) {
+    const key = `${Math.floor(point.x / cellPx)}:${Math.floor(point.y / cellPx)}`;
+    let cell = cells.get(key);
+    if (!cell) {
+      cell = { key, x: 0, y: 0, count: 0, members: [] };
+      cells.set(key, cell);
+    }
+    cell.x += point.x;
+    cell.y += point.y;
+    cell.count += 1;
+    cell.members.push(point);
+  }
+  return [...cells.values()].map((cell) => ({ ...cell, x: cell.x / cell.count, y: cell.y / cell.count }));
+}
+
 export function init(ctx) {
   const container = qs('[data-map]');
   if (!container) return;
@@ -70,6 +97,7 @@ export function init(ctx) {
     records: [],
     filtered: [],
     selected: '',
+    visibleRecords: 0,
   };
 
   container.setAttribute('tabindex', '0');
@@ -107,6 +135,7 @@ export function init(ctx) {
 
   const cache = new Map(); // tile key -> <img>
   const markers = new Map(); // record id -> <button>
+  const clusters = new Map(); // cell key -> { element, members, x, y }
   let lastOverlayKey = ''; // layer + edition currently displayed
   let previewId = ''; // record id whose preview card is visible
 
@@ -118,6 +147,20 @@ export function init(ctx) {
     preview.replaceChildren();
     previewId = '';
     for (const [, marker] of markers) marker.classList.remove('is-preview');
+    for (const [, cluster] of clusters) cluster.element.classList.remove('is-preview');
+  }
+
+  /** Position the hover/focus card above a marker, clamped into the map. */
+  function placePreview(marker, width = PREVIEW_WIDTH) {
+    const mapRect = container.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    const finalWidth = Math.min(width, Math.max(160, mapRect.width - 16));
+    const left = Math.max(8, Math.min(mapRect.width - finalWidth - 8, markerRect.left - mapRect.left + markerRect.width / 2 - finalWidth / 2));
+    preview.style.width = `${finalWidth}px`;
+    preview.hidden = false;
+    const topAbove = markerRect.top - mapRect.top - preview.offsetHeight - 12;
+    preview.style.left = `${Math.round(left)}px`;
+    preview.style.top = `${Math.round(topAbove >= 8 ? topAbove : markerRect.bottom - mapRect.top + 12)}px`;
   }
 
   function showPreview(record, marker) {
@@ -133,18 +176,28 @@ export function init(ctx) {
         el('span', { class: 'map-preview__meta', text: record.institution || '' }),
       ]),
     );
-    // Anchor above the marker, clamped to the map, flipped below if it would
-    // leave the top edge. Measure only after the width is final.
-    const mapRect = container.getBoundingClientRect();
-    const markerRect = marker.getBoundingClientRect();
-    const width = Math.min(PREVIEW_WIDTH, Math.max(160, mapRect.width - 16));
-    const left = Math.max(8, Math.min(mapRect.width - width - 8, markerRect.left - mapRect.left + markerRect.width / 2 - width / 2));
-    preview.style.width = `${width}px`;
-    preview.hidden = false;
-    const topAbove = markerRect.top - mapRect.top - preview.offsetHeight - 12;
-    preview.style.left = `${Math.round(left)}px`;
-    preview.style.top = `${Math.round(topAbove >= 8 ? topAbove : markerRect.bottom - mapRect.top + 12)}px`;
+    placePreview(marker);
     for (const [id, node] of markers) node.classList.toggle('is-preview', id === record.id);
+  }
+
+  /** Hover/focus card for a cluster: which maps are behind the number. */
+  function showClusterPreview(cluster, marker) {
+    if (!cluster) return;
+    previewId = '';
+    const titles = cluster.members.slice(0, 3).map((member) => member.record.title);
+    preview.replaceChildren(
+      el('span', { class: 'map-preview__thumb map-preview__thumb--missing', text: '🗺', 'aria-hidden': 'true' }),
+      el('div', { class: 'map-preview__body' }, [
+        el('span', { class: 'map-preview__year', text: `${cluster.members.length} Karten` }),
+        ...titles.map((title) => el('span', { class: 'map-preview__title', text: title })),
+        el('span', {
+          class: 'map-preview__meta',
+          text: `${cluster.members.length > titles.length ? '… ' : ''}Klicken vergrössert die Ansicht.`,
+        }),
+      ]),
+    );
+    placePreview(marker, 320);
+    for (const [, node] of clusters) node.element.classList.toggle('is-preview', node === cluster);
   }
 
   function templateFor(layer, time) {
@@ -221,32 +274,55 @@ export function init(ctx) {
               tileCache.delete(oldKey);
             }
           }
+        } else if (img.parentElement !== layerEl) {
+          // A cached tile that was detached (different zoom/pan) must be put
+          // back before it can paint again.
+          layerEl.append(img);
         }
         img.style.transform = `translate3d(${x * TILE - originX}px, ${y * TILE - originY}px, 0)`;
       }
     }
-    // Drop tiles that scrolled out of view for this layer kind.
+    // Detach every tile that is not part of the current view of this layer –
+    // regardless of the cache size. Previously, tiles from an older zoom level
+    // stayed in the DOM with their old transform and painted over the new tiles
+    // (very visible after “Treffer einpassen” zoomed to the whole country).
+    // They stay in the cache Map for reuse and are re-attached on demand.
     for (const [key, img] of tileCache) {
       if (!key.startsWith(`${kind}/`)) continue;
-      if (!visible.has(key) && img.parentElement === layerEl && tileCache.size > 60) {
-        img.remove();
-        tileCache.delete(key);
-      }
+      if (!visible.has(key) && img.parentElement === layerEl) img.remove();
     }
   }
 
   function renderMarkers(originX, originY, w, h, z) {
-    const wanted = new Set();
+    const selectedId = state.selected;
+    const points = [];
     state.filtered.slice(0, 300).forEach((record, index) => {
       const center = recordCenter(record);
       if (!center) return;
-      const x = lonToTileX(center.lon, z) * TILE - originX;
-      const y = latToTileY(center.lat, z) * TILE - originY;
-      // Only markers whose anchor is inside the viewport: with the old ±40 px
-      // margin a pin could sit fully outside the (clipping) container and be
-      // invisible while still being kept and counted.
-      if (x < 0 || y < 0 || x > w || y > h) return;
-      wanted.add(record.id);
+      points.push({
+        id: record.id,
+        record,
+        index,
+        x: lonToTileX(center.lon, z) * TILE,
+        y: latToTileY(center.lat, z) * TILE,
+      });
+    });
+
+    const inside = (x, y) => x >= 0 && y >= 0 && x <= w && y <= h;
+    // Honest status line: records whose anchor is in the viewport, clustered or not.
+    state.visibleRecords = points.filter((point) => inside(point.x - originX, point.y - originY)).length;
+
+    const wantedMarkers = new Set();
+    const wantedClusters = new Set();
+
+    const ensureMarker = (point) => {
+      const x = point.x - originX;
+      const y = point.y - originY;
+      // Only markers whose anchor is inside the viewport: a pin fully outside
+      // the clipping container would be invisible while still being counted.
+      if (!inside(x, y)) return;
+      const { record } = point;
+      wantedMarkers.add(record.id);
       let marker = markers.get(record.id);
       if (!marker) {
         marker = el('button', {
@@ -283,23 +359,99 @@ export function init(ctx) {
         markers.set(record.id, marker);
         markerLayer.append(marker);
       }
-      const selected = state.selected === record.id;
-      marker.textContent = String(index + 1);
+      const selected = selectedId === record.id;
+      marker.textContent = String(point.index + 1);
       marker.dataset.id = record.id;
       marker.title = record.title;
-      marker.setAttribute('aria-label', `${index + 1}. ${record.title} – Details öffnen`);
+      marker.setAttribute('aria-label', `${point.index + 1}. ${record.title} – Details öffnen`);
       marker.classList.toggle('is-selected', selected);
       // Inline transform wins over the class rule, so the selected scale has to
       // be part of the inline transform.
       marker.style.transform = `translate3d(${x}px, ${y}px, 0)${selected ? ' scale(1.25)' : ''}`;
-    });
+    };
+
+    const ensureCluster = (key, members, cx, cy) => {
+      const x = cx - originX;
+      const y = cy - originY;
+      if (!inside(x, y)) return;
+      wantedClusters.add(key);
+      let cluster = clusters.get(key);
+      if (!cluster) {
+        const element = el('button', { class: 'map-marker map-cluster', type: 'button' });
+        cluster = { element, members, x, y, px: cx, py: cy, key };
+        element.addEventListener('click', () => zoomIntoCluster(clusters.get(key)));
+        element.addEventListener('pointerenter', () => {
+          showClusterPreview(clusters.get(key), element);
+          ctx.bus.emit('record:preview', { id: null });
+        });
+        element.addEventListener('pointerleave', () => {
+          if (document.activeElement === element) return;
+          hidePreview();
+        });
+        element.addEventListener('focus', () => showClusterPreview(clusters.get(key), element));
+        element.addEventListener('blur', () => {
+          if (element.matches(':hover')) return;
+          hidePreview();
+        });
+        clusters.set(key, cluster);
+        markerLayer.append(element);
+      }
+      cluster.members = members;
+      cluster.x = x;
+      cluster.y = y;
+      // Global pixels are kept separately: `x`/`y` are viewport-relative and
+      // must not be used to re-centre the map.
+      cluster.px = cx;
+      cluster.py = cy;
+      const titles = members.slice(0, 3).map((member) => member.record.title);
+      cluster.element.textContent = String(members.length);
+      cluster.element.dataset.count = String(members.length);
+      cluster.element.title = `${members.length} Karten: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`;
+      cluster.element.setAttribute(
+        'aria-label',
+        `${members.length} Karten in diesem Bereich – Ansicht vergrössern. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`,
+      );
+      cluster.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    };
+
+    for (const cell of clusterByCell(points)) {
+      // The selected record always gets its own pin, even inside a cluster.
+      const selectedMember = cell.members.find((member) => member.id === selectedId) ?? null;
+      const rest = cell.members.filter((member) => member !== selectedMember);
+      if (selectedMember) ensureMarker(selectedMember);
+      if (rest.length === 1) ensureMarker(rest[0]);
+      else if (rest.length > 1) {
+        const cx = rest.reduce((sum, member) => sum + member.x, 0) / rest.length;
+        const cy = rest.reduce((sum, member) => sum + member.y, 0) / rest.length;
+        ensureCluster(cell.key, rest, cx, cy);
+      }
+    }
+
     for (const [id, marker] of markers) {
-      if (!wanted.has(id)) {
+      if (!wantedMarkers.has(id)) {
         if (id === previewId) hidePreview();
         marker.remove();
         markers.delete(id);
       }
     }
+    for (const [key, cluster] of clusters) {
+      if (!wantedClusters.has(key)) {
+        cluster.element.classList.remove('is-preview');
+        cluster.element.remove();
+        clusters.delete(key);
+      }
+    }
+  }
+
+  /** Clicking a cluster zooms two steps further into its centre. */
+  function zoomIntoCluster(cluster) {
+    if (!cluster || cluster.members.length === 0) return;
+    hidePreview();
+    state.lon = tileXToLon(cluster.px / TILE, state.zoom);
+    state.lat = tileYToLat(cluster.py / TILE, state.zoom);
+    state.zoom = Math.max(2, Math.min(18, state.zoom + (cluster.members.length > 8 ? 3 : 2)));
+    render();
+    push();
   }
 
   function renderExtent(originX, originY, z) {
@@ -342,7 +494,7 @@ export function init(ctx) {
   function updateVisibleCount() {
     const host = qs('#map-visible-count');
     if (!host) return;
-    const visible = markers.size;
+    const visible = state.visibleRecords ?? 0;
     const total = state.filtered.length;
     host.textContent =
       total === 0
@@ -586,9 +738,13 @@ export function init(ctx) {
     state.selected = '';
     render();
   });
-  // Hovering/focusing a row in the result list highlights the matching marker.
+  // Hovering/focusing a row in the result list highlights the matching marker
+  // or the cluster that contains it.
   ctx.bus.on('record:preview', ({ id }) => {
     for (const [markerId, marker] of markers) marker.classList.toggle('is-preview', Boolean(id) && markerId === id);
+    for (const [, cluster] of clusters) {
+      cluster.element.classList.toggle('is-preview', Boolean(id) && cluster.members.some((member) => member.id === id));
+    }
   });
   ctx.bus.on('place:selected', ({ lat, lon, zoom }) => {
     state.lat = lat;
@@ -619,6 +775,11 @@ export function init(ctx) {
     zoomBy,
     setOverlay,
     getView: () => ({ ...state }),
+    getMarkers: () => ({
+      individual: markers.size,
+      clusters: clusters.size,
+      clustered: [...clusters.values()].reduce((sum, cluster) => sum + cluster.members.length, 0),
+    }),
     currentBounds,
     resultsBounds,
     baseLayer: BASE_LAYER,
