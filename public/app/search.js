@@ -25,9 +25,6 @@ export function init(ctx) {
 
   const state = { items: [], active: -1, controller: null, source: null };
 
-  // `quickLinks` must be declared before the first render call: a `let` that is
-  // still in its temporal dead zone threw here and killed the whole module
-  // (found by scripts/browser-check.mjs, fixed 2026-10-18 / maps-3).
   let quickLinks = null;
 
   input.value = ctx.store.getState().place || '';

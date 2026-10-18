@@ -22,6 +22,7 @@ const ctx = {
     years: { min: 1500, max: 1900 },
     loadErrors: [],
   },
+  moduleErrors: [],
 };
 
 const optionalModules = [
@@ -41,12 +42,38 @@ async function initModules() {
         loaded.push(name);
       }
     } catch (err) {
-      // A missing/failing module must not stop the rest of the app.
+      // A missing/failing module must not stop the rest of the app — but it must
+      // not be invisible either: report it in the UI (see reportModuleProblems).
       console.warn(`[kartenzeit] module "${name}" not available`, err);
+      ctx.moduleErrors.push({ name, message: err?.message || String(err) });
     }
   }
   ctx.modules = loaded;
   bus.emit('app:ready', ctx);
+}
+
+/**
+ * A failing optional module leaves a visible, honest notice instead of a
+ * silently dead control (a broken search.js once threw during import and the
+ * module simply disappeared). `document.documentElement.dataset.moduleErrors`
+ * exposes the same fact to tests and monitoring.
+ */
+function reportModuleProblems() {
+  const problems = ctx.moduleErrors ?? [];
+  document.documentElement.dataset.moduleErrors = problems.map((p) => p.name).join(',');
+  if (problems.length === 0) return;
+  const host = qs('#app-notices');
+  if (!host) return;
+  host.hidden = false;
+  host.className = 'zh-state zh-state--error';
+  host.replaceChildren(
+    el('span', { class: 'zh-state__title', text: 'Eine Teilfunktion ist derzeit nicht verfügbar.' }),
+    el('span', {
+      text:
+        `Betroffen: ${problems.map((p) => p.name).join(', ')}. ` +
+        'Die übrigen Funktionen laufen weiter. Bitte die Seite neu laden; bleibt es dabei, ist ein Fehler im Client gemeldet.',
+    }),
+  );
 }
 
 function renderIntro() {
@@ -159,6 +186,7 @@ async function main() {
 
   renderIntro();
   await initModules();
+  reportModuleProblems();
 
   // Diagnostics for the console and for curious users of the API.
   console.info(
