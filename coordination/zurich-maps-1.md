@@ -1,54 +1,64 @@
 # zurich-maps-1 status
 
-Iteration 3-4 (2026-10-18 21:31–21:5x UTC). Shell/design-system/store owner.
+Iteration 4-5 (2026-10-18 21:5x UTC). Shell/design-system/store/docs owner.
 
 ## Landed on `main` this iteration
 
 | Commit | Content |
 | --- | --- |
-| `0ec40c2` | Workers scaffold (`wrangler.jsonc`, `package.json` + lockfile, `src/worker/index.js`), canton shell + tokens + components CSS, `store.js`/`dom.js`/`records.js`/`main.js`, dependency-free slippy map (`map.js`), place combobox (`search.js`), filters + result list (`results.js`), IIIF detail panel (`detail.js`), `scripts/validate.mjs` |
-| `6a4b791` | viewport filter, overlay editions (oldest-first) + opacity, facts strip, filter panels split, `src/worker/allowlist.js` split (workerd rejects non-handler exports), worker `zoomlevel` sanitation, my test suite + `scripts/browser-smoke.mjs`, `docs/run.md`, `docs/design-system.md` |
+| `d55c95a` | `public/_headers` (CSP, nosniff, referrer/frame/permissions policy, cache lifetimes) + honest intro facts strip |
+| `8febbcf` | `public/app/compare.js`: comparison list (`cmp` state key, sidebar panel, full-screen side-by-side view with real IIIF/WMTS previews, per-pane original-record links), `tests/compare.test.mjs`, and the `[hidden]` base fix below |
+| (earlier) | `f0c954a`: optional-module failures are now visible (`#app-notices` + `document.documentElement.dataset.moduleErrors`) instead of a swallowed `console.warn` |
 
-Verified with `wrangler dev` (port 8787) and headless Chromium
-(`node scripts/browser-smoke.mjs`): 24 records, swisstopo base tiles + 1844
-Zeitreise overlay tiles load, swisstopo place search returns 8 suggestions,
-year + viewport filters change the list, detail panel loads the e-rara IIIF
-image, `Esc` closes it, URL keeps `place`/`ov`/`sel`, **no console errors, no
-failed requests**.
+### The bug that mattered
 
-## Cooperative integration decisions (please read, owners)
+`public/app/search.js` threw `ReferenceError: Cannot access 'quickLinks' before
+initialization` during `init()`, so the **whole place-search combobox was absent
+from the UI** (no suggestions, no quick-pick chips, no status line) while
+`main.js` swallowed the error. maps-3 fixed the TDZ in `6c18514` and hardened
+`browser-check.mjs`; I kept the regression visible by rendering a real notice
+and keeping module errors in `ctx.moduleErrors` (the fix itself is theirs — the
+duplicate in my commit was dropped on rebase).
 
-1. **Shell merge (commit `83dd904` “shurik: checkpoint 3-3” vs `0ec40c2`).** That
-   checkpoint committed a second, richer `public/index.html` + 1.4k-line
-   `public/styles/app.css` (vendored Leaflet, `<dialog>` detail, overlay toggle
-   with opacity, viewport filter, collections/sources sections) while no JS
-   modules for it existed. `main` now carries the *working* shell
-   (`0ec40c2`/`6a4b791`) so every module has a live home; the checkpoint version
-   stays retrievable in history (`git show 83dd904:public/index.html`) and I
-   ported its useful features (overlay opacity, viewport filter, facts strip,
-   sources section, honest “independent project” note). **If you wrote that
-   checkpoint shell**, I would rather keep your markup than mine — rebase it onto
-   the current element ids below and I will rewire the modules:
-   `#place-search` (form) `#place-input` `#place-suggestions` `#place-status`
-   `#text-filter` `#viewport-filter` `#year-from` `#year-to` `#year-fill`
-   `#provider-filters` `#type-filters` `#overlay-select` `#overlay-time`
-   `#overlay-opacity` `#result-list` `#results-state` `#result-count`
-   `#results-live` `#sort-select` `#map` `#detail` `#detail-body` `#scrim`.
-   `public/vendor/leaflet/**` is kept in the repo; `map.js` currently renders
-   WMTS tiles itself (no dependency), and Leaflet can be swapped in behind the
-   same `ctx` contract if that is preferred.
-2. **Tests are maps-3's.** I deleted my `tests/{data,store,worker}.test.mjs`
-   after rebasing in `6474af2` and kept maps-3's suite; I only adjusted one
-   assertion in `tests/site.test.mjs` (the proxy host list is now read from
-   `src/worker/allowlist.js` as well) and kept my `tests/records.test.mjs` as an
-   extra unit layer. 52 tests pass.
-3. **Worker entry module.** workerd refuses non-handler exports
-   (`Incorrect type for map entry 'VERSION'`). Constants/allowlist live in
-   `src/worker/allowlist.js`; the entry exports only `default.fetch`. Both
-   maps-3 and I fixed this independently — the module split is the one on `main`.
-4. **New state keys (additive to D4):** `viewport` (`vp`), `sort` (`sort`),
-   `overlay` (`ov`), `otime` (`ot`). `store.js` also exports `normaliseLon`
-   (maps-3) and now keeps exact longitudes for shareable links.
+### The bug my feature introduced (and the harness caught)
+
+`.app-compare-view` sets `display: flex`; an author `display` beats the UA
+`[hidden] { display: none }`, so the closed full-screen comparison view stayed in
+the layout and swallowed *every* real mouse click. `scripts/browser-check.mjs`
+turned red (`6/7, timeout waiting for detail panel`) while JS-only probes stayed
+green — a good reminder that coordinate clicks catch what `element.click()` does
+not. Fixed in the base layer (`zh-base.css`: `[hidden] { display: none !important }`),
+re-verified 27/27.
+
+## Verification evidence (2026-10-18 ~22:2x UTC, this runner)
+
+- `npm run check` ✓ — validation, **57/57** `node --test`, `wrangler deploy
+  --dry-run` (28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs` **27/27** against `wrangler dev`: results,
+  tiles, time range, detail + IIIF preview, overlay editions, place search and
+  keyboard selection, `?sel=` deep links, contrast sweep, mobile, no console
+  errors, no failed requests.
+- focused comparison check **9/9** (own script, kept out of the repo): `?cmp=`
+  link restores three pinned records, all pane images load (1200 px IIIF),
+  clicked record first, focus management, Esc, `Auswählen` sets the shared
+  selection, 390 px stacking without overflow.
+- `curl -sI` shows the `_headers` values locally (CSP, `nosniff`, immutable
+  fonts, 5 min app code); CSP causes no console errors in the harness.
+
+## Notes for the others
+
+- **maps-3**: my `_headers` CSP sets `connect-src 'self'`; your `be824a6`
+  (“fetch IIIF metadata through the Worker”) is exactly the right integration,
+  thanks. If you ever add a client-side call to another host, extend both the
+  CSP and `src/worker/allowlist.js` — not the other way round.
+- **maps-2**: `results.js`/`map.js`/`search.js` remain yours; I only made the
+  one-line TDZ-adjacent repair note above. The compare panel is additive markup
+  at the end of the sidebar and never rewrites your DOM.
+- **maps-0**: `public/_headers` and `scripts/validate.mjs` (I added `compare.js`
+  to the syntax/asset checks and to the contracted UI hooks) are touched by me;
+  everything else in `scripts/**` stays yours.
+- **everyone**: `main.js` now keeps `ctx.moduleApis[name]` with each module's
+  `init()` return value — handy for browser checks.
 
 ## Messages
 

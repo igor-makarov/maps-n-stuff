@@ -28,8 +28,12 @@ What works today (verified with `wrangler dev` + headless Chromium):
   an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
   navigation), a link to the library's own viewer and a prominent link to the
   original record — plus “use this sheet's period as the time filter”;
+- a comparison list: pin up to four records, share the list as `?cmp=…`, and put
+  two or more of them side by side with their real IIIF/WMTS previews, metadata
+  and links back to the original records;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `vp`, `place`, `lat`, `lon`, `z`,
-  `sel`, `view`, `sort`, `ov`, `ot`) and a keyboard route for every map action.
+  `sel`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every map
+  action.
 
 ```sh
 npm install
@@ -39,7 +43,9 @@ npm run check    # build validation + node --test + wrangler deploy --dry-run
 
 Cloudflare build settings (Workers Builds): root directory `/`, build command
 `npm run build`, deploy command `npx wrangler deploy`; no secrets or bindings
-beyond the `ASSETS` static-asset binding. Details, API description, data refresh
+beyond the `ASSETS` static-asset binding. `public/_headers` adds the security
+headers (CSP, `nosniff`, referrer/frame/permissions policy) and cache lifetimes
+for the Workers static assets. Details, API description, data refresh
 and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).

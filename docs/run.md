@@ -2,9 +2,10 @@
 
 Product: a historical-map explorer (OldMapsOnline-style workflow) with an
 interactive map, place search, publication-year filter, swisstopo comparison
-layers, a coordinated result list and an IIIF detail view. Design reference:
-Canton Zürich design system (see [design-system.md](design-system.md)), data from
-documented original sources (see [data-sources.md](data-sources.md)).
+layers, a coordinated result list, an IIIF detail view and a side-by-side
+comparison list. Design reference: Canton Zürich design system (see
+[design-system.md](design-system.md)), data from documented original sources (see
+[data-sources.md](data-sources.md)).
 
 ## Requirements
 
@@ -83,6 +84,39 @@ If a future iteration needs write state, add a Workers binding (KV/D1) in
 None. Every upstream is public and keyless. If an upstream ever needs a token,
 add it as a Worker secret and document the variable name here (never the value).
 
+## Client modules (public/app/)
+
+Each module is optional: `main.js` imports it, calls `init(ctx)` and keeps the
+returned API in `ctx.moduleApis` (used by the browser checks). A module that
+throws is reported in the UI (`#app-notices`) and in
+`document.documentElement.dataset.moduleErrors` instead of failing silently.
+
+| File | Provides |
+| --- | --- |
+| `main.js`, `store.js`, `dom.js`, `records.js` | shell, URL-backed state + bus, DOM/format helpers, record loading/indexing/filtering |
+| `map.js`, `search.js`, `results.js` | slippy map with WMTS overlays, place combobox, filters + result list (owner: zurich-maps-2) |
+| `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
+| `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1) |
+
+URL state is documented in `store.js`: `q, from, to, p, t, vp, place, lat, lon,
+z, sel, view, sort, ov, ot, cmp`.
+
+## Response headers and caching
+
+`public/_headers` (a Cloudflare Workers static-assets feature) sets
+`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`,
+`Permissions-Policy` and a Content-Security-Policy limited to the app itself plus
+the image hosts it really uses (`www.e-rara.ch`, `wmts.geo.admin.ch`,
+`api3.geo.admin.ch`). Because the CSP keeps `connect-src 'self'`, every upstream
+JSON/IIIF request goes through `/api/*`. Cache lifetimes: fonts immutable, app
+code/styles 5 min, data 10 min. Verify locally with
+`curl -sI http://127.0.0.1:8787/fonts/Inter-Regular.woff2`.
+
+> A component that sets its own `display` on an element toggled with the
+> `hidden` attribute must not hide the app: `zh-base.css` enforces
+> `[hidden] { display: none !important }`. Without that rule an invisible
+> full-screen overlay swallows every mouse click.
+
 ## API (Worker)
 
 | Endpoint | Description |
@@ -131,6 +165,11 @@ tiles are probed and skipped, see `records.json.skipped`).
 - **IIIF preview empty** – `detail.js` retries through `/api/fetch`; if that
   fails as well the panel shows the provider link plus the thumbnail.
 - **`wrangler dev` port in use** – `npx wrangler dev --port 8788`.
+- **A control looks dead after an edit** – check the browser console for
+  `[kartenzeit] module "…" not available` and the `#app-notices` banner; a
+  thrown `init()` disables that module only, the rest keeps working.
+- **Headers changed but the browser used a cached copy** – app code is served
+  with `max-age=300`; hard-reload (or check `curl -sI`).
 - **Worker start error “Incorrect type for map entry …”** – a Worker entry
   module may only export the default handler; keep helper exports in separate
   modules (e.g. `src/worker/allowlist.js`).
