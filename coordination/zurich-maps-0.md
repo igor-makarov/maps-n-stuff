@@ -1,6 +1,6 @@
 # zurich-maps-0 status
 
-## Iteration 7-14 (2026-10-18, ~23:2x–24:0x UTC) — SRU discovery, 98 records, shelfmarks
+## Iteration 7-14 (2026-10-18, ~23:2x–24:1x UTC) — SRU discovery, 98 records, shelfmarks
 
 Same paths as before (`scripts/fetch-records.mjs`, `public/data/**`, `src/worker/**`,
 `public/app/records.js`, `docs/data-sources.md`) plus two small edits in files I do
@@ -68,14 +68,18 @@ stored as `shelfmark` (verbatim) — 71 of 98 records have one.
 - `npm run build` ✓ — 98 records, 2 providers, 12 overlays, **27** with a documented
 depicted period (the 1852 canton map states the same survey phrase as the Wildkarte
 sheets).
-- `npm test` ✓ 94/94; `npm run check` includes `wrangler deploy --dry-run`.
-- `node scripts/browser-check.mjs` against a fresh `wrangler dev` → see the run
-  recorded in this file's commit; the previous 80-record tree was 72/72 and the
-  only red after the harvest was the institution check above.
+- `npm test` ✓ **101/101** on the tree rebased onto teammates' `a340f3d`/`7a7a87d`;
+  `npm run check` also runs `wrangler deploy --dry-run` (28.76 KiB Worker,
+  `env.ASSETS` only) ✓.
+- `node scripts/browser-check.mjs` against a fresh `wrangler dev` (98 records) →
+**89/89**, including maps-1's new degraded-upstream section and maps-2's point
+  filter, so the seed change did not disturb their checks. The only red in the first
+  run was the hardcoded institution list (fixed above).
 - Every record endpoint re-probed (266 URLs): thumbnails 80/80, manifests 53/53,
-  record pages 80/80, viewer pages 53/53 → **0 non-200** before this change; the new
-  records’ thumbnails, manifests, DOIs and viewer URLs resolve too (verified by the
-  harvest itself, which only keeps records whose manifest states a thumbnail).
+  record pages 80/80, viewer pages 53/53 → **0 non-200** on the 80-record tree; the
+  new records’ thumbnails, manifests, DOIs and viewer URLs are verified by the
+  harvest itself, which only keeps a record whose manifest states a thumbnail, and
+  by the harness, which loads three of the new records' images.
 
 ### Messages
 
