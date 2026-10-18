@@ -1,0 +1,157 @@
+name: Shurik
+run-name: ${{ github.event_name == 'schedule' && 'Shurik recovery' || (github.event_name == 'push' && 'Shurik swarm / start' || (inputs.command == 'iterate' && format('Shurik {0} / {1}', inputs.loop_id, inputs.iteration) || format('Shurik {0} / {1}', inputs.loop_id, inputs.command))) }}
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/shurik/launch.json]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Start a swarm, stop/resume a member; iterate is internal
+        required: true
+        type: choice
+        options: [start, stop, resume, iterate]
+        default: start
+      loop_id:
+        description: Swarm prefix on start; exact member ID on stop/resume
+        required: true
+        type: string
+        default: zurich-maps
+      model:
+        description: 'Required on manual start: {"provider":"opencode-go","name":"deepseek-v4.1-flash","reasoning":"max"}; blank resume retains settings'
+        type: string
+      swarm:
+        description: 'Manual start: {"agents":4}; leave blank on stop/resume'
+        type: string
+      create_pr:
+        description: Draft PR creation; keep false for direct delivery to main
+        type: choice
+        options: ['false', auto, 'true']
+        default: 'false'
+      source_ref:
+        description: Source for a new task branch; existing branches use their current tip
+        type: string
+      work-seconds:
+        description: Work budget per iteration, 10–1800; defaults to 1800 on start
+        type: string
+      wait-seconds:
+        description: Idle seconds between iterations; defaults to 0 on start
+        type: string
+      checkpoint-seconds:
+        description: Checkpoint interval, 1–1800; defaults to 300 on start
+        type: string
+      checkpoint-paths:
+        description: JSON array of ignored task paths to retain; defaults to []
+        type: string
+      prompt:
+        description: Relative task prompt path; defaults to PROMPT.md on start
+        type: string
+      deadline:
+        description: Optional absolute UTC deadline for start/resume
+        type: string
+      generation:
+        description: Internal continuation generation
+        default: '1'
+        type: string
+      iteration:
+        description: Continuous iteration number across resumes
+        default: '1'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  control:
+    if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.command != 'iterate')) && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: shurik-control-${{ inputs.loop_id || 'zurich-maps' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Check model credential before starting agents
+        if: github.event_name == 'push' || inputs.command == 'start' || inputs.command == 'resume'
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        run: |
+          if [ -z "$OPENCODE_API_KEY" ]; then
+            echo '::error::Add the OPENCODE_API_KEY repository Actions secret, then rerun this job. No agents have been started.'
+            exit 1
+          fi
+      - name: Read explicit push launch request
+        if: github.event_name == 'push'
+        id: launch
+        run: |
+          launch_inputs=$(jq -ce . .github/shurik/launch.json)
+          echo "inputs=$launch_inputs" >> "$GITHUB_OUTPUT"
+      - id: shurik
+        uses: igor-makarov/shurik@v2
+        with:
+          inputs: ${{ github.event_name == 'push' && steps.launch.outputs.inputs || toJSON(inputs) }}
+      - name: Preserve emergency snapshot after publication failure
+        if: failure() && steps.shurik.outputs.emergency-path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: shurik-emergency-${{ github.run_id }}
+          path: ${{ steps.shurik.outputs.emergency-path }}
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+
+  iteration:
+    if: github.event_name == 'workflow_dispatch' && inputs.command == 'iterate' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    concurrency:
+      group: shurik-worker-${{ inputs.loop_id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: shurik
+        uses: igor-makarov/shurik@v2
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        with:
+          command: iterate
+          inputs: ${{ toJSON(inputs) }}
+      - name: Preserve emergency snapshot after publication failure
+        if: failure() && steps.shurik.outputs.emergency-path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: shurik-emergency-${{ github.run_id }}
+          path: ${{ steps.shurik.outputs.emergency-path }}
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+
+  recovery:
+    needs: [control, iteration]
+    if: always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: igor-makarov/shurik@v2
+        env:
+          SHURIK_ITERATION_RESULT: ${{ needs.iteration.result }}
+        with:
+          command: recover

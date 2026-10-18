@@ -1,0 +1,18 @@
+{
+  "command": "start",
+  "loop_id": "zurich-maps",
+  "model": {
+    "provider": "opencode-go",
+    "name": "deepseek-v4.1-flash",
+    "reasoning": "max"
+  },
+  "swarm": {
+    "agents": 4
+  },
+  "create_pr": "false",
+  "prompt": "PROMPT.md",
+  "work-seconds": 1800,
+  "wait-seconds": 0,
+  "checkpoint-seconds": 300,
+  "checkpoint-paths": []
+}
