@@ -1,5 +1,79 @@
 # zurich-maps-3 status
 
+Iteration 7-13 (2026-10-18, ~23:1x–00:0x UTC). Member `zurich-maps-3`. Same paths:
+`public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`,
+`tests/**`, `scripts/browser-check.mjs` (plus two small, noted edits in
+`public/app/search.js`).
+
+## Landed on `main` this iteration
+
+**The detail view survives outages honestly, and the viewer got fullscreen +
+a keyboard-first sheet strip.**
+
+| Change | File | Why |
+| --- | --- | --- |
+| literal `null` in the panel fixed | `detail.js` | `replaceChildren(null)` inserts a text node `"null"` (unlike the `el()` helper), so a failed manifest request printed **null** between the citation buttons. Links are filtered before mounting; found with a blocked-upstream repro, now guarded by a document-wide scan in the harness. |
+| `describeUpstreamError()` + honest wording | `iiif.js`, `detail.js` | A failed manifest showed `Vorschau konnte nicht geladen werden (Failed to fetch / Failed to fetch)`. The panel now says one German sentence (`Die Vorschau ist nicht erreichbar: Die Verbindung zum Bilddienst ist fehlgeschlagen.`), keeps the thumbnail fallback, the provider link and every fact, and keeps the raw text in `title` for debugging. Unit-tested (network / HTTP nnn / own manifest message / unknown). |
+| real fullscreen for the sheet | `detail.js`, `detail.css` | `requestFullscreen()` on the stage, `aria-pressed` + label sync on `fullscreenchange`, stage relayout and region re-request after the size change, `Esc` leaves fullscreen **without** closing the panel, and the button only exists when `document.fullscreenEnabled` (no inert control). |
+| sheet strip: one tab stop, ←/→/Home/End | `detail.js` | Roving tabindex like the year histogram — a 26-sheet work no longer adds 26 tab stops before the next control; the active sheet stays scrolled into view. |
+| viewer lifetime fix | `detail.js` | Switching records with the panel open left the previous viewer's `window.resize`/`fullscreenchange` listeners alive; `render()` now destroys the old instance first. |
+| search status line | `search.js` (**maps-2's file, 2 lines**) | its outage text also interpolated the raw browser error (`Failed to fetch`); a local `errorReason()` maps network errors to `Netzwerkfehler` and keeps `HTTP nnn`. Revert/reword freely — flagged in the messages below. |
+
+**Harness (5 new checks, now 79/79 on the integrated tree):** sheet-strip keyboard
+model (exactly one tabbable sheet, `→` moves selection *and* focus, `Home` returns),
+fullscreen round trip (panel stays open), a document-wide `null`/`undefined`/`NaN`
+text-node scan after a real session, and a **degraded-upstream section** that runs
+last on purpose (blocking a host logs `ERR_BLOCKED_BY_CLIENT`; that expected noise
+must not be confused with a defect): it blocks `*e-rara.ch*` + `/api/fetch` and the
+place-search API and asserts the German message, the thumbnail/provider-link
+fallback, the surviving facts, no raw developer string, no literal `null`, and a
+clean recovery after unblocking. New evidence screenshots `06-fullscreen.png`,
+`07-degraded.png`.
+
+## Verified
+
+- `npm run check` ✓ — validation, `node --test` **95/95**, `wrangler deploy
+  --dry-run` (28.76 KiB Worker).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **79/79** on the
+  integrated tree after rebasing over maps-1's `70192ec` (sticky map, marker
+  clustering, “Suchlink kopieren”, vendored Leaflet removed) — both conflicts
+  (`docs/run.md`, harness) kept **both sides**, nothing of a teammate's dropped.
+- Screenshots inspected by hand (desktop, detail, multi-sheet, fullscreen,
+  degraded, 320 px); the degraded panel keeps the title, 11 facts, the citation,
+  the IIIF/reuse links and the provider button while the image service is down.
+
+## Messages
+
+- **→ maps-2**: `search.js` — I replaced `(${err.message})` in the two outage
+  strings with a local `errorReason(err)` so the status line cannot show
+  `Failed to fetch`. If you would rather own it: it is two lines plus a helper, no
+  behaviour change (same branch structure, same fallback to local titles).
+- **→ maps-1**: your `main.js` records error still prints `Grund: ${err?.message}`
+  (raw `Failed to fetch` when `/data/records.json` is unreachable). Low priority —
+  in that state the app is mostly dead — but if you want one wording:
+  `detail.js`'s neighbour helper is `describeUpstreamError` in `iiif.js`; a shared
+  version in `dom.js` would be the clean place, I did not want to move your
+  helper module without a word. Also: my harness edit added a scan that will fail
+  the run if any module starts rendering `null`/`undefined` text nodes.
+- **→ maps-0**: nothing needed from you. The degraded check reads
+  `record.iiifManifest`/`record.thumbnail` from `/api/records`, so it follows the
+  seed automatically; if you add a provider whose records carry only
+  `imageService` (no manifest), tell me and I will extend `previewSection` — that
+  is the LoC/LoC-style path still on my list.
+- **→ all**: the degraded section is **last** in the harness and leaves the browser
+  with blocked URLs cleared and a fresh page load. If you add checks after it,
+  they run with the upstream restored — but keep new console-hygiene assertions
+  *before* it.
+
+## Next (my area)
+
+- `previewSection` support for `imageService`-only records (no manifest): a
+  single-canvas viewer from `imageService` + canvas size, as soon as a provider
+  like LoC is harvested.
+- Sheet strip for very large works: roving tabindex fixed the tab-stop problem;
+  if a sheet count > ~40 appears, collapse to “erste 12 + alle Blätter”.
+- Real-device touch check (still synthetic via `Input.dispatchTouchEvent`).
+
 Iteration 7-12 (2026-10-18, ~22:50–23:2x UTC). Member `zurich-maps-3`. Paths as
 before: `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`,
 `tests/**`, `scripts/browser-check.mjs`.
