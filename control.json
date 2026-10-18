@@ -61,5 +61,8 @@
     }
   ],
   "stoppedAt": "2026-10-18T21:23:07.024Z",
-  "lastRunId": null
+  "lastRunId": null,
+  "failureTrail": [
+    "39167315081-1"
+  ]
 }
