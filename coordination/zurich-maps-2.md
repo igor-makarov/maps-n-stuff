@@ -1,5 +1,74 @@
 # zurich-maps-2 status
 
+Iteration 7-14 (2026-10-18, ~23:2x–23:5x UTC). Member `zurich-maps-2` (map,
+search, results). Files: `public/app/map.js`, `public/app/search.js`,
+`public/app/results.js`, plus additive edits in maps-1's `store.js`,
+`public/index.html`, `app.css` and maps-3's harness.
+
+## Landed on `main` this iteration
+
+**The point filter: browse the maps that cover a place** — the one OldMapsOnline
+step our workflow still lacked. A user picks a point (map click, map-centre
+button, `P` with the map focused, or the “Karten an diesem Ort” chip that appears
+after a place search) and the list, the markers and the facet counts narrow to
+the records whose **documented extent** contains that point.
+
+| Content | Files |
+| --- | --- |
+| Shareable `at=lat,lon` state + `parsePoint`/`sanitisePoint` (clamped latitude, wrapped longitude, never invented). | `store.js` (maps-1's file, additive) |
+| `coversPoint()` — strictly the published extent, bounds inclusive; a record's `geo` centre is deliberately **not** coverage. | `records.js` (maps-0's file, additive) |
+| Map click (drag-safe with a 4 px threshold), a fourth map-control button for keyboard users, and the `P` key set the point; a crosshair marks it. Clicking a marker/control never sets a point. | `map.js` |
+| List + markers + facet counts filter together; a chip above the results states the point, the kept count and offers “Punktfilter entfernen”; the empty state names the point filter and removes it on its own; the scope hint and the count line say “Ausschnitt am Punkt”. | `results.js`, `index.html`, `app.css` |
+| After choosing a place (gazetteer or quick pick) a chip offers `Karten an diesem Ort (n): <place>` with a filter-scoped count; it toggles the filter off again. No automatic filtering — a user decision stays a user decision, and shared links stay exact. | `search.js` |
+| `tests/point.test.mjs` (6 cases): geometry incl. inverted bounds and centre-point honesty, URL round-trip, hostile values, and the committed seed (every record has an extent; Zürich covered; a point outside every footprint matches nothing). | new test file |
+| Harness section **8j** (7 checks): `P` filters to the map centre, clearing restores the list, a real map click filters, a shared `?at=` link restores it, 390 px has no overflow, a point outside every footprint shows the honest empty state with its own removal action, and the place-search chip applies the filter. Screenshot `06-point-filter.png`. | `browser-check.mjs` (maps-3's file) |
+
+### Integration
+
+`main` had moved 5 commits (maps-1's 48 px controls + Leaflet removal, maps-3's
+fullscreen/keyboard sheet strip, placeholder-leak and degraded-upstream checks)
+while this was building. The rebase kept both sides: maps-3's section 8i stayed,
+mine became 8j; README/run.md facts from both sides are merged, not replaced.
+
+### Verified (rebased tree, this runner, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation, **101/101** `node --test`, `wrangler deploy
+  --dry-run`.
+- `node scripts/browser-check.mjs` → **87/87** on the integrated tree (the count
+  includes maps-3's new placeholder/fullscreen/degraded checks), including every
+  legacy check: deep zoom, touch pinch/drag, compare, multi-sheet, contrast,
+  same-origin network, degraded upstream.
+- Numbers on the committed 80-record seed at 1781–1900: Zürich point → 20 rows
+  (62 before), crosshair in the map box; Rheinau chip → 20; Berlin → 0 rows and
+  the named empty state; `?at=47.3769,8.5417` reloads to the same 20 rows.
+
+### Messages
+
+- **→ maps-0**: no data change. The feature relies on every committed record
+  stating an extent; `tests/point.test.mjs` makes that an explicit invariant, so
+  a future harvest that drops an extent fails in `npm test` rather than silently
+  making the point filter dishonest. Overlay records (whole-Switzerland extent)
+  legitimately match most Swiss points.
+- **→ maps-1**: three additive changes in your files — `store.js`: `at: ''`,
+  `PARAM.at`, the `string` type entry and `sanitise` calling `sanitisePoint`
+  (exports added); `index.html`: the `#point-filter` chip row before the result
+  list; `app.css`: `.map-point` and `.app-pointfilter`, both using existing
+  tokens. Revert/reword freely, but the id names are asserted by the harness.
+- **→ maps-3**: section 8j and the screenshot are in your harness file; the
+  waits were fixed to also read the debounced list render (the first run was
+  76/78 from that race, not from the product). The place chip check uses a quick
+  pick, so it also works with the gazetteer blocked.
+- **→ all**: gate stays `npm run check` + `node scripts/browser-check.mjs`.
+
+### Next (my area)
+
+- Long-press/touch equivalent for the map click (today a tap with < 4 px move
+  already sets the point, so a phone tap works; verify on a real device).
+- Optional: draw all filtered extents (not just the selected one) when a point
+  filter is active, so the “why these 20?” answer is visible on the map.
+
+---
+
 Iteration 7-13 (2026-10-18, ~22:5x–23:4x UTC). Member `zurich-maps-2` (map,
 search, results). Files I own: `public/app/map.js`, `public/app/search.js`,
 `public/app/results.js`.
