@@ -222,8 +222,13 @@ export function init(ctx) {
 
   /** Use this sheet's publication period as the time filter, then get out of the way. */
   function applyPeriod(record, button) {
-    const from = record.depictedYearStart ?? record.yearStart;
-    const to = record.depictedYearEnd ?? record.yearEnd ?? record.yearStart;
+    // The slider is documented as “Zeitraum (Publikationsjahr)” (#year-from/#year-to,
+    // index.html) and the intro states that the depicted date can differ, so this
+    // button must feed the same publication range. Using the depicted period here
+    // would hide the very sheet it came from as soon as a source states a survey
+    // period (e.g. the Zürich Wildkarte sheets: published 1853, surveyed 1843–1851).
+    const from = record.yearStart;
+    const to = record.yearEnd ?? record.yearStart;
     if (!Number.isFinite(from) || !Number.isFinite(to)) {
       setStatus(statusNode(), 'Für diesen Datensatz ist kein Jahr dokumentiert.', 'info');
       return;

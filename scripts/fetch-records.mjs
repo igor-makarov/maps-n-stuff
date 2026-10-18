@@ -179,6 +179,40 @@ function metaMap(manifest) {
 }
 
 /**
+ * The period the map *shows*, and only when the provider states it as a survey.
+ *
+ * The Zürich Wildkarte sheets carry “Karte des Kantons Zürich … nach den in den
+ * Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt”: the first
+ * range is the survey, the second the engraving. Matching a bare “Aufnahmen von
+ * XXXX-YYYY” would therefore write the *engraving* years into the data (35 of the
+ * cached manifests contain that phrase), so only the anchored survey wording is
+ * accepted, the range must not postdate the imprint, and `depictedSource` keeps
+ * the verbatim evidence next to the two years. Nothing else is inferred.
+ */
+function parseDepictedYears(meta, candidate, publicationYear) {
+  const haystack = [
+    meta['Enthalten in'],
+    meta['Titel'],
+    candidate.title,
+    ...(candidate.description || []),
+  ]
+    .filter(Boolean)
+    .join(' | ');
+  const match = haystack.match(
+    /in den Jahren\s+(\d{4})\s*[-–—/]\s*(\d{4})\s+gemachten\s+Aufnahmen/i,
+  );
+  if (!match) return null;
+  const [start, end] = [Number(match[1]), Number(match[2])].sort((a, b) => a - b);
+  if (!Number.isInteger(start) || start < 1400) return null;
+  if (Number.isFinite(publicationYear) && end > publicationYear) return null;
+  return {
+    depictedYearStart: start,
+    depictedYearEnd: end,
+    depictedSource: `e-rara IIIF manifest: “${match[0].replace(/\s+/g, ' ').trim()}”`,
+  };
+}
+
+/**
  * Canonical viewer URL for an e-rara item.
  *
  * The platform's own DOI landing page states the holding corpus in `og:url`
@@ -208,6 +242,7 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
   const imprint = meta.Impressum || '';
   const year = candidate.year || parseYear(imprint);
   if (!year || (maxYear && year > maxYear)) return null;
+  const depicted = parseDepictedYears(meta, candidate, year);
   const institution = (meta['Besitzende Institution'] || '').replace(/\s*,.*$/, '').trim();
   // Some sets hold works from several libraries; never guess the holding library.
   if (requireInstitution && !institution) return null;
@@ -220,8 +255,8 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
     title,
     yearStart: year,
     yearEnd: year,
-    depictedYearStart: null,
-    depictedYearEnd: null,
+    depictedYearStart: depicted?.depictedYearStart ?? null,
+    depictedYearEnd: depicted?.depictedYearEnd ?? null,
     creators: candidate.creators.length ? candidate.creators : [],
     providerId: 'e-rara',
     institution: institution || (candidate.zuz ? 'Zentralbibliothek Zürich' : 'ETH-Bibliothek Zürich'),
@@ -243,6 +278,7 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
     };
   }
   if (imageService) record.imageService = imageService;
+  if (depicted) record.depictedSource = depicted.depictedSource;
   if (canvases.length) record.canvasCount = canvases.length;
   // The library's own deep-zoom viewer, straight from the provider's landing page.
   try {

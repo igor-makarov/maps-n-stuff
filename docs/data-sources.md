@@ -45,7 +45,7 @@ Field mapping (nothing invented):
 | `title` | IIIF manifest `label` (verbatim); falls back to `dc:title` |
 | `creators` | `oai_dc` `dc:creator` (verbatim, may be empty) |
 | `yearStart`/`yearEnd` | publication year from `dc:date`, else parsed from the manifest `Impressum` |
-| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year) |
+| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year). The harvest accepts exactly one anchored phrase from the e-rara manifest — “in den Jahren 1843-1851 gemachten Aufnahmen” — and stores the verbatim match in `depictedSource`; 26 of the 80 records (all Zürich Wildkarte sheets, published 1853) carry it. A bare “Aufnahmen von 1852-1865” is *rejected*: on those sheets that range is the engraving, not the survey, and 35 cached manifests contain exactly that trap |
 | `institution` | manifest `Besitzende Institution` (first institution before the comma) |
 | `recordUrl` | the DOI landing page (`https://www.e-rara.ch/doi/10.3931/e-rara-<id>`) |
 | `thumbnail` | IIIF thumbnail from the manifest (`…/full/304/0/default.jpg`) |
@@ -170,7 +170,12 @@ metadata can appear in the public data or the UI.
 
 `yearStart`/`yearEnd` are the **publication** years from the imprint;
 `depictedYearStart`/`depictedYearEnd` are the dates **shown on the map** and are
-only filled when the upstream statement documents them (in the current seed set
-they are mostly `null`, which the detail panel labels “vom Anbieter nicht
-angegeben”). The filter uses publication years, and the UI says so
-(“Zeitraum (Publikationsjahr)”).
+only filled when the upstream statement documents them, with the verbatim
+evidence in `depictedSource` (26 of 80 records; the rest stay `null`, which the
+detail panel labels “vom Anbieter nicht angegeben”). The filter uses publication
+years, and the UI says so (“Zeitraum (Publikationsjahr)”), so the detail panel's
+“Zeitraum dieses Blattes filtern” button also feeds the *publication* range — with
+the Wildkarte sheets (published 1853, surveyed 1843–1851) a depicted-period filter
+would hide the very sheet it came from. `scripts/validate.mjs` enforces the
+invariants: depicted dates come in pairs, never postdate the imprint, and always
+carry `depictedSource`.

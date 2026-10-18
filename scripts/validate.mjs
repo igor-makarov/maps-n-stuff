@@ -145,6 +145,7 @@ async function checkData() {
   if (!Array.isArray(sources.providers) || sources.providers.length === 0) fail('sources.json: no providers');
   if (!Array.isArray(overlays.overlays) || overlays.overlays.length === 0) fail('overlays.json: no overlays');
   const ids = new Set();
+  let depicted = 0;
   const providerIds = new Set(sources.providers.map((p) => p.id));
   for (const record of records.records ?? []) {
     for (const field of ['id', 'title', 'providerId', 'institution', 'rights', 'recordUrl', 'yearStart', 'yearEnd', 'thumbnail']) {
@@ -155,12 +156,32 @@ async function checkData() {
     if (!providerIds.has(record.providerId)) fail(`records.json: ${record.id} uses unknown provider ${record.providerId}`);
     if (record.recordUrl && !record.recordUrl.startsWith('https://')) fail(`records.json: ${record.id} recordUrl is not https`);
     if ((record.yearStart ?? 0) > (record.yearEnd ?? 0)) fail(`records.json: ${record.id} yearStart > yearEnd`);
+    // Depicted dates are only allowed as a pair with the upstream evidence that
+    // states them (the harvest writes `depictedSource` verbatim), and the map
+    // cannot show a period that starts after it was printed.
+    const hasDepicted = record.depictedYearStart != null || record.depictedYearEnd != null;
+    if (hasDepicted) {
+      if (record.depictedYearStart == null || record.depictedYearEnd == null) {
+        fail(`records.json: ${record.id} states only half a depicted period`);
+      } else {
+        if (record.depictedYearStart > record.depictedYearEnd) fail(`records.json: ${record.id} depicted start > end`);
+        if (record.depictedYearEnd > (record.yearEnd ?? record.yearStart)) {
+          fail(`records.json: ${record.id} depicted period ends after the publication year`);
+        }
+      }
+      if (typeof record.depictedSource !== 'string' || record.depictedSource.length < 10) {
+        fail(`records.json: ${record.id} has a depicted period but no depictedSource evidence`);
+      }
+      depicted += 1;
+    }
     if (record.extent) {
       const { west, east, south, north } = record.extent;
       if (!(west < east && south < north)) fail(`records.json: ${record.id} invalid bbox`);
     }
   }
-  notes.push(`data: ${records.records.length} records, ${sources.providers.length} providers, ${overlays.overlays.length} overlays (generated ${records.generatedAt ?? '?'})`);
+  notes.push(
+    `data: ${records.records.length} records, ${sources.providers.length} providers, ${overlays.overlays.length} overlays, ${depicted} with a documented depicted period (generated ${records.generatedAt ?? '?'})`,
+  );
 }
 
 try {

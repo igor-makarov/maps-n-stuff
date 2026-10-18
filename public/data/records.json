@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:04:12.343Z",
+  "generatedAt": "2026-10-18T23:06:44.052Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
   "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
@@ -981,8 +981,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Fehraltorf",
       "yearStart": 1853,
       "yearEnd": 1853,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1005,6 +1005,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924109",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924108",
       "sheet": "Fehraltorf",
@@ -1015,8 +1016,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Kyburg",
       "yearStart": 1853,
       "yearEnd": 1853,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1039,6 +1040,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924093",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924092",
       "sheet": "Kyburg",
@@ -1049,8 +1051,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
       "yearStart": 1853,
       "yearEnd": 1853,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1073,6 +1075,7 @@
         "lon": 8.66667
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924037",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924036",
       "sheet": "Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
@@ -1083,8 +1086,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Uster",
       "yearStart": 1853,
       "yearEnd": 1853,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1107,6 +1110,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924125",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924124",
       "sheet": "Uster",
@@ -1117,8 +1121,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Kloten",
       "yearStart": 1854,
       "yearEnd": 1854,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1141,6 +1145,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924089",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924088",
       "sheet": "Kloten",
@@ -1151,8 +1156,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Küsnacht",
       "yearStart": 1854,
       "yearEnd": 1854,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1175,6 +1180,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924121",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924120",
       "sheet": "Küsnacht",
@@ -1185,8 +1191,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Winterthur",
       "yearStart": 1854,
       "yearEnd": 1854,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1209,6 +1215,7 @@
         "lon": 8.75833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924077",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924076",
       "sheet": "Winterthur",
@@ -1219,8 +1226,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Zürich",
       "yearStart": 1854,
       "yearEnd": 1854,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1243,6 +1250,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924105",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924104",
       "sheet": "Zürich",
@@ -1253,8 +1261,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Birmensdorf",
       "yearStart": 1855,
       "yearEnd": 1855,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1277,6 +1285,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924117",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924116",
       "sheet": "Birmensdorf",
@@ -1287,8 +1296,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Dietikon",
       "yearStart": 1855,
       "yearEnd": 1855,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1311,6 +1320,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924101",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924100",
       "sheet": "Dietikon",
@@ -1321,8 +1331,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Horgen",
       "yearStart": 1855,
       "yearEnd": 1855,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1345,6 +1355,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924137",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924136",
       "sheet": "Horgen",
@@ -1355,8 +1366,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Affoltern",
       "yearStart": 1856,
       "yearEnd": 1856,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1379,6 +1390,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924133",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924132",
       "sheet": "Affoltern",
@@ -1389,8 +1401,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Hirzel",
       "yearStart": 1856,
       "yearEnd": 1856,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1413,6 +1425,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924153",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924152",
       "sheet": "Hirzel",
@@ -1423,8 +1436,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Regensberg",
       "yearStart": 1856,
       "yearEnd": 1856,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1447,6 +1460,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924085",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924084",
       "sheet": "Regensberg",
@@ -1457,8 +1471,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Knonau",
       "yearStart": 1857,
       "yearEnd": 1857,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1481,6 +1495,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924149",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924148",
       "sheet": "Knonau",
@@ -1491,8 +1506,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Stäfa",
       "yearStart": 1857,
       "yearEnd": 1857,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1515,6 +1530,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924141",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924140",
       "sheet": "Stäfa",
@@ -1525,8 +1541,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Bülach",
       "yearStart": 1858,
       "yearEnd": 1858,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1549,6 +1565,7 @@
         "lon": 8.59166
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924069",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924068",
       "sheet": "Bülach",
@@ -1559,8 +1576,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Richtersweil",
       "yearStart": 1858,
       "yearEnd": 1858,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Graf, Josef"
       ],
@@ -1583,6 +1600,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924157",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924156",
       "sheet": "Richtersweil",
@@ -1593,8 +1611,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Weiach",
       "yearStart": 1859,
       "yearEnd": 1859,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1617,6 +1635,7 @@
         "lon": 8.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924073",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924072",
       "sheet": "Weiach",
@@ -1627,8 +1646,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Hinweil",
       "yearStart": 1860,
       "yearEnd": 1860,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1651,6 +1670,7 @@
         "lon": 8.90834
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924129",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924128",
       "sheet": "Hinweil",
@@ -1661,8 +1681,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Wald",
       "yearStart": 1860,
       "yearEnd": 1860,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1685,6 +1705,7 @@
         "lon": 8.90834
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924145",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924144",
       "sheet": "Wald",
@@ -1730,8 +1751,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Bauma",
       "yearStart": 1861,
       "yearEnd": 1861,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1754,6 +1775,7 @@
         "lon": 8.90834
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924113",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924112",
       "sheet": "Bauma",
@@ -1764,8 +1786,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Elgg",
       "yearStart": 1861,
       "yearEnd": 1861,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1788,6 +1810,7 @@
         "lon": 8.9
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924097",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924096",
       "sheet": "Elgg",
@@ -1798,8 +1821,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Andelfingen",
       "yearStart": 1862,
       "yearEnd": 1862,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1822,6 +1845,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924061",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924060",
       "sheet": "Andelfingen",
@@ -1832,8 +1856,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Frauenfeld",
       "yearStart": 1862,
       "yearEnd": 1862,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1856,6 +1880,7 @@
         "lon": 8.91667
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924081",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924080",
       "sheet": "Frauenfeld",
@@ -1866,8 +1891,8 @@
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Stammheim",
       "yearStart": 1863,
       "yearEnd": 1863,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
       "creators": [
         "Brack, Johann Jakob"
       ],
@@ -1890,6 +1915,7 @@
         "lon": 8.75833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924049",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924048",
       "sheet": "Stammheim",
