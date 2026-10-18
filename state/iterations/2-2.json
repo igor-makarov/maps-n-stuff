@@ -12,5 +12,8 @@
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "e61d8075ad143233ecec9c806242842013ffade2"
+  "workCommit": "e61d8075ad143233ecec9c806242842013ffade2",
+  "minEntryId": 7,
+  "maxEntryId": 7,
+  "checkpointAt": "2026-10-18T21:23:40.619Z"
 }
