@@ -27,9 +27,10 @@ Shurik gives us no messaging channel, so **`main` is the message bus**.
 | # | Date (UTC) | Decision |
 |---|-----------|----------|
 | D1 | 2026-10-18 | Hosting = Cloudflare Workers with static assets (`wrangler.jsonc`, `assets.directory`), plus a small request handler in `src/worker/index.js` limited to known upstreams. No Pages. |
-| D2 | 2026-10-18 | Frontend = dependency-free ES modules in `public/`. No bundler, so four agents can edit independent files without a build race. Leaflet is vendored under `public/vendor/`. |
+| D2 | 2026-10-18 | Frontend = dependency-free ES modules in `public/`. No bundler, so four agents can edit independent files without a build race. Leaflet was vendored under `public/vendor/` at the start; the copy was removed again in D5 once `map.js` was our own implementation. |
 | D3 | 2026-10-18 | Design system CSS is hand-written from the canton's published tokens (see `docs/design-system.md`); `--zh-*` custom properties. |
 | D4 | 2026-10-18 | Modules integrate through `public/app/store.js` (URL-backed state) + `document` custom events; modules must be optional so a missing one degrades gracefully. |
+| D5 | 2026-10-18 | The vendored Leaflet copy (192 KiB, never referenced since `map.js` became our own implementation) is **removed** by maps-1 after maps-2 rewrote the map without it; `NOTICE.md`/`README.md` no longer list it. Its licence and history stay in git. |
 
 ## Architecture contract (v1)
 
@@ -79,7 +80,7 @@ docs/*.md                 sources, design system, run book              [maps-0/
 `public/app/main.js` imports each optional module and calls `init(ctx)` if
 present, where `ctx = { store, dom, bus }`:
 
-- `store.getState()` → `{ q, from, to, provider, place, lat, lon, zoom, selected, view }`
+- `store.getState()` → `{ q, from, to, p, t, c, vp, place, lat, lon, z, sel, sh, view, sort, ov, ot, cmp }` (the full set is documented in `store.js` and `docs/run.md`)
 - `store.update(patch)` → merge, sync URL (`replaceState`), notify subscribers
 - `store.subscribe(fn)` → `fn(state, changedKeys)`, returns unsubscribe
 - `bus.emit(name, detail)` / `bus.on(name, fn)` for `records:loaded`,
@@ -89,9 +90,13 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 ## Status board
 
-| Member | Owns | Claimed | Status |
-|--------|------|---------|--------|
-| zurich-maps-0 | worker proxy, records seed + source registry | | |
-| zurich-maps-1 | shell, design system, store, wrangler, docs | ✅ | scaffold in progress |
-| zurich-maps-2 | map, search, results/filters | | |
-| zurich-maps-3 | detail view, IIIF, tests | | |
+| Member | Owns | Status (iteration 7-13) |
+|--------|------|-------------------------|
+| zurich-maps-0 | worker proxy, records seed + source registry | ✅ 80 records from e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH maps, 1 Genf), 27 swisstopo overlay editions, `docs/data-sources.md` + registry |
+| zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell, canton design tokens/components, URL-backed store, comparison view + device-local Merkliste, Workers config + run book, 192 KiB unused vendor payload removed |
+| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram |
+| zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + sheet strip, tests (94) and the CDP harness (72 checks); detail→time hand-off |
+
+Integration gate as of iteration 7-13: `npm run check` (validation + 94 unit
+tests + `wrangler deploy --dry-run`) and `node scripts/browser-check.mjs`
+**72/72** against `npx wrangler dev`.

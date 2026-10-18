@@ -70,8 +70,8 @@ Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 1 map from the
 Bibliothèque de Genève — plus 27 georeferenced swisstopo overlay editions; the UI
 states the real count and `records.json.selection` documents the rule per set,
 including the `museecarto` set that is probed but yields no record because its
-manifests state no extent).
-`public/vendor/leaflet` is vendored but unused; without network access the tiles
+manifests state no extent). The map implementation in `public/app/map.js` is our
+own; no third-party map library is bundled. Without network access the tiles
 and IIIF images stay empty while metadata remains readable (the detail panel then
 keeps the metadata, the provider links and an explanation).
 
