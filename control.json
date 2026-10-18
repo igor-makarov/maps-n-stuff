@@ -5,9 +5,9 @@
   "branch": "zurich-maps-2",
   "defaultBranch": "main",
   "supervisor": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
-  "status": "stopped",
-  "generation": 6,
-  "next": 12,
+  "status": "running",
+  "generation": 7,
+  "next": 13,
   "engine": {
     "repository": "igor-makarov/shurik",
     "ref": "v2"
@@ -22,12 +22,7 @@
   },
   "checkpointSeconds": 0,
   "checkpointPaths": [],
-  "owner": {
-    "runId": "39172566321",
-    "generation": 6,
-    "iteration": 12,
-    "claimedAt": "2026-10-18T22:31:25.447Z"
-  },
+  "owner": null,
   "deadline": null,
   "seconds": 1800,
   "waitSeconds": 0,
@@ -39,7 +34,7 @@
   "source": "4a615f52fead82740f571a042987df3094a67007",
   "sourceRef": null,
   "createdAt": "2026-10-18T21:19:26.345Z",
-  "lastDispatchAt": null,
+  "lastDispatchAt": "2026-10-18T22:50:41.387Z",
   "checkpoint": {
     "workCommit": "1ec3d31797e5f123fd031bbf2114444af7ecd694",
     "generation": 6,
