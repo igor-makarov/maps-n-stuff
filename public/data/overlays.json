@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:17:29.686Z",
+  "generatedAt": "2026-10-18T22:40:28.362Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
   "source": "swisstopo WMTS 1.0.0 GetCapabilities (georeferenced historical map and aerial-image services)",

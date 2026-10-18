@@ -178,13 +178,32 @@ function metaMap(manifest) {
   return out;
 }
 
+/**
+ * Canonical viewer URL for an e-rara item.
+ *
+ * The platform's own DOI landing page states the holding corpus in `og:url`
+ * (`zuz` = Zentralbibliothek Zürich, `zut` = ETH-Bibliothek, `gep_r` = Musée
+ * cartographique Genève, …). The viewer route is the provider's documented
+ * `/<corpus>/content/zoom/<id>`; the id is verified against the manifest title id
+ * so a wrong or foreign id can never be written into the data. Returns null when
+ * the landing page does not state it — nothing is ever constructed from a guess.
+ */
+async function canonicalViewer(doi, titleId) {
+  if (!doi) return null;
+  const html = await get(doi, { as: 'text', timeout: 20000 });
+  const m = html.match(/og:url"\s+content="https?:\/\/www\.e-rara\.ch\/([a-z0-9_]+)\/(\d+)"/);
+  if (!m || m[2] !== String(titleId)) return null;
+  return { corpus: m[1], id: m[2], viewerUrl: `https://www.e-rara.ch/${m[1]}/content/zoom/${m[2]}` };
+}
+
 async function manifestRecord(candidate, { sourceCollection, maxYear }) {
   const manifestUrl = `https://www.e-rara.ch/i3f/v20/${candidate.titleId}/manifest`;
   const manifest = await get(manifestUrl, { as: 'json', timeout: 40000 });
   const meta = metaMap(manifest);
   const label = String(manifest.label || candidate.title);
   const bbox = parseBbox(meta.Kartendaten);
-  const canvas = manifest.sequences?.[0]?.canvases?.[0];
+  const canvases = manifest.sequences?.[0]?.canvases || manifest.items || [];
+  const canvas = canvases[0];
   const imageService = canvas?.images?.[0]?.resource?.service?.['@id'] || null;
   const imprint = meta.Impressum || '';
   const year = candidate.year || parseYear(imprint);
@@ -222,6 +241,14 @@ async function manifestRecord(candidate, { sourceCollection, maxYear }) {
     };
   }
   if (imageService) record.imageService = imageService;
+  if (canvases.length) record.canvasCount = canvases.length;
+  // The library's own deep-zoom viewer, straight from the provider's landing page.
+  try {
+    const canonical = await canonicalViewer(candidate.doi, candidate.titleId);
+    if (canonical) record.viewerUrl = canonical.viewerUrl;
+  } catch {
+    /* stay without viewerUrl: the UI derives a working link from the manifest id */
+  }
   if (sheet && candidate.zuz) record.sheet = sheet;
   if (imprint) record.imprint = imprint;
   return record;
@@ -523,27 +550,31 @@ async function swisstopoOverlayLayers() {
   return overlays;
 }
 
-const zuzTitles = [];
-const ethTitles = [
-  'Reisekarte der Schweiz',
-  'Karte des Kantons Zürich',
-  'Archäologische Karte des Kantons Zürich',
-  'Karte der Schweiz mit Randnamen',
-  'Karte der Cantone St. Gallen und Appenzell',
-  'Relief-Karte der Schweiz',
-  'Karte des Kantons Schaffhausen',
-  'Karte des Kantons Graubünden',
-  'Carte du canton de Vaud',
-  'Der  Canton Zürich mit seinen nähern Angränzungen',
-  'Karte vom Thunersee',
-  'Karte der centralen Schweiz',
-  'Karte des Kantons Luzern',
-  'Historischer Atlas der Schweiz',
-];
+const SOURCE_SETS = {
+  zuz: {
+    id: 'zuz-wildkarte',
+    name: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)',
+    discovery: 'https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich',
+  },
+  landkarten: {
+    id: 'landkarten',
+    name: 'Schweizer Landkarten aus vier Jahrhunderten',
+    discovery: 'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten',
+  },
+  cartesgeneve: {
+    id: 'cartesgeneve',
+    name: 'Karten von Genf und seiner Umgebung (e-rara-Set cartesgeneve)',
+    discovery: 'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=cartesgeneve',
+  },
+};
 
 async function main() {
-  const [zuz, land] = await Promise.all([oaiRecords('zuz', 22), oaiRecords('landkarten', 10)]);
-  console.log(`OAI: ${zuz.length} ZB records, ${land.length} landkarten records`);
+  const [zuz, land, geneva] = await Promise.all([
+    oaiRecords('zuz', 22),
+    oaiRecords('landkarten', 10),
+    oaiRecords('cartesgeneve', 4),
+  ]);
+  console.log(`OAI: ${zuz.length} ZB records, ${land.length} landkarten, ${geneva.length} cartesgeneve`);
 
   const zuzMaps = zuz.map(parseOai).filter((r) => r.isMap && r.titleId && r.year);
   // Sheet-level maps only: the manifest label carries the sheet name (e.g. "…: Rheinau").
@@ -556,43 +587,64 @@ async function main() {
     zuzCandidates.push(rec);
   }
 
-  const ethCandidates = land
+  // Rule-based selection instead of a hand-picked title list: every map in the
+  // `landkarten` set whose OAI title is not an atlas/series volume, oldest first,
+  // plus the Geneva map sets for geographic coverage outside German-speaking
+  // Switzerland. Whether a record is kept still depends on the manifest stating
+  // a Kartendaten bbox and a publication year (below).
+  const notASeries = (r) => !/^(Atlas|Kartenwerk|Topographischer Atlas|Karte der Schweiz in )/i.test(r.title);
+  const landCandidates = land
     .map(parseOai)
     .filter((r) => r.isMap && r.titleId && r.year)
-    .filter((r) => ethTitles.some((needle) => r.title.startsWith(needle)))
-    .filter((r) => !/^Atlas de la Suisse/.test(r.title));
+    .filter(notASeries)
+    .sort((a, b) => a.year - b.year);
+  const genevaCandidates = geneva
+    .map(parseOai)
+    .filter((r) => r.isMap && r.titleId && r.year)
+    .filter(notASeries)
+    .sort((a, b) => a.year - b.year);
 
-  const zb = await pool(zuzCandidates.slice(0, 40), 3, (c) =>
+  const zb = await pool(zuzCandidates.slice(0, 48), 3, (c) =>
     manifestRecord(c, { sourceCollection: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)', maxYear: 1900 }),
   );
-  // Keep one entry per sheet, preferring the earliest edition, at most 16 sheets.
+  // Keep one entry per sheet, preferring the earliest edition, at most 20 sheets.
   const bySheet = new Map();
   for (const r of zb.sort((a, b) => a.yearStart - b.yearStart)) {
     if (!r.extent) continue;
     const key = r.sheet || r.id;
     if (bySheet.has(key)) continue;
-    if (bySheet.size >= 16) continue;
+    if (bySheet.size >= 20) continue;
     bySheet.set(key, r);
   }
   const zbRecords = [...bySheet.values()];
 
-  const eth = await pool(ethCandidates.slice(0, 18), 3, (c) =>
+  /** Dedupe by leading title (the same work often appears in several editions). */
+  function keepUnique(list, limit) {
+    const seen = new Set();
+    const out = [];
+    for (const r of list) {
+      const key = r.title.slice(0, 60);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(r);
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
+  const eth = await pool(landCandidates.slice(0, 30), 3, (c) =>
     manifestRecord(c, { sourceCollection: 'Schweizer Landkarten aus vier Jahrhunderten' }),
   );
-  const ethSeen = new Set();
-  const ethRecords = eth
-    .filter((r) => r.extent)
-    .filter((r) => {
-      const key = r.title.slice(0, 60);
-      if (ethSeen.has(key)) return false;
-      ethSeen.add(key);
-      return true;
-    })
-    .slice(0, 12);
+  const ethRecords = keepUnique(eth.filter((r) => r.extent), 18);
+
+  const geneve = await pool(genevaCandidates.slice(0, 14), 3, (c) =>
+    manifestRecord(c, { sourceCollection: 'Karten von Genf und seiner Umgebung' }),
+  );
+  const geneveRecords = keepUnique(geneve.filter((r) => r.extent), 10);
 
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
-  const records = [...zbRecords, ...ethRecords, ...overlays].sort(
+  const records = [...zbRecords, ...ethRecords, ...geneveRecords, ...overlays].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
   );
 
@@ -610,16 +662,23 @@ async function main() {
         home: 'https://www.e-rara.ch/',
         collections: [
           {
-            id: 'zuz-wildkarte',
-            name: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)',
+            id: SOURCE_SETS.zuz.id,
+            name: SOURCE_SETS.zuz.name,
             record: 'https://www.e-rara.ch/zuz/content/titleinfo/22142031',
-            discovery: 'https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich',
+            discovery: SOURCE_SETS.zuz.discovery,
           },
           {
-            id: 'landkarten',
-            name: 'Schweizer Landkarten aus vier Jahrhunderten',
+            id: SOURCE_SETS.landkarten.id,
+            name: SOURCE_SETS.landkarten.name,
             record: 'https://www.e-rara.ch/zuz/content/titleinfo/22142031',
-            discovery: 'https://www.e-rara.ch/',
+            discovery: SOURCE_SETS.landkarten.discovery,
+          },
+          {
+            id: SOURCE_SETS.cartesgeneve.id,
+            name: SOURCE_SETS.cartesgeneve.name,
+            // An actual harvested record from this OAI set, not a guessed collection page.
+            record: geneveRecords[0]?.recordUrl ?? SOURCE_SETS.cartesgeneve.discovery,
+            discovery: SOURCE_SETS.cartesgeneve.discovery,
           },
         ],
         endpoints: {
@@ -634,7 +693,9 @@ async function main() {
         retrievalDate: RETRIEVED,
         apiHosts: ['www.e-rara.ch'],
         api: {
-          oaiPmh: 'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten)',
+          oaiPmh:
+            'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} ' +
+            '(sets: zuz, landkarten, cartesgeneve; ListSets is paginated)',
           iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
           iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg',
           docs: 'https://www.e-rara.ch/',
@@ -708,9 +769,10 @@ async function main() {
     retrieved: RETRIEVED,
     generator: 'scripts/fetch-records.mjs',
     method:
-      'e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for ' +
-      'verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated "Kartendaten" ' +
-      'extent; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
+      'e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF ' +
+      'Presentation 2.0 manifest per title for ' +
+      'verbatim title, imprint, creators, holding institution, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
+      'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
       'editions and for the comparison layers in overlays.json. No title, date or coordinate is ' +
       'invented. Regenerate with: node scripts/fetch-records.mjs --out public/data',
     selection: {
@@ -720,9 +782,14 @@ async function main() {
         rule: 'maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox',
       },
       'e-rara:landkarten': {
-        considered: ethCandidates.length,
+        considered: landCandidates.length,
         kept: ethRecords.length,
-        rule: 'Swiss sheet maps from the landkarten set, requires a stated Kartendaten bbox',
+        rule: 'every map of the set that is not a series volume, oldest first, requires a stated Kartendaten bbox',
+      },
+      'e-rara:cartesgeneve': {
+        considered: genevaCandidates.length,
+        kept: geneveRecords.length,
+        rule: 'map records of the set, oldest first, requires a stated Kartendaten bbox',
       },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
@@ -764,7 +831,7 @@ async function main() {
   };
 
   console.log(
-    `Built ${zbRecords.length} ZB maps, ${ethRecords.length} ETH maps, ` +
+    `Built ${zbRecords.length} ZB maps, ${ethRecords.length} landkarten, ${geneveRecords.length} Genf, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +

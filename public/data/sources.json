@@ -24,7 +24,13 @@
           "id": "landkarten",
           "name": "Schweizer Landkarten aus vier Jahrhunderten",
           "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
-          "discovery": "https://www.e-rara.ch/"
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten"
+        },
+        {
+          "id": "cartesgeneve",
+          "name": "Karten von Genf und seiner Umgebung (e-rara-Set cartesgeneve)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-90735",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=cartesgeneve"
         }
       ],
       "endpoints": {
@@ -41,7 +47,7 @@
         "www.e-rara.ch"
       ],
       "api": {
-        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten)",
+        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve; ListSets is paginated)",
         "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
         "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
         "docs": "https://www.e-rara.ch/"
@@ -109,5 +115,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T22:17:29.686Z"
+  "generatedAt": "2026-10-18T22:40:28.362Z"
 }
