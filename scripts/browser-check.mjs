@@ -1305,6 +1305,47 @@ try {
   );
   await cdp.screenshot(path.join(OUT_DIR, '05-map-pins.png')).then(() => report.screenshots.push('05-map-pins.png'));
 
+  // Clustering: “Treffer einpassen” zooms out to the whole result set, where
+  // overlapping pins must collapse into numbered clusters that zoom in on click.
+  const clusterState = await cdp.eval(`(async () => {
+    document.querySelector('[data-map-cmd="fitresults"]')?.click();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const module = await import('/app/main.js');
+    const api = module.ctx.moduleApis.map;
+    const markers = api.getMarkers();
+    const nodes = [...document.querySelectorAll('.map-cluster')];
+    return {
+      markers,
+      nodes: nodes.length,
+      counts: nodes.map((node) => Number(node.dataset.count || 0)).sort((a, b) => b - a),
+      zoom: api.getView().zoom,
+    };
+  })()`);
+  check(
+    'overlapping results collapse into numbered clusters',
+    clusterState.markers.clusters >= 1 &&
+      clusterState.nodes === clusterState.markers.clusters &&
+      clusterState.counts.every((count) => count >= 2) &&
+      clusterState.counts.reduce((sum, count) => sum + count, 0) === clusterState.markers.clustered,
+    JSON.stringify(clusterState),
+  );
+  const clusterClick = await cdp.eval(`(async () => {
+    const module = await import('/app/main.js');
+    const api = module.ctx.moduleApis.map;
+    const before = api.getView().zoom;
+    const biggest = [...document.querySelectorAll('.map-cluster')].sort((a, b) => Number(b.dataset.count) - Number(a.dataset.count))[0];
+    const count = Number(biggest?.dataset.count || 0);
+    biggest?.click();
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    const markers = api.getMarkers();
+    return { before, after: api.getView().zoom, count, markers, counted: markers.individual + markers.clustered };
+  })()`);
+  check(
+    'clicking a cluster zooms in and keeps its records reachable',
+    clusterClick.count >= 2 && clusterClick.after > clusterClick.before && clusterClick.counted > 0,
+    JSON.stringify(clusterClick),
+  );
+
   const mapOnly = await cdp.eval(`(() => {
     document.querySelector('[data-view="map"]')?.click();
     const map = document.querySelector('#map');
@@ -1395,6 +1436,33 @@ try {
     /* reported below */
   }
   check('the same button unpins the record again', unpinnedFromDetail?.pressed === 'false', JSON.stringify(unpinnedFromDetail));
+
+  // The result list is much taller than the map: scrolling it must keep the map
+  // (and its controls) in view. The sticky element is the wrapper, because the
+  // map alone is only as tall as its parent and therefore never sticks.
+  const stickyMap = await cdp.eval(`(() => {
+    window.scrollTo({ top: 1200, behavior: 'instant' });
+    return true;
+  })()`);
+  await sleep(400);
+  const stickyState = await cdp.eval(`(() => {
+    const rect = document.querySelector('#map').getBoundingClientRect();
+    const wrapper = getComputedStyle(document.querySelector('.app-mapwrap'));
+    return {
+      scrollY: window.scrollY,
+      mapTop: Math.round(rect.y),
+      mapBottom: Math.round(rect.bottom),
+      height: Math.round(rect.height),
+      position: wrapper.position,
+      inView: rect.top >= 0 && rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2,
+    };
+  })()`);
+  check(
+    'scrolling the result list keeps the map in view (sticky map)',
+    Boolean(stickyMap) && stickyState.scrollY > 400 && stickyState.position === 'sticky' && stickyState.inView && stickyState.height > 300,
+    JSON.stringify(stickyState),
+  );
+  await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
 
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

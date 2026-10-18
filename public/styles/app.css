@@ -387,10 +387,16 @@
 }
 
 @media (min-width: 1024px) {
-  .app-map {
-    height: calc(100vh - 260px);
+  /* Sticky has to live on the wrapper: its containing block is the tall grid
+     area, while `.app-map` is only as tall as its parent — a sticky element
+     inside a same-height parent scrolls away with the page (the map did). */
+  .app-mapwrap {
     position: sticky;
     top: var(--zh-size-regular);
+  }
+  .app-map {
+    height: calc(100vh - 260px);
+    position: relative;
   }
 }
 
@@ -474,6 +480,29 @@
   color: var(--zh-white);
   z-index: 4;
   box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-cyan);
+}
+
+/* Cluster: one control for overlapping markers at the current zoom. Darker than
+   a single pin so the number reads as “several maps”, not as one record. */
+.map-marker.map-cluster {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  background: var(--zh-darkblue);
+  color: var(--zh-white);
+  font-size: var(--zh-font-tiny);
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-darkblue), 0 2px 6px rgb(0 0 0 / 45%);
+}
+
+.map-marker.map-cluster:hover {
+  background: var(--zh-black);
+  color: var(--zh-white);
+}
+
+.map-marker.map-cluster.is-preview {
+  background: var(--zh-cyan);
+  color: var(--zh-black);
 }
 
 .map-marker:focus-visible {
