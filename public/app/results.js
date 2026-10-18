@@ -1,0 +1,326 @@
+/**
+ * Filters (time, collection, type, keyword), the comparison-layer picker and
+ * the result list. Emits `records:filtered` so the map stays in sync.
+ */
+
+import { debounce, el, formatYearRange, qs, setStatus } from './dom.js';
+import { facets, filterRecords, sortRecords } from './records.js';
+
+const TYPE_LABELS = {
+  map: 'Einzelkarte',
+  atlas: 'Atlas / Kartenwerk',
+  sheet: 'Kartenblatt',
+  overlay: 'Georeferenzierte Ebene',
+};
+
+const SCALE_MAX = 1000; // slider resolution for the year range
+
+export function init(ctx) {
+  const listEl = qs('#result-list');
+  const stateEl = qs('#results-state');
+  const countEl = qs('#result-count');
+  const liveEl = qs('#results-live');
+  const sortEl = qs('#sort-select');
+  const textEl = qs('#text-filter');
+  const yearFrom = qs('#year-from');
+  const yearTo = qs('#year-to');
+  const yearFill = qs('#year-fill');
+  const providerWrap = qs('#provider-filters');
+  const typeWrap = qs('#type-filters');
+  const overlayEl = qs('#overlay-select');
+  const overlayTimeWrap = qs('#overlay-time-field');
+  const overlayTime = qs('#overlay-time');
+  const overlayTimeOut = qs('#overlay-time-output');
+  const overlayNote = qs('#overlay-note');
+  const resetEl = qs('#reset-filters');
+
+  if (!listEl || !countEl) return;
+
+  const records = ctx.data.records;
+  const years = ctx.data.years;
+  const { providers, types } = facets(records);
+  let lastFiltered = [];
+
+  /* ---------- controls ---------- */
+
+  const setYearBounds = () => {
+    if (yearFrom) {
+      yearFrom.min = String(years.min);
+      yearFrom.max = String(years.max);
+    }
+    if (yearTo) {
+      yearTo.min = String(years.min);
+      yearTo.max = String(years.max);
+    }
+    for (const chip of document.querySelectorAll('[data-range]')) {
+      chip.addEventListener('click', () => {
+        const value = chip.dataset.range;
+        if (value === 'all') ctx.store.update({ from: years.min, to: years.max });
+        else {
+          const [from, to] = value.split('-').map(Number);
+          ctx.store.update({ from, to });
+        }
+      });
+    }
+  };
+
+  const buildCheckboxes = (wrap, entries, key) => {
+    if (!wrap) return;
+    wrap.replaceChildren(
+      ...[...entries.entries()].map(([value, count]) => {
+        const id = `${key}-${value}`;
+        const input = el('input', {
+          type: 'checkbox',
+          id,
+          value,
+          onchange: () => ctx.store.update({ [key === 'providers' ? 'provider' : 'type']: input.checked ? value : '' }),
+        });
+        input.checked = (key === 'providers' ? ctx.store.getState().provider : ctx.store.getState().type) === value;
+        return el('label', { class: 'zh-check', for: id }, [input, el('span', { text: `${value} (${count})` })]);
+      }),
+    );
+  };
+
+  buildCheckboxes(providerWrap, providers, 'providers');
+  buildCheckboxes(typeWrap, types, 'types');
+
+  sortEl?.addEventListener('change', () => ctx.store.update({ sort: sortEl.value }));
+  textEl?.addEventListener(
+    'input',
+    debounce(() => ctx.store.update({ q: textEl.value.trim() }), 200),
+  );
+  const commitYears = debounce((patch) => ctx.store.update(patch), 250);
+  yearFrom?.addEventListener('input', () => commitYears({ from: clampYear(yearFrom.value, years) }));
+  yearTo?.addEventListener('input', () => commitYears({ to: clampYear(yearTo.value, years) }));
+
+  resetEl?.addEventListener('click', () => {
+    ctx.store.update({ from: years.min, to: years.max, provider: '', type: '', q: '', selected: '', overlay: '', otime: '' });
+  });
+
+  /* ---------- comparison layers (swisstopo WMTS) ---------- */
+
+  const layers = ctx.data.overlays ?? [];
+  const isHistorical = (layer) => /zeitreihen|hiks/.test(layer.id);
+  if (overlayEl && layers.length > 0) {
+    const historical = layers.filter(isHistorical).sort((a, b) => a.title.localeCompare(b.title, 'de'));
+    const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'de'));
+    overlayEl.replaceChildren(
+      el('option', { value: '', text: 'keine Ebene' }),
+      el('optgroup', { label: 'Historische Kartenwerke (Zeitreise, Dufour, Siegfried)' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('optgroup', { label: 'Moderne Landeskarten' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
+    );
+    overlayEl.addEventListener('change', () => {
+      const layer = layers.find((l) => l.id === overlayEl.value) ?? null;
+      ctx.store.update({ overlay: layer?.id ?? '', otime: layer?.timeValues?.[0] ?? '' });
+      applyOverlay(layer, layer?.timeValues?.[0]);
+    });
+  }
+
+  function applyOverlay(layer, time) {
+    if (!layer) {
+      ctx.bus.emit('overlay:changed', { layer: null, time: null });
+      if (overlayTimeWrap) overlayTimeWrap.hidden = true;
+      if (overlayNote) overlayNote.textContent = 'Georeferenzierte Kartenwerke von swisstopo, direkt als Kachelebene über die moderne Grundkarte gelegt.';
+      return;
+    }
+    const values = layer.timeValues ?? [];
+    if (overlayTimeWrap && overlayTime && values.length > 1) {
+      overlayTimeWrap.hidden = false;
+      overlayTime.min = '0';
+      overlayTime.max = String(values.length - 1);
+      const index = Math.max(0, values.indexOf(time ?? ctx.store.getState().otime));
+      overlayTime.value = String(index);
+      updateTimeOutput(layer, values[index]);
+    } else if (overlayTimeWrap) {
+      overlayTimeWrap.hidden = true;
+    }
+    if (overlayNote) {
+      overlayNote.textContent = `${layer.title} – ${values.length > 1 ? `${values.length} Ausgaben` : 'eine Ausgabe'}; ${
+        layer.license ?? 'swisstopo geoservices'
+      }.`;
+    }
+    ctx.bus.emit('overlay:changed', { layer, time: time ?? values[0] ?? 'current' });
+  }
+
+  function updateTimeOutput(layer, value) {
+    if (!overlayTimeOut) return;
+    overlayTimeOut.textContent = value ? `${formatTime(value)} (${layer.id})` : '';
+  }
+
+  overlayTime?.addEventListener(
+    'input',
+    debounce(() => {
+      const layer = layers.find((l) => l.id === ctx.store.getState().overlay);
+      const values = layer?.timeValues ?? [];
+      const value = values[Number(overlayTime.value)];
+      updateTimeOutput(layer, value);
+      ctx.store.update({ otime: value ?? '' });
+      ctx.bus.emit('overlay:time', { time: value, layer });
+    }, 120),
+  );
+
+  function formatTime(value) {
+    const text = String(value ?? '');
+    if (/^\d{8}$/.test(text)) return `${text.slice(6, 8)}.${text.slice(4, 6)}.${text.slice(0, 4)}`;
+    return text === 'current' ? 'aktuell' : text;
+  }
+
+  /* ---------- result list ---------- */
+
+  function thumb(record) {
+    const img = el('img', {
+      class: 'zh-result__thumb',
+      loading: 'lazy',
+      decoding: 'async',
+      alt: '',
+      src: record.thumbnail,
+    });
+    img.addEventListener('error', () => {
+      img.removeAttribute('src');
+      img.classList.add('zh-result__thumb--missing');
+      img.alt = 'Keine Vorschau verfügbar';
+      img.replaceWith(el('span', { class: 'zh-result__thumb zh-result__thumb--missing', 'aria-hidden': 'true', text: '🗺' }));
+    });
+    return img;
+  }
+
+  function renderItem(record, index) {
+    const button = el(
+      'button',
+      {
+        class: 'zh-result',
+        type: 'button',
+        id: `result-${record.id.replace(/[^\w-]/g, '_')}`,
+        'aria-current': ctx.store.getState().selected === record.id ? 'true' : 'false',
+        onclick: () => select(record),
+      },
+      [
+        thumb(record),
+        el('span', { class: 'zh-result__body' }, [
+          el('span', { class: 'zh-result__meta' }, [
+            el('span', { class: 'zh-result__year', text: formatYearRange(record.yearStart, record.yearEnd) }),
+            el('span', { text: showIndex(index) }),
+            record.type ? el('span', { class: 'zh-tag', text: TYPE_LABELS[record.type] ?? record.type }) : null,
+          ]),
+          el('span', { class: 'zh-result__title', text: record.title }),
+          el('span', { class: 'zh-result__meta' }, [
+            el('span', { text: record.creators?.length ? record.creators.join(', ') : 'Urheber nicht angegeben' }),
+          ]),
+          el('span', { class: 'zh-result__meta' }, [
+            el('span', { text: record.institution }),
+            record.extent ? el('span', { class: 'zh-tag zh-tag--green', text: 'Kartenausschnitt bekannt' }) : el('span', { class: 'zh-tag', text: 'Ausschnitt nicht angegeben' }),
+            record.iiifManifest ? el('span', { class: 'zh-tag zh-tag--turquoise', text: 'IIIF' }) : null,
+          ]),
+        ]),
+      ],
+    );
+    return el('li', {}, [button]);
+  }
+
+  const showIndex = (index) => String(index + 1);
+
+  function select(record) {
+    ctx.store.update({ selected: record.id });
+    ctx.bus.emit('record:selected', { record, source: 'list' });
+  }
+
+  let items = [];
+  const render = debounce((filtered) => {
+    lastFiltered = filtered;
+    items = filtered;
+    if (filtered.length === 0) {
+      listEl.replaceChildren();
+      if (stateEl) {
+        stateEl.hidden = false;
+        stateEl.className = 'zh-state zh-state--empty';
+        stateEl.replaceChildren(
+          el('span', { class: 'zh-state__title', text: 'Keine Treffer für diese Filter' }),
+          el('span', { text: 'Zeitraum erweitern, Sammlung abwählen oder das Stichwort löschen – alle Schaltflächen haben Tastaturfokus.' }),
+        );
+      }
+    } else {
+      if (stateEl) stateEl.hidden = true;
+      listEl.replaceChildren(...filtered.map((record, index) => renderItem(record, index)));
+    }
+    updateCount(filtered);
+  }, 40);
+
+  function updateCount(filtered) {
+    const state = ctx.store.getState();
+    const parts = [`${filtered.length} von ${records.length} Datensätzen`, `${state.from}–${state.to}`];
+    if (state.provider) parts.push(state.provider);
+    if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
+    if (state.q) parts.push(`„${state.q}“`);
+    countEl.textContent = parts.join(' · ');
+    if (liveEl) liveEl.textContent = `${filtered.length} Treffer. ${filtered[0] ? `Erster Treffer: ${filtered[0].title}.` : ''}`;
+  }
+
+  function apply() {
+    const state = ctx.store.getState();
+    const filtered = sortRecords(filterRecords(state, records), state.sort);
+    if (textEl && textEl.value !== state.q) textEl.value = state.q;
+    if (sortEl && sortEl.value !== state.sort) sortEl.value = state.sort;
+    if (yearFrom && document.activeElement !== yearFrom) yearFrom.value = String(state.from);
+    if (yearTo && document.activeElement !== yearTo) yearTo.value = String(state.to);
+    if (yearFill) {
+      const span = Math.max(1, years.max - years.min);
+      const left = ((state.from - years.min) / span) * 100;
+      const right = 100 - ((state.to - years.min) / span) * 100;
+      yearFill.style.left = `${Math.max(0, Math.min(100, left))}%`;
+      yearFill.style.right = `${Math.max(0, Math.min(100, right))}%`;
+    }
+    if (overlayEl && overlayEl.value !== state.overlay) {
+      overlayEl.value = state.overlay;
+      const layer = layers.find((l) => l.id === state.overlay) ?? null;
+      applyOverlay(layer, state.otime || layer?.timeValues?.[0]);
+    }
+    for (const input of document.querySelectorAll('#provider-filters input')) input.checked = input.value === state.provider;
+    for (const input of document.querySelectorAll('#type-filters input')) input.checked = input.value === state.type;
+    for (const item of listEl.children) {
+      const button = item.querySelector('button');
+      button?.setAttribute('aria-current', button?.id === `result-${state.selected.replace(/[^\w-]/g, '_')}` ? 'true' : 'false');
+    }
+    ctx.bus.emit('records:filtered', { records: filtered, state });
+    render(filtered);
+  }
+
+  // Keyboard navigation inside the list (the map is optional; the list is not).
+  listEl.addEventListener('keydown', (event) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    const buttons = [...listEl.querySelectorAll('button.zh-result')];
+    const current = buttons.indexOf(document.activeElement);
+    if (current === -1 && event.key !== 'Home' && event.key !== 'End') return;
+    event.preventDefault();
+    const next =
+      event.key === 'ArrowDown' ? Math.min(buttons.length - 1, current + 1)
+      : event.key === 'ArrowUp' ? Math.max(0, current - 1)
+      : event.key === 'Home' ? 0
+      : buttons.length - 1;
+    buttons[next]?.focus();
+    buttons[next]?.scrollIntoView({ block: 'nearest' });
+  });
+
+  ctx.bus.on('records:loaded', () => apply());
+  ctx.store.subscribe((_, changed) => {
+    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'q', 'sort', 'overlay', 'otime'].includes(key))) apply();
+    else if (changed.includes('selected')) {
+      for (const item of listEl.children) {
+        const button = item.querySelector('button');
+        button?.setAttribute('aria-current', button?.id === `result-${ctx.store.getState().selected.replace(/[^\w-]/g, '_')}` ? 'true' : 'false');
+      }
+    }
+  });
+
+  setYearBounds();
+  apply();
+
+  return { apply, get filtered() { return lastFiltered; } };
+}
+
+function clampYear(value, years) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return years.min;
+  return Math.max(years.min, Math.min(years.max, Math.round(number)));
+}
+
+export { TYPE_LABELS };
