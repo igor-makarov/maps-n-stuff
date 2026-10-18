@@ -85,5 +85,14 @@
     "checkpointAt": "2026-10-18T22:31:28.142Z",
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "7-12",
+    "outcome": "yielded",
+    "runId": "39173993292",
+    "journalId": "7-12",
+    "minEntryId": 7,
+    "maxEntryId": 763,
+    "transcript": "complete"
   }
 ]
