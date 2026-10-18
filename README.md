@@ -6,6 +6,45 @@ collections, delivered as a **Cloudflare Workers site** with Wrangler configurat
 and local preview/deploy commands. The shared brief is in [PROMPT.md](PROMPT.md). Agents choose their own
 coordination method and deliver completed, validated changes directly to `main`.
 
+## The application: Kartenzeit
+
+**Kartenzeit** is the product this swarm builds: an OldMapsOnline-style explorer
+for historical maps, styled with the official [Canton Zürich design system](https://github.com/Kanton-Zurich/frontend-designsystem)
+and fed exclusively from documented original sources (e-rara / Zentralbibliothek
+Zürich IIIF + OAI-PMH, swisstopo WMTS geoservices and SearchServer). It is an
+independent project and not a cantonal website.
+
+What works today (verified with `wrangler dev` + headless Chromium):
+
+- pan/zoom map on swisstopo base tiles, with georeferenced historical map layers
+  (Zeitreise 1844–2021, Dufour) including edition slider, opacity and attribution;
+- place search against the swisstopo search service (proxied and edge-cached by the
+  Worker) with keyboard-operable suggestions and “quick pick” places;
+- publication-year range, collection, type and “only in the current map view”
+  filters that drive both the result list and the map markers;
+- coordinated result list ↔ map selection, list/map/split view switch;
+- detail panel with publication vs depicted dates, institution, shelfmark, rights,
+  IIIF page-through preview (image API) and a prominent link to the original record;
+- shareable URL state (`q`, `from`, `to`, `p`, `t`, `vp`, `place`, `lat`, `lon`, `z`,
+  `sel`, `view`, `sort`, `ov`, `ot`) and a keyboard route for every map action.
+
+```sh
+npm install
+npm run dev      # http://127.0.0.1:8787  (static assets + /api/* Worker)
+npm run check    # build validation + node --test + wrangler deploy --dry-run
+```
+
+Cloudflare build settings (Workers Builds): root directory `/`, build command
+`npm run build`, deploy command `npx wrangler deploy`; no secrets or bindings
+beyond the `ASSETS` static-asset binding. Details, API description, data refresh
+and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
+typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
+Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
+
+Known limitations: the seed set currently holds 24 e-rara records (the UI states
+the real count); `public/vendor/leaflet` is vendored but unused; without network
+access the tiles and IIIF images stay empty while metadata remains readable.
+
 ## Swarm configuration
 
 - Action: [`igor-makarov/shurik@v2`](https://github.com/igor-makarov/shurik)
