@@ -102,6 +102,20 @@ export function init(ctx) {
     visibleRecords: 0,
   };
 
+  // A shared point filter without an explicit view (?at=lat,lon, no lat/lon/z)
+  // must show the filtered point instead of the default Zürich view with the
+  // crosshair off-screen. A link that names lat/lon always wins (map click URLs
+  // carry their own view).
+  if (state.at && typeof location !== 'undefined') {
+    const params = new URLSearchParams(location.search);
+    const point = parsePoint(state.at);
+    if (point && !params.has('lat') && !params.has('lon')) {
+      state.lat = point.lat;
+      state.lon = point.lon;
+      state.zoom = Math.max(state.zoom, 12);
+    }
+  }
+
   container.setAttribute('tabindex', '0');
   container.setAttribute('role', 'region');
   container.setAttribute('aria-roledescription', 'Interaktive Karte');

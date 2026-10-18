@@ -26,7 +26,8 @@ What works today (verified with `wrangler dev` + headless Chromium):
   documented footprint contains that point; after a place search a
   “Karten an diesem Ort” chip does the same. The filter is visible above the
   results, carries its own “Punktfilter entfernen” action, draws a crosshair on
-  the map and is shareable as `at=lat,lon`;
+  the map and is shareable as `at=lat,lon` (a shared point link opens the map on
+  that point when the link does not name its own view);
 - publication-year range, collection, type and “only in the current map view”
   filters that drive both the result list and the map markers;
 - coordinated result list ↔ map selection, list/map/split view switch;

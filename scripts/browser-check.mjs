@@ -1708,10 +1708,11 @@ try {
     hidden: document.querySelector('#point-filter').hidden,
     text: document.querySelector('#point-filter-text').textContent,
     rows: document.querySelectorAll('#result-list > *').length,
+    crosshair: Boolean(document.querySelector('.map-point')),
   })`);
   check(
-    'a shared ?at= link restores the point filter',
-    !sharedPoint.hidden && sharedPoint.url.includes('at=47.3769') && /Karten an diesem Punkt/.test(sharedPoint.text) && sharedPoint.rows > 0,
+    'a shared ?at= link restores the point filter and shows the point',
+    !sharedPoint.hidden && sharedPoint.url.includes('at=47.3769') && /Karten an diesem Punkt/.test(sharedPoint.text) && sharedPoint.rows > 0 && sharedPoint.crosshair,
     JSON.stringify(sharedPoint),
   );
   // Evidence screenshot for the new interaction (chip + crosshair on the map).
