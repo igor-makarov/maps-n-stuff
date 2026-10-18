@@ -27,6 +27,7 @@ Save meaningful progress frequently. The official Shurik v2 release still saves
 at session start and iteration end, including its assigned task branch and session
 state. Keep the supervisor's working checkout descending from that task branch's
 published history at iteration boundaries, so those required saves can fast-forward.
+The workflow uses the official `igor-makarov/shurik@v2` lifecycle.
 Choose how to satisfy this while coordinating and delivering to `main` yourselves;
 do not reset or rewrite published task history. Preserve Shurik's lifecycle and
 control branches. At the start of each
