@@ -92,6 +92,14 @@ export function init(ctx) {
             setTimeout(() => (event.currentTarget.textContent = 'Permalink kopieren'), 2500);
           },
         }),
+        record.overlay
+          ? el('button', {
+              class: 'zh-button zh-button--small',
+              type: 'button',
+              text: 'Als Kartenebene einblenden',
+              onclick: () => showAsOverlay(record),
+            })
+          : null,
       ]),
       previewSection(record),
       factsSection(record),
@@ -107,34 +115,65 @@ export function init(ctx) {
 
   const statusNode = () => qs('#detail-status');
 
+  /** Hand a georeferenced record to the map as the comparison layer. */
+  function showAsOverlay(record) {
+    const overlay = record.overlay;
+    if (!overlay?.urlTemplate) return;
+    const layer = {
+      id: overlay.layerId,
+      title: record.collection || record.title,
+      urlTemplate: overlay.urlTemplate,
+      timeValues: overlay.timeValue ? [overlay.timeValue] : [],
+      maxZoom: overlay.maxZoom ?? 18,
+      attribution: overlay.attribution ?? '© swisstopo',
+    };
+    ctx.store.update({ overlay: layer.id, otime: overlay.timeValue ?? '' });
+    ctx.bus.emit('overlay:changed', { layer, time: overlay.timeValue ?? 'current' });
+    ctx.bus.emit('overlay:time', { time: overlay.timeValue ?? 'current', layer });
+    setStatus(statusNode(), `${layer.title} ist als Kartenebene eingeblendet (Deckkraft im Filterbereich einstellbar).`, 'info');
+  }
+
   /* ---------------- IIIF preview ---------------- */
 
   function previewSection(record) {
-    const frame = el('div', { class: 'app-detail__preview', id: 'detail-preview' }, [
-      el('span', { class: 'zh-spinner', role: 'presentation' }),
-      el('span', { class: 'visuallyhidden', text: 'Vorschau wird geladen' }),
-    ]);
+    const frame = record.iiifManifest
+      ? el('div', { class: 'app-detail__preview', id: 'detail-preview' }, [
+          el('span', { class: 'zh-spinner', role: 'presentation' }),
+          el('span', { class: 'visuallyhidden', text: 'Vorschau wird geladen' }),
+        ])
+      : el('div', { class: 'app-detail__preview', id: 'detail-preview' }, staticPreview(record));
     const nav = el('div', { class: 'app-detail__preview-nav' }, [
       el('div', { class: 'app-detail__actions' }, [
         el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'page-prev', text: '‹ vorherige', onclick: () => gotoPage(page - 1) }),
         el('span', { class: 'zh-hint', id: 'page-label', text: record.canvasCount ? `Blatt 1 von ${record.canvasCount}` : 'Blatt 1' }),
         el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'page-next', text: 'nächste ›', onclick: () => gotoPage(page + 1) }),
       ]),
-      el('label', { class: 'zh-hint', for: 'preview-size' }, [
-        el('span', { text: 'Bildbreite ' }),
-        el('input', {
-          class: 'zh-input',
-          id: 'preview-size',
-          type: 'range',
-          min: '400',
-          max: '2400',
-          step: '200',
-          value: String(size),
-          style: 'width: 140px; display:inline-block',
-        }),
-      ]),
+      record.iiifManifest
+        ? el('label', { class: 'zh-hint', for: 'preview-size' }, [
+            el('span', { text: 'Bildbreite ' }),
+            el('input', {
+              class: 'zh-input',
+              id: 'preview-size',
+              type: 'range',
+              min: '400',
+              max: '2400',
+              step: '200',
+              value: String(size),
+              style: 'width: 140px; display:inline-block',
+            }),
+          ])
+        : el('span', { class: 'zh-hint', text: 'Kachelansicht des georeferenzierten Kartenwerks' }),
     ]);
     return el('section', { class: 'app-detail__preview-wrap' }, [el('h3', { class: 'visuallyhidden', text: 'Kartenvorschau' }), frame, nav]);
+  }
+
+  /** WMTS records have no IIIF manifest – show a real tile and name what it is. */
+  function staticPreview(record) {
+    if (!record.thumbnail) return [el('p', { class: 'zh-hint', text: 'Für diesen Datensatz ist keine Vorschau hinterlegt.' })];
+    return [
+      el('img', { src: record.thumbnail, alt: `Kartenkachel: ${record.title}`, decoding: 'async' }),
+      el('p', { class: 'zh-hint', text: 'WMTS-Kachelprobe (© swisstopo) – das Kartenwerk selbst liegt als Vergleichsebene über der Karte.' }),
+    ];
   }
 
   async function loadManifest(record) {
