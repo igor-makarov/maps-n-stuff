@@ -541,7 +541,12 @@ export function init(ctx) {
       button.tabIndex = active ? 0 : -1;
       if (active) {
         button.setAttribute('aria-current', 'true');
-        button.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+        // Centre the visible sheet *inside the strip*. Deliberately not
+        // `scrollIntoView`: that also scrolls every ancestor scroll container, so
+        // opening a multi-sheet deep link on a phone pushed the title and the
+        // whole viewer out of the panel viewport (measured at 320 px).
+        const centred = button.offsetLeft - (strip.clientWidth - button.clientWidth) / 2;
+        strip.scrollLeft = Math.max(0, centred);
       } else {
         button.removeAttribute('aria-current');
       }

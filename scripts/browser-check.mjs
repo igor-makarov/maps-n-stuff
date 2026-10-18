@@ -1223,6 +1223,40 @@ try {
         fullscreenOut?.afterEscape?.panelOpen === true,
       `${JSON.stringify(fullscreenBefore)} -> ${JSON.stringify(fullscreenIn)} -> ${JSON.stringify(fullscreenOut)}`,
     );
+
+    // A deep link into a multi-sheet work must not scroll the panel away: the
+    // sheet strip used to call `scrollIntoView()`, which also scrolls its
+    // ancestors and pushed the title (and the whole viewer) out of a phone screen.
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}&sh=${total}` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'mobile sheet deep link', timeout: 25_000 });
+    await sleep(700);
+    const sheetScroll = await cdp.eval(`(() => {
+      const panel = document.querySelector('#detail');
+      const title = document.querySelector('#detail-title');
+      const stage = document.querySelector('#viewer-stage');
+      return {
+        panelScrollTop: panel?.scrollTop ?? -1,
+        titleTop: Math.round(title?.getBoundingClientRect().top ?? -999),
+        stageTop: Math.round(stage?.getBoundingClientRect().top ?? -999),
+        viewport: window.innerHeight,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        active: document.querySelector('#page-strip [aria-current="true"]')?.dataset.sheet ?? null,
+        label: document.querySelector('#page-label')?.textContent || '',
+      };
+    })()`);
+    check(
+      'a multi-sheet deep link on a phone keeps the title and the viewer in view',
+      sheetScroll.panelScrollTop === 0 &&
+        sheetScroll.titleTop >= 0 &&
+        sheetScroll.titleTop < sheetScroll.viewport &&
+        sheetScroll.stageTop > 0 &&
+        sheetScroll.stageTop < sheetScroll.viewport &&
+        sheetScroll.overflow <= 1 &&
+        sheetScroll.active === String(total - 1),
+      JSON.stringify(sheetScroll),
+    );
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   }
 
   /* --- 8f. device-local list + map-first shell -------------------------- */
