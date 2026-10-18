@@ -27,16 +27,17 @@
   display: none;
 }
 
-/* Map-first composition: from 1024 px the orientation block becomes a compact
-   band instead of a full-height page. The headline keeps its cantonal 3 px rule
+/* Map-first composition: from 840 px (the cantonal `medium` breakpoint, where
+   the shell gets its 16 px gutters and the two-column header) the orientation
+   block becomes a compact band instead of a full-height page. The headline keeps its cantonal 3 px rule
    across the full width; the stock figures move to the right of the lead
    paragraph and carry the characteristic 3 px left rule instead of a bottom
    rule. Only the clamped lead text is truncated — the complete wording stands
    in “Über das Projekt” (#about), which the “mehr” link targets. */
-@media (min-width: 1024px) {
+@media (min-width: 840px) {
   .app-intro {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(280px, 4fr);
+    grid-template-columns: minmax(0, 7fr) minmax(240px, 4fr);
     grid-template-areas:
       'head head'
       'lead facts'

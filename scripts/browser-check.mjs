@@ -1185,24 +1185,37 @@ try {
   );
 
   // Map-first shell: the map is the product, so part of it has to be visible on
-  // a plain desktop viewport instead of sitting below a full-height intro block.
-  const firstScreen = await cdp.eval(`(() => {
-    const map = document.querySelector('#map')?.getBoundingClientRect();
-    const hero = document.querySelector('.app-intro')?.getBoundingClientRect();
-    return {
-      vh: window.innerHeight,
-      mapTop: map ? Math.round(map.top + window.scrollY) : -1,
-      mapVisible: map ? Math.round(Math.min(window.innerHeight - map.top, map.height)) : 0,
-      heroHeight: hero ? Math.round(hero.height) : -1,
-      facts: document.querySelectorAll('#intro-facts li').length,
-      jump: Boolean(document.querySelector('.app-intro__more a[href="#map"]')),
-    };
-  })()`);
+  // a plain desktop/tablet viewport instead of sitting below a full-height intro
+  // block. 840 px is the breakpoint where the compact intro band starts.
+  const measureFirstScreen = () =>
+    cdp.eval(`(() => {
+      const map = document.querySelector('#map')?.getBoundingClientRect();
+      const hero = document.querySelector('.app-intro')?.getBoundingClientRect();
+      return {
+        vw: window.innerWidth,
+        vh: window.innerHeight,
+        mapTop: map ? Math.round(map.top + window.scrollY) : -1,
+        mapVisible: map ? Math.round(Math.min(window.innerHeight - map.top, map.height)) : 0,
+        heroHeight: hero ? Math.round(hero.height) : -1,
+        facts: document.querySelectorAll('#intro-facts li').length,
+        jump: Boolean(document.querySelector('.app-intro__more a[href="#map"]')),
+      };
+    })()`);
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(500);
+  const wideScreen = await measureFirstScreen();
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 840, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(700);
+  const mediumScreen = await measureFirstScreen();
+  const firstScreen = mediumScreen;
   check(
-    'the map is on the first desktop screen (map-first shell)',
-    firstScreen.mapVisible > 200 && firstScreen.facts >= 4 && firstScreen.jump,
-    JSON.stringify(firstScreen),
+    'the map is on the first desktop and tablet screen (map-first shell)',
+    wideScreen.mapVisible > 200 && mediumScreen.mapVisible > 200 && mediumScreen.facts >= 4 && mediumScreen.jump,
+    `1440: ${wideScreen.mapTop}/${wideScreen.mapVisible} · 840: ${mediumScreen.mapTop}/${mediumScreen.mapVisible}`,
   );
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(400);
+
 
   // Keyboard route from the intro to the map: the link must move focus, not
   // only scroll, or a keyboard user keeps tabbing through the intro block.
