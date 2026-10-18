@@ -1,5 +1,101 @@
 # zurich-maps-0 status
 
+## Iteration 6-12 (2026-10-18, 22:31–23:2x UTC) — data layer + integration fixes
+
+Owner of the same paths as before (`src/worker/**`, `public/data/**`,
+`public/app/records.js`, `scripts/fetch-*`, `docs/data-sources.md`). All work was
+rebased onto teammates' commits before each push (main moved 6× during the
+iteration; nothing of theirs was reverted).
+
+### 1. The shared harness was red on `main` — fixed (`b1f029f`)
+
+First baseline run of this iteration: **40/41** — `detail offers an honest
+citation and reuse links` failed (0 links). Root cause: `#reuse-links` was filled
+only from the parsed IIIF manifest, but the check ran immediately after opening
+the panel, i.e. while the manifest request was still in flight.
+
+- `detail.js`: render the full-size IIIF link from the harvested
+  `record.imageService` on first paint and fall back to it in `updateReuseLinks`
+  (the link no longer depends on a network round-trip).
+- `scripts/browser-check.mjs`: bounded (20 s) wait for that link before asserting.
+
+maps-3's `3ac1232` ("honest reuse fallback") landed in the same area while I was
+pushing; the two are complementary (mine = harvested service, theirs = manifest
+failure path) and both are on `main`.
+
+### 2. Data: canonical viewer URLs, canvas counts, wider selection (`65e6cf5`)
+
+Answers maps-3's request and grows the seed **55 → 66 records**:
+
+- `viewerUrl` for **all 39** e-rara records — the DOI landing page states the
+  holding corpus in `og:url` (`http://www.e-rara.ch/<corpus>/<id>`); the harvest
+  keeps the corpus only after verifying `<id>` against the manifest title id and
+  stores `https://www.e-rara.ch/<corpus>/content/zoom/<id>`. Corpora: `zuz` 20,
+  `zut` 18, `gep_r` 1. `iiif.js` already prefers it, so the panel no longer needs
+  the manifest for the viewer link.
+- `canvasCount` for 38 records; **four are real multi-sheet works (2–3 sheets)**,
+  so the sheet-navigation code path now has real data (maps-3's open item).
+- Selection instead of a hand-written 14-title allowlist: every non-series map of
+  the OAI set, oldest first — `landkarten` 18 (was 12), ZB Wildkarte 20 sheets
+  (was 16), new `cartesgeneve` set 1 (Bibliothèque de Genève). Records still
+  require a stated `Kartendaten` bbox and an upstream year; per-set numbers and
+  rules are written into `records.json.selection`.
+- `sources.json`: the new set is registered; collection entries point at an
+  actually harvested record, not a guessed collection page.
+- Reproduction: `npm run harvest` (~50 s warm, cached under `.cache/fetch/`),
+  `npm run harvest:offline` replays the cache.
+
+### 3. Harness expectations that the wider seed invalidated (`da61055`)
+
+Two checks hardcoded `1816`, the earliest year of the old seed; the app was
+correct (the time slider is bounded by the data, so the default period now starts
+at 1788). Fixed by reading the live controls: the detail→filter hand-off check
+reads `Publikationsjahr` from the panel, the collection-facet hint check compares
+against the current slider range. Also `43/44` → **44/44** after maps-2's
+`f4a4380` stabilised the touch checks.
+
+### Verified (this runner, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation, **78/78** `node --test`, `wrangler deploy
+  --dry-run` (28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs` → **44/44**: 66 records, 20 rows in the
+  default 1788–1900 period, Zeitreise/Siegfried/SWISSIMAGE tiles, place search,
+  keyboard selection, deep zoom + touch gestures, collection deep link,
+  comparison list, contrast sweep, no console errors, no failed requests.
+- Data spot checks: `pdf`-free real IIIF images decode; the Geneve record is
+  `Bibliothèque de Genève`, 1837, with a stated bbox; every record has an extent.
+
+### Messages
+
+- **→ maps-2**: the seed is now 66 records / 7 collections; your facet counts and
+  the histogram scale with the data (nothing in my layer assumed a count). The
+  `landkarten` group is now a rule-based selection, so titles inside
+  “Schweizer Landkarten aus vier Jahrhunderten” changed — if your histogram bins
+  are asserted against fixture titles, check them.
+- **→ maps-3**: `viewerUrl` + `canvasCount` are in the data (request done). The
+  four multi-sheet records give the sheet navigation real fixtures; if you show
+  “N Blätter” before the manifest arrives, `record.canvasCount` is there for it.
+  Your `3ac1232` reuse fallback and my `b1f029f` both live in the same function —
+  keep whichever you prefer, they do not fight (mine only fills the link earlier).
+- **→ maps-1**: no shell/CSS changes from me. `sources.json` now has 4 registered
+  collections for e-rara (2 unchanged, 2 new) plus the swisstopo ones; if the
+  intro counts collections, it can use `facets(records).collections` (7 series).
+- **→ all**: `npm run harvest` is safe to re-run; `.cache/fetch/` is git-ignored,
+  so a runner without the cache downloads the same ~120 bounded upstream
+  responses (≈50 s).
+
+### Next (my area)
+
+- A third provider with world coverage: the Library of Congress JSON API
+  (`www.loc.gov/...?fo=json`) + IIIF image service (`tile.loc.gov`, CORS `*`,
+  `info.json` verified 200) is reachable from the runner; LOC's `/item/<id>/manifest.json`
+  is behind a Cloudflare challenge (403), so it needs the `record.imageService`
+  path in `detail.js` (`previewSection` currently requires `iiifManifest`) plus
+  `tile.loc.gov` in the allowlist and the `img-src` CSP.
+- More ZB Zürich sheets (the `zuz` set is 220 records on 22 pages; the harvest
+  only inspects the first 48 candidates) and the `museecarto` set (currently 0
+  records survive the stated-bbox rule).
+
 ## Iteration 4-6 (2026-10-18, ~22:00–22:2x UTC) — data layer
 
 Landed on `main` as `88131d9` (rebased over maps-2's `45ad3c2`, so the commit hash
