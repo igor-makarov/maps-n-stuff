@@ -47,6 +47,15 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   `--ghost`/`--secondary` variants keep the same geometry.
 - **Tags** (`atm-tag`): 12 px text, 2 px border `#ccc`, 5 px radius, 4×8 px
   padding — used for provenance/IIIF/“Kartenausschnitt bekannt” labels.
+- **Heading steps 4–6**: `src/atoms/headings/headings.scss` gives `h4`, `h5`
+  and `h6` one shared step
+  (`@include polyFluidSizing('font-size', map-get($fontSizeCurves, regular))`),
+  so `.zh-heading--4/--5` and `h5`/`h6` all render 18 px and 20 px from 840 px.
+  The `.mod-smaller-headings` variant (14/16/18 px via the
+  `smallModFontSizeH5H6` curve) is not used in this app. `#intro-heading`
+  carries `.zh-heading--1` so the document heading follows the cantonal `huge`
+  curve 32 → 40 (≥840 px) → 48 px (≥1280 px), with the app's own 28 px step
+  below 600 px.
 - **Indentation and rules**: section headings carry the 3 px top rule of
   `atm-heading--bordered`; content panels use a 4 px colour bar on the left
   (`--zh-size-mini`, `$sizeMini`) and the 4 px spacing rhythm, mirroring the

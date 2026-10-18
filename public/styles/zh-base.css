@@ -69,7 +69,13 @@ h1,
 }
 
 .zh-heading--4,
-h4 {
+h4,
+.zh-heading--5,
+h5,
+h6 {
+  /* Official headings.scss: h4, h5 and h6 share one step
+     (`@include polyFluidSizing('font-size', map-get($fontSizeCurves, regular))`,
+     16 → 18 → 20 px). The .mod-smaller-headings variant is not used here. */
   font-size: var(--zh-font-bigger-regular);
   letter-spacing: -0.01em;
 }
@@ -102,7 +108,10 @@ h4 {
     font-size: var(--zh-font-small-big);
   }
   .zh-heading--4,
-  h4 {
+  h4,
+  .zh-heading--5,
+  h5,
+  h6 {
     font-size: var(--zh-font-medium);
   }
 }
