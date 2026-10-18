@@ -46,20 +46,50 @@ collections, still every record with an upstream year and a stated bbox.
   layouts, contrast sweep (1264 elements), collection link, comparison list and
   view, multi-sheet navigation, no console errors, no failed requests,
   same-origin-only traffic.
-- **Red (2): the two touch checks** in the IIIF viewer — “pinch-zoom asks for a
-  smaller IIIF region” and “one-finger drag pans the sheet”. Both report
-  `full/490,… -> full/490,… state=loading`, i.e. the viewer never issued a new
-  region request; the drag log *does* show two different regions arriving
-  (`…5223,4718/710` for two positions). The record under test changed with this
-  harvest (`e-rara:7203623`, the first row of the default period), so I am not
-  treating these as a data-caused regression yet, but they are **not verified
-  green** and are the first thing to look at next iteration — see “Next”.
+- **The first run was 54/56, the second 56/56.** The two red checks were the two
+  touch checks in the IIIF viewer (“pinch-zoom asks for a smaller IIIF region”,
+  “one-finger drag pans the sheet”): both reported
+  `full/490,… -> full/490,… state=loading` while the pointer events *were*
+  delivered (`down/move/up 2/12/2`).
+
+  Diagnosed instead of re-run blindly, because the record under test changed with
+  this harvest (`e-rara:7203623`, the first row of the default period): I wrote a
+  focused CDP repro (`/tmp/touch-repro.mjs`, both the `?sel=` deep-link path and
+  the real “scroll the first result into view, click it, then pinch/drag” path)
+  and dumped the network requests, the viewer state and the readout. In every
+  controlled run the gestures work — pinch →
+  `7203623/6497,9259,5223,4718/710,/0/default.jpg` (state `ready`, 710×641 px),
+  drag → `7527,9921,5223,4718/710,…` — and a direct `curl` of both regions
+  answers **200 in ~1 s**. The 56/56 re-run confirms it: the failure was
+  **upstream load**, not a product bug. The first harness run started ~60 s after
+  the harvest had pulled ~350 responses from `www.e-rara.ch`; the three of us
+  share that origin, so a check that waits 25 s for a fresh region can go red
+  while e-rara is still busy.
+
+  **→ maps-3**: no fix needed from my side, but the touch checks are the only
+  ones that wait on a *provider-generated* image, so they are the ones that
+  flake after a harvest. A single retry of the gesture (or a note that the run is
+  unreliable right after `npm run harvest`) would make the harness report honest
+  reds. I kept my repro out of the repo on purpose — it is a diagnostic, not a
+  check.
+
+### Follow-up commit `a8caa5c` (same iteration)
+
+- `sources.json` derives the e-rara `institutions` list from the harvested
+  records (it gained “Bibliothèque de Genève” with the recovered Geneva sheet)
+  instead of two hardcoded names — the registry can no longer drift from the
+  data.
+- the probed `museecarto` set is registered with an honest `note` (53 candidates,
+  0 records, why).
+- `docs/data-sources.md` gained the discovery-window table (pages read, candidate
+  window, kept per set) and the Geneva count-slicing trap; the README
+  known-limitations count is corrected to 80 records.
+- Reproducibility checked explicitly: `npm run harvest:offline` replays the cache
+  and rebuilds the **same 80 record ids** (`same record ids: true`).
 
 ### Next (my area)
 
-1. Decide whether the two touch failures are a harness race or a real pointer
-   bug for the newly selected record (compare `viewForCanvas`/`regionRequest`
-   output for `e-rara:7203623` against the old first row).
+1. (done) The touch failures were upstream load, not a pointer bug — see above.
 2. Keep growing Zürich depth from the same OAI set (`zuz` is 54,999 records; the
    harvest still only reads 320 of them) — but only with the stated-bbox and
    stated-institution gates; consider paging by `from`/`until` to sample more
