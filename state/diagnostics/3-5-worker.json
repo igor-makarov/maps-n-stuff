@@ -1,10 +1,10 @@
 {
   "checkpoint": {
-    "nonce": "1792360102120",
+    "nonce": "1792360412935",
     "id": "zurich-maps-0:3-5",
     "minEntryId": 7,
-    "maxEntryId": 365,
-    "at": "2026-10-18T21:48:22.126Z",
+    "maxEntryId": 493,
+    "at": "2026-10-18T21:53:32.942Z",
     "phase": "tools"
   },
   "log": ""
