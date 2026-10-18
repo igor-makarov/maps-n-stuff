@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kartenzeit – historische Karten der Schweiz entdecken</title>
+    <meta
+      name="description"
+      content="Kartenzeit ist eine unabhängige Entdeckungsplattform für historische Karten der Schweiz: auf der Karte suchen, nach Zeitraum filtern, IIIF-Digitalisate ansehen und zum Originalbestand der Bibliotheken gelangen."
+    />
+    <meta name="theme-color" content="#0070b4" />
+    <meta property="og:title" content="Kartenzeit – historische Karten der Schweiz" />
+    <meta
+      property="og:description"
+      content="Historische Karten aus Zentralbibliothek Zürich, ETH-Bibliothek und swisstopo auf einer interaktiven Karte."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Inter-Black.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/styles/app.css" />
+    <script src="/vendor/leaflet/leaflet.js" defer></script>
+    <script src="/app/main.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="/" aria-label="Kartenzeit – Startseite">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" focusable="false">
+              <rect width="32" height="32" fill="currentColor" />
+              <path d="M5 9.5 11.5 6l9 3.6L27 6v16.5L20.5 26l-9-3.6L5 26Z" fill="#fff" />
+              <path d="M11.5 6v16.4M20.5 9.6V26" stroke="#0070b4" stroke-width="1.6" />
+              <circle cx="16" cy="16" r="2.6" fill="#b01657" />
+            </svg>
+          </span>
+          <span class="brand__text">
+            <strong>Kartenzeit</strong>
+            <span>Historische Karten der Schweiz</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="#entdecken" aria-current="page">Entdecken</a>
+          <a href="#sammlungen">Sammlungen</a>
+          <a href="#quellen">Quellen</a>
+        </nav>
+
+        <p class="design-ref">
+          <span class="design-ref__dot" aria-hidden="true"></span>
+          Gestaltung: Designsystem Kanton Zürich
+        </p>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section class="intro" aria-labelledby="intro-title">
+        <div class="intro__grid">
+          <div class="intro__copy">
+            <p class="eyebrow"><span>Kartenzeit</span> · Sammlung Schweiz</p>
+            <h1 id="intro-title">Die Schweiz, wie sie einmal war.</h1>
+            <p class="lead">
+              Historische Karten aus Zürcher Bibliotheken und dem Bundesarchiv der Landestopografie –
+              auf der Karte suchen, nach Zeitraum filtern, im IIIF-Viewer vergrössern und direkt zum
+              Originaleintrag wechseln.
+            </p>
+          </div>
+          <div class="intro__aside">
+            <dl class="facts">
+              <div><dt>Digitalisate</dt><dd id="fact-records">–</dd></div>
+              <div><dt>Zeitraum</dt><dd id="fact-years">1550–2021</dd></div>
+              <div><dt>Primärquellen</dt><dd>3</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="search-region">
+          <form id="place-form" role="search" autocomplete="off">
+            <label for="place-search">Ort in der Schweiz suchen</label>
+            <div class="searchbox">
+              <svg class="searchbox__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="square" />
+              </svg>
+              <input
+                id="place-search"
+                name="place"
+                type="search"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="place-suggestions"
+                aria-describedby="place-help"
+                placeholder="z. B. Zürich, Rheinau, Winterthur"
+                spellcheck="false"
+              />
+              <button class="btn btn--primary searchbox__submit" type="submit">
+                <span aria-hidden="true">→</span>
+                <span class="btn__text">Suchen</span>
+              </button>
+            </div>
+            <p id="place-help" class="hint">
+              Ortsnamen aus dem offiziellen Suchdienst von swisstopo. Ergebnisse erscheinen als Liste
+              und auf der Karte – ohne Maus bedienbar.
+            </p>
+            <ul id="place-suggestions" class="suggestions" role="listbox" aria-label="Ortsvorschläge" hidden></ul>
+            <p id="search-status" class="status" role="status"></p>
+          </form>
+          <div class="quicklinks" aria-label="Schnellzugriff">
+            <span class="quicklinks__label">Schnell:</span>
+            <button class="chip" type="button" data-place="Zürich">Zürich</button>
+            <button class="chip" type="button" data-place="Winterthur">Winterthur</button>
+            <button class="chip" type="button" data-place="Rheinau">Rheinau</button>
+            <button class="chip" type="button" data-place="Uster">Uster</button>
+            <button class="chip" type="button" data-place="Schaffhausen">Schaffhausen</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="entdecken" class="workspace" aria-labelledby="discover-title">
+        <h2 id="discover-title" class="visuallyhidden">Historische Karten entdecken</h2>
+
+        <aside class="filters" aria-labelledby="filter-title">
+          <div class="filters__head">
+            <h2 id="filter-title">Filter</h2>
+            <button id="reset-filters" class="link-button" type="button">Zurücksetzen</button>
+          </div>
+
+          <fieldset class="filter-group">
+            <legend>Zeitraum</legend>
+            <p class="year-readout">
+              <output id="year-from-label" for="year-from">1550</output>
+              <span aria-hidden="true">–</span>
+              <span class="visuallyhidden">bis</span>
+              <output id="year-to-label" for="year-to">2025</output>
+              <span class="year-readout__suffix">n. Chr.</span>
+            </p>
+            <div class="range-pair">
+              <div class="range-field">
+                <label for="year-from">Von</label>
+                <input id="year-from" type="range" min="1550" max="2025" step="5" value="1550" />
+              </div>
+              <div class="range-field">
+                <label for="year-to">Bis</label>
+                <input id="year-to" type="range" min="1550" max="2025" step="5" value="2025" />
+              </div>
+            </div>
+            <div class="presets" role="group" aria-label="Zeitraum-Voreinstellungen">
+              <button class="chip chip--outline" type="button" data-preset="1550-1799">vor 1800</button>
+              <button class="chip chip--outline" type="button" data-preset="1800-1899">1800–1899</button>
+              <button class="chip chip--outline" type="button" data-preset="1900-2025">ab 1900</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="filter-group">
+            <legend>Sammlung</legend>
+            <div id="provider-filters" class="checklist"></div>
+          </fieldset>
+
+          <fieldset class="filter-group">
+            <legend>Kartenausschnitt</legend>
+            <label class="switch">
+              <input id="viewport-filter" type="checkbox" checked />
+              <span>Nur Karten im sichtbaren Ausschnitt</span>
+            </label>
+            <p class="hint">Die Karte und die Trefferliste bleiben synchron. Ausschalten zeigt alle Treffer.</p>
+          </fieldset>
+
+          <div class="filters__note">
+            <p>
+              <strong>Zürich zuerst.</strong> Die Sammlung wächst entlang der Bestände. Jeder Eintrag
+              nennt Bibliothek, Rechte und den direkten Weg zum Original.
+            </p>
+          </div>
+        </aside>
+
+        <div class="map-column">
+          <div class="map-toolbar" role="group" aria-label="Kartenwerkzeuge">
+            <button id="map-home" class="tool" type="button" title="Zur Startansicht Zürich">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 2.5 11h3.2v9h5V14h2.6v6h5v-9h3.2Z" fill="currentColor"/></svg>
+              <span>Zürich</span>
+            </button>
+            <button id="map-fit" class="tool" type="button" title="Alle Treffer im Ausschnitt anzeigen">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9V3h6v2H5v4Zm12-6h6v6h-2V5h-4ZM3 15h2v4h4v2H3Zm16 0h2v6h-6v-2h4Z" fill="currentColor"/></svg>
+              <span>Treffer einpassen</span>
+            </button>
+            <button id="overlay-toggle" class="tool" type="button" aria-pressed="false" title="Zeitreise-Karte einblenden">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.1 0 2.2 1.7 2.7 4.3H9.3C9.8 5.7 10.9 4 12 4ZM4.5 14c-.4-1.2-.5-2.6 0-4H8a25 25 0 0 0 0 4Zm2.1 2H9c.2 2.1.7 3.5 1.2 4.3A8 8 0 0 1 6.6 16Zm2.7-8H6.6a8 8 0 0 1 3.6-4.3C9.7 4.5 9.4 6 9.3 8Zm1 2h3.4a22 22 0 0 1 0 4H10.3a22 22 0 0 1 0-4Zm.8 10c-.5-.8-1-2.2-1.2-4.3h4.2c-.2 2.1-.7 3.5-1.2 4.3L12 20Zm4.1-1.7c.5-.8 1-2.2 1.2-4.3h2.4a8 8 0 0 1-3.6 4.3Zm1.4-6.3a25 25 0 0 0 0-4h3.4c.5 1.4.4 2.8 0 4Z" fill="currentColor"/></svg>
+              <span>Zeitreise</span>
+            </button>
+            <p id="map-status" class="map-status" role="status"></p>
+          </div>
+
+          <div class="map-frame">
+            <div
+              id="map"
+              role="application"
+              tabindex="0"
+              aria-label="Interaktive Karte. Mit den Pfeiltasten verschieben, mit Plus und Minus zoomen, mit Tab zu den Schaltflächen wechseln."
+            ></div>
+
+            <div id="overlay-bar" class="overlay-bar" hidden>
+              <div class="overlay-bar__head">
+                <p><span class="dot" aria-hidden="true"></span> Zeitreise-Overlay</p>
+                <button id="overlay-close" class="icon-button" type="button" aria-label="Zeitreise-Overlay schliessen">×</button>
+              </div>
+              <label class="overlay-bar__field" for="overlay-edition">Ausgabe</label>
+              <select id="overlay-edition"></select>
+              <label class="overlay-bar__field" for="overlay-opacity">Deckkraft <output id="overlay-opacity-value" for="overlay-opacity">70 %</output></label>
+              <input id="overlay-opacity" type="range" min="20" max="100" step="10" value="70" />
+              <p class="overlay-bar__credit">© swisstopo – Zeitreise (Kartenwerke)</p>
+            </div>
+
+            <div class="map-legend" aria-hidden="true">
+              <span><i class="legend-dot"></i> historische Karte</span>
+              <span><i class="legend-box"></i> ausgewählter Ausschnitt</span>
+            </div>
+          </div>
+
+          <p class="map-credits">
+            Basiskarte: swisstopo <span lang="en">pixelkarte-grau</span> · Historische Overlays:
+            swisstopo Zeitreise · Kartendaten © swisstopo · Digitalisate: e-rara.ch
+          </p>
+        </div>
+
+        <section class="results" aria-labelledby="results-title">
+          <header class="results__head">
+            <div>
+              <h2 id="results-title">Treffer</h2>
+              <p id="results-count" class="results__count" role="status">Karten werden geladen …</p>
+            </div>
+            <label class="text-filter" for="text-filter">
+              <span>Titel durchsuchen</span>
+              <input id="text-filter" type="search" placeholder="z. B. Rheinau, Relief, Brack" autocomplete="off" />
+            </label>
+          </header>
+
+          <div id="results-loading" class="skeleton-list" aria-hidden="true">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
+
+          <ol id="results-list" class="results__list"></ol>
+
+          <div id="results-empty" class="empty" hidden>
+            <h3>Keine Karte in diesem Ausschnitt</h3>
+            <p>Vergrössere den Kartenausschnitt, erweitere den Zeitraum oder schalte «Nur sichtbarer Ausschnitt» aus.</p>
+            <button id="empty-reset" class="btn btn--secondary" type="button">Filter zurücksetzen</button>
+          </div>
+
+          <p id="results-error" class="error-panel" role="alert" hidden>
+            Die Kartendaten konnten nicht geladen werden.
+            <button id="retry-records" class="link-button" type="button">Erneut versuchen</button>
+          </p>
+        </section>
+      </section>
+
+      <section id="sammlungen" class="section" aria-labelledby="collections-title">
+        <div class="section__head">
+          <p class="eyebrow"><span>Herkunft</span> · Originalquellen</p>
+          <h2 id="collections-title">Drei Sammlungen, ein Einstieg</h2>
+          <p class="section__lead">
+            Kartenzeit aggregiert nichts im Hintergrund: Die Einträge werden aus den offenen
+            Schnittstellen der besitzenden Institutionen aufgebaut. Jeder Treffer führt zum
+            Originaleintrag zurück.
+          </p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <p class="card__tag">Zentralbibliothek Zürich</p>
+            <h3>Karte des Kantons Zürich 1:25 000</h3>
+            <p>
+              Die «Wildkarte» entstand nach den Aufnahmen von 1843–1851 und wurde ab 1852 in Stein
+              graviert. Kartenzeit zeigt Blätter aus der Sammlung der ZB Zürich über e-rara.
+            </p>
+            <dl class="card__meta">
+              <div><dt>Bestand</dt><dd>ZB Zürich, Karten und Panoramen</dd></div>
+              <div><dt>Zeitraum</dt><dd>1853–1867</dd></div>
+              <div><dt>Rechte</dt><dd>Public Domain Mark 1.0</dd></div>
+            </dl>
+            <a class="text-link" href="https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen" target="_blank" rel="noopener noreferrer">
+              Sammlung an der ZB Zürich <span aria-hidden="true">↗</span>
+            </a>
+          </article>
+          <article class="card">
+            <p class="card__tag">e-rara.ch</p>
+            <h3>Schweizer Landkarten aus vier Jahrhunderten</h3>
+            <p>
+              Karten aus der ETH-Bibliothek Zürich, von der Reisekarte bis zum Schulatlas. Die
+              Digitalisate und ihre IIIF-Manifeste liegen bei e-rara, dem Portal für digitalisierte
+              Drucke aus Schweizer Institutionen.
+            </p>
+            <dl class="card__meta">
+              <div><dt>Bestand</dt><dd>ETH-Bibliothek Zürich</dd></div>
+              <div><dt>Zeitraum</dt><dd>1816–1897</dd></div>
+              <div><dt>Rechte</dt><dd>Public Domain Mark 1.0</dd></div>
+            </dl>
+            <a class="text-link" href="https://www.e-rara.ch/" target="_blank" rel="noopener noreferrer">
+              e-rara.ch öffnen <span aria-hidden="true">↗</span>
+            </a>
+          </article>
+          <article class="card">
+            <p class="card__tag">swisstopo</p>
+            <h3>Zeitreise – Kartenwerke</h3>
+            <p>
+              Georeferenzierte historische Landeskarten als WMTS-Overlay. Die Ausgaben von 1844 bis
+              2021 lassen sich direkt über der heutigen Basiskarte einblenden – ohne Konto und ohne
+              Kopie der Kacheln.
+            </p>
+            <dl class="card__meta">
+              <div><dt>Bestand</dt><dd>Bundesamt für Landestopografie</dd></div>
+              <div><dt>Zeitraum</dt><dd>1844–2021</dd></div>
+              <div><dt>Rechte</dt><dd>OGD, Quellenangabe ©swisstopo</dd></div>
+            </dl>
+            <a class="text-link" href="https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata" target="_blank" rel="noopener noreferrer">
+              Geoservices bei swisstopo <span aria-hidden="true">↗</span>
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section id="quellen" class="section section--dark" aria-labelledby="sources-title">
+        <div class="section__head">
+          <p class="eyebrow"><span>Transparenz</span> · Quellen &amp; Rechte</p>
+          <h2 id="sources-title">Woher die Karten kommen</h2>
+        </div>
+        <div class="source-grid">
+          <div>
+            <h3>Daten und Bilder</h3>
+            <ul class="link-list">
+              <li>
+                <a href="https://www.e-rara.ch/" target="_blank" rel="noopener noreferrer">e-rara.ch</a>
+                – OAI-PMH, IIIF Presentation 2.0 und IIIF Image API 2. Katalogdaten und Digitalisate
+                der ZB Zürich und ETH-Bibliothek Zürich.
+              </li>
+              <li>
+                <a href="https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen" target="_blank" rel="noopener noreferrer">ZB Zürich – Karten und Panoramen</a>
+                – Sammlungskontext und Bestandsnachweis.
+              </li>
+              <li>
+                <a href="https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata" target="_blank" rel="noopener noreferrer">swisstopo Geoservices</a>
+                – WMTS-Kacheln für Basiskarte und Zeitreise, Suchdienst für Orte.
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>Gestaltung</h3>
+            <p>
+              Typografie, Farben, Abstände, Fokusdarstellung und Komponenten folgen dem
+              <a class="inline-link" href="https://www.zh.ch/de/webangebote-entwickeln-und-gestalten/inhalt/designsystem.html" target="_blank" rel="noopener noreferrer">Designsystem des Kantons Zürich</a>
+              und dem offenen
+              <a class="inline-link" href="https://github.com/Kanton-Zurich/frontend-designsystem" target="_blank" rel="noopener noreferrer">Frontend-Repository</a>.
+              Inter wird lokal ausgeliefert (SIL Open Font License, Dateien aus dem
+              Kanton-Repository).
+            </p>
+          </div>
+          <div>
+            <h3>Unabhängiges Projekt</h3>
+            <p>
+              Kartenzeit ist eine eigenständige Anwendung. Sie ist kein Angebot des Kantons Zürich
+              und steht in keiner offiziellen Verbindung zu den genannten Institutionen. Das
+              Designsystem dient als gestalterische Referenz.
+            </p>
+            <p class="limits">
+              Bekannte Grenzen: Die Ortsuche deckt die Schweiz ab. Die Sammlung umfasst derzeit
+              42 Einträge; sie wächst, sobald weitere Bestände erschlossen sind. Ohne Netzwerk
+              bleiben Basiskarte und Digitalisate leer – die Metadaten sind dann weiterhin lesbar.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p><strong>Kartenzeit</strong> · Historische Karten der Schweiz</p>
+        <p>Ein offenes Studienprojekt · Gestaltet nach dem Designsystem des Kantons Zürich</p>
+        <p><a class="inline-link" href="#main">Nach oben</a></p>
+      </div>
+    </footer>
+
+    <dialog id="detail-dialog" class="detail" aria-labelledby="detail-title">
+      <div class="detail__shell">
+        <header class="detail__head">
+          <p id="detail-kicker" class="eyebrow">Karte</p>
+          <button id="detail-close" class="icon-button detail__close" type="button" aria-label="Detailansicht schliessen">×</button>
+        </header>
+        <div id="detail-body" class="detail__body"></div>
+      </div>
+    </dialog>
+
+    <noscript>
+      <p class="noscript">Kartenzeit benötigt JavaScript für Karte, Filter und IIIF-Ansicht. Die Quellenlinks funktionieren auch ohne.</p>
+    </noscript>
+  </body>
+</html>
