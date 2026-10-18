@@ -23,12 +23,30 @@ Header height 193 → 165 px, intro band 442 → 317 px at 1440. The hero facts
 strip, the tags and the h1 all stay; only the clamped lead text is truncated
 and it is complete in `#about` now.
 
+### Also landed (same iteration, after the first two commits)
+
+| Commit | Content |
+| --- | --- |
+| `3d33c70` | **design system: the h4–h6 step is now defined.** Official `src/atoms/headings/headings.scss` gives `h4`, `h5`, `h6` one shared step (`polyFluidSizing` with `$fontSizeCurves/regular` = 16 → 18 → 20 px); `.zh-heading--5` had no rule at all, so the comparison title inherited whatever its element had. `docs/design-system.md` records the derivation and the `.mod-smaller-headings` variant (14/16/18 px, `smallModFontSizeH5H6`) we deliberately do not apply. |
+| `331da89` | **licences and crawler policy.** `LICENSE` (MIT for the app source), `NOTICE.md` (per-component table: Inter OFL-1.1, cantonal design system Apache-2.0 as design reference only, swisstopo OGD attribution, e-rara per-record rights, vendored-but-unused Leaflet 1.9.4 BSD-2-Clause), `public/robots.txt`, footer link to NOTICE.md. |
+| `cf0728e` | **compact intro band from 840 px** (the cantonal breakpoint where the shell gets its gutters and the two-column header). Tablet map top 830 → 674 px. The harness check now measures 1440 **and** 840 px. |
+
+### Mobile and tablet numbers (this runner, headless Chromium, 80-record seed)
+
+| Viewport | intro band | map top | map visible |
+| --- | --- | --- | --- |
+| 1440×900 | 317 px | 604 px | 296 px |
+| 1024×900 | 331 px | 617 px | 283 px |
+| 840×900 | 331 px | 674 px | 226 px |
+| 390×844 | 295 px (was 456) | 733 px (was 894) | 111 px (was 0) |
+| 320×640 | 316 px | 798 px | 0 px (viewport is 640 px tall) |
+
 ### Verification (this runner, 2026-10-18 23:0x UTC)
 
-- `npm run check` ✓ (validation, **87/87** `node --test`, `wrangler deploy
+- `npm run check` ✓ (validation, **90/90** `node --test`, `wrangler deploy
   --dry-run`).
-- `node scripts/browser-check.mjs` **60/60** against `wrangler dev` after the
-  80-record harvest landed (maps-0), including the four new checks:
+- `node scripts/browser-check.mjs` **68/68** against `wrangler dev` (the count
+  grows as teammates add checks), including the five checks I added:
   `the list pinned in this browser comes back without a link`,
   `«Liste leeren» also clears the device-local list`,
   `the map is on the first desktop screen (map-first shell)` (mapVisible 296 px
@@ -55,7 +73,13 @@ and it is complete in `#about` now.
 - **→ maps-0**: the harvest to 80 records landed while I was measuring; all my
   numbers and the harness were re-run against it. No data contract changes from
   me.
-- **→ maps-2**: the intro band now uses `grid-template-areas` ≥1024 px, so
+- **→ maps-2 (proposal, no action taken)**: `public/vendor/leaflet/` has been
+  shipped unused since D2 (192 KiB, no licence file alongside it) — `map.js` is
+  its own implementation and the harness never touches Leaflet. I left the files
+  alone because D2 was your decision; if you agree, delete the directory and I
+  will drop the Leaflet row from `NOTICE.md` in the same pass. Removing it also
+  keeps the “no unused vendor payload” story clean for the deliverable.
+- **→ maps-2**: the intro band now uses `grid-template-areas` ≥840 px, so
   `.app-intro > .zh-heading--1 / .zh-lead / .zh-facts / .zh-tags` are placed
   explicitly; nothing in `map.js`/`results.js`/`search.js` was touched. The
   mobile map is still first in the grid (`order: -1`), as you set it.
@@ -202,14 +226,19 @@ and kept their version. Two consecutive harness runs after the integration:
 
 ## Next steps (for whoever has time)
 
-- Decode `commonjs`-style duplication: `public/vendor/leaflet` is currently
-  unused — either wire it into `map.js` or delete it with a note.
-- More seed records beyond the e-rara `zuz` set (the shell shows the count
-  honestly); `ch.swisstopo.hiks-siegfried` is documented but not yet in
-  `overlays.json`.
-- `view` (split/map/list) is in the URL state but no control exposes it yet —
-  add the three-way switch or drop the key.
-- Screenshot/audit the mobile layout (390 px) after the merge.
+- ~~`view` (split/map/list) in the URL but no control~~ — done (three chips in the
+  toolbar).
+- ~~mobile layout audit~~ — done at 390/320 px (see the table above); the map is
+  still below the fold at 320×640 because the header alone is 252 px. A further
+  step there would have to compact the search header, which belongs to maps-2's
+  `search.js` markup.
+- `public/vendor/leaflet` (192 KiB, unused since D2): delete it or wire it in;
+  see the proposal to maps-2 above. Delete + `NOTICE.md` row removal is a
+  5-minute change.
+- The 320 px toolbar is 190 px tall (count + compare button, view switch, sort
+  select). It could lose its “Ansicht” label visually and share a row with the
+  count; not attempted because the result count and the sort control both need
+  room at that width.
 
 ## Blockers
 
