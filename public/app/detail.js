@@ -131,6 +131,7 @@ export function init(ctx) {
       // Workflow actions sit under the preview (not above it): on a phone the
       // viewer used to start ~800 px down behind five stacked buttons.
       el('div', { class: 'app-detail__actions app-detail__actions--secondary' }, [
+        pinButton(record),
         el('button', {
           class: 'zh-button zh-button--ghost zh-button--small',
           type: 'button',
@@ -167,6 +168,38 @@ export function init(ctx) {
       ]),
     );
     viewer = viewer_?.__viewer ?? null;
+  }
+
+  /* ------------------------------------------------- comparison pinning */
+
+  const pinnedIds = () => String(ctx.store.getState().cmp || '').split(',').map((id) => id.trim()).filter(Boolean);
+
+  function updatePinButton(button, record) {
+    if (!button || !record) return;
+    const pinned = pinnedIds().includes(record.id);
+    button.textContent = pinned ? 'Gemerkt ✓ (Vergleich)' : 'Für den Vergleich merken';
+    button.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+  }
+
+  /** Pin/unpin the open record; the comparison list itself stays in compare.js. */
+  function pinButton(record) {
+    const button = el('button', {
+      class: 'zh-button zh-button--ghost zh-button--small',
+      type: 'button',
+      id: 'detail-pin',
+      'aria-pressed': 'false',
+      onclick: () => {
+        const ids = pinnedIds();
+        if (ids.includes(record.id)) ctx.store.update({ cmp: ids.filter((id) => id !== record.id).join(',') });
+        else if (ids.length >= 4) {
+          setStatus(statusNode(), 'Es lassen sich höchstens vier Datensätze für den Vergleich merken.', 'warn');
+          return;
+        } else ctx.store.update({ cmp: [...ids, record.id].join(',') });
+        updatePinButton(button, record);
+      },
+    });
+    updatePinButton(button, record);
+    return button;
   }
 
   /** Hand a georeferenced record to the map as the comparison layer. */
@@ -570,6 +603,12 @@ export function init(ctx) {
   /* -------------------------------------------------------------- events */
 
   ctx.bus.on('record:selected', ({ record }) => open(record));
+  // The comparison list is shareable state; keep the panel's pin label in sync
+  // when the sidebar (or a shared ?cmp= link) changes it.
+  ctx.store.subscribe((state, changed) => {
+    if (!changed.includes('cmp')) return;
+    updatePinButton(qs('#detail-pin'), current);
+  });
   ctx.bus.on('records:loaded', () => {
     const id = ctx.store.getState().selected;
     const record = ctx.data.recordIndex.get(id);

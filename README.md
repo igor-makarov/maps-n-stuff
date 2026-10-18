@@ -28,11 +28,12 @@ What works today (verified with `wrangler dev` + headless Chromium):
   an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
   navigation), a link to the library's own viewer and a prominent link to the
   original record — plus “use this sheet's period as the time filter”;
-- a comparison list: pin up to four records, share the list as `?cmp=…`, and put
-  two or more of them side by side with their real IIIF/WMTS previews, metadata
-  and links back to the original records; the pinned list is also kept in this
-  browser (`kartenzeit.cmp.v1`, only locally, cleared by “Liste leeren”), so a
-  returning visitor finds their own selection again;
+- a comparison list: pin up to four records from the result list, the detail
+  panel or a shared `?cmp=…` link, and put two or more of them side by side with
+  their real IIIF/WMTS previews, metadata and links back to the original records;
+  the pinned list is also kept in this browser (`kartenzeit.cmp.v1`, only
+  locally, cleared by “Liste leeren”), so a returning visitor finds their own
+  selection again;
 - a map-first shell: the intro is a compact band from 1024 px, so the map and the
   result controls are on the first screen at desktop sizes (measured: map starts
   at 604 px of a 900 px viewport), with a “Direkt zur Karte” link and a keyboard

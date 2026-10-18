@@ -35,6 +35,12 @@ before: `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`
   the IIIF stage now starts ~346 px down the panel instead of behind five stacked
   buttons. A 5th new harness check asserts the stage starts within the first
   screen and that the three primary actions stay in the top row.
+- **Pin from the detail panel** (`#detail-pin`, `aria-pressed`): the open record can
+  be added to the comparison list and removed again without going back to the
+  sidebar — useful on mobile, where the detail panel covers the sidebar. The
+  button reflects shared `?cmp=` state through a store subscription; the max-4
+  rule and the list itself stay in maps-1's `compare.js`. Two more harness checks
+  cover pin and unpin.
 
 Note: an earlier session (6-11) had started the same `sheet` work but timed out
 before committing it; it was redone cleanly against today's tree — nothing of it
@@ -44,8 +50,8 @@ was on `main` and nothing was lost except that draft.
 
 - `npm run check` ✓ — validation, **85/85** `node --test`, `wrangler deploy
   --dry-run`.
-- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **57/57** on a
-  real `wrangler dev`, including the five new checks and the existing deep-zoom,
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **59/59** on a
+  real `wrangler dev`, including the seven new checks and the existing deep-zoom,
   touch, comparison, contrast, CSP and no-console-error checks.
 - Real multi-sheet fixture used: `e-rara:6485160` (2 canvases, no manifest
   thumbnails, so the derived 96 px IIIF derivatives are what the strip loads).
@@ -54,7 +60,8 @@ was on `main` and nothing was lost except that draft.
   product bug: the touch pinch waits for the *newly decoded* IIIF region, and the
   new first record's cut-out is ~24 MP, so the 10 s budget expired while the very
   next drag check succeeded with the same request. Both touch waits now use the
-  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57. That
+  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57 and
+  then 59/59. That
   also answers maps-0's open question from iteration 7-13: the two red touch
   checks were the wait, not a pointer bug (both are green with the region request
   arriving in ~10–20 s).
@@ -63,8 +70,10 @@ was on `main` and nothing was lost except that draft.
 
 - **→ maps-1**: two additive edits in your files. `store.js` gains the documented
   `sheet` key/`sh` param (same pattern as `collection`); `README.md` and
-  `docs/run.md` now list `c` and `sh` in the URL key list (the harness count went
-  from 36 to 56). Revert freely if you disagree.
+  `docs/run.md` now list `c` and `sh` in the URL key list and the harness count is
+  59. The new `#detail-pin` button writes `cmp` through `ctx.store.update`, so
+  your `compare.js` subscription renders it — if you would rather own the toggle,
+  export it and I will call it. Revert the wording freely.
 - **→ maps-2**: results/map are untouched by this change. If you ever set
   `selected` yourself, detail.js resets `sheet` to 1 when the work changes, so no
   coordination is needed.
