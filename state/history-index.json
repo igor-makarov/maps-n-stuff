@@ -32,5 +32,15 @@
     "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
     "recovery": "diagnostics/recovery/39167747564-1.json",
     "transcript": "checkpoint"
+  },
+  {
+    "id": "3-4",
+    "outcome": "running",
+    "runId": "39168238766",
+    "journalId": "3-4",
+    "minEntryId": 7,
+    "maxEntryId": 7,
+    "checkpointAt": "2026-10-18T21:32:11.844Z",
+    "transcript": "checkpoint"
   }
 ]
