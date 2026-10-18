@@ -290,6 +290,16 @@ try {
   process.exit(2);
 }
 
+// The seed grows and changes; checks that talk about a specific record read its
+// real year/institution from the API instead of hardcoding the data of the day.
+const recordIndex = new Map();
+try {
+  const seed = await (await fetch(`${BASE_URL}/api/records`, { signal: AbortSignal.timeout(10_000) })).json();
+  for (const record of seed.records ?? seed) recordIndex.set(record.id, record);
+} catch {
+  /* no index: the affected checks fall back to reading the DOM */
+}
+
 const { chrome, userDataDir, info, target } = await launchChrome();
 const ws = new WebSocket(target);
 await new Promise((resolve, reject) => {
@@ -930,15 +940,29 @@ try {
     const img = pane.querySelector('img');
     return {
       title: pane.querySelector('h3')?.textContent || '',
-      caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').slice(0, 400),
+      caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').trim(),
       img: img ? { src: img.src, w: img.naturalWidth, h: img.naturalHeight } : null,
       link: pane.querySelector('a[href]')?.href || '',
     };
   }))()`);
+  const paneRecords = pinnedIds.map((id) => recordIndex.get(id));
+  const paneProblems = panes
+    .map((pane, index) => {
+      const record = paneRecords[index];
+      if (!record) return `${index}: no seed record`;
+      if (pane.title !== record.title) return `${index}: title "${pane.title}" != "${record.title}"`;
+      if (!pane.img || pane.img.w < 1000 || pane.img.h < 300) return `${index}: image ${pane.img ? `${pane.img.w}×${pane.img.h}` : 'missing'}`;
+      if (!/^https?:\/\//.test(pane.link)) return `${index}: no source link`;
+      if (record.institution && !pane.caption.includes(record.institution)) return `${index}: caption misses ${record.institution}`;
+      return null;
+    })
+    .filter(Boolean);
   check(
     'compare view shows both sheets with real images and source links',
-    panes.length === 2 && panes.every((pane) => pane.title && pane.img && pane.img.w > 200 && pane.img.h > 200 && /^https?:\/\//.test(pane.link) && /Zentralbibliothek|ETH-Bibliothek|swisstopo/.test(pane.caption)),
-    panes.map((pane) => `${pane.title.slice(0, 26)}:${pane.img ? `${pane.img.w}×${pane.img.h}` : 'no image'}`).join(' | '),
+    panes.length === 2 && paneProblems.length === 0,
+    paneProblems.length
+      ? paneProblems.join(' | ')
+      : panes.map((pane) => `${pane.title.slice(0, 24)}:${pane.img.w}×${pane.img.h}`).join(' | '),
   );
 
   await cdp.pressKey('Escape');
@@ -958,6 +982,48 @@ try {
     compareClosed && sharedCompare.open && sharedCompare.items === 2 && sharedCompare.toolbar,
     `${compareClosed ? 'closed' : 'still open'} -> ${JSON.stringify(sharedCompare)}`,
   );
+
+  /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
+  const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
+  if (multiSheet) {
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'multi-sheet viewer', timeout: 25_000 });
+    const sheetOne = await cdp.eval(`(() => ({
+      label: document.querySelector('#page-label')?.textContent || '',
+      navHidden: document.querySelector('#page-nav')?.hidden,
+      prevDisabled: document.querySelector('#page-prev')?.disabled,
+      src: document.querySelector('.app-viewer__image')?.src || '',
+    }))()`);
+    await cdp.click('#page-next');
+    let sheetTwoSrc = sheetOne.src;
+    try {
+      sheetTwoSrc = await cdp.waitFor(
+        `(() => { const src = document.querySelector('.app-viewer__image')?.src || ''; return src !== ${JSON.stringify(sheetOne.src)} && document.querySelector('#viewer-stage')?.dataset.state === 'ready' ? src : ''; })()`,
+        { label: 'second sheet', timeout: 25_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    const sheetTwo = await cdp.eval(`(() => ({
+      label: document.querySelector('#page-label')?.textContent || '',
+      prevDisabled: document.querySelector('#page-prev')?.disabled,
+      nextDisabled: document.querySelector('#page-next')?.disabled,
+      alt: document.querySelector('.app-viewer__image')?.alt || '',
+    }))()`);
+    const expectedTotal = String(multiSheet.canvasCount);
+    check(
+      'a real multi-sheet work offers working sheet navigation',
+      sheetOne.navHidden === false &&
+        sheetOne.label === `Blatt 1 von ${expectedTotal}` &&
+        sheetOne.prevDisabled === true &&
+        sheetTwo.label === `Blatt 2 von ${expectedTotal}` &&
+        sheetTwoSrc !== sheetOne.src &&
+        sheetTwo.prevDisabled === false,
+      `${multiSheet.id} (${expectedTotal} Blatt) · "${sheetOne.label}" -> "${sheetTwo.label}" ${sheetOne.src.slice(-40)} -> ${sheetTwoSrc.slice(-40)}`,
+    );
+  } else {
+    check('a real multi-sheet work offers working sheet navigation', false, 'no multi-sheet record in the seed');
+  }
 
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
