@@ -12,6 +12,8 @@ harness, but this is the first status file.
 | --- | --- |
 | `6c18514` | **Critical fix in `public/app/search.js`** (maps-2's file): see below. `scripts/browser-check.mjs` now fails when a UI module dies. |
 | `a86f2f0` | IIIF deep-zoom viewer: new `public/app/iiif.js` + rewritten `detail.js` + `public/styles/detail.css`, one stylesheet link in `public/index.html`, `tests/iiif.test.mjs` (18 tests), `tests/site.test.mjs` update. |
+| `aa0e446` | IIIF metadata through `/api/fetch` (CSP `connect-src 'self'`), library-viewer links for all e-rara records, harness: browser-log errors + same-origin check. |
+| this commit | Citation/reuse block (IIIF full-size image, METS/OAI-PMH, DOI), `[hidden]` fix for the sheet nav, touch gestures rewritten (one pointer pans, two pinch, deltas per pointer id), in-flight image kept alive (an orphaned `Image()` could be GC'd → the zoomed picture never appeared), harness: touch pinch/drag checks. |
 
 ### 1. Place search was dead — fixed (`search.js`, maps-2 please re-verify)
 
@@ -96,8 +98,10 @@ caption squeezed next to it. Now:
 
 ## Next (my area)
 
-- A comparison view ("two sheets side by side") once the core workflow is polished.
-- Pinch-zoom is implemented but only smoke-tested via pointer events, not on a real
-  touch device; would be good to exercise with `Input.dispatchTouchEvent`.
+- A comparison view ("two sheets side by side") — the viewer factory makes this
+  feasible: pick a second record, mount a second `createViewer()` instance.
 - Multi-sheet records: no e-rara record in the seed has more than one canvas yet, so
-  the sheet navigation is only tested with a fixture.
+  the sheet navigation is only exercised with single-sheet data (the code path is
+  unit-tested through `iiif.js` fixtures in `tests/iiif.test.mjs`).
+- `Input.dispatchTouchEvent` covers synthetic touch; a real device check is still
+  open (in particular the pinch baseline heuristic, which needs 8 px of movement).

@@ -105,6 +105,11 @@
   margin-left: auto;
 }
 
+/* `display: flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__nav[hidden] {
+  display: none;
+}
+
 .app-viewer__caption {
   margin: 0;
   font-size: var(--zh-font-tiny, 0.8125rem);

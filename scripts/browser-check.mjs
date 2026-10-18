@@ -149,7 +149,12 @@ class CDP {
       returnByValue: true,
       awaitPromise: true,
     });
-    if (exceptionDetails) throw new Error(exceptionDetails.exception?.description || exceptionDetails.text);
+    if (exceptionDetails) {
+      const reason = exceptionDetails.exception?.description || exceptionDetails.text;
+      // Include the expression: a failure inside a generated snippet is otherwise
+      // impossible to place ("SyntaxError: Unexpected token '}'").
+      throw new Error(`${reason}\n  in expression: ${String(expression).replace(/\s+/g, ' ').slice(0, 300)}`);
+    }
     return result?.value;
   }
 
@@ -394,6 +399,19 @@ try {
   check('detail links to the library\'s own viewer', /^https:\/\/www\.e-rara\.ch\/[a-z]+\/content\/zoom\/\d+$/.test(viewerLink || ''), viewerLink ?? 'no viewer link');
   check('detail names the holding institution and rights', detail.institution && detail.rights, detail.text.slice(0, 120));
 
+  const reuse = await cdp.eval(`(() => {
+    const citation = document.querySelector('#citation-text')?.textContent || '';
+    const links = [...document.querySelectorAll('#reuse-links a')].map((a) => a.href);
+    return { citation, hasFullImage: links.some((h) => h.endsWith('/full/max/0/default.jpg')), links };
+  })()`);
+  check(
+    'detail offers an honest citation and reuse links',
+    /Abgerufen am \d{4}-\d{2}-\d{2}/.test(reuse.citation) && /https:\/\/www\.e-rara\.ch\/doi\/10\.3931\//.test(reuse.citation) && reuse.hasFullImage,
+    `${reuse.citation.slice(0, 90)} … ${reuse.links.length} links`,
+  );
+  const citationClean = !/\.\./.test(reuse.citation);
+  check('citation punctuation stays clean with verbatim upstream values', citationClean, reuse.citation.slice(-80));
+
   // The IIIF manifest + first image come from e-rara; give the image service time
   // to answer, then insist on a rendered image (a real derivative, not a placeholder).
   let preview = { state: 'missing' };
@@ -440,8 +458,8 @@ try {
   };
 
   /* --- 3a. IIIF deep zoom (region requests) ---------------------------- */
-  const singleSheet = await cdp.eval(`(() => ({ nav: document.querySelector('#page-nav')?.hidden, label: document.querySelector('#page-label')?.textContent }))()`);
-  check('sheet navigation is hidden for a single-sheet record', singleSheet.nav === true, JSON.stringify(singleSheet));
+  const singleSheet = await cdp.eval(`(() => { const nav = document.querySelector('#page-nav'); return { nav: nav?.hidden, display: nav ? getComputedStyle(nav).display : null, label: document.querySelector('#page-label')?.textContent }; })()`);
+  check('sheet navigation is hidden for a single-sheet record', singleSheet.nav === true && singleSheet.display === 'none', JSON.stringify(singleSheet));
 
   const fullSheetSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
   await cdp.eval(`document.querySelector('#viewer-zoom-in').click(); document.querySelector('#viewer-zoom-in').click(); true`);
@@ -457,12 +475,14 @@ try {
   check('viewer reports the real resolution and cut-out', /Aufl\u00f6sung \d+ %/.test(zoomed.readout) && /Ausschnitt/.test(zoomed.readout), zoomed.readout);
   await cdp.screenshot(path.join(OUT_DIR, '02b-detail-zoom.png')).then(() => report.screenshots.push('02b-detail-zoom.png'));
 
-  await cdp.eval(`document.querySelector('#viewer-stage').focus()`);
+  // A real click focuses the stage, like a keyboard user tabbing into it.
+  await cdp.click('#viewer-stage');
   await cdp.pressKey('ArrowRight');
   await cdp.pressKey('ArrowRight');
+  const focusBefore = await cdp.eval(`document.activeElement?.id || document.activeElement?.tagName`);
   const panned = await waitForViewer(`(v) => v.decoded && v.src !== ${JSON.stringify(zoomed.src)}`);
-  const pannedSrc = panned.src;
-  check('viewer pans with the arrow keys', pannedSrc !== zoomed.src && /\d+,\d+,\d+,\d+\//.test(pannedSrc), pannedSrc.slice(-60));
+  check('clicking the preview focuses the stage (keyboard route in)', focusBefore === 'viewer-stage', String(focusBefore));
+  check('viewer pans with the arrow keys', panned.src !== zoomed.src && /\d+,\d+,\d+,\d+\//.test(panned.src), panned.src.slice(-60));
 
   await cdp.pressKey('Home');
   const reset = await waitForViewer(`(v) => v.decoded && v.src === ${JSON.stringify(fullSheetSrc)}`);
@@ -604,6 +624,39 @@ try {
   check('mobile layout has no horizontal overflow', mobile.overflow <= 1, `overflow ${mobile.overflow}px`);
   check('mobile keeps map, search and results reachable', mobile.mapHeight > 150 && mobile.searchVisible && mobile.rows > 0, JSON.stringify(mobile));
   await cdp.screenshot(path.join(OUT_DIR, '03-mobile.png')).then(() => report.screenshots.push('03-mobile.png'));
+
+  /* --- 7b. touch: the detail viewer must zoom and pan without a mouse ---- */
+  await cdp.click('#result-list > *');
+  await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'mobile IIIF viewer', timeout: 25_000 });
+  const touchBox = await cdp.eval(`(() => { const r = document.querySelector('#viewer-stage').getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; })()`);
+  const touchPoint = (x, y, id) => ({ x: Math.round(x), y: Math.round(y), id, radiusX: 12, radiusY: 12, force: 1 });
+  const beforeTouch = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [touchPoint(touchBox.cx - 40, touchBox.cy, 1), touchPoint(touchBox.cx + 40, touchBox.cy, 2)] });
+  for (let step = 1; step <= 6; step += 1) {
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [touchPoint(touchBox.cx - 40 - step * 16, touchBox.cy, 1), touchPoint(touchBox.cx + 40 + step * 16, touchBox.cy, 2)],
+    });
+    await sleep(60);
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await sleep(2200);
+  const afterPinch = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  check(
+    'touch: pinch-zoom asks for a smaller IIIF region',
+    afterPinch !== beforeTouch && /\/\d+,\d+,\d+,\d+\/\d+,\/0\/default\.jpg$/.test(afterPinch),
+    `${beforeTouch.slice(-46)} -> ${afterPinch.slice(-46)}`,
+  );
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [touchPoint(touchBox.cx, touchBox.cy, 1)] });
+  for (let step = 1; step <= 5; step += 1) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [touchPoint(touchBox.cx - step * 14, touchBox.cy - step * 9, 1)] });
+    await sleep(60);
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await sleep(2200);
+  const afterDrag = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  check('touch: one-finger drag pans the sheet', afterDrag !== afterPinch, `${afterPinch.slice(-46)} -> ${afterDrag.slice(-46)}`);
+  await cdp.screenshot(path.join(OUT_DIR, '03b-mobile-viewer.png')).then(() => report.screenshots.push('03b-mobile-viewer.png'));
 
   /* --- 8. WCAG 2.2 AA contrast sweep of the visible UI ------------------ */
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 960, deviceScaleFactor: 1, mobile: false });

@@ -144,6 +144,7 @@ export function init(ctx) {
           : null,
       ]),
       viewer_,
+      reuseSection(record),
       factsSection(record),
       el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite', id: 'detail-status' }),
       el('p', { class: 'zh-hint' }, [
@@ -312,6 +313,7 @@ export function init(ctx) {
     const total = manifest.canvases.length;
     if (pageLabel) pageLabel.textContent = `Blatt ${page + 1} von ${total}`;
     viewer?.setCanvas(canvas, { label: canvas.label });
+    updateReuseLinks(current);
     const nav = qs('#page-nav');
     if (nav) nav.hidden = total <= 1;
     const prev = qs('#page-prev');
@@ -337,6 +339,93 @@ export function init(ctx) {
         url ? el('img', { src: url, alt: '', decoding: 'async' }) : null,
         el('a', { class: 'zh-button zh-button--small', href: record?.recordUrl ?? '#', target: '_blank', rel: 'noopener', text: 'Beim Anbieter ansehen ↗' }),
       ]),
+    );
+  }
+
+  /* ------------------------------------------------------- reuse/citation */
+
+  /** Citation built only from upstream values; unknown parts are omitted. */
+  function citationText(record) {
+    const years = record.yearStart ? formatYearRange(record.yearStart, record.yearEnd ?? record.yearStart) : '';
+    /** Add a sentence break only when the upstream text does not end with one. */
+    const sentence = (text) => {
+      const value = (text ?? '').trim();
+      if (!value) return '';
+      return /[.!?]$/.test(value) ? `${value} ` : `${value}. `;
+    };
+    return [
+      sentence(`${record.title}${years ? ` (${years})` : ''}`),
+      sentence(record.creators?.join(', ')),
+      sentence(record.collection),
+      sentence(record.institution),
+      `Online: ${record.recordUrl}. `,
+      `Abgerufen am ${new Date().toISOString().slice(0, 10)}.`,
+    ].join('');
+  }
+
+  function reuseSection(record) {
+    const copyButton = el('button', {
+      class: 'zh-button zh-button--ghost zh-button--small',
+      type: 'button',
+      text: 'Zitierweise kopieren',
+      onclick: async (event) => {
+        const ok = await copyText(citationText(record));
+        event.currentTarget.textContent = ok ? 'Zitierweise kopiert ✓' : 'Kopieren nicht möglich';
+        setTimeout(() => (event.currentTarget.textContent = 'Zitierweise kopieren'), 2500);
+      },
+    });
+    return el('section', { id: 'reuse-section' }, [
+      el('h3', { class: 'zh-heading zh-heading--4', text: 'Zitieren und weiterverwenden' }),
+      el('p', { class: 'zh-hint', id: 'citation-text', text: citationText(record) }),
+      el('div', { class: 'app-detail__actions' }, [
+        copyButton,
+        record.iiifManifest
+          ? el('a', {
+              class: 'zh-button zh-button--ghost zh-button--small',
+              href: record.iiifManifest,
+              target: '_blank',
+              rel: 'noopener',
+              text: 'IIIF-Manifest (JSON) ↗',
+            })
+          : null,
+      ]),
+      // Filled once the manifest is parsed: the image service and the METS record
+      // are only known then, and we do not want to invent those URLs.
+      el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
+        el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Weitere Links werden geladen …' : 'Kein IIIF-Bilddienst hinterlegt – nutzen Sie den Originaldatensatz.' }),
+      ]),
+      el('p', { class: 'zh-hint', text: 'Bitte prüfen Sie Rechte und Zitierweise beim Anbieter; die Angaben hier stammen aus dessen Metadaten.' }),
+    ]);
+  }
+
+  /** Add the links that need the parsed manifest (image service, METS/OAI). */
+  function updateReuseLinks(record) {
+    const container = qs('#reuse-links');
+    if (!container) return;
+    const canvas = manifest?.canvases?.[page];
+    const service = canvas?.service;
+    container.replaceChildren(
+      service
+        ? el('a', {
+            class: 'zh-button zh-button--ghost zh-button--small',
+            href: `${service}/full/max/0/default.jpg`,
+            target: '_blank',
+            rel: 'noopener',
+            text: 'Bild in Originalgrösse öffnen (IIIF) ↗',
+          })
+        : el('span', { class: 'zh-hint', text: 'Für dieses Blatt liefert der Anbieter keinen IIIF-Bilddienst.' }),
+      manifest?.seeAlso
+        ? el('a', {
+            class: 'zh-button zh-button--ghost zh-button--small',
+            href: manifest.seeAlso,
+            target: '_blank',
+            rel: 'noopener',
+            text: 'METS/MODS über OAI-PMH ↗',
+          })
+        : null,
+      record?.recordUrl
+        ? el('a', { class: 'zh-button zh-button--ghost zh-button--small', href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'DOI/Datensatz ↗' })
+        : null,
     );
   }
 
@@ -433,11 +522,13 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
   let fetchTimer = null;
   let destroyed = false;
   let loadToken = 0;
-  let regionFailed = false;
+  let pendingPreload = null;
+  let regionFailures = 0;
+  /** Set after repeated failures: only the whole-sheet derivative works here. */
+  let regionsUnsupported = false;
   let announceTimer = null;
 
   const pointers = new Map();
-  let drag = null;
   let pinch = null;
 
   /* --------------------------------------------------------------- helpers */
@@ -457,10 +548,11 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
 
   function requestUrl(currentView) {
     if (!service || !bounds) return null;
-    if (!regionFailed) {
+    if (!regionsUnsupported) {
       const url = imageRequestUrl(service, currentView, outputWidthFor(currentView), { bounds });
       if (url) return url;
     }
+    // Services without regionByPx (or with tighter rights) still serve `full`.
     return fullImageUrl(service, FULL_PREVIEW_WIDTH);
   }
 
@@ -532,12 +624,36 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     const target = { ...view };
     const url = requestUrl(target);
     if (!url || destroyed) return;
+    // Same picture as the one on screen: nothing to fetch (pinch/pan can land on
+    // the same rounded region repeatedly).
+    if (url === img.src && stage.dataset.state === 'ready') {
+      layout();
+      return;
+    }
     const token = ++loadToken;
     stage.dataset.state = 'loading';
     const preload = new Image();
+    // Keep a strong reference: an Image() that is only referenced by its own
+    // listeners can be collected before it finishes loading, and the picture
+    // then never appears (this was an intermittent failure of the pinch/zoom path).
+    pendingPreload = preload;
     preload.decoding = 'async';
-    preload.addEventListener('load', () => {
+    const done = () => {
+      clearTimeout(guard);
+      if (pendingPreload === preload) pendingPreload = null;
+    };
+    const guard = setTimeout(() => {
+      done();
       if (destroyed || token !== loadToken) return;
+      if (!regionsUnsupported) {
+        regionsUnsupported = true;
+        load();
+      }
+    }, 15_000);
+    preload.addEventListener('load', () => {
+      done();
+      if (destroyed || token !== loadToken) return;
+      regionFailures = 0;
       rendered = { view: target, left: 0, top: 0, width: 0, height: 0 };
       img.src = url;
       img.alt = canvas?.label ? `Kartenvorschau: ${record?.title ?? ''} (${canvas.label})` : `Kartenvorschau: ${record?.title ?? ''}`;
@@ -549,16 +665,19 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
         if (canvas?.label) bits.push(`Blatt ${canvas.label}`);
         bits.push(`${preload.naturalWidth}×${preload.naturalHeight} px geladen`);
         if (bounds) bits.push(`Original ${bounds.w}×${bounds.h} px`);
-        bits.push('IIIF Image API (regionByPx, sizeByW)');
+        bits.push(regionsUnsupported ? 'IIIF Image API (nur Gesamtbild)' : 'IIIF Image API (regionByPx, sizeByW)');
         info.textContent = bits.join(' · ');
       }
       updateReadout();
     });
     preload.addEventListener('error', () => {
+      done();
       if (destroyed || token !== loadToken) return;
-      if (!regionFailed) {
-        // Services without regionByPx (or with tighter rights) still serve `full`.
-        regionFailed = true;
+      regionFailures += 1;
+      if (!regionsUnsupported) {
+        // Two refusals are enough: stay on the full-sheet derivative, honestly
+        // labelled, instead of hammering the service with region requests.
+        if (regionFailures >= 2) regionsUnsupported = true;
         load();
         return;
       }
@@ -574,7 +693,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
   /* -------------------------------------------------------------- controls */
 
   function zoom(factor, anchor) {
-    if (!view || regionFailed) return;
+    if (!view || regionsUnsupported) return;
     const { width, height } = stageSize();
     // Zooming reshapes the region to the stage aspect ratio so the map fills the
     // viewport instead of sitting in letterbox bars (contain → cover).
@@ -588,7 +707,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
   function reset() {
     if (!bounds) return;
     view = viewForCanvas(bounds.w, bounds.h);
-    if (regionFailed) {
+    if (regionsUnsupported) {
       // Only the full-sheet derivative is available: show it and stay honest.
       rendered = null;
       load();
@@ -614,65 +733,56 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     zoom(2, anchor);
   };
 
+  /* One pointer pans, two pointers pinch. Deltas are always measured against the
+     previous position *of the same pointer id*, so a lost pointer event cannot
+     leave a stale gesture behind (that made one-finger drags after a pinch dead). */
   const onPointerDown = (event) => {
     if (!view) return;
     stage.setPointerCapture?.(event.pointerId);
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (pointers.size === 1) drag = { x: event.clientX, y: event.clientY, moved: false };
+    if (pointers.size === 1) pinch = null;
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
-      pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), center: screenPoint((a.x + b.x) / 2, (a.y + b.y) / 2) };
-      drag = null;
+      pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y) };
     }
     stage.dataset.dragging = 'true';
   };
 
   const onPointerMove = (event) => {
-    if (!pointers.has(event.pointerId) || !view) return;
+    const previous = pointers.get(event.pointerId);
+    if (!previous || !view) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (regionFailed) return;
+    if (regionsUnsupported) return;
 
-    if (pointers.size === 2 && pinch) {
+    if (pointers.size >= 2) {
       const [a, b] = [...pointers.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinch.distance > 8 && distance > 8) {
-        zoom(distance / pinch.distance, pinch.center);
-      }
-      pinch = { ...pinch, distance, center: pinch.center };
+      const center = screenPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
+      if (pinch && pinch.distance > 8 && distance > 8) zoom(distance / pinch.distance, center);
+      pinch = { distance };
       return;
     }
-    if (pinch) return; // finishing a pinch: ignore the remaining single pointer
 
-    if (!drag) {
-      drag = { x: event.clientX, y: event.clientY, moved: false };
-      return;
-    }
-    const dx = event.clientX - drag.x;
-    const dy = event.clientY - drag.y;
-    if (!drag.moved && Math.hypot(dx, dy) < 3) return;
-    drag = { x: event.clientX, y: event.clientY, moved: true };
+    const dx = event.clientX - previous.x;
+    const dy = event.clientY - previous.y;
+    if (Math.hypot(dx, dy) < 1) return;
     stage.dataset.dragging = 'true';
     const imagePxPerCssPx = rendered ? rendered.view.w / rendered.width : 1;
     view = panView(view, (-dx * imagePxPerCssPx) / view.w, (-dy * imagePxPerCssPx) / view.h, bounds);
     applyTransform();
     scheduleFetch();
-    if (meta && rendered && !regionFailed) {
+    if (meta && rendered) {
       meta.textContent = `Ausschnitt ${Math.round(view.w)}×${Math.round(view.h)} von ${bounds.w}×${bounds.h} Bildpunkten`;
     }
   };
 
   function endPointer(event) {
     pointers.delete(event.pointerId);
+    if (pointers.size < 2) pinch = null;
     if (pointers.size === 0) {
-      drag = null;
-      pinch = null;
       delete stage.dataset.dragging;
       updateReadout();
       scheduleFetch();
-    } else if (pointers.size === 1) {
-      pinch = null;
-      const [only] = [...pointers.values()];
-      drag = { x: only.x, y: only.y, moved: true };
     }
   }
 
@@ -737,7 +847,8 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       }
       bounds = boundsForCanvas(width, height);
       view = viewForCanvas(width, height);
-      regionFailed = false;
+      regionsUnsupported = false;
+      regionFailures = 0;
       rendered = null;
       load();
     },
