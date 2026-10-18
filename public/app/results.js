@@ -5,6 +5,7 @@
 
 import { debounce, el, formatYearRange, qs, setStatus } from './dom.js';
 import { facets, filterRecords, recordsInBounds, sortRecords } from './records.js';
+import { STATE_DEFAULTS } from './store.js';
 
 const TYPE_LABELS = {
   map: 'Einzelkarte',
@@ -104,9 +105,24 @@ export function init(ctx) {
   yearFrom?.addEventListener('input', commitYears);
   yearTo?.addEventListener('input', commitYears);
 
-  resetEl?.addEventListener('click', () => {
-    ctx.store.update({ from: years.min, to: years.max, provider: '', type: '', q: '', selected: '', overlay: '', otime: '', viewport: '' });
-  });
+  resetEl?.addEventListener('click', resetFilters);
+
+  /** One definition for the filter reset: toolbar button and empty state.
+   *  Restores the documented initial view, clamped to what the data offers:
+   *  resetting to years.min–years.max silently revealed the 2021 overlay records. */
+  function resetFilters() {
+    ctx.store.update({
+      from: Math.max(years.min, STATE_DEFAULTS.from),
+      to: Math.min(years.max, STATE_DEFAULTS.to),
+      provider: STATE_DEFAULTS.provider,
+      type: STATE_DEFAULTS.type,
+      q: STATE_DEFAULTS.q,
+      selected: STATE_DEFAULTS.selected,
+      overlay: STATE_DEFAULTS.overlay,
+      otime: STATE_DEFAULTS.otime,
+      viewport: STATE_DEFAULTS.viewport,
+    });
+  }
 
   viewportEl?.addEventListener('change', () => ctx.store.update({ viewport: viewportEl.checked ? '1' : '' }));
   overlayOpacity?.addEventListener('input', () => {
@@ -316,7 +332,8 @@ export function init(ctx) {
         stateEl.className = 'zh-state zh-state--empty';
         stateEl.replaceChildren(
           el('span', { class: 'zh-state__title', text: 'Keine Treffer für diese Filter' }),
-          el('span', { text: 'Zeitraum erweitern, Sammlung abwählen oder das Stichwort löschen – alle Schaltflächen haben Tastaturfokus.' }),
+          el('span', { text: 'Zeitraum erweitern, Sammlung abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:' }),
+          el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: resetFilters }, ['Alle Filter zurücksetzen']),
         );
       }
     } else {
@@ -391,6 +408,7 @@ export function init(ctx) {
   let previewRow = null;
   const previewTarget = (node) => node?.closest?.('button.zh-result') ?? null;
   const announcePreview = (id) => {
+    if (previewRow === id) return; // pointerover fires per child; do not spam the bus
     previewRow = id; // remembered so a later render can be reconciled
     for (const button of listEl.querySelectorAll('button.zh-result')) button.classList.toggle('is-preview', Boolean(id) && button.dataset.recordId === id);
     ctx.bus.emit('record:preview', { id: id ?? null });
