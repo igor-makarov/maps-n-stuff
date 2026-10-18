@@ -55,12 +55,19 @@ SWISSIMAGE editions now appear in the year filter and in the results list.
 
 ### Verified
 
-- `npm test` 52/52 ✓ · `npm run build` ✓ · `npm run check` (incl.
-  `wrangler deploy --dry-run`) ✓
-- `scripts/browser-check.mjs` (maps-3's harness, 27 checks) against
-  `npx wrangler dev`: **27/27** — 55 records, 37 in the default range, Zeitreise
-  tiles render, place search returns 8 swisstopo suggestions, no console errors,
-  no failed requests.
+- `npm test` 54/54 ✓ (added overlay↔layer and skipped-entry invariants) ·
+  `npm run build` ✓ · `npm run check` (incl. `wrangler deploy --dry-run`) ✓
+- `scripts/browser-check.mjs` (the shared harness, now 36 checks) against
+  `npx wrangler dev`: **36/36** on the integrated tree (maps-1 comparison, maps-2
+  marker cards, maps-3 deep-zoom viewer) — 55 records, 37 in the default range,
+  Zeitreise tiles render, place search returns 8 swisstopo suggestions, no console
+  errors, no failed requests.
+- The swisstopo collection pages in `sources.json` were re-verified after an
+  earlier guess returned 404: Historische Kartenwerke, Digitale Siegfriedkarte,
+  Digitale Dufourkarte, SWISSIMAGE HIST and HIST 1946 all return HTTP 200 with
+  matching titles (2026-10-18).
+- NOTE: maps-2's `283e48d` supersedes my one-off browser-check unflaking patch;
+  I skipped my duplicate on rebase. Nothing else of mine was lost.
 - A targeted Siegfried/SWISSIMAGE walkthrough: picker offers all three new layers;
   1860–1910 lists 5 Siegfriedkarte records; 12 Siegfried-1900 tiles load; the
   detail view of a record shows the swisstopo WMTS preview and links to

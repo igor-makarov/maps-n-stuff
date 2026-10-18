@@ -62,6 +62,7 @@ Field mapping (nothing invented):
 | Geoservices entry point | <https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata> |
 | Digital maps | <https://www.swisstopo.admin.ch/en/digital-maps> |
 | Map viewer (service documentation) | <https://map.geo.admin.ch/> |
+| Historical series documentation (verified HTTP 200, 2026-10-18) | [Historische Kartenwerke](https://www.swisstopo.admin.ch/de/historische-kartenwerke) · [Digitale Siegfriedkarte](https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte) · [Digitale Dufourkarte](https://www.swisstopo.admin.ch/de/digitale-dufourkarte) · [SWISSIMAGE HIST](https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist) · [SWISSIMAGE HIST 1946](https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946) |
 | WMTS capabilities used | `https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml` |
 | WMTS tile template | `https://wmts.geo.admin.ch/1.0.0/<layerId>/default/<Time>/3857/<z>/<x>/<y>.<ext>` |
 | Place search | `https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=<q>&type=locations&sr=4326&limit=<n>` (CORS `*`) |

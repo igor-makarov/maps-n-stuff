@@ -57,26 +57,32 @@
         {
           "id": "zeitreise",
           "name": "Zeitreise – Kartenwerke",
-          "record": "https://www.swisstopo.admin.ch/de/zeitreise",
+          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
         },
         {
           "id": "siegfriedkarte",
           "name": "Siegfriedkarte 1:25 000 (1870–1949)",
-          "record": "https://www.swisstopo.admin.ch/de/geodata/maps/historical/siegfriedkarte",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
         },
         {
           "id": "dufourkarte",
           "name": "Dufourkarte Erstausgabe",
-          "record": "https://www.swisstopo.admin.ch/de/geodata/maps/historical/dufourkarte",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
         },
         {
           "id": "swissimage-zeitreise",
-          "name": "SWISSIMAGE Zeitreise (Luftbilder 1926–heute)",
-          "record": "https://www.swisstopo.admin.ch/de/geodata/images/swissimage-zeitreise",
+          "name": "SWISSIMAGE HIST (historische Luftbilder)",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
+        },
+        {
+          "id": "swissimage-1946",
+          "name": "SWISSIMAGE HIST 1946",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
         }
       ],
       "endpoints": {
@@ -103,5 +109,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T22:00:54.694Z"
+  "generatedAt": "2026-10-18T22:17:29.686Z"
 }

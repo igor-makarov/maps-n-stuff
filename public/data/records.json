@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:00:54.693Z",
+  "generatedAt": "2026-10-18T22:17:29.685Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
   "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated \"Kartendaten\" extent; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
