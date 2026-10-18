@@ -399,6 +399,15 @@ try {
   check('detail links to the library\'s own viewer', /^https:\/\/www\.e-rara\.ch\/[a-z]+\/content\/zoom\/\d+$/.test(viewerLink || ''), viewerLink ?? 'no viewer link');
   check('detail names the holding institution and rights', detail.institution && detail.rights, detail.text.slice(0, 120));
 
+  // The reuse links are filled from the manifest response (image service + METS).
+  // The image-service link is rendered from the harvested record immediately, but
+  // keep a bounded wait so a slow manifest can never make this check flaky.
+  await cdp
+    .waitFor(`(() => [...document.querySelectorAll('#reuse-links a')].some((a) => a.href.endsWith('/full/max/0/default.jpg')))()`, {
+      label: 'IIIF reuse link',
+      timeout: 20_000,
+    })
+    .catch(() => {});
   const reuse = await cdp.eval(`(() => {
     const citation = document.querySelector('#citation-text')?.textContent || '';
     const links = [...document.querySelectorAll('#reuse-links a')].map((a) => a.href);

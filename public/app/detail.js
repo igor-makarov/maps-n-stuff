@@ -389,13 +389,26 @@ export function init(ctx) {
             })
           : null,
       ]),
-      // Filled once the manifest is parsed: the image service and the METS record
-      // are only known then, and we do not want to invent those URLs.
+      // The harvested record already names the image service, so the full-size
+      // link is there on first paint; only the METS/OAI link needs the manifest.
       el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
-        el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Weitere Links werden geladen …' : 'Kein IIIF-Bilddienst hinterlegt – nutzen Sie den Originaldatensatz.' }),
+        record.imageService
+          ? fullImageLink(record.imageService)
+          : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Weitere Links werden geladen …' : 'Kein IIIF-Bilddienst hinterlegt – nutzen Sie den Originaldatensatz.' }),
       ]),
       el('p', { class: 'zh-hint', text: 'Bitte prüfen Sie Rechte und Zitierweise beim Anbieter; die Angaben hier stammen aus dessen Metadaten.' }),
     ]);
+  }
+
+  /** The full-resolution IIIF image link, named the same way everywhere. */
+  function fullImageLink(service) {
+    return el('a', {
+      class: 'zh-button zh-button--ghost zh-button--small',
+      href: `${service}/full/max/0/default.jpg`,
+      target: '_blank',
+      rel: 'noopener',
+      text: 'Bild in Originalgrösse öffnen (IIIF) ↗',
+    });
   }
 
   /** Add the links that need the parsed manifest (image service, METS/OAI). */
@@ -403,16 +416,12 @@ export function init(ctx) {
     const container = qs('#reuse-links');
     if (!container) return;
     const canvas = manifest?.canvases?.[page];
-    const service = canvas?.service;
+    // Fall back to the harvested `imageService` so the link never depends on a
+    // manifest request that may still be in flight (or fail).
+    const service = canvas?.service || record?.imageService;
     container.replaceChildren(
       service
-        ? el('a', {
-            class: 'zh-button zh-button--ghost zh-button--small',
-            href: `${service}/full/max/0/default.jpg`,
-            target: '_blank',
-            rel: 'noopener',
-            text: 'Bild in Originalgrösse öffnen (IIIF) ↗',
-          })
+        ? fullImageLink(service)
         : el('span', { class: 'zh-hint', text: 'Für dieses Blatt liefert der Anbieter keinen IIIF-Bilddienst.' }),
       manifest?.seeAlso
         ? el('a', {
