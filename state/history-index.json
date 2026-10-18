@@ -55,5 +55,15 @@
     "checkpointAt": "2026-10-18T21:53:52.852Z",
     "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
     "transcript": "checkpoint"
+  },
+  {
+    "id": "4-6",
+    "outcome": "timeout",
+    "runId": "39169866791",
+    "journalId": "4-6",
+    "minEntryId": 7,
+    "maxEntryId": 835,
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
