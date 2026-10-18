@@ -775,6 +775,26 @@ try {
   /* --- 7b. touch: the detail viewer must zoom and pan without a mouse ---- */
   await cdp.click('#result-list > *');
   await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'mobile IIIF viewer', timeout: 25_000 });
+  // On a phone the preview must not sit behind a stack of buttons; the workflow
+  // actions (period filter, permalink, overlay) now follow the viewer.
+  const mobileDetail = await cdp.eval(`(() => {
+    const body = document.querySelector('#detail-body');
+    const stage = document.querySelector('#viewer-stage');
+    const r = stage?.getBoundingClientRect();
+    return {
+      stageTop: r ? Math.round(r.top) : null,
+      viewport: window.innerHeight,
+      scrollTop: Math.round(body?.scrollTop ?? 0),
+      secondaryBelow: Boolean(document.querySelector('#detail-preview + .app-detail__actions--secondary')),
+      primaryButtons: document.querySelectorAll('.app-detail__actions--primary > *').length,
+      secondaryButtons: document.querySelectorAll('.app-detail__actions--secondary > *').length,
+    };
+  })()`);
+  check(
+    'mobile detail: the viewer starts within the first screen',
+    mobileDetail.stageTop !== null && mobileDetail.stageTop < mobileDetail.viewport && mobileDetail.secondaryBelow && mobileDetail.primaryButtons <= 4 && mobileDetail.secondaryButtons >= 2,
+    JSON.stringify(mobileDetail),
+  );
   // Real touch input: turn on touch emulation (synthetic `dispatchTouchEvent`
   // sequences are delivered inconsistently without it) and record what the page
   // sees, so a failure here is diagnosable instead of "nothing happened".
