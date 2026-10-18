@@ -115,6 +115,18 @@ async function checkModules() {
   }
   const worker = await readFile(abs('src/worker/index.js'), 'utf8');
   if (!/export default/.test(worker)) fail('src/worker/index.js: no default export');
+  // Workers module format: every *named* export of the entry module is treated
+  // as an extra service entrypoint. A non-function export (e.g. `export const
+  // VERSION = '1'`) makes `wrangler dev`/deploy fail with
+  //   "Incorrect type for map entry 'VERSION': … not of type 'function or
+  //   ExportedHandler'"
+  // Pure helpers therefore belong in src/worker/allowlist.js (or another module).
+  for (const match of worker.matchAll(/^\s*export\s+(?!default\b)(.{0,40})/gm)) {
+    fail(
+      `src/worker/index.js: named export "${match[1].trim()}" is not allowed in the Workers entry module – ` +
+        'move helpers to src/worker/allowlist.js (workerd treats named exports as service entrypoints)',
+    );
+  }
   for (const endpoint of ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch']) {
     if (!worker.includes(endpoint)) fail(`src/worker/index.js: endpoint ${endpoint} missing`);
   }
