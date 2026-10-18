@@ -5,7 +5,7 @@
   "branch": "zurich-maps-3",
   "defaultBranch": "main",
   "supervisor": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
-  "status": "running",
+  "status": "stopped",
   "generation": 1,
   "next": 1,
   "engine": {
@@ -39,7 +39,7 @@
   "source": "4a615f52fead82740f571a042987df3094a67007",
   "sourceRef": null,
   "createdAt": "2026-10-18T21:19:32.261Z",
-  "lastDispatchAt": "2026-10-18T21:19:33.575Z",
+  "lastDispatchAt": null,
   "checkpoint": {
     "workCommit": "4a615f52fead82740f571a042987df3094a67007",
     "generation": 1,
@@ -54,5 +54,6 @@
       "generation": 1,
       "iteration": 1
     }
-  ]
+  ],
+  "stoppedAt": "2026-10-18T21:23:09.295Z"
 }
