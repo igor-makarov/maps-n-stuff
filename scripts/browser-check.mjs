@@ -415,6 +415,74 @@ try {
   await cdp.eval(`(() => { const s = document.querySelector('#collection-filter'); s.value = ''; s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
   await sleep(500);
 
+  /* --- 2c. decade histogram (time browsing without the slider) ---------- */
+  const histogram = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    if (!host) return null;
+    const bins = [...host.querySelectorAll('button')].map((b) => ({ start: Number(b.dataset.start), end: Number(b.dataset.end), count: Number(b.dataset.count), tab: b.tabIndex }));
+    return { bins, scale: document.querySelector('#year-histogram-scale')?.textContent || '', tabbable: bins.filter((b) => b.tab === 0).length };
+  })()`);
+  const binTotal = (histogram?.bins ?? []).reduce((sum, bin) => sum + bin.count, 0);
+  check(
+    'decade histogram shows the real distribution with one tab stop',
+    Boolean(histogram) && histogram.bins.length >= 10 && binTotal > 5 && histogram.tabbable === 1 && /\d{4}/.test(histogram.scale),
+    `${histogram?.bins.length ?? 0} bins, ${binTotal} records in bins, ${histogram?.tabbable ?? 0} tab stops, scale ${histogram?.scale ?? ''}`,
+  );
+  const histogramClick = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    const bin = [...host.querySelectorAll('button')].sort((a, b) => Number(b.dataset.count) - Number(a.dataset.count))[0];
+    bin.click();
+    return { start: Number(bin.dataset.start), end: Number(bin.dataset.end), count: Number(bin.dataset.count) };
+  })()`);
+  await sleep(600);
+  const histogramState = await cdp.eval(`(() => ({
+    search: location.search,
+    rows: document.querySelectorAll('#result-list > *').length,
+    yearMax: Number(document.querySelector('#year-to')?.max || 0),
+    current: [...document.querySelectorAll('#year-histogram button')].filter((b) => b.getAttribute('aria-current') === 'true').map((b) => Number(b.dataset.start)),
+  }))()`);
+  const histogramParams = new URLSearchParams(histogramState.search);
+  check(
+    'a histogram bar filters the range and marks the active decades',
+    Number(histogramParams.get('from')) === histogramClick.start
+      && Number(histogramParams.get('to')) === Math.min(histogramClick.end, histogramState.yearMax)
+      && histogramState.rows >= histogramClick.count && histogramClick.count > 0
+      && histogramState.current.includes(histogramClick.start),
+    `bin ${histogramClick.start}–${histogramClick.end} (${histogramClick.count}) -> ${histogramState.rows} rows, ${histogramState.search}`,
+  );
+  const histogramKeys = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    const first = host.querySelector('button');
+    first.focus();
+    const start = document.activeElement?.dataset.start;
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    const end = document.activeElement?.dataset.start;
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    const home = document.activeElement?.dataset.start;
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    const next = document.activeElement?.dataset.start;
+    return { start, end, home, next, tabbable: [...host.querySelectorAll('button')].filter((b) => b.tabIndex === 0).length };
+  })()`);
+  check(
+    'histogram keyboard: End/Home/ArrowRight move between decades',
+    Boolean(histogram) && histogramKeys.start === String(histogram.bins[0].start)
+      && histogramKeys.end === String(histogram.bins.at(-1).start)
+      && histogramKeys.home === String(histogram.bins[0].start)
+      && histogramKeys.next === String(histogram.bins[1].start)
+      && histogramKeys.tabbable === 1,
+    JSON.stringify(histogramKeys),
+  );
+  // Restore the shared 1816–1850 range for the detail checks below.
+  await cdp.eval(`(() => {
+    const from = document.querySelector('#year-from');
+    const to = document.querySelector('#year-to');
+    from.value = '1816';
+    to.value = '1850';
+    from.dispatchEvent(new Event('input', { bubbles: true }));
+    to.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
+  await cdp.waitFor(`document.querySelector('#result-count')?.textContent.includes('1816–1850')`, { label: 'restored year range', timeout: 8_000 }).catch(() => {});
+
   /* --- 3. record detail + IIIF ------------------------------------------ */
   await cdp.click('#result-list > *');
   await cdp.waitFor(`document.querySelector('#detail') && !document.querySelector('#detail').hidden`, { label: 'detail panel', timeout: 15_000 });

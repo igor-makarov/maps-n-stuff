@@ -449,6 +449,7 @@ export function init(ctx) {
       if (collectionEl.value !== state.collection) collectionEl.value = state.collection;
     }
     syncFacetCounts(state);
+    updateHistogram(state);
     if (yearFrom && document.activeElement !== yearFrom) yearFrom.value = String(state.from);
     if (yearTo && document.activeElement !== yearTo) yearTo.value = String(state.to);
     if (yearFill) {
@@ -550,6 +551,92 @@ export function init(ctx) {
       }
     }
   });
+
+  /* ---------- decade histogram above the year slider ---------- */
+
+  const histogramEl = qs('#year-histogram');
+  const histogramScale = qs('#year-histogram-scale');
+  const BIN_YEARS = 10;
+  const decadeOf = (year) => Math.floor(Number(year) / BIN_YEARS) * BIN_YEARS;
+
+  /** One bin per decade that the publication years of the seed actually span. */
+  const histogramBins = (() => {
+    const counts = new Map();
+    for (let start = decadeOf(years.min); start <= decadeOf(years.max); start += BIN_YEARS) counts.set(start, 0);
+    for (const record of records) {
+      const year = Number.isFinite(record.yearStart) ? record.yearStart : record.yearEnd;
+      if (!Number.isFinite(year)) continue;
+      const key = decadeOf(Math.max(years.min, Math.min(years.max, year)));
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return [...counts.entries()].map(([start, count]) => ({ start, end: start + BIN_YEARS - 1, count }));
+  })();
+
+  function buildHistogram() {
+    if (!histogramEl) return;
+    const busiest = Math.max(1, ...histogramBins.map((bin) => bin.count));
+    histogramEl.replaceChildren(
+      ...histogramBins.map((bin) => {
+        const from = Math.max(years.min, bin.start);
+        const to = Math.min(years.max, bin.end);
+        const label = `${bin.start}–${bin.end}: ${bin.count} ${bin.count === 1 ? 'Datensatz' : 'Datensätze'}`;
+        return el(
+          'button',
+          {
+            class: 'zh-histogram__bin',
+            type: 'button',
+            tabindex: '-1',
+            'data-start': bin.start,
+            'data-end': bin.end,
+            'data-count': bin.count,
+            title: label,
+            'aria-label': `${label}. Zeitraum ${from}–${to} filtern.`,
+            onclick: () => ctx.store.update({ from, to }),
+          },
+          [
+            el('span', {
+              class: 'zh-histogram__bar',
+              style: `height:${bin.count === 0 ? 2 : Math.max(4, Math.round((bin.count / busiest) * 100))}%`,
+            }),
+          ],
+        );
+      }),
+    );
+    histogramScale?.replaceChildren(el('span', { text: String(years.min) }), el('span', { text: String(years.max) }));
+    const first = histogramEl.querySelector('button');
+    if (first) first.tabIndex = 0;
+  }
+
+  /** Mark the bins inside the current range and keep exactly one tabbable bin. */
+  function updateHistogram(state) {
+    if (!histogramEl) return;
+    const buttons = [...histogramEl.querySelectorAll('button')];
+    for (const button of buttons) {
+      button.setAttribute('aria-current', Number(button.dataset.start) <= state.to && Number(button.dataset.end) >= state.from ? 'true' : 'false');
+    }
+    if (!buttons.some((button) => button.tabIndex === 0)) {
+      const anchor = buttons.find((button) => Number(button.dataset.start) <= state.to && Number(button.dataset.end) >= state.to) ?? buttons[0];
+      if (anchor) anchor.tabIndex = 0;
+    }
+  }
+
+  // Toolbar pattern: one tab stop, arrows move between decades, Enter/Space filters.
+  histogramEl?.addEventListener('keydown', (event) => {
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+    const buttons = [...histogramEl.querySelectorAll('button')];
+    const index = buttons.indexOf(document.activeElement);
+    if (index === -1) return;
+    event.preventDefault();
+    const next =
+      event.key === 'Home' ? 0
+      : event.key === 'End' ? buttons.length - 1
+      : Math.max(0, Math.min(buttons.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1)));
+    for (const button of buttons) button.tabIndex = -1;
+    buttons[next].tabIndex = 0;
+    buttons[next].focus();
+  });
+
+  buildHistogram();
 
   setYearBounds();
   // main.js loads the data *before* it initialises the modules, so the

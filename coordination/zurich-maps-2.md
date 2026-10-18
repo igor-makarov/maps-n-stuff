@@ -14,6 +14,8 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
 | Harness: three new checks (facet with period counts, choosing a collection filters + writes `?c=`, shared `?c=` link restores it). | `scripts/browser-check.mjs` |
 | Harness race fixed: the citation/reuse check read `#reuse-links` before the manifest was parsed, so it was intermittently red (my first run this iteration: **39/41**, the two failures were that race and one pinch flake that did not reproduce). It now waits for `#reuse-links a`. | `scripts/browser-check.mjs` |
 | `tests/filters.test.mjs` (new file, 5 tests): `c` round-trip, over-long value clamped, `filterRecords` collection × time × provider, and `facets().collections` matching the committed seed exactly. | `tests/filters.test.mjs` |
+| **Decade histogram above the year slider** (the time-browsing idea from the previous iteration): one bar per decade that the seed spans, height = records in that decade, tinted columns for the decades inside the current range. Bars are real buttons in a toolbar pattern — one tab stop, `←`/`→`/`Home`/`End` move, `Enter`/`Space` filters, `aria-label` carries the count. | `results.js`, `index.html`, `app.css` (maps-1's file, block appended at the end) |
+| Harness: three histogram checks (bins + counts, click filters + honours the data's last year, keyboard roving focus); the touch pinch/drag checks now **wait for the new IIIF region request** instead of a fixed 2.2 s sleep, which is what made the pinch check intermittently red (the viewer keeps the old picture until the new region has loaded). | `scripts/browser-check.mjs` |
 
 ### What the facet does (verified, not just written)
 
@@ -27,30 +29,41 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
   working reset (which now also clears `collection`).
 - Checked in headless Chromium (`--dump-dom` probes) and by the harness; `npm test`
   83/83, `npm run check` (incl. `wrangler deploy --dry-run`) green.
+- Histogram: 22 bins covering exactly the 55 committed records; clicking the
+  busiest bin (1850–1859, 20 records) writes `?from=1850&to=1859` and renders 20
+  rows; `End`/`Home`/`ArrowRight` move focus between decades; a bar for the last
+  decade is clamped to the data's last publication year (2021), never past it.
+- **Harness: 47/47** on the integrated main against `npx wrangler dev` (run of
+  2026-10-18 ~23:1x UTC), including the collection, histogram, citation, pinch
+  and no-console-error checks.
 
 ## Requests / messages
 
-- **→ maps-1**: two additive changes in your files. `store.js`: `collection: ''` in
+- **→ maps-1**: three additive changes in your files. `store.js`: `collection: ''` in
   `STATE_DEFAULTS`, `collection: 'c'` in `PARAM`, the key added to `TYPES.string`
   and a 120-char clamp in `sanitise`. `public/index.html`: a
-  `<select id="collection-filter">` plus `<p id="facet-hint">` inside the existing
-  "Sammlung / Anbieter" panel. Both are additive; revert freely if you disagree.
+  `<select id="collection-filter">`, a `<p id="facet-hint">` and the histogram
+  container/hint inside the "Zeitraum" fieldset. `public/styles/app.css`: one
+  `.zh-histogram*` block appended at the very end. All additive; revert freely if
+  you disagree.
 - **→ maps-0**: your `collection` field and `facets().collections` are now the
   facet the UI uses; nothing else from the data layer was needed. If a refresh
   changes the five series, the UI follows automatically (option list is built from
   the facets, not hard-coded).
-- **→ maps-3**: two harness changes in your file: three new collection checks and
-  the `#reuse-links` wait above. The pinch check failed once in my first run
-  (region URL unchanged) and passed in the second; I could not reproduce it, so I
-  left it alone — worth a look if it shows up again.
+- **→ maps-3**: harness changes in your file: three collection checks, three
+  histogram checks, and the touch checks now poll for the new IIIF region (the
+  fixed `sleep(2200)` was the real cause of the intermittent pinch failure — the
+  viewer swaps the image only after the new region has loaded). Your reuse-link
+  race fix landed while I was rebasing; I kept yours and dropped my duplicate.
 - **→ all**: `main` is green with the collection filter; the shared gate is
   `npm run check` + `node scripts/browser-check.mjs` against `npx wrangler dev`.
 
 ## Next (my area, if the loop continues)
 
-- Time histogram above the year slider (distribution of the current result set,
-  clickable bins, roving tabindex) — still open from the previous iteration.
-- Re-check the preview card at 320 px and its reading order.
+- Cluster map markers only if the corpus grows well beyond ~200 records.
+- Preview card at 320 px and its reading order (still open).
+- Optional: brush-select a range on the histogram (drag), if it stays keyboard
+  accessible; a plain per-decade click is honest and simpler today.
 
 ---
 

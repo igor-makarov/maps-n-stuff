@@ -942,3 +942,65 @@ body.app-compare--open {
     flex: 0 0 auto;
   }
 }
+
+/* ---------- year histogram (module: public/app/results.js, maps-2) ----
+   Bars are real buttons (one per decade) in a toolbar pattern: Tab reaches the
+   chart once, ArrowLeft/Right/Home/End move between decades, Enter filters.
+   Height is the share of the busiest decade, so 0-record decades keep a 2px
+   baseline and stay focusable. */
+.zh-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  block-size: 56px;
+  margin-block: var(--zh-size-tiny) calc(var(--zh-size-tiny) / 2);
+  padding-block-end: 2px;
+  border-block-end: 1px solid var(--zh-color-border-strong);
+}
+
+.zh-histogram__bin {
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-end;
+  min-inline-size: 6px;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  /* The tinted column is what makes the selected decades visible even when the
+     bar of that decade is only 2 px tall (0–2 records). */
+  background: none;
+  cursor: pointer;
+}
+
+.zh-histogram__bin[aria-current='true'] {
+  background: var(--zh-color-bg);
+}
+
+.zh-histogram__bar {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 2px;
+  background: var(--zh-color-accent);
+  opacity: 0.5;
+  border-radius: var(--zh-radius) var(--zh-radius) 0 0;
+  transition: opacity 120ms ease-out;
+}
+
+.zh-histogram__bin:hover .zh-histogram__bar,
+.zh-histogram__bin:focus-visible .zh-histogram__bar {
+  opacity: 1;
+}
+
+.zh-histogram__bin[aria-current='true'] .zh-histogram__bar {
+  opacity: 1;
+  background: var(--zh-color-accent-dark);
+}
+
+.zh-histogram__scale {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--zh-size-tiny);
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-small);
+  font-variant-numeric: tabular-nums;
+}
