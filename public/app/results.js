@@ -271,6 +271,7 @@ export function init(ctx) {
         class: 'zh-result',
         type: 'button',
         id: `result-${record.id.replace(/[^\w-]/g, '_')}`,
+        'data-record-id': record.id,
         'aria-current': ctx.store.getState().selected === record.id ? 'true' : 'false',
         onclick: () => select(record),
       },
@@ -323,6 +324,12 @@ export function init(ctx) {
       listEl.replaceChildren(...filtered.map((record, index) => renderItem(record, index)));
     }
     updateCount(filtered);
+    // A hover/focus preview survives a re-render of the list.
+    if (previewRow) {
+      for (const button of listEl.querySelectorAll('button.zh-result')) {
+        if (button.dataset.recordId === previewRow) button.classList.add('is-preview');
+      }
+    }
   }, 40);
 
   function updateCount(filtered) {
@@ -378,6 +385,36 @@ export function init(ctx) {
     ctx.bus.emit('records:filtered', { records: filtered, state });
     render(filtered);
   }
+
+  // Cross-highlighting with the map: hovering or focusing a row highlights its
+  // marker, and a hovered marker highlights the row (bus event from map.js).
+  let previewRow = null;
+  const previewTarget = (node) => node?.closest?.('button.zh-result') ?? null;
+  const announcePreview = (id) => {
+    previewRow = id; // remembered so a later render can be reconciled
+    for (const button of listEl.querySelectorAll('button.zh-result')) button.classList.toggle('is-preview', Boolean(id) && button.dataset.recordId === id);
+    ctx.bus.emit('record:preview', { id: id ?? null });
+  };
+  listEl.addEventListener('pointerover', (event) => {
+    const button = previewTarget(event.target);
+    if (button) announcePreview(button.dataset.recordId);
+  });
+  listEl.addEventListener('pointerout', (event) => {
+    if (event.relatedTarget && listEl.contains(event.relatedTarget)) return;
+    announcePreview(null);
+  });
+  listEl.addEventListener('focusin', (event) => {
+    const button = previewTarget(event.target);
+    if (button) announcePreview(button.dataset.recordId);
+  });
+  listEl.addEventListener('focusout', (event) => {
+    if (event.relatedTarget && listEl.contains(event.relatedTarget)) return;
+    announcePreview(null);
+  });
+  ctx.bus.on('record:preview', ({ id }) => {
+    // Came from the map: reflect it in the list without echoing the event back.
+    for (const button of listEl.querySelectorAll('button.zh-result')) button.classList.toggle('is-preview', Boolean(id) && button.dataset.recordId === id);
+  });
 
   // Keyboard navigation inside the list (the map is optional; the list is not).
   listEl.addEventListener('keydown', (event) => {

@@ -9,9 +9,13 @@
  *
  * Keyboard: the container is focusable; arrows pan, +/- zoom, Home = Zürich,
  * End = fit results. The result list is the equivalent accessible interface.
+ *
+ * Coordination with the result list: hovering/focusing a marker shows a small
+ * preview card and emits `record:preview`, so the matching row in the list
+ * highlights (and the other way round) — the OldMapsOnline list/map behaviour.
  */
 
-import { debounce, el, qs } from './dom.js';
+import { debounce, el, formatYearRange, qs } from './dom.js';
 import { recordCenter } from './records.js';
 
 const TILE = 256;
@@ -71,7 +75,7 @@ export function init(ctx) {
   container.setAttribute('tabindex', '0');
   container.setAttribute('role', 'region');
   container.setAttribute('aria-roledescription', 'Interaktive Karte');
-  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen');
+  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen, Home zeigt Zürich, Ende passt alle Treffer ein');
 
   const baseLayer = el('div', { class: 'map-layer map-layer--base', 'aria-hidden': 'true' });
   const overlayLayer = el('div', { class: 'map-layer map-layer--overlay', 'aria-hidden': 'true' });
@@ -82,19 +86,73 @@ export function init(ctx) {
   const controls = el('div', { class: 'map-controls' }, [
     el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Hineinzoomen', 'aria-label': 'Hineinzoomen', onclick: () => zoomBy(1) }, ['+']),
     el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Herauszoomen', 'aria-label': 'Herauszoomen', onclick: () => zoomBy(-1) }, ['−']),
+    el(
+      'button',
+      {
+        class: 'zh-button zh-button--small',
+        type: 'button',
+        title: 'Alle Treffer einpassen',
+        'aria-label': 'Alle Treffer einpassen',
+        onclick: () => fitBounds(resultsBounds(), { maxZoom: 12 }),
+      },
+      ['⤢'],
+    ),
   ]);
 
-  container.replaceChildren(baseLayer, overlayLayer, shapeLayer, markerLayer, controls, badge, live);
+  // Visual hover/focus card for a marker. Decorative: the marker's accessible
+  // name and the result list already carry the same information.
+  const preview = el('div', { class: 'map-preview', 'aria-hidden': 'true', hidden: true });
+
+  container.replaceChildren(baseLayer, overlayLayer, shapeLayer, markerLayer, controls, badge, preview, live);
 
   const cache = new Map(); // tile key -> <img>
   const markers = new Map(); // record id -> <button>
   let lastOverlayKey = ''; // layer + edition currently displayed
+  let previewId = ''; // record id whose preview card is visible
+
+  const PREVIEW_WIDTH = 248;
+
+  function hidePreview() {
+    if (preview.hidden) return;
+    preview.hidden = true;
+    preview.replaceChildren();
+    previewId = '';
+    for (const [, marker] of markers) marker.classList.remove('is-preview');
+  }
+
+  function showPreview(record, marker) {
+    if (!record) return;
+    previewId = record.id;
+    preview.replaceChildren(
+      record.thumbnail
+        ? el('img', { class: 'map-preview__thumb', src: record.thumbnail, alt: '', loading: 'lazy', decoding: 'async' })
+        : el('span', { class: 'map-preview__thumb map-preview__thumb--missing', text: '🗺', 'aria-hidden': 'true' }),
+      el('div', { class: 'map-preview__body' }, [
+        el('span', { class: 'map-preview__year', text: formatYearRange(record.yearStart, record.yearEnd) }),
+        el('span', { class: 'map-preview__title', text: record.title }),
+        el('span', { class: 'map-preview__meta', text: record.institution || '' }),
+      ]),
+    );
+    // Anchor above the marker, clamped to the map, flipped below if it would
+    // leave the top edge. Measure only after the width is final.
+    const mapRect = container.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    const width = Math.min(PREVIEW_WIDTH, Math.max(160, mapRect.width - 16));
+    const left = Math.max(8, Math.min(mapRect.width - width - 8, markerRect.left - mapRect.left + markerRect.width / 2 - width / 2));
+    preview.style.width = `${width}px`;
+    preview.hidden = false;
+    const topAbove = markerRect.top - mapRect.top - preview.offsetHeight - 12;
+    preview.style.left = `${Math.round(left)}px`;
+    preview.style.top = `${Math.round(topAbove >= 8 ? topAbove : markerRect.bottom - mapRect.top + 12)}px`;
+    for (const [id, node] of markers) node.classList.toggle('is-preview', id === record.id);
+  }
 
   function templateFor(layer, time) {
     return layer.urlTemplate.replace('{Time}', encodeURIComponent(time ?? layer.timeValues?.[0] ?? 'current'));
   }
 
   function render() {
+    hidePreview();
     const w = container.clientWidth || 640;
     const h = container.clientHeight || 420;
     const z = state.zoom;
@@ -191,22 +249,49 @@ export function init(ctx) {
           class: 'map-marker',
           type: 'button',
           onclick: () => {
+            hidePreview();
+            ctx.bus.emit('record:preview', { id: null });
             ctx.store.update({ selected: record.id });
             ctx.bus.emit('record:selected', { record, source: 'map' });
           },
         });
+        // Hover/focus: preview card + cross-highlight in the result list. The
+        // list emits the same event, so both directions meet in the bus.
+        marker.addEventListener('pointerenter', () => {
+          showPreview(record, marker);
+          ctx.bus.emit('record:preview', { id: record.id });
+        });
+        marker.addEventListener('pointerleave', () => {
+          // Keep the card for a keyboard user who merely moved the mouse away.
+          if (document.activeElement === marker) return;
+          hidePreview();
+          ctx.bus.emit('record:preview', { id: null });
+        });
+        marker.addEventListener('focus', () => {
+          showPreview(record, marker);
+          ctx.bus.emit('record:preview', { id: record.id });
+        });
+        marker.addEventListener('blur', () => {
+          if (marker.matches(':hover')) return;
+          hidePreview();
+          ctx.bus.emit('record:preview', { id: null });
+        });
         markers.set(record.id, marker);
         markerLayer.append(marker);
       }
+      const selected = state.selected === record.id;
       marker.textContent = String(index + 1);
       marker.dataset.id = record.id;
       marker.title = record.title;
       marker.setAttribute('aria-label', `${index + 1}. ${record.title} – Details öffnen`);
-      marker.classList.toggle('is-selected', state.selected === record.id);
-      marker.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      marker.classList.toggle('is-selected', selected);
+      // Inline transform wins over the class rule, so the selected scale has to
+      // be part of the inline transform.
+      marker.style.transform = `translate3d(${x}px, ${y}px, 0)${selected ? ' scale(1.25)' : ''}`;
     });
     for (const [id, marker] of markers) {
       if (!wanted.has(id)) {
+        if (id === previewId) hidePreview();
         marker.remove();
         markers.delete(id);
       }
@@ -482,6 +567,10 @@ export function init(ctx) {
   ctx.bus.on('record:deselected', () => {
     state.selected = '';
     render();
+  });
+  // Hovering/focusing a row in the result list highlights the matching marker.
+  ctx.bus.on('record:preview', ({ id }) => {
+    for (const [markerId, marker] of markers) marker.classList.toggle('is-preview', Boolean(id) && markerId === id);
   });
   ctx.bus.on('place:selected', ({ lat, lon, zoom }) => {
     state.lat = lat;

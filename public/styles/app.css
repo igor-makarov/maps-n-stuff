@@ -220,6 +220,13 @@
   background: var(--zh-blue-soft);
 }
 
+/* Cross-highlight while the matching marker is hovered/focused on the map. */
+.zh-result.is-preview {
+  border-color: var(--zh-blue);
+  border-left-color: var(--zh-blue);
+  background: var(--zh-blue-soft);
+}
+
 .zh-result__thumb {
   width: 84px;
   height: 84px;
@@ -364,13 +371,80 @@
   background: var(--zh-blue);
   border-color: var(--zh-black);
   color: var(--zh-white);
-  transform: scale(1.25);
   z-index: 3;
+  /* The 1.25 scale is part of the inline translate3d() in map.js – a transform
+     here would be overridden by that inline style. */
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-blue);
+}
+
+.map-marker.is-preview {
+  border-color: var(--zh-blue);
+  background: var(--zh-blue-soft);
+  z-index: 4;
 }
 
 .map-marker:focus-visible {
   outline: 3px solid var(--zh-black);
   outline-offset: 1px;
+}
+
+/* Hover/focus card for a marker (decorative, aria-hidden). */
+.map-preview {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--zh-size-mini);
+  padding: var(--zh-size-mini);
+  border: 2px solid var(--zh-black);
+  background: var(--zh-white);
+  box-shadow: var(--zh-shadow-card);
+  pointer-events: none;
+}
+
+.map-preview[hidden] {
+  display: none;
+}
+
+.map-preview__thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid var(--zh-color-border);
+  background: var(--zh-black-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--zh-font-large);
+}
+
+.map-preview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.map-preview__year {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+}
+
+.map-preview__title {
+  font-size: var(--zh-font-small);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.map-preview__meta {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-black-60);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .map-badge {
