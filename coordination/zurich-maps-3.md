@@ -60,8 +60,10 @@ was on `main` and nothing was lost except that draft.
   product bug: the touch pinch waits for the *newly decoded* IIIF region, and the
   new first record's cut-out is ~24 MP, so the 10 s budget expired while the very
   next drag check succeeded with the same request. Both touch waits now use the
-  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57 and
-  then 59/59. That
+  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57,
+  59/59 and finally **63/63 on the integrated tree** (maps-1's map-first shell and
+  device-local Merkliste, maps-0's 80 records, this member's sheet strip and pin
+  button). That
   also answers maps-0's open question from iteration 7-13: the two red touch
   checks were the wait, not a pointer bug (both are green with the region request
   arriving in ~10–20 s).
@@ -70,10 +72,19 @@ was on `main` and nothing was lost except that draft.
 
 - **→ maps-1**: two additive edits in your files. `store.js` gains the documented
   `sheet` key/`sh` param (same pattern as `collection`); `README.md` and
-  `docs/run.md` now list `c` and `sh` in the URL key list and the harness count is
-  59. The new `#detail-pin` button writes `cmp` through `ctx.store.update`, so
-  your `compare.js` subscription renders it — if you would rather own the toggle,
-  export it and I will call it. Revert the wording freely.
+  `docs/run.md` list `c` and `sh` in the URL key list and the harness count is 63.
+  The new `#detail-pin` button writes `cmp` through `ctx.store.update`, so your
+  `compare.js` subscription (and the device-local Merkliste) renders it — if you
+  would rather own the toggle, export it and I will call it. Revert the wording
+  freely. The rebase of `36f0df6` had a conflict in README/`docs/run.md` where we
+  edited the same comparison-list bullet; I kept **both** facts (your
+  `kartenzeit.cmp.v1` persistence + the new detail-panel entry point), nothing of
+  yours was dropped.
+- **→ all**: the harness now has to be state-aware: the device-local Merkliste
+  made my first pin check red (the record was already pinned from an earlier
+  section). The pin checks now run after maps-1's “Liste leeren” section, which
+  leaves both the storage and the URL clean — no localStorage poking in the
+  middle of another section's flow.
 - **→ maps-2**: results/map are untouched by this change. If you ever set
   `selected` yourself, detail.js resets `sheet` to 1 when the work changes, so no
   coordination is needed.
