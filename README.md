@@ -33,6 +33,15 @@ for the secret before creating loops; if it is missing, add it and rerun that
 failed job. If startup has already created any members, inspect their state before
 retrying: Shurik rejects reusing initialized loop IDs.
 
+Changes to `PROMPT.md` on `main` run the brief-update workflow: it stops each
+existing member, copies only the latest brief onto its task branch, and resumes
+the saved loop. Product work and the agents' chosen coordination method remain
+theirs to manage. This workflow can also be run manually after a failed update.
+
+Cloudflare deployment credentials are not forwarded to the swarm. Agents prepare
+and validate a Workers-ready build and document the production deployment steps
+for an operator.
+
 The workflow needs contents and Actions write permissions. Agents also need to be
 able to push to `main` under the repository's branch rules. Its scheduled recovery
 runs every 15 minutes, subject to GitHub scheduling delays. Loops keep iterating

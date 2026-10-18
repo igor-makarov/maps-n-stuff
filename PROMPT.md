@@ -99,10 +99,11 @@ https://developers.cloudflare.com/workers/static-assets/ . Include a valid Wrang
 appropriate asset/SPA routing, and documented local preview, build, and
 `wrangler deploy` commands. Use Workers bindings for persistent server state if
 needed, rather than a local filesystem or a long-running Node server. Keep
-Cloudflare credentials and other secrets out of the repository. Deploy to the
-configured Cloudflare account when credentials are available; otherwise preserve
-a deployment-ready build and document the exact missing configuration. Do not
-substitute Cloudflare Pages or another hosting platform.
+Cloudflare credentials and other secrets out of the repository. This swarm is not
+configured with Cloudflare deployment credentials: produce a deployment-ready
+build, validate locally, and document the exact deployment steps and missing
+configuration for an operator. Do not obtain or expose deployment credentials.
+Use Cloudflare Workers as the deployment target.
 
 Prioritize a complete vertical slice early, then expand and polish it:
 
