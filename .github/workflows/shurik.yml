@@ -41,7 +41,7 @@ on:
         description: Idle seconds between iterations; defaults to 0 on start
         type: string
       checkpoint-seconds:
-        description: 0 disables periodic checkpoints; session-start and iteration-end saves remain
+        description: 0 disables all automatic task commits; existing commits and session state still publish
         type: string
       checkpoint-paths:
         description: JSON array of ignored task paths to retain; defaults to []

@@ -63,20 +63,22 @@ keeps the metadata, the provider links and an explanation).
 - Action: [`igor-makarov/shurik@v2`](https://github.com/igor-makarov/shurik)
 - Model: `opencode-go/deepseek-v4.1-flash`, reasoning `max`
 - Members: `zurich-maps-0`, `zurich-maps-1`, `zurich-maps-2`, `zurich-maps-3`
-- Work per iteration: 1,800 seconds; periodic checkpoints disabled (`0`)
+- Work per iteration: 1,800 seconds; all automatic task commits disabled (`0`)
 - Wait between iterations: zero; no overall deadline
 - Delivery: `main`, with draft PR creation disabled
 
-The official `@v2` release supports `checkpoint-seconds: 0`; the workflow now uses
-that supported setting directly.
+The official `@v2` release supports `checkpoint-seconds: 0` to disable all automatic
+task commits, including initialization, iteration start, periodic checkpoints,
+and iteration end. The workflow uses this supported setting directly.
 
 Shurik itself gives each member an independent task branch and
 `shurik-control/<member-id>` branch. The brief explicitly tells agents to coordinate
-and make their own product commits and pushes to `main`. Session-start and
-iteration-end saves of the task branch and session/control state remain enabled.
-Agents must preserve their assigned task branch's published history so these
-boundary pushes can fast-forward. Unpushed code and in-progress session history
-can be lost on an abrupt runner interruption.
+and make their own product commits and pushes to `main`. Shurik still persists
+session/control state and publishes existing agent-created commits to the assigned
+task branch; it never stages or commits unfinished task edits in this mode.
+Agents must preserve their task branch's published history so these pushes can
+fast-forward. Uncommitted edits are lost between runners, and an abrupt
+interruption can also lose unpublished commits and session history.
 Shurik does not provide built-in inter-agent messaging or automatic integration.
 
 ## Initial launch
@@ -98,7 +100,7 @@ Changes to `PROMPT.md` on `main` run the brief-update workflow: it stops each
 existing member, copies only the latest brief onto its task branch, and resumes
 the saved loop. Product work and the agents' chosen coordination method remain
 theirs to manage. This workflow can also be run manually after a failed update.
-It resumes all four with periodic checkpoints disabled.
+It resumes all four with all automatic task commits disabled.
 
 Cloudflare deployment credentials are not forwarded to the swarm. Agents prepare
 and validate the application source and Workers configuration, and document the

@@ -21,12 +21,16 @@ avoid duplicating work or undoing each other's contributions.
 
 **Commit and push completed, validated changes directly to `main`.** The user has
 explicitly authorized all four agents to deliver to `main`; do not stop at a draft
-PR or an isolated task branch. **Periodic checkpoints are disabled
+PR or an isolated task branch. **All automatic task commits/checkpoints are disabled
 (`checkpoint-seconds: 0`). You are responsible for all product commits and pushes.**
-Save meaningful progress frequently. The official Shurik v2 release still saves
-at session start and iteration end, including its assigned task branch and session
-state. Keep the supervisor's working checkout descending from that task branch's
-published history at iteration boundaries, so those required saves can fast-forward.
+Save meaningful progress frequently. Official Shurik v2 never stages or commits
+unfinished task edits in this mode, including at initialization, iteration start,
+and iteration end. It still persists session/control state and publishes existing
+agent-created commits to the assigned task branch. Keep the supervisor's working
+checkout descending from that task branch's published history at iteration
+boundaries, so those existing-commit pushes can fast-forward. Uncommitted edits
+do not survive the next runner; an abrupt interruption can also lose unpublished
+commits and session history.
 The workflow uses the official `igor-makarov/shurik@v2` lifecycle.
 Choose how to satisfy this while coordinating and delivering to `main` yourselves;
 do not reset or rewrite published task history. Preserve Shurik's lifecycle and
