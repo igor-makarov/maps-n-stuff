@@ -1,3 +1,5 @@
+import { ALLOWLIST, USER_AGENT, VERSION, isAllowed } from './allowlist.js';
+
 /**
  * Request handler for the Zurich maps Workers site.
  *
@@ -16,32 +18,11 @@
  * No credentials are required or read by this Worker.
  */
 
-const VERSION = '0.1.0';
-
-/** Hosts the proxy may talk to, and the path prefixes allowed per host. */
-const ALLOWLIST = [
-  { host: 'api3.geo.admin.ch', prefixes: ['/rest/services/api/SearchServer'] },
-  { host: 'www.e-rara.ch', prefixes: ['/i3f/', '/zuz/oai', '/oai'] },
-  { host: 'wmts.geo.admin.ch', prefixes: ['/1.0.0/', '/EPSG/'] },
-  { host: 'data.geo.admin.ch', prefixes: ['/'] },
-];
-
-const USER_AGENT =
-  'zurich-maps/0.1 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
-
-
 function json(body, init = {}) {
   return new Response(JSON.stringify(body, null, 1), {
     ...init,
     headers: { 'content-type': 'application/json; charset=utf-8', ...(init.headers || {}) },
   });
-}
-
-function isAllowed(target) {
-  if (target.protocol !== 'https:') return false;
-  const rule = ALLOWLIST.find((r) => r.host === target.hostname);
-  if (!rule) return false;
-  return rule.prefixes.some((p) => target.pathname.startsWith(p));
 }
 
 async function upstream(url, { accept = '*/*', timeoutMs = 8000 } = {}) {
@@ -114,7 +95,8 @@ async function searchPlaces(request, ctx) {
           lat: typeof a.lat === 'number' ? a.lat : null,
           lon: typeof a.lon === 'number' ? a.lon : null,
           layerBodId: a.layerBodId || null,
-          zoom: a.zoomlevel ?? null,
+          // upstream `zoomlevel` is a bitfield/uint32 for some origins; only pass sane values on
+          zoom: Number.isFinite(a.zoomlevel) && a.zoomlevel > 0 && a.zoomlevel <= 20 ? a.zoomlevel : null,
           bbox: box ? { west: Number(box[1]), south: Number(box[2]), east: Number(box[3]), north: Number(box[4]) } : null,
         };
       });

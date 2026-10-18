@@ -4,7 +4,7 @@
  */
 
 import { debounce, el, formatYearRange, qs, setStatus } from './dom.js';
-import { facets, filterRecords, sortRecords } from './records.js';
+import { facets, filterRecords, recordsInBounds, sortRecords } from './records.js';
 
 const TYPE_LABELS = {
   map: 'Einzelkarte',
@@ -31,6 +31,11 @@ export function init(ctx) {
   const overlayTimeWrap = qs('#overlay-time-field');
   const overlayTime = qs('#overlay-time');
   const overlayTimeOut = qs('#overlay-time-output');
+  const overlayOpacity = qs('#overlay-opacity');
+  const overlayOpacityOut = qs('#overlay-opacity-output');
+  const overlayOpacityField = qs('#overlay-opacity-field');
+  const viewportEl = qs('#viewport-filter');
+  const viewportCount = qs('#viewport-count');
   const overlayNote = qs('#overlay-note');
   const resetEl = qs('#reset-filters');
 
@@ -40,6 +45,7 @@ export function init(ctx) {
   const years = ctx.data.years;
   const { providers, types } = facets(records);
   let lastFiltered = [];
+  let viewBounds = null;
 
   /* ---------- controls ---------- */
 
@@ -94,13 +100,26 @@ export function init(ctx) {
   yearTo?.addEventListener('input', () => commitYears({ to: clampYear(yearTo.value, years) }));
 
   resetEl?.addEventListener('click', () => {
-    ctx.store.update({ from: years.min, to: years.max, provider: '', type: '', q: '', selected: '', overlay: '', otime: '' });
+    ctx.store.update({ from: years.min, to: years.max, provider: '', type: '', q: '', selected: '', overlay: '', otime: '', viewport: '' });
+  });
+
+  viewportEl?.addEventListener('change', () => ctx.store.update({ viewport: viewportEl.checked ? '1' : '' }));
+  overlayOpacity?.addEventListener('input', () => {
+    const percent = Number(overlayOpacity.value);
+    if (overlayOpacityOut) overlayOpacityOut.textContent = `${percent} %`;
+    ctx.bus.emit('overlay:opacity', { opacity: percent / 100 });
   });
 
   /* ---------- comparison layers (swisstopo WMTS) ---------- */
 
-  const layers = ctx.data.overlays ?? [];
+  const layers = (ctx.data.overlays ?? []).filter(
+    // "…swissimage-product.metadata" is a tile-pyramid division layer, not map imagery.
+    (layer) => !/\.metadata$/.test(layer.id),
+  );
   const isHistorical = (layer) => /zeitreihen|hiks/.test(layer.id);
+
+  /** Editions ascending: slider left = oldest, and the default is a historical one. */
+  const editionsOf = (layer) => [...(layer?.timeValues ?? [])].sort();
   if (overlayEl && layers.length > 0) {
     const historical = layers.filter(isHistorical).sort((a, b) => a.title.localeCompare(b.title, 'de'));
     const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'de'));
@@ -111,8 +130,9 @@ export function init(ctx) {
     );
     overlayEl.addEventListener('change', () => {
       const layer = layers.find((l) => l.id === overlayEl.value) ?? null;
-      ctx.store.update({ overlay: layer?.id ?? '', otime: layer?.timeValues?.[0] ?? '' });
-      applyOverlay(layer, layer?.timeValues?.[0]);
+      const first = editionsOf(layer)[0] ?? '';
+      ctx.store.update({ overlay: layer?.id ?? '', otime: first });
+      applyOverlay(layer, first);
     });
   }
 
@@ -120,10 +140,13 @@ export function init(ctx) {
     if (!layer) {
       ctx.bus.emit('overlay:changed', { layer: null, time: null });
       if (overlayTimeWrap) overlayTimeWrap.hidden = true;
+      if (overlayOpacityField) overlayOpacityField.hidden = true;
       if (overlayNote) overlayNote.textContent = 'Georeferenzierte Kartenwerke von swisstopo, direkt als Kachelebene über die moderne Grundkarte gelegt.';
       return;
     }
-    const values = layer.timeValues ?? [];
+    if (overlayOpacityField) overlayOpacityField.hidden = false;
+    overlayOpacity?.dispatchEvent(new Event('input'));
+    const values = editionsOf(layer);
     if (overlayTimeWrap && overlayTime && values.length > 1) {
       overlayTimeWrap.hidden = false;
       overlayTime.min = '0';
@@ -147,11 +170,11 @@ export function init(ctx) {
     overlayTimeOut.textContent = value ? `${formatTime(value)} (${layer.id})` : '';
   }
 
-  overlayTime?.addEventListener(
+    overlayTime?.addEventListener(
     'input',
     debounce(() => {
       const layer = layers.find((l) => l.id === ctx.store.getState().overlay);
-      const values = layer?.timeValues ?? [];
+      const values = editionsOf(layer);
       const value = values[Number(overlayTime.value)];
       updateTimeOutput(layer, value);
       ctx.store.update({ otime: value ?? '' });
@@ -199,7 +222,7 @@ export function init(ctx) {
         el('span', { class: 'zh-result__body' }, [
           el('span', { class: 'zh-result__meta' }, [
             el('span', { class: 'zh-result__year', text: formatYearRange(record.yearStart, record.yearEnd) }),
-            el('span', { text: showIndex(index) }),
+            el('span', { text: `Nr. ${index + 1}` }),
             record.type ? el('span', { class: 'zh-tag', text: TYPE_LABELS[record.type] ?? record.type }) : null,
           ]),
           el('span', { class: 'zh-result__title', text: record.title }),
@@ -217,7 +240,7 @@ export function init(ctx) {
     return el('li', {}, [button]);
   }
 
-  const showIndex = (index) => String(index + 1);
+  const showIndex = (index) => `Nr. ${index + 1}`;
 
   function select(record) {
     ctx.store.update({ selected: record.id });
@@ -251,13 +274,28 @@ export function init(ctx) {
     if (state.provider) parts.push(state.provider);
     if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
     if (state.q) parts.push(`„${state.q}“`);
+    if (state.viewport === '1') parts.push('im Kartenausschnitt');
     countEl.textContent = parts.join(' · ');
     if (liveEl) liveEl.textContent = `${filtered.length} Treffer. ${filtered[0] ? `Erster Treffer: ${filtered[0].title}.` : ''}`;
   }
 
   function apply() {
     const state = ctx.store.getState();
-    const filtered = sortRecords(filterRecords(state, records), state.sort);
+    let filtered = sortRecords(filterRecords(state, records), state.sort);
+    let outsideCount = 0;
+    if (state.viewport === '1') {
+      const allInBounds = new Set(recordsInBounds(filtered, viewBounds).map((r) => r.id));
+      outsideCount = filtered.length - allInBounds.size;
+      filtered = filtered.filter((record) => allInBounds.has(record.id));
+    }
+    if (viewportEl && viewportEl.checked !== (state.viewport === '1')) viewportEl.checked = state.viewport === '1';
+    if (viewportCount) {
+      viewportCount.textContent =
+        state.viewport === '1'                 ? outsideCount > 0
+            ? `${outsideCount} weitere Treffer liegen ausserhalb des Ausschnitts.`
+            : 'Alle Treffer liegen im Ausschnitt.'
+          : '';
+    }
     if (textEl && textEl.value !== state.q) textEl.value = state.q;
     if (sortEl && sortEl.value !== state.sort) sortEl.value = state.sort;
     if (yearFrom && document.activeElement !== yearFrom) yearFrom.value = String(state.from);
@@ -272,7 +310,7 @@ export function init(ctx) {
     if (overlayEl && overlayEl.value !== state.overlay) {
       overlayEl.value = state.overlay;
       const layer = layers.find((l) => l.id === state.overlay) ?? null;
-      applyOverlay(layer, state.otime || layer?.timeValues?.[0]);
+      applyOverlay(layer, state.otime || editionsOf(layer)[0]);
     }
     for (const input of document.querySelectorAll('#provider-filters input')) input.checked = input.value === state.provider;
     for (const input of document.querySelectorAll('#type-filters input')) input.checked = input.value === state.type;
@@ -301,8 +339,12 @@ export function init(ctx) {
   });
 
   ctx.bus.on('records:loaded', () => apply());
+  ctx.bus.on('map:moved', ({ bounds }) => {
+    viewBounds = bounds;
+    if (ctx.store.getState().viewport === '1') apply();
+  });
   ctx.store.subscribe((_, changed) => {
-    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'q', 'sort', 'overlay', 'otime'].includes(key))) apply();
+    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
     else if (changed.includes('selected')) {
       for (const item of listEl.children) {
         const button = item.querySelector('button');

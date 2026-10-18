@@ -18,6 +18,41 @@
   margin-bottom: var(--zh-size-small-regular);
 }
 
+/* Facts strip: cantonal “chapter number” rhythm — value first, label under it. */
+.zh-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-large);
+  margin: 0 0 var(--zh-size-regular);
+  padding: 0 0 var(--zh-size-small-regular);
+  list-style: none;
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.zh-facts li {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.zh-facts__value {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-medium);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.zh-facts__term {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.zh-check-field {
+  margin-bottom: var(--zh-size-large);
+}
+
 .app-toolbar {
   display: flex;
   flex-wrap: wrap;

@@ -19,6 +19,7 @@ export const STATE_DEFAULTS = Object.freeze({
   to: 1900,
   provider: '', // providerId or '' for all
   type: '', // record type or '' for all
+  viewport: '', // '1' = only records inside the current map view
   place: '', // selected place label
   lat: 47.3769, // Zürich as the initial view (documented default, not a search result)
   lon: 8.5417,
@@ -37,6 +38,7 @@ export const PARAM = {
   to: 'to',
   provider: 'p',
   type: 't',
+  viewport: 'vp',
   place: 'place',
   lat: 'lat',
   lon: 'lon',
@@ -49,7 +51,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'place', 'selected', 'view', 'sort', 'overlay', 'otime'],
+  string: ['q', 'provider', 'type', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime'],
   number: ['from', 'to', 'lat', 'lon', 'zoom'],
 };
 
@@ -112,6 +114,7 @@ export function sanitise(state) {
   out.to = Math.max(from, to);
   if (!['split', 'map', 'list'].includes(out.view)) out.view = STATE_DEFAULTS.view;
   if (!['year-asc', 'year-desc', 'title'].includes(out.sort)) out.sort = STATE_DEFAULTS.sort;
+  out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
   out.q = String(out.q || '').slice(0, 200);
   out.place = String(out.place || '').slice(0, 200);
   return out;

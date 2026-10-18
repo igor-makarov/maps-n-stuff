@@ -51,13 +51,35 @@ async function initModules() {
 
 function renderIntro() {
   const count = qs('#intro-count');
-  if (count) count.textContent = `${ctx.data.records.length} Datensätze`;
+  if (count) count.textContent = String(ctx.data.records.length);
+
+  // Facts strip: only statements the data actually supports.
+  const facts = qs('#intro-facts');
+  if (facts) {
+    const providersInUse = new Set(ctx.data.records.map((r) => r.providerId));
+    const withPreview = ctx.data.records.filter((r) => r.thumbnail).length;
+    const withExtent = ctx.data.records.filter((r) => r.extent).length;
+    facts.replaceChildren(
+      ...[ 
+        ['Digitalisate', `${withPreview}`],
+        ['Zeitraum', `${ctx.data.years.min}–${ctx.data.years.max}`],
+        ['Sammlungen', `${providersInUse.size}`],
+        ['Kartenausschnitt bekannt', `${withExtent}`],
+      ].flatMap(([term, value]) => [
+        el('li', {}, [el('span', { class: 'zh-facts__value', text: value }), el('span', { class: 'zh-facts__term', text: term })]),
+      ]),
+    );
+  }
+
   const tagList = qs('#intro-tags');
   if (tagList) {
+    const providersInUse = new Set(ctx.data.records.map((r) => r.providerId));
     tagList.replaceChildren(
-      ...ctx.data.sources.map((source) =>
-        el('li', {}, [el('span', { class: 'zh-tag zh-tag--blue', text: source.name?.split('–')[0]?.trim() || source.id })]),
-      ),
+      ...ctx.data.sources
+        .filter((source) => providersInUse.has(source.id))
+        .map((source) =>
+          el('li', {}, [el('span', { class: 'zh-tag zh-tag--blue', text: source.name?.split('–')[0]?.trim() || source.id })]),
+        ),
       el('li', {}, [el('span', { class: 'zh-tag zh-tag--turquoise', text: `${ctx.data.overlays.length} swisstopo-Kartenwerke` })]),
     );
   }

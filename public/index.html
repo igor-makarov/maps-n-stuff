@@ -77,10 +77,11 @@
         <h1 class="zh-heading zh-heading--bordered" id="intro-heading">
           Historische Karten aus Archiven und Bibliotheken
         </h1>
+        <ul class="zh-facts" id="intro-facts" aria-label="Bestand in Zahlen"></ul>
         <p class="zh-lead">
-          <span id="intro-count">…</span> digitalisierte Karten und Atlanten aus echten Sammlungen – mit Kartenvorschau,
-          Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte und die historischen Kartenwerke
-          stammen von swisstopo, die Blätter aus der Zentralbibliothek Zürich (e-rara).
+          Der Bestand umfasst aktuell <span id="intro-count">…</span> digitalisierte Karten und Atlanten aus echten
+          Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte und
+          die historischen Kartenwerke stammen von swisstopo, die Blätter aus der Zentralbibliothek Zürich (e-rara).
         </p>
         <ul class="zh-tags" id="intro-tags" aria-label="Datenquellen"></ul>
       </section>
@@ -107,6 +108,14 @@
               <div class="zh-field">
                 <label class="zh-label" for="text-filter">Stichwort im Titel oder Urheber</label>
                 <input class="zh-input zh-input--small" id="text-filter" type="search" placeholder="z. B. Rhein, Zürichsee, Dufour" autocomplete="off" />
+              </div>
+
+              <div class="zh-field zh-check-field">
+                <label class="zh-check" for="viewport-filter">
+                  <input type="checkbox" id="viewport-filter" />
+                  <span>nur Treffer im aktuellen Kartenausschnitt</span>
+                </label>
+                <p class="zh-hint" id="viewport-count"></p>
               </div>
 
               <fieldset class="zh-fieldset">
@@ -139,6 +148,13 @@
                 <div class="zh-checks" id="provider-filters"></div>
               </fieldset>
 
+              <button class="zh-button zh-button--ghost" type="button" id="reset-filters">Alle Filter zurücksetzen</button>
+            </div>
+          </details>
+
+          <details class="zh-panel app-filters">
+            <summary class="zh-panel__summary">Kartentyp und Kartenwerke</summary>
+            <div class="zh-panel__body">
               <fieldset class="zh-fieldset">
                 <legend class="zh-legend">Kartentyp</legend>
                 <div class="zh-checks" id="type-filters"></div>
@@ -155,12 +171,15 @@
                   <input class="zh-input zh-input--small" id="overlay-time" type="range" min="0" max="0" step="1" />
                   <output class="zh-hint" id="overlay-time-output"></output>
                 </div>
+                <div class="zh-field" id="overlay-opacity-field" hidden>
+                  <label class="zh-label" for="overlay-opacity">Deckkraft der Ebene</label>
+                  <input class="zh-input zh-input--small" id="overlay-opacity" type="range" min="20" max="100" step="5" value="85" />
+                  <output class="zh-hint" id="overlay-opacity-output">85 %</output>
+                </div>
                 <p class="zh-hint" id="overlay-note">
                   Georeferenzierte Kartenwerke von swisstopo, direkt als Kachelebene über die moderne Grundkarte gelegt.
                 </p>
               </fieldset>
-
-              <button class="zh-button zh-button--ghost" type="button" id="reset-filters">Alle Filter zurücksetzen</button>
             </div>
           </details>
 

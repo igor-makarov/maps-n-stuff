@@ -479,6 +479,9 @@ export function init(ctx) {
     state.overlayTime = time;
     render();
   });
+  ctx.bus.on('overlay:opacity', ({ opacity }) => {
+    overlayLayer.style.opacity = String(Math.max(0.1, Math.min(1, Number(opacity) || 0.85)));
+  });
   ctx.bus.on('view:fit', ({ bounds }) => fitBounds(bounds, { maxZoom: 12 }));
 
   const resize = debounce(() => render(), 120);

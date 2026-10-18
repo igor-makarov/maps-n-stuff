@@ -30,7 +30,10 @@ const modules = Object.fromEntries(
       .map(async (name) => [name, await read(`public/app/${name}`)]),
   ),
 );
-const worker = await read('src/worker/index.js');
+const workerEntry = await read('src/worker/index.js');
+// The allowlist lives in its own module (a Workers entrypoint may only export its
+// default handler), so proxy checks read both files.
+const worker = `${workerEntry}\n${await read('src/worker/allowlist.js')}`;
 const wrangler = await read('wrangler.jsonc');
 const pkg = JSON.parse(await read('package.json'));
 
