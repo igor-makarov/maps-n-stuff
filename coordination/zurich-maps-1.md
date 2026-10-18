@@ -1,5 +1,74 @@
 # zurich-maps-1 status
 
+Iteration 7-13 (2026-10-18 23:2x–23:4x UTC). Shell/design-system/store/wrangler/
+docs owner. Newest entry first; earlier iterations are kept below.
+
+## Iteration 7-13 — controls follow the cantonal scale, unused payload gone
+
+| Commit | Content |
+| --- | --- |
+| `70192ec` | **cleanup: the unused vendored Leaflet copy is removed** (7 files, 192 KiB). Nothing referenced `public/vendor/leaflet` — not `map.js` (own slippy map), not the HTML/CSS, not the harness (grep-verified). `NOTICE.md` lost its Leaflet row, `README.md` its “vendored but unused” limitation; coordination **D5** records the decision. The deployed asset set is now 30 files (was 40) and every one of them is used. |
+| `9bf7583` | **design system: control height corrected to the official 48 px** and re-verified against the upstream files. See below. |
+| (in `70192ec`) | `docs/run.md` harness count 71 → 72 (incl. “Suchlink kopieren”); `coordination/README.md` status board now states the real iteration-7-13 state of all four members instead of “scaffold in progress”. |
+
+### The arithmetic error this iteration found and fixed
+
+Upstream (commit `552ceb6`, read 2026-10-18) says
+`$normalButtonSize: $sizeBiggerBig + $sizeTiny;` — 40 + 8 = **48 px**, the height
+of `.atm-button` — and `form_input.scss` builds inputs on the 72 / 60 / 48 px
+scale. Our buttons/inputs were 40 px tall and `docs/design-system.md` repeated
+the wrong arithmetic (“fixed 40 px (`$sizeBiggerBig + $sizeTiny`)”). Now:
+`--zh-control-height: 48px` (button min-height/min-width, icon buttons, map
+controls, header search), `--zh-control-height-small: 32px` (`$sizeBig`, the
+official `.atm-button--small`), inputs get the upstream 2 px radius.
+
+Two deliberate app decisions are documented instead of hidden: the
+sidebar/toolbar fields keep a **32 px** compact step (our own, for a data-dense
+sidebar) and the input border stays **black**, because the upstream `#949494`
+boundary is only 2.9:1 on white while SC 1.4.11 asks for 3:1.
+
+### Measured after the change (headless Chromium, this runner)
+
+| Viewport | map top before | map top now | map visible |
+| --- | --- | --- | --- |
+| 1440×900 | 604 | 612 | 288 px |
+| 1024×900 | 617 | 625 | 275 px |
+| 840×900 | 674 | 682 | 218 px |
+| 390×844 | 733 | **722** | 122 px |
+| 320×640 | 798 | **767** | 0 (viewport is 640 tall) |
+
+No horizontal overflow at 320/390/600/840/1024/1280/1440 (0 px everywhere). The
+map-first harness check (`mapVisible > 200` at 1440 and 840) stays green.
+
+### Verification (this runner, 2026-10-18 ~23:35 UTC)
+
+- `npm run check` ✓ — validation, **94/94** `node --test`, `wrangler deploy
+  --dry-run` (30 asset files).
+- `node scripts/browser-check.mjs` **72/72** against `wrangler dev` after both
+  commits — including map-first (1440: 612/288 · 840: 682/218), the contrast
+  sweep, compare, multi-sheet and the device-local list checks.
+- Token/geometry comparison against upstream commit `552ceb6`
+  (`src/assets/css/globals/_variables.scss`, `src/atoms/button/button.scss`,
+  `src/atoms/form_input/form_input.scss`): font/spacing/line-height/grid/
+  transition/z-index tokens match 1:1 and every hex colour used in
+  `public/styles/*.css` is an official palette value. Evidence:
+  `docs/design-system.md` → “Verification against the upstream files”.
+
+### Messages
+
+- **→ maps-2**: the Leaflet proposal from last iteration is executed (D5).
+  `map.js`, `search.js`, `results.js` and their CSS were not touched; the files
+  stay recoverable from history (`git show 64c3f03:public/vendor/leaflet/leaflet.js`).
+  If you ever want a library map, say so and I will readd it with a licence file.
+- **→ maps-3 (one-line request, not blocking, your file)**:
+  `public/styles/detail.css:117` reads
+  `line-height: var(--zh-line-medium, 1.45)`; `--zh-line-medium` is **1.3**, so
+  the 1.45 is a dead fallback (1.45 is `--zh-line-subbase`, which now exists).
+  The `0.8125rem` fallbacks beside `--zh-font-tiny` are 13 px while the token is
+  12 px. No visual effect while the tokens exist, so I did not touch your file.
+- **→ all**: `main` gate stays `npm run check` + `node scripts/browser-check.mjs`
+  (72 checks). `docs/run.md` and `coordination/README.md` are current again.
+
 Iteration 7-12 (2026-10-18 22:5x UTC). Shell/design-system/store/wrangler/docs
 owner. Newest entry first; earlier iterations are kept below.
 
