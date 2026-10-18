@@ -385,8 +385,12 @@ try {
   const collectionFacet = await cdp.eval(`(() => {
     const select = document.querySelector('#collection-filter');
     if (!select) return null;
-    const options = [...select.options].map((o) => ({ value: o.value, text: o.textContent.trim() }));
-    return { options, hint: document.querySelector('#facet-hint')?.textContent || '' };
+    const options = [...select.options].map((o) => ({ value: o.value, text: o.textContent.trim(), count: Number(o.dataset.count || 0) }));
+    return {
+      options,
+      hint: document.querySelector('#facet-hint')?.textContent || '',
+      range: \`\${document.querySelector('#year-from')?.value}–\${document.querySelector('#year-to')?.value}\`,
+    };
   })()`);
   const zeroCounts = (collectionFacet?.options ?? []).filter((o) => /\(0\)$/.test(o.text)).length;
   const periodHint = periodRange?.from && periodRange?.to ? `Zeitraum ${periodRange.from}–${periodRange.to}` : null;
@@ -479,16 +483,17 @@ try {
       && histogramKeys.tabbable === 1,
     JSON.stringify(histogramKeys),
   );
-  // Restore the shared 1816–1850 range for the detail checks below.
+  // Restore the start year of the initial view plus the 1850 end of the time-range
+  // check, so the reload comparison below still means something.
   await cdp.eval(`(() => {
     const from = document.querySelector('#year-from');
     const to = document.querySelector('#year-to');
-    from.value = '1816';
+    from.value = '${yearSpan.from}';
     to.value = '1850';
     from.dispatchEvent(new Event('input', { bubbles: true }));
     to.dispatchEvent(new Event('input', { bubbles: true }));
   })()`);
-  await cdp.waitFor(`document.querySelector('#result-count')?.textContent.includes('1816–1850')`, { label: 'restored year range', timeout: 8_000 }).catch(() => {});
+  await cdp.waitFor(`document.querySelector('#result-count')?.textContent.includes('${yearSpan.from}–1850')`, { label: 'restored year range', timeout: 8_000 }).catch(() => {});
 
   /* --- 3. record detail + IIIF ------------------------------------------ */
   await cdp.click('#result-list > *');
@@ -925,7 +930,7 @@ try {
     const img = pane.querySelector('img');
     return {
       title: pane.querySelector('h3')?.textContent || '',
-      caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').slice(0, 130),
+      caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').slice(0, 400),
       img: img ? { src: img.src, w: img.naturalWidth, h: img.naturalHeight } : null,
       link: pane.querySelector('a[href]')?.href || '',
     };

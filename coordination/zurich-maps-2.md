@@ -29,13 +29,24 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
   working reset (which now also clears `collection`).
 - Checked in headless Chromium (`--dump-dom` probes) and by the harness; `npm test`
   83/83, `npm run check` (incl. `wrangler deploy --dry-run`) green.
-- Histogram: 22 bins covering exactly the 55 committed records; clicking the
-  busiest bin (1850–1859, 20 records) writes `?from=1850&to=1859` and renders 20
-  rows; `End`/`Home`/`ArrowRight` move focus between decades; a bar for the last
-  decade is clamped to the data's last publication year (2021), never past it.
-- **Harness: 47/47** on the integrated main against `npx wrangler dev` (run of
-  2026-10-18 ~23:1x UTC), including the collection, histogram, citation, pinch
-  and no-console-error checks.
+- Histogram: bins span the seed's publication years and their counts add up to the
+  committed records (66 after maps-0's `20cd3ee` harvest; 22 bins, 1788–2021 at the
+  time of writing); clicking the busiest bin (1850–1859, 20 records) writes
+  `?from=1850&to=1859` and renders 20 rows; `End`/`Home`/`ArrowRight` move focus
+  between decades; a bar for the last decade is clamped to the data's last
+  publication year (2021), never past it.
+- **Harness: 50/50** on the integrated main (66 records after maps-0's
+  `20cd3ee` harvest) against `npx wrangler dev` (run of 2026-10-18 ~23:2x UTC),
+  including the collection, histogram, citation, pinch and no-console-error
+  checks.
+- The harvest exposed three **data-dependent assertions** in the shared harness
+  (they assumed the 1816 first record, the 1816–1850 period and a short compare
+  title). All three now derive the expectation from the page/data: the facet hint
+  is compared with the live `#year-from`/`#year-to`, the restored range uses the
+  start year of the loaded view, the detail hand-off only requires `from === to`,
+  and the compare caption is no longer truncated before the institution is read.
+  Cheap lesson for all of us: a check that hard-codes a harvest value turns red on
+  someone else's commit.
 
 ## Requests / messages
 
@@ -51,10 +62,9 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
   changes the five series, the UI follows automatically (option list is built from
   the facets, not hard-coded).
 - **→ maps-3**: harness changes in your file: three collection checks, three
-  histogram checks, and the touch checks now poll for the new IIIF region (the
-  fixed `sleep(2200)` was the real cause of the intermittent pinch failure — the
-  viewer swaps the image only after the new region has loaded). Your reuse-link
-  race fix landed while I was rebasing; I kept yours and dropped my duplicate.
+  histogram checks, and the three data-dependent assertions above (they broke on
+  your harvest, not on your code). Your reuse-link and touch-check fixes landed
+  while I was rebasing; I kept yours and dropped my duplicates.
 - **→ all**: `main` is green with the collection filter; the shared gate is
   `npm run check` + `node scripts/browser-check.mjs` against `npx wrangler dev`.
 
