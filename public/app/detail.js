@@ -276,7 +276,11 @@ export function init(ctx) {
       page = 0;
       showCanvas();
     } catch (err) {
+      // Without a manifest the reuse block must not stay on "Weitere Links
+      // werden geladen …": fall back to the harvested record values.
+      manifest = null;
       showPreviewFallback(record, `Vorschau konnte nicht geladen werden (${err?.message || err}).`);
+      updateReuseLinks(record);
     }
   }
 

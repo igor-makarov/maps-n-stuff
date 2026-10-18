@@ -45,6 +45,7 @@ const consoleMessages = [];
 const appInfo = [];
 const failedRequests = [];
 const apiRequests = []; // fetch()/XHR traffic: must stay on our own origin (CSP)
+const imageRequests = []; // tracked upstream IIIF image requests, for diagnosing failures
 let failures = 0;
 
 function check(name, ok, detail = '') {
@@ -321,6 +322,7 @@ cdp.on('Log.entryAdded', ({ entry }) => {
 });
 cdp.on('Network.requestWillBeSent', (params) => {
   if (params.type === 'Fetch' || params.type === 'XHR') apiRequests.push(params.request.url);
+  if (/e-rara\.ch\/i3f\//.test(params.request.url)) imageRequests.push(params.request.url);
 });
 cdp.on('Network.responseReceived', (params) => {
   const { response } = params;
@@ -674,9 +676,30 @@ try {
   /* --- 7b. touch: the detail viewer must zoom and pan without a mouse ---- */
   await cdp.click('#result-list > *');
   await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'mobile IIIF viewer', timeout: 25_000 });
+  // Real touch input: turn on touch emulation (synthetic `dispatchTouchEvent`
+  // sequences are delivered inconsistently without it) and record what the page
+  // sees, so a failure here is diagnosable instead of "nothing happened".
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   const touchBox = await cdp.eval(`(() => { const r = document.querySelector('#viewer-stage').getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; })()`);
   const touchPoint = (x, y, id) => ({ x: Math.round(x), y: Math.round(y), id, radiusX: 12, radiusY: 12, force: 1 });
-  const beforeTouch = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  const beforeTouch = await cdp.eval(`(() => {
+    const img = document.querySelector('.app-viewer__image');
+    const stage = document.querySelector('#viewer-stage');
+    window.__viewerInput = { down: 0, move: 0, up: 0, cancel: 0, changes: [] };
+    for (const [type, key] of [['pointerdown', 'down'], ['pointermove', 'move'], ['pointerup', 'up'], ['pointercancel', 'cancel']])
+      stage.addEventListener(type, () => { window.__viewerInput[key] += 1; }, true);
+    if (img)
+      new MutationObserver(() => window.__viewerInput.changes.push({ t: Date.now(), src: img.src.slice(-52), state: stage.dataset.state })).observe(img, {
+        attributes: true,
+        attributeFilter: ['src'],
+      });
+    return img?.src || '';
+  })()`);
+  const waitForViewerChange = (from, label, timeout) =>
+    cdp.waitFor(
+      `(() => { const src = document.querySelector('.app-viewer__image')?.src || ''; return src !== ${JSON.stringify(from)} && document.querySelector('#viewer-stage')?.dataset.state === 'ready' ? src : ''; })()`,
+      { label, timeout },
+    );
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [touchPoint(touchBox.cx - 40, touchBox.cy, 1), touchPoint(touchBox.cx + 40, touchBox.cy, 2)] });
   for (let step = 1; step <= 6; step += 1) {
     await cdp.send('Input.dispatchTouchEvent', {
@@ -686,12 +709,35 @@ try {
     await sleep(60);
   }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await sleep(2200);
-  const afterPinch = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  let afterPinch = beforeTouch;
+  let pinchError = '';
+  try {
+    afterPinch = await waitForViewerChange(beforeTouch, 'pinch region', 10_000);
+  } catch (err) {
+    pinchError = err.message;
+  }
+  const pinchInfo = await cdp.eval(
+    `(() => ({ ...window.__viewerInput, readout: document.querySelector('#preview-meta')?.textContent || '', state: document.querySelector('#viewer-stage')?.dataset.state || '' }))()`,
+  );
+  const regionOf = (url) => {
+    const m = /\/(\d+),(\d+),(\d+),(\d+)\/\d+,/.exec(url || '');
+    return m ? { x: +m[1], y: +m[2], w: +m[3], h: +m[4] } : null;
+  };
+  const fullOf = (text) => {
+    const m = /Original (\d+)×(\d+)/.exec(text || '');
+    return m ? { w: +m[1], h: +m[2] } : null;
+  };
+  const pinchedRegion = regionOf(afterPinch);
+  const beforeRegion = regionOf(beforeTouch);
+  const sheet = fullOf(pinchInfo.readout) ?? fullOf(beforeTouch);
+  const zoomedIn =
+    Boolean(pinchedRegion) &&
+    (!beforeRegion || pinchedRegion.w * pinchedRegion.h < beforeRegion.w * beforeRegion.h * 0.95) &&
+    (!sheet || pinchedRegion.w * pinchedRegion.h < sheet.w * sheet.h * 0.6);
   check(
     'touch: pinch-zoom asks for a smaller IIIF region',
-    afterPinch !== beforeTouch && /\/\d+,\d+,\d+,\d+\/\d+,\/0\/default\.jpg$/.test(afterPinch),
-    `${beforeTouch.slice(-46)} -> ${afterPinch.slice(-46)}`,
+    afterPinch !== beforeTouch && zoomedIn,
+    `${beforeTouch.slice(-46)} -> ${afterPinch.slice(-46)} · down/move/up ${pinchInfo.down}/${pinchInfo.move}/${pinchInfo.up} state=${pinchInfo.state} ${pinchError}`,
   );
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [touchPoint(touchBox.cx, touchBox.cy, 1)] });
   for (let step = 1; step <= 5; step += 1) {
@@ -699,9 +745,19 @@ try {
     await sleep(60);
   }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await sleep(2200);
-  const afterDrag = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
-  check('touch: one-finger drag pans the sheet', afterDrag !== afterPinch, `${afterPinch.slice(-46)} -> ${afterDrag.slice(-46)}`);
+  let afterDrag = afterPinch;
+  let dragError = '';
+  try {
+    afterDrag = await waitForViewerChange(afterPinch, 'drag region', 10_000);
+  } catch (err) {
+    dragError = err.message;
+  }
+  const dragInfo = await cdp.eval(`({ ...window.__viewerInput, readout: document.querySelector('#preview-meta')?.textContent || '' })`);
+  check(
+    'touch: one-finger drag pans the sheet',
+    afterDrag !== afterPinch,
+    `${afterPinch.slice(-46)} -> ${afterDrag.slice(-46)} · moves ${dragInfo.move} ${dragError} ${imageRequests.slice(-2).join(' ')}`,
+  );
   await cdp.screenshot(path.join(OUT_DIR, '03b-mobile-viewer.png')).then(() => report.screenshots.push('03b-mobile-viewer.png'));
 
   /* --- 8. WCAG 2.2 AA contrast sweep of the visible UI ------------------ */
