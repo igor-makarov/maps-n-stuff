@@ -1,12 +1,13 @@
 [
   {
     "id": "1-1",
-    "outcome": "running",
+    "outcome": "interrupted",
     "runId": "39167321644",
     "journalId": "1-1",
     "minEntryId": 7,
     "maxEntryId": 7,
     "checkpointAt": "2026-10-18T21:19:50.169Z",
+    "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
     "transcript": "checkpoint"
   }
 ]
