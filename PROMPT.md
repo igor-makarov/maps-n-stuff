@@ -21,9 +21,13 @@ avoid duplicating work or undoing each other's contributions.
 
 **Commit and push completed, validated changes directly to `main`.** The user has
 explicitly authorized all four agents to deliver to `main`; do not stop at a draft
-PR or an isolated task branch. Shurik still maintains a separate task/checkpoint
-branch for each member; preserve that lifecycle and its control state while
-integrating the actual product on `main`. Choose a way to handle concurrent Git
+PR or an isolated task branch. **Automatic task checkpoints are disabled
+(`checkpoint-seconds: 0`). You are responsible for all product commits and pushes.**
+Save meaningful progress frequently; uncommitted or unpushed work is not carried
+to the next runner. Shurik retains session/control state at iteration boundaries,
+and you must preserve its lifecycle and control branches. At the start of each
+iteration, get the latest `origin/main` and read its current brief and coordination
+notes before continuing. Choose a way to handle concurrent Git
 work together. Preserve teammates' commits, use ordinary non-forced pushes, and
 resolve integration conflicts carefully. Do not rewrite `main` history or weaken
 branch protections. If protections or credentials prevent delivery, record the

@@ -47,16 +47,23 @@ access the tiles and IIIF images stay empty while metadata remains readable.
 
 ## Swarm configuration
 
-- Action: [`igor-makarov/shurik@v2`](https://github.com/igor-makarov/shurik)
+- Action: [Shurik v2 with agent-managed commits](https://github.com/igor-makarov/shurik/commit/6780fdc0bb3e13ca9356dcb9a69b9443212a0389)
 - Model: `opencode-go/deepseek-v4.1-flash`, reasoning `max`
 - Members: `zurich-maps-0`, `zurich-maps-1`, `zurich-maps-2`, `zurich-maps-3`
-- Work per iteration: 1,800 seconds; checkpoint interval: 300 seconds
+- Work per iteration: 1,800 seconds; automatic task checkpoints disabled (`0`)
 - Wait between iterations: zero; no overall deadline
 - Delivery: `main`, with draft PR creation disabled
 
+The workflow pins a tested v2-based patch because the current `@v2` release does
+not support disabling task checkpoints. The patch adds `checkpoint-seconds: 0`
+without changing the released tag.
+
 Shurik itself gives each member an independent task branch and
 `shurik-control/<member-id>` branch. The brief explicitly tells agents to coordinate
-and integrate their product commits on `main` while preserving those checkpoints.
+and make their own product commits and pushes to `main`. Shurik saves session and
+control state at iteration boundaries, without automatically committing or pushing
+product code. Unpushed code and in-progress session history can be lost on an
+abrupt runner interruption.
 Shurik does not provide built-in inter-agent messaging or automatic integration.
 
 ## Initial launch
@@ -65,9 +72,11 @@ Add the **`OPENCODE_API_KEY`** repository Actions secret with access to the mode
 No credential belongs in the launch JSON, prompt, Git history, or dispatch inputs.
 
 Pushing a change to [`.github/shurik/launch.json`](.github/shurik/launch.json) on
-`main` starts the four-member swarm through
+`main` starts the four-member swarm if no members have been initialized, through
 [`.github/workflows/shurik.yml`](.github/workflows/shurik.yml). Ordinary product,
-prompt, or workflow commits do not trigger another swarm. The control job checks
+prompt, or workflow commits do not trigger another swarm. Updating the launch
+request for an existing swarm also skips initialization; use the brief-update
+workflow to apply settings to its saved members. The control job checks
 for the secret before creating loops; if it is missing, add it and rerun that
 failed job. If startup has already created any members, inspect their state before
 retrying: Shurik rejects reusing initialized loop IDs.
@@ -76,6 +85,7 @@ Changes to `PROMPT.md` on `main` run the brief-update workflow: it stops each
 existing member, copies only the latest brief onto its task branch, and resumes
 the saved loop. Product work and the agents' chosen coordination method remain
 theirs to manage. This workflow can also be run manually after a failed update.
+It resumes all four with automatic task checkpoints disabled.
 
 Cloudflare deployment credentials are not forwarded to the swarm. Agents prepare
 and validate the application source and Workers configuration, and document the

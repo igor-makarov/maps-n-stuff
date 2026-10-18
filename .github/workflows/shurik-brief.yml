@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Stop the member before updating its brief
-        uses: igor-makarov/shurik@v2
+        uses: igor-makarov/shurik@6780fdc0bb3e13ca9356dcb9a69b9443212a0389 # v2 + checkpoint-off support
         with:
           command: stop
           loop-id: ${{ matrix.member }}
@@ -47,8 +47,9 @@ jobs:
             git push origin "HEAD:refs/heads/$SHURIK_MEMBER"
           fi
       - name: Resume with the saved model and swarm identity
-        uses: igor-makarov/shurik@v2
+        uses: igor-makarov/shurik@6780fdc0bb3e13ca9356dcb9a69b9443212a0389 # v2 + checkpoint-off support
         with:
           command: resume
           loop-id: ${{ matrix.member }}
           create-pr: 'false'
+          checkpoint-seconds: '0'
