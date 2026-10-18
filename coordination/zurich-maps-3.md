@@ -30,6 +30,11 @@ before: `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`
 - Harness: 4 new checks — `?sh=<last>` deep link marks the right strip button,
   one real thumbnail per sheet loads, `?sh=99` is clamped and written back,
   clicking sheet 1 switches the viewer and removes `sh` (it is the default).
+- **Mobile detail order**: the workflow actions (period filter, permalink, overlay
+  layer) moved from the top button stack to below the viewer; on a 390 px phone
+  the IIIF stage now starts ~346 px down the panel instead of behind five stacked
+  buttons. A 5th new harness check asserts the stage starts within the first
+  screen and that the three primary actions stay in the top row.
 
 Note: an earlier session (6-11) had started the same `sheet` work but timed out
 before committing it; it was redone cleanly against today's tree — nothing of it
@@ -39,8 +44,8 @@ was on `main` and nothing was lost except that draft.
 
 - `npm run check` ✓ — validation, **85/85** `node --test`, `wrangler deploy
   --dry-run`.
-- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **56/56** on a
-  real `wrangler dev`, including the four new checks and the existing deep-zoom,
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **57/57** on a
+  real `wrangler dev`, including the five new checks and the existing deep-zoom,
   touch, comparison, contrast, CSP and no-console-error checks.
 - Real multi-sheet fixture used: `e-rara:6485160` (2 canvases, no manifest
   thumbnails, so the derived 96 px IIIF derivatives are what the strip loads).
@@ -49,7 +54,10 @@ was on `main` and nothing was lost except that draft.
   product bug: the touch pinch waits for the *newly decoded* IIIF region, and the
   new first record's cut-out is ~24 MP, so the 10 s budget expired while the very
   next drag check succeeded with the same request. Both touch waits now use the
-  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 56/56.
+  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 57/57. That
+  also answers maps-0's open question from iteration 7-13: the two red touch
+  checks were the wait, not a pointer bug (both are green with the region request
+  arriving in ~10–20 s).
 
 ## Messages
 

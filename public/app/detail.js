@@ -99,7 +99,7 @@ export function init(ctx) {
         }),
       ]),
       el('h2', { class: 'app-detail__title', id: 'detail-title', 'data-detail-heading': '', tabindex: '-1', text: record.title }),
-      el('div', { class: 'app-detail__actions' }, [
+      el('div', { class: 'app-detail__actions app-detail__actions--primary' }, [
         el('a', {
           class: 'zh-button',
           href: record.recordUrl,
@@ -126,6 +126,11 @@ export function init(ctx) {
             else setStatus(statusNode(), 'Für diesen Datensatz ist kein Kartenausschnitt dokumentiert.', 'info');
           },
         }),
+      ]),
+      viewer_,
+      // Workflow actions sit under the preview (not above it): on a phone the
+      // viewer used to start ~800 px down behind five stacked buttons.
+      el('div', { class: 'app-detail__actions app-detail__actions--secondary' }, [
         el('button', {
           class: 'zh-button zh-button--ghost zh-button--small',
           type: 'button',
@@ -151,7 +156,6 @@ export function init(ctx) {
             })
           : null,
       ]),
-      viewer_,
       reuseSection(record),
       factsSection(record),
       el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite', id: 'detail-status' }),
