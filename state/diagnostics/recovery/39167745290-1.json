@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "key": "39167745290-1",
+  "loopId": "zurich-maps-2",
+  "runId": "39167745290",
+  "attempt": 1,
+  "generation": 3,
+  "iteration": 3,
+  "command": "iterate",
+  "conclusion": "failure",
+  "url": "https://github.com/igor-makarov/maps-n-stuff/actions/runs/39167745290",
+  "headSha": "db901a2b29202d85617863570525b6c494bc7366",
+  "startedAt": "2026-10-18T21:25:08Z",
+  "completedAt": "2026-10-18T21:35:57Z",
+  "collectedAt": "2026-10-18T21:36:11.305Z",
+  "interruptedOwner": true,
+  "jobs": [
+    {
+      "id": 117794160698,
+      "name": "iteration",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run igor-makarov/shurik@v2",
+          "conclusion": "failure"
+        },
+        {
+          "number": 4,
+          "name": "Preserve emergency snapshot after publication failure",
+          "conclusion": "success"
+        },
+        {
+          "number": 7,
+          "name": "Post Run igor-makarov/shurik@v2",
+          "conclusion": "success"
+        },
+        {
+          "number": 8,
+          "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "number": 9,
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ],
+      "log": {
+        "text": "3130440b.config\n2026-10-18T21:25:13.9381789Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:13.9418970Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:13.9453498Z ##[endgroup]\n2026-10-18T21:25:13.9455578Z ##[group]Fetching the repository\n2026-10-18T21:25:13.9462085Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*\n2026-10-18T21:25:14.1449827Z From https://github.com/igor-makarov/maps-n-stuff\n2026-10-18T21:25:14.1450813Z  * [new branch]      main          -> origin/main\n2026-10-18T21:25:14.1451691Z  * [new branch]      shurik-control/zurich-maps-0 -> origin/shurik-control/zurich-maps-0\n2026-10-18T21:25:14.1453186Z  * [new branch]      shurik-control/zurich-maps-1 -> origin/shurik-control/zurich-maps-1\n2026-10-18T21:25:14.1454602Z  * [new branch]      shurik-control/zurich-maps-2 -> origin/shurik-control/zurich-maps-2\n2026-10-18T21:25:14.1455678Z  * [new branch]      shurik-control/zurich-maps-3 -> origin/shurik-control/zurich-maps-3\n2026-10-18T21:25:14.1456571Z  * [new branch]      zurich-maps-0 -> origin/zurich-maps-0\n2026-10-18T21:25:14.1457317Z  * [new branch]      zurich-maps-1 -> origin/zurich-maps-1\n2026-10-18T21:25:14.1458035Z  * [new branch]      zurich-maps-2 -> origin/zurich-maps-2\n2026-10-18T21:25:14.1458723Z  * [new branch]      zurich-maps-3 -> origin/zurich-maps-3\n2026-10-18T21:25:14.1461265Z [command]/usr/bin/git branch --list --remote origin/main\n2026-10-18T21:25:14.1493290Z   origin/main\n2026-10-18T21:25:14.1504324Z [command]/usr/bin/git rev-parse refs/remotes/origin/main\n2026-10-18T21:25:14.1531435Z db901a2b29202d85617863570525b6c494bc7366\n2026-10-18T21:25:14.1541646Z ##[endgroup]\n2026-10-18T21:25:14.1542572Z ##[group]Determining the checkout info\n2026-10-18T21:25:14.1543604Z ##[endgroup]\n2026-10-18T21:25:14.1546507Z [command]/usr/bin/git sparse-checkout disable\n2026-10-18T21:25:14.1607250Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig\n2026-10-18T21:25:14.1643676Z ##[group]Checking out the ref\n2026-10-18T21:25:14.1647937Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main\n2026-10-18T21:25:14.1719598Z Switched to a new branch 'main'\n2026-10-18T21:25:14.1807418Z branch 'main' set up to track 'origin/main'.\n2026-10-18T21:25:14.1811326Z ##[endgroup]\n2026-10-18T21:25:14.1813467Z [command]/usr/bin/git log -1 --format=%H\n2026-10-18T21:25:14.1821269Z db901a2b29202d85617863570525b6c494bc7366\n2026-10-18T21:25:14.1832714Z ##[group]Removing auth\n2026-10-18T21:25:14.1833590Z Removing SSH command configuration\n2026-10-18T21:25:14.1836918Z [command]/usr/bin/git config --local --name-only --get-regexp core\\.sshCommand\n2026-10-18T21:25:14.1876109Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'core\\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\"\n2026-10-18T21:25:14.2112433Z Removing HTTP extra header\n2026-10-18T21:25:14.2117879Z [command]/usr/bin/git config --local --name-only --get-regexp http\\.https\\:\\/\\/github\\.com\\/\\.extraheader\n2026-10-18T21:25:14.2160511Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'http\\.https\\:\\/\\/github\\.com\\/\\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\"\n2026-10-18T21:25:14.2396131Z Removing includeIf entries pointing to credentials config files\n2026-10-18T21:25:14.2400254Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\\.gitdir:\n2026-10-18T21:25:14.2434774Z includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git.path\n2026-10-18T21:25:14.2436928Z includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git/worktrees/*.path\n2026-10-18T21:25:14.2438615Z includeif.gitdir:/github/workspace/.git.path\n2026-10-18T21:25:14.2440167Z includeif.gitdir:/github/workspace/.git/worktrees/*.path\n2026-10-18T21:25:14.2447632Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git.path\n2026-10-18T21:25:14.2476398Z /home/runner/work/_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2488373Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git.path /home/runner/work/_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2530105Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git/worktrees/*.path\n2026-10-18T21:25:14.2557157Z /home/runner/work/_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2568886Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/maps-n-stuff/maps-n-stuff/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2611227Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path\n2026-10-18T21:25:14.2641828Z /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2661701Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2698913Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path\n2026-10-18T21:25:14.2725242Z /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2733220Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config\n2026-10-18T21:25:14.2774081Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url\n2026-10-18T21:25:14.3002156Z Removing credentials config '/home/runner/work/_temp/git-credentials-343844e1-c1f5-4fd8-9e7f-10613130440b.config'\n2026-10-18T21:25:14.3012359Z ##[endgroup]\n2026-10-18T21:25:14.3455384Z ##[group]Run igor-makarov/shurik@v2\n2026-10-18T21:25:14.3456117Z with:\n2026-10-18T21:25:14.3456666Z   command: iterate\n2026-10-18T21:25:14.3457626Z   inputs: {\n  \"command\": \"iterate\",\n  \"loop_id\": \"zurich-maps-2\",\n  \"create_pr\": \"false\",\n  \"generation\": \"3\",\n  \"iteration\": \"3\"\n}\n2026-10-18T21:25:14.3458650Z   workflow: shurik.yml\n2026-10-18T21:25:14.3461659Z   token: ***\n2026-10-18T21:25:14.3462224Z env:\n2026-10-18T21:25:14.3462970Z   OPENCODE_API_KEY: ***\n2026-10-18T21:25:14.3463571Z ##[endgroup]\n2026-10-18T21:25:14.3524259Z ##[start-action display=Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38;id=shurik.__actions_setup-node]\n2026-10-18T21:25:14.3640236Z ##[group]Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38\n2026-10-18T21:25:14.3641146Z with:\n2026-10-18T21:25:14.3641690Z   node-version: 24.14.0\n2026-10-18T21:25:14.3642287Z   check-latest: false\n2026-10-18T21:25:14.3645424Z   token: ***\n2026-10-18T21:25:14.3646047Z   package-manager-cache: true\n2026-10-18T21:25:14.3646701Z env:\n2026-10-18T21:25:14.3647410Z   OPENCODE_API_KEY: ***\n2026-10-18T21:25:14.3647979Z ##[endgroup]\n2026-10-18T21:25:14.5083652Z Attempting to download 24.14.0...\n2026-10-18T21:25:14.8682992Z Acquiring 24.14.0 - x64 from https://github.com/actions/node-versions/releases/download/24.14.0-22380502845/node-24.14.0-linux-x64.tar.gz\n2026-10-18T21:25:15.4033983Z Extracting ...\n2026-10-18T21:25:15.4155141Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/158de2ed-8f2a-4b0f-a81f-727223b8fcbf -f /home/runner/work/_temp/2b267c3d-95da-4995-8197-72604f58968c\n2026-10-18T21:25:16.6159982Z Adding to the cache ...\n2026-10-18T21:25:19.3958904Z ##[group]Environment details\n2026-10-18T21:25:19.6291726Z node: v24.14.0\n2026-10-18T21:25:19.6292418Z npm: 11.9.0\n2026-10-18T21:25:19.6292945Z yarn: 1.22.22\n2026-10-18T21:25:19.6294335Z ##[endgroup]\n2026-10-18T21:25:19.6442884Z ##[end-action id=shurik.__actions_setup-node;outcome=success;conclusion=success;duration_ms=5291]\n2026-10-18T21:25:19.6460336Z ##[start-action display=Run Shurik CLI;id=shurik.shurik]\n2026-10-18T21:25:19.6494661Z ##[group]Run node \"$SHURIK_ACTION_PATH/action/run.ts\"\n2026-10-18T21:25:19.6495127Z \u001b[36;1mnode \"$SHURIK_ACTION_PATH/action/run.ts\"\u001b[0m\n2026-10-18T21:25:19.6763233Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}\n2026-10-18T21:25:19.6763695Z env:\n2026-10-18T21:25:19.6764495Z   OPENCODE_API_KEY: ***\n2026-10-18T21:25:19.6764921Z   SHURIK_ACTION_PATH: /home/runner/work/_actions/igor-makarov/shurik/v2\n2026-10-18T21:25:19.6765388Z   SHURIK_ACTION_REPOSITORY: igor-makarov/shurik\n2026-10-18T21:25:19.6765742Z   SHURIK_ACTION_REF: v2\n2026-10-18T21:25:19.6766323Z   SHURIK_INPUTS: {\n  \"command\": \"iterate\",\n  \"loop_id\": \"zurich-maps-2\",\n  \"create_pr\": \"false\",\n  \"generation\": \"3\",\n  \"iteration\": \"3\"\n}\n2026-10-18T21:25:19.6766959Z   SHURIK_COMMAND: iterate\n2026-10-18T21:25:19.6767220Z   SHURIK_LOOP_ID: \n2026-10-18T21:25:19.6767448Z   SHURIK_MODEL: \n2026-10-18T21:25:19.6767704Z   SHURIK_SWARM: \n2026-10-18T21:25:19.6767926Z   SHURIK_PROMPT: \n2026-10-18T21:25:19.6768176Z   SHURIK_CHECKPOINT_SECONDS: \n2026-10-18T21:25:19.6768455Z   SHURIK_CHECKPOINT_PATHS: \n2026-10-18T21:25:19.6768724Z   SHURIK_CREATE_PR: \n2026-10-18T21:25:19.6768971Z   SHURIK_SECONDS: \n2026-10-18T21:25:19.6769208Z   SHURIK_WORK_SECONDS: \n2026-10-18T21:25:19.6769480Z   SHURIK_WAIT_SECONDS: \n2026-10-18T21:25:19.6769781Z   SHURIK_DEADLINE: \n2026-10-18T21:25:19.6770011Z   SHURIK_SOURCE_REF: \n2026-10-18T21:25:19.6770254Z   SHURIK_GENERATION: \n2026-10-18T21:25:19.6770500Z   SHURIK_ITERATION: \n2026-10-18T21:25:19.6770744Z   SHURIK_WORKFLOW: shurik.yml\n2026-10-18T21:25:19.6773169Z   GITHUB_TOKEN: ***\n2026-10-18T21:25:19.6773405Z ##[endgroup]\n2026-10-18T21:35:54.0636757Z Emergency snapshot: /home/runner/.shurik/emergency/igor-makarov/maps-n-stuff/zurich-maps-2/39167745290-1\n2026-10-18T21:35:54.0639626Z Error: Command failed: git push --atomic origin c717a29da2ea997df5755142abb3da8cd3fa8a64:refs/heads/shurik-control/zurich-maps-2 d41dc9fb6c5873c5d8242b875d6518f005e01a16:refs/heads/zurich-maps-2\n2026-10-18T21:35:54.0641197Z To https://github.com/igor-makarov/maps-n-stuff.git\n2026-10-18T21:35:54.0642256Z  ! [rejected]        c717a29da2ea997df5755142abb3da8cd3fa8a64 -> shurik-control/zurich-maps-2 (atomic push failed)\n2026-10-18T21:35:54.0643615Z  ! [rejected]        d41dc9fb6c5873c5d8242b875d6518f005e01a16 -> zurich-maps-2 (non-fast-forward)\n2026-10-18T21:35:54.0645195Z error: failed to push some refs to 'https://github.com/igor-makarov/maps-n-stuff.git'\n2026-10-18T21:35:54.0646384Z hint: Updates were rejected because a pushed branch tip is behind its remote\n2026-10-18T21:35:54.0647555Z hint: counterpart. If you want to integrate the remote changes, use 'git pull'\n2026-10-18T21:35:54.0648286Z hint: before pushing again.\n2026-10-18T21:35:54.0649052Z hint: See the 'Note about fast-forwards' in 'git push --help' for details.\n2026-10-18T21:35:54.0649563Z \n2026-10-18T21:35:54.0792899Z ##[error]Process completed with exit code 1.\n2026-10-18T21:35:54.0821962Z ##[end-action id=shurik.shurik;outcome=failure;conclusion=failure;duration_ms=634436]\n2026-10-18T21:35:54.0948970Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02\n2026-10-18T21:35:54.0949416Z with:\n2026-10-18T21:35:54.0949639Z   name: shurik-emergency-39167745290\n2026-10-18T21:35:54.0950110Z   path: /home/runner/.shurik/emergency/igor-makarov/maps-n-stuff/zurich-maps-2/39167745290-1\n2026-10-18T21:35:54.0950590Z   include-hidden-files: true\n2026-10-18T21:35:54.0950846Z   if-no-files-found: ignore\n2026-10-18T21:35:54.0951092Z   retention-days: 7\n2026-10-18T21:35:54.0951307Z   compression-level: 6\n2026-10-18T21:35:54.0951527Z   overwrite: false\n2026-10-18T21:35:54.0951728Z ##[endgroup]\n2026-10-18T21:35:54.2676511Z (node:4614) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.\n2026-10-18T21:35:54.2677480Z (Use `node --trace-deprecation ...` to show where the warning was created)\n2026-10-18T21:35:54.3114676Z With the provided path, there will be 75 files uploaded\n2026-10-18T21:35:54.3115810Z Artifact name is valid!\n2026-10-18T21:35:54.3116395Z Root directory input is valid!\n2026-10-18T21:35:54.5015968Z Beginning upload of artifact content to blob storage\n2026-10-18T21:35:54.6333371Z (node:4614) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n2026-10-18T21:35:54.6788204Z Uploaded bytes 606382\n2026-10-18T21:35:54.6945185Z Finished uploading artifact content to blob storage!\n2026-10-18T21:35:54.6946659Z SHA256 digest of uploaded artifact zip is 140c365a9095ef1ff0dbb509b6acaf900b630aacff3fcea92055a55dc9d26a97\n2026-10-18T21:35:54.6947682Z Finalizing artifact upload\n2026-10-18T21:35:54.8630976Z Artifact shurik-emergency-39167745290.zip successfully finalized. Artifact ID 12151880687\n2026-10-18T21:35:54.8632708Z Artifact shurik-emergency-39167745290 has been successfully uploaded! Final size is 606382 bytes. Artifact ID is 12151880687\n2026-10-18T21:35:54.8640190Z Artifact download URL: https://github.com/igor-makarov/maps-n-stuff/actions/runs/39167745290/artifacts/12151880687\n2026-10-18T21:35:54.8930445Z Post job cleanup.\n2026-10-18T21:35:54.8935483Z ##[start-action display=Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38;id=__7249c0c7-5566-471f-bec9-71b54fc78ae7.__actions_setup-node]\n2026-10-18T21:35:54.8939652Z ##[end-action id=__7249c0c7-5566-471f-bec9-71b54fc78ae7.__actions_setup-node;outcome=skipped;conclusion=skipped;duration_ms=0]\n2026-10-18T21:35:54.9010638Z Post job cleanup.\n2026-10-18T21:35:54.9949165Z [command]/usr/bin/git version\n2026-10-18T21:35:54.9997812Z git version 2.55.0\n2026-10-18T21:35:55.0078280Z Temporarily overriding HOME='/home/runner/work/_temp/65af82fc-70b2-4f54-a535-cc2d60eb4f69' before making global git config changes\n2026-10-18T21:35:55.0079814Z Adding repository directory to the temporary git global config as a safe directory\n2026-10-18T21:35:55.0085557Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/maps-n-stuff/maps-n-stuff\n2026-10-18T21:35:55.0128547Z Removing SSH command configuration\n2026-10-18T21:35:55.0138163Z [command]/usr/bin/git config --local --name-only --get-regexp core\\.sshCommand\n2026-10-18T21:35:55.0183554Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'core\\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\"\n2026-10-18T21:35:55.0456084Z Removing HTTP extra header\n2026-10-18T21:35:55.0463862Z [command]/usr/bin/git config --local --name-only --get-regexp http\\.https\\:\\/\\/github\\.com\\/\\.extraheader\n2026-10-18T21:35:55.0519431Z [command]/usr/bin/git submodule foreach --recursive sh -c \"git config --local --name-only --get-regexp 'http\\.https\\:\\/\\/github\\.com\\/\\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\"\n2026-10-18T21:35:55.0828941Z Removing includeIf entries pointing to credentials config files\n2026-10-18T21:35:55.0837012Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\\.gitdir:\n2026-10-18T21:35:55.0887644Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url\n2026-10-18T21:35:55.1319076Z Cleaning up orphan processes\n2026-10-18T21:35:55.1774857Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/\n",
+        "truncated": true,
+        "downloadLimited": false
+      }
+    },
+    {
+      "id": 117794161929,
+      "name": "control",
+      "conclusion": "skipped",
+      "steps": [],
+      "logUnavailable": "Error: GitHub job logs: 404"
+    },
+    {
+      "id": 117796578257,
+      "name": "recovery",
+      "conclusion": null,
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run igor-makarov/shurik@v2",
+          "conclusion": null
+        },
+        {
+          "number": 5,
+          "name": "Post Run igor-makarov/shurik@v2",
+          "conclusion": null
+        },
+        {
+          "number": 6,
+          "name": "Post Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "conclusion": null
+        }
+      ],
+      "logUnavailable": "Error: GitHub job logs: 404"
+    }
+  ],
+  "jobsTruncated": false
+}
