@@ -34,6 +34,10 @@ jobs:
         with:
           command: stop
           loop-id: ${{ matrix.member }}
+      - name: Migrate empty snapshot metadata from the retired patch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/shurik/migrate-empty-snapshot.mjs
       - name: Copy the current main brief without changing product work
         run: |
           git fetch origin "refs/heads/$SHURIK_MEMBER:refs/remotes/origin/$SHURIK_MEMBER" refs/heads/main:refs/remotes/origin/main
