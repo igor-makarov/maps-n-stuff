@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-18T21:49:57.026Z",
+  "generatedAt": "2026-10-18T22:00:54.693Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
-  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated \"Kartendaten\" extent; swisstopo WMTS GetCapabilities for the Zeitreise editions. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
+  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated \"Kartendaten\" extent; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
@@ -15,12 +15,32 @@
       "rule": "Swiss sheet maps from the landkarten set, requires a stated Kartendaten bbox"
     },
     "swisstopo:zeitreise": {
-      "considered": 14,
-      "kept": 14,
-      "rule": "one record per curated Zeitreise edition from the WMTS Time dimension"
+      "considered": 178,
+      "kept": 13,
+      "rule": "curated Zeitreise editions (exact or nearest advertised Time value)"
+    },
+    "swisstopo:hiks-siegfried": {
+      "considered": 80,
+      "kept": 9,
+      "rule": "one record per decade advertised in the Siegfriedkarte Time dimension (1870–1949)"
+    },
+    "swisstopo:swissimage-product": {
+      "considered": 100,
+      "kept": 4,
+      "rule": "representative SWISSIMAGE Zeitreise aerial mosaics (1960–2020)"
+    },
+    "swisstopo:swissimage-1946": {
+      "considered": 1,
+      "kept": 1,
+      "rule": "the dedicated SWISSIMAGE 1946 historical aerial layer"
     }
   },
-  "skipped": [],
+  "skipped": [
+    {
+      "id": "swisstopo:zeitreise-18441231",
+      "reason": "WMTS advertises this edition but serves empty tiles at the preview locations"
+    }
+  ],
   "records": [
     {
       "id": "e-rara:6507640",
@@ -147,40 +167,6 @@
       "imprint": "Zürich : Keller, 1840"
     },
     {
-      "id": "swisstopo:zeitreise-18441231",
-      "title": "Zeitreise – Kartenwerke, Ausgabe 1844",
-      "editionDate": "1844-12-31",
-      "yearStart": 1844,
-      "yearEnd": 1844,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Bundesamt für Landestopografie swisstopo"
-      ],
-      "providerId": "swisstopo",
-      "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18441231/3857/10/536/365.png",
-      "iiifManifest": null,
-      "type": "overlay",
-      "collection": "Zeitreise – Kartenwerke",
-      "overlay": {
-        "kind": "wmts",
-        "layerId": "ch.swisstopo.zeitreihen",
-        "timeValue": "18441231",
-        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18441231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
-        "maxZoom": 18,
-        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
-      },
-      "extent": {
-        "west": 5.140242,
-        "east": 11.47757,
-        "south": 45.398181,
-        "north": 48.230651
-      }
-    },
-    {
       "id": "e-rara:6526543",
       "title": "Karte der centralen Schweiz",
       "yearStart": 1850,
@@ -214,7 +200,6 @@
     {
       "id": "swisstopo:zeitreise-18501231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1850",
-      "editionDate": "1850-12-31",
       "yearStart": 1850,
       "yearEnd": 1850,
       "depictedYearStart": null,
@@ -224,9 +209,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18501231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=18501231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18501231/3857/11/1066/720.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Bern",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -240,10 +226,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "1850-12-31"
     },
     {
       "id": "e-rara:6484943",
@@ -822,7 +809,6 @@
     {
       "id": "swisstopo:zeitreise-18601231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1860",
-      "editionDate": "1860-12-31",
       "yearStart": 1860,
       "yearEnd": 1860,
       "depictedYearStart": null,
@@ -832,9 +818,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18601231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=18601231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18601231/3857/12/2132/1441.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Bern",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -848,10 +835,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "1860-12-31"
     },
     {
       "id": "e-rara:6485166",
@@ -885,9 +873,8 @@
       "imprint": "Chur : Verlag der Leonhard Hitz'schen Buchhandlung, 1866"
     },
     {
-      "id": "swisstopo:zeitreise-18701231",
-      "title": "Zeitreise – Kartenwerke, Ausgabe 1870",
-      "editionDate": "1870-12-31",
+      "id": "swisstopo:siegfried-1870",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1870",
       "yearStart": 1870,
       "yearEnd": 1870,
       "depictedYearStart": null,
@@ -897,9 +884,44 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18701231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1870",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1870/3857/12/2132/1441.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Bern",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1870",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1870/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-18701231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1870",
+      "yearStart": 1870,
+      "yearEnd": 1870,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=18701231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18701231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -913,10 +935,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "1870-12-31"
     },
     {
       "id": "e-rara:6507673",
@@ -950,9 +973,42 @@
       "imprint": "Luzern : Verlag von Schiffmann's Buchhandlung (C.F Prell), [1880?]"
     },
     {
+      "id": "swisstopo:siegfried-1880",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1880",
+      "yearStart": 1880,
+      "yearEnd": 1880,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1880",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1880/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1880",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1880/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
       "id": "swisstopo:zeitreise-18831231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1883",
-      "editionDate": "1883-12-31",
       "yearStart": 1883,
       "yearEnd": 1883,
       "depictedYearStart": null,
@@ -962,9 +1018,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18831231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=18831231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18831231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -978,10 +1035,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "1883-12-31"
     },
     {
       "id": "e-rara:6484927",
@@ -1013,6 +1071,40 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6484929",
       "imprint": "Zürich : J. Wurster & Co., [1884]"
+    },
+    {
+      "id": "swisstopo:siegfried-1890",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1890",
+      "yearStart": 1890,
+      "yearEnd": 1890,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1890",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1890/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1890",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1890/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
     },
     {
       "id": "e-rara:6484259",
@@ -1048,7 +1140,6 @@
     {
       "id": "swisstopo:zeitreise-18951231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1895",
-      "editionDate": "1895-12-31",
       "yearStart": 1895,
       "yearEnd": 1895,
       "depictedYearStart": null,
@@ -1058,9 +1149,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18951231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=18951231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18951231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1074,10 +1166,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "1895-12-31"
     },
     {
       "id": "e-rara:6484932",
@@ -1111,9 +1204,42 @@
       "imprint": "Schaffhausen : C. Schoch's Buchhandlung, [1897?]"
     },
     {
-      "id": "swisstopo:zeitreise-19101231",
-      "title": "Zeitreise – Kartenwerke, Ausgabe 1910",
-      "editionDate": "1910-12-31",
+      "id": "swisstopo:siegfried-1900",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1900",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1900",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1900/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1900",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1900/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:siegfried-1910",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1910",
       "yearStart": 1910,
       "yearEnd": 1910,
       "depictedYearStart": null,
@@ -1123,9 +1249,44 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19101231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1910",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1910/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1910",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1910/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19101231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1910",
+      "yearStart": 1910,
+      "yearEnd": 1910,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19101231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19101231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1139,15 +1300,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1910-12-31"
+    },
+    {
+      "id": "swisstopo:siegfried-1920",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1920",
+      "yearStart": 1920,
+      "yearEnd": 1920,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1920",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1920/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1920",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1920/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-19251231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1925",
-      "editionDate": "1925-12-31",
       "yearStart": 1925,
       "yearEnd": 1925,
       "depictedYearStart": null,
@@ -1157,9 +1352,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19251231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19251231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19251231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1173,15 +1369,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1925-12-31"
+    },
+    {
+      "id": "swisstopo:siegfried-1930",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1930",
+      "yearStart": 1930,
+      "yearEnd": 1930,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1930",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1930/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1930",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1930/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
-      "id": "swisstopo:zeitreise-19401231",
-      "title": "Zeitreise – Kartenwerke, Ausgabe 1940",
-      "editionDate": "1940-12-31",
+      "id": "swisstopo:siegfried-1940",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1940",
       "yearStart": 1940,
       "yearEnd": 1940,
       "depictedYearStart": null,
@@ -1191,9 +1421,44 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19401231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1940",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1940/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1940",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1940/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19401231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1940",
+      "yearStart": 1940,
+      "yearEnd": 1940,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19401231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19401231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1207,15 +1472,83 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1940-12-31"
+    },
+    {
+      "id": "swisstopo:swissimage-1946",
+      "title": "SWISSIMAGE Zeitreise, Luftbild 1946",
+      "yearStart": 1946,
+      "yearEnd": 1946,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946&time=1946",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product_1946/default/1946/3857/12/2145/1434.jpeg",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "SWISSIMAGE Zeitreise (Luftbilder)",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.swissimage-product_1946",
+        "timeValue": "1946",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product_1946/default/1946/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – SWISSIMAGE 1946"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:siegfried-1949",
+      "title": "Siegfriedkarte 1:25 000, Ausgabe 1949",
+      "yearStart": 1949,
+      "yearEnd": 1949,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried&time=1949",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1949/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Siegfriedkarte 1:25 000",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.hiks-siegfried",
+        "timeValue": "1949",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1949/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 17,
+        "attribution": "© swisstopo – Siegfriedkarte"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-19551231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1955",
-      "editionDate": "1955-12-31",
       "yearStart": 1955,
       "yearEnd": 1955,
       "depictedYearStart": null,
@@ -1225,9 +1558,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19551231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19551231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19551231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1241,15 +1575,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1955-12-31"
+    },
+    {
+      "id": "swisstopo:swissimage-1960",
+      "title": "SWISSIMAGE Zeitreise, Luftbild 1960",
+      "yearStart": 1960,
+      "yearEnd": 1960,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product&time=1960",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/1960/3857/12/2145/1434.jpeg",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "SWISSIMAGE Zeitreise (Luftbilder)",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.swissimage-product",
+        "timeValue": "1960",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/1960/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+        "maxZoom": 20,
+        "attribution": "© swisstopo – SWISSIMAGE Zeitreise"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-19701231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1970",
-      "editionDate": "1970-12-31",
       "yearStart": 1970,
       "yearEnd": 1970,
       "depictedYearStart": null,
@@ -1259,9 +1627,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19701231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19701231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19701231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1275,15 +1644,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1970-12-31"
+    },
+    {
+      "id": "swisstopo:swissimage-1980",
+      "title": "SWISSIMAGE Zeitreise, Luftbild 1980",
+      "yearStart": 1980,
+      "yearEnd": 1980,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product&time=1980",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/1980/3857/12/2145/1434.jpeg",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "SWISSIMAGE Zeitreise (Luftbilder)",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.swissimage-product",
+        "timeValue": "1980",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/1980/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+        "maxZoom": 20,
+        "attribution": "© swisstopo – SWISSIMAGE Zeitreise"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-19901231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1990",
-      "editionDate": "1990-12-31",
       "yearStart": 1990,
       "yearEnd": 1990,
       "depictedYearStart": null,
@@ -1293,9 +1696,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19901231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=19901231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19901231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1309,15 +1713,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "1990-12-31"
+    },
+    {
+      "id": "swisstopo:swissimage-2000",
+      "title": "SWISSIMAGE Zeitreise, Luftbild 2000",
+      "yearStart": 2000,
+      "yearEnd": 2000,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product&time=2000",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/2000/3857/12/2145/1434.jpeg",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "SWISSIMAGE Zeitreise (Luftbilder)",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.swissimage-product",
+        "timeValue": "2000",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/2000/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+        "maxZoom": 20,
+        "attribution": "© swisstopo – SWISSIMAGE Zeitreise"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-20051231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 2005",
-      "editionDate": "2005-12-31",
       "yearStart": 2005,
       "yearEnd": 2005,
       "depictedYearStart": null,
@@ -1327,9 +1765,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20051231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=20051231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20051231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1343,15 +1782,49 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
+        "north": 48.230651
+      },
+      "editionDate": "2005-12-31"
+    },
+    {
+      "id": "swisstopo:swissimage-2020",
+      "title": "SWISSIMAGE Zeitreise, Luftbild 2020",
+      "yearStart": 2020,
+      "yearEnd": 2020,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product&time=2020",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/2020/3857/12/2145/1434.jpeg",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "SWISSIMAGE Zeitreise (Luftbilder)",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.swissimage-product",
+        "timeValue": "2020",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/2020/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+        "maxZoom": 20,
+        "attribution": "© swisstopo – SWISSIMAGE Zeitreise"
+      },
+      "extent": {
+        "west": 5.140242,
+        "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
       }
     },
     {
       "id": "swisstopo:zeitreise-20211231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 2021",
-      "editionDate": "2021-12-31",
       "yearStart": 2021,
       "yearEnd": 2021,
       "depictedYearStart": null,
@@ -1361,9 +1834,10 @@
       ],
       "providerId": "swisstopo",
       "institution": "Bundesamt für Landestopografie swisstopo",
-      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
-      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
-      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20211231/3857/10/536/365.png",
+      "rights": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen&time=20211231",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20211231/3857/12/2145/1434.png",
+      "thumbnailPlace": "swisstopo WMTS tile, Zürich",
       "iiifManifest": null,
       "type": "overlay",
       "collection": "Zeitreise – Kartenwerke",
@@ -1377,10 +1851,11 @@
       },
       "extent": {
         "west": 5.140242,
-        "east": 11.47757,
         "south": 45.398181,
+        "east": 11.47757,
         "north": 48.230651
-      }
+      },
+      "editionDate": "2021-12-31"
     }
   ]
 }

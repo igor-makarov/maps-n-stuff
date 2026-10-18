@@ -121,7 +121,7 @@ export function init(ctx) {
     // "…swissimage-product.metadata" is a tile-pyramid division layer, not map imagery.
     (layer) => !/\.metadata$/.test(layer.id),
   );
-  const isHistorical = (layer) => /zeitreihen|hiks/.test(layer.id);
+  const isHistorical = (layer) => /zeitreihen|hiks|swissimage/.test(layer.id);
 
   /** Editions ascending: slider left = oldest, and the default is a historical one. */
   const editionsOf = (layer) => [...(layer?.timeValues ?? [])].sort();
@@ -151,7 +151,7 @@ export function init(ctx) {
     const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'de'));
     overlayEl.replaceChildren(
       el('option', { value: '', text: 'keine Ebene' }),
-      el('optgroup', { label: 'Historische Kartenwerke (Zeitreise, Dufour, Siegfried)' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('optgroup', { label: 'Historische Kartenwerke und Luftbilder (Zeitreise, Siegfried, Dufour, SWISSIMAGE)' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
       el('optgroup', { label: 'Moderne Landeskarten' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
     );
     overlayEl.addEventListener('change', () => {

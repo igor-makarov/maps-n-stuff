@@ -3,7 +3,8 @@
 Machine-readable registry: [`public/data/sources.json`](../public/data/sources.json)
 (providers, endpoints actually used, rights, attribution, retrieval date) and
 [`public/data/overlays.json`](../public/data/overlays.json) (georeferenced map
-layers). Refresh script: [`scripts/harvest-seed.mjs`](../scripts/harvest-seed.mjs).
+layers). Refresh script: [`scripts/fetch-records.mjs`](../scripts/fetch-records.mjs)
+(`npm run harvest`, `npm run harvest:offline`).
 All checks below were run on **2026-10-18** (UTC) from this repository.
 
 OldMapsOnline was used only for *UX research* (information architecture: search →
@@ -41,13 +42,17 @@ Field mapping (nothing invented):
 
 | Record field | Upstream source |
 | --- | --- |
-| `title`, `titleAlt`, `creators`, `publisher`, `languages` | `oai_dc` (`dc:title`, `dc:creator`, `dc:publisher`, `dc:language`) |
-| `yearStart`/`yearEnd` | publication year parsed from the imprint date (`dc:date`) |
+| `title` | IIIF manifest `label` (verbatim); falls back to `dc:title` |
+| `creators` | `oai_dc` `dc:creator` (verbatim, may be empty) |
+| `yearStart`/`yearEnd` | publication year from `dc:date`, else parsed from the manifest `Impressum` |
 | `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year) |
-| `institution`, `shelfmark`, `extent`, `extentStatement`, `canvasCount`, `imprint` | IIIF manifest `metadata` + `sequences[0].canvases` |
-| `thumbnail` | IIIF thumbnail/derivative (`…/full/304/0/default.jpg`) |
-| `rights` | verbatim `dc:rights` |
-| `geo` / `geoNote` | only from a stated place/bbox; the seed derives one point from a swisstopo search hit and labels it as such |
+| `institution` | manifest `Besitzende Institution` (first institution before the comma) |
+| `recordUrl` | the DOI landing page (`https://www.e-rara.ch/doi/10.3931/e-rara-<id>`) |
+| `thumbnail` | IIIF thumbnail from the manifest (`…/full/304/0/default.jpg`) |
+| `imageService` | IIIF Image API 2 service id of the first canvas |
+| `rights` | verbatim `dc:rights` (the seed set is `PDM 1.0`) |
+| `extent` / `geo` | parsed from the manifest `Kartendaten` statement; `geo` is the centre of that stated bbox, never a guessed point |
+| `imprint`, `collection`, `sheet` | manifest `Impressum`; the OAI set / sheet name from the manifest label |
 
 ## 2. swisstopo — Federal Office of Topography geoservices
 
@@ -68,8 +73,11 @@ document):
 
 | Layer | Title | Editions (`Time` values) |
 | --- | --- | --- |
-| `ch.swisstopo.zeitreihen` | Zeitreise – Kartenwerke | 178 values, `YYYYMMDD` 18441231 … 20211231 |
+| `ch.swisstopo.zeitreihen` | Zeitreise – Kartenwerke | 178 values, `YYYYMMDD` 18441231 … 20211231 (the service advertises 1844 but serves empty tiles before 1849; the app skips such editions after probing) |
+| `ch.swisstopo.hiks-siegfried` | Siegfriedkarte 1:25 000 | 80 values, `YYYY` 1870 … 1949 |
 | `ch.swisstopo.hiks-dufour` | Dufourkarte Erstausgabe | `current` |
+| `ch.swisstopo.swissimage-product` | SWISSIMAGE Zeitreise (Luftbilder) | 100 values, `YYYY` 1926 … 2025 + `current` |
+| `ch.swisstopo.swissimage-product_1946` | SWISSIMAGE 1946 | `1946` |
 | `ch.swisstopo.pixelkarte-farbe-pk25.noscale` | Landeskarte 1:25 000 | 76 |
 | `ch.swisstopo.pixelkarte-farbe-pk50.noscale` | Landeskarte 1:50 000 | 90 |
 | `…pk100/pk200/pk500/pk1000`, `…grau-pk1000` | Landeskarten 1:100 000 … 1:1 Mio. | 1 each |
@@ -80,28 +88,40 @@ template, `3857` matrix set), attribution shown on the map as `© swisstopo`.
 Verification evidence:
 
 ```
-GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18441231/3857/12/2144/1434.png
+GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18831231/3857/12/2145/1434.png
     -> 200 image/png, access-control-allow-origin: *
+GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/1900/3857/12/2145/1434.png
+    -> 200 image/png  (~153 kB, Zürich sheet)
+GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product_1946/default/1946/3857/12/2145/1434.jpeg
+    -> 200 image/jpeg (~24 kB, Zürich aerial)
 GET https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Zürich&type=locations&sr=4326
     -> 200 application/json (label "Zürich (ZH)", lat/lon, geom_st_box2d)
 ```
 
+Preview/thumbnail rule: every `overlay` record stores the tile URL the harvest
+actually verified as non-empty (`thumbnailPlace` names the probe location, Zürich
+first). Editions whose advertised tiles are empty at every probe location are left
+out and listed in `records.json` `skipped` (e.g. Zeitreise 1844–1848).
+
 Note: the `zoomlevel` attribute of some search results is a uint32 bitfield
 (e.g. `4294967295`); the Worker drops implausible values instead of passing them on.
 
-## 3. Local fixture provider (`local`)
+## 3. Local fixture provider
 
-`sources.json` keeps a `local` entry for test fixtures. **No seed record uses
-it**, no fixture metadata is presented as real data, and `npm test` asserts the
-distinction (see `tests/data.test.mjs`).
+The committed registry contains only the two real providers above. Tests that need
+synthetic records build them in memory (`tests/records.test.mjs`), so no fixture
+metadata can appear in the public data or the UI.
 
 ## Fetching policy (politeness, caching, failure behaviour)
 
-- **Bounded harvest**: `scripts/harvest-seed.mjs` requests 3 OAI-PMH pages /
-  ≤ 24 titles per run, with a descriptive `User-Agent`
-  (`maps-n-stuff-seed-harvest/0.1 (+repository URL)`), and caches every upstream
-  response under `.cache/` (git-ignored) so re-runs are cheap and `--offline`
-  reproduces the committed data without network access.
+- **Bounded harvest**: `scripts/fetch-records.mjs` requests the documented OAI-PMH
+  pages (22 + 10, with resumption tokens), one IIIF manifest per candidate title,
+  and the WMTS capabilities document, with a descriptive `User-Agent`
+  (`Kartenzeit/1.0 (Canton-Zurich design study; contact: project maintainers)`).
+  At most 3 concurrent requests with a short pause between them, and every
+  upstream response (including tile probes) is cached under `.cache/fetch/`
+  (git-ignored) so `--offline` reproduces the committed data without network
+  access; a full refresh takes a few minutes and is never part of the build.
 - **Edge caches in the Worker**: `/api/search/places` 5 minutes,
   `/api/fetch` 1 hour, `/api/records|layers|sources` 5 minutes.
 - **Timeouts**: 8 s per upstream call (`AbortSignal.timeout`), abortable client

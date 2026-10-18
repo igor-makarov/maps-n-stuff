@@ -22,7 +22,8 @@ documented original sources (see [data-sources.md](data-sources.md)).
 | `npm test` | `node --test` suites for store, records/data and the Worker |
 | `npm run check` | `build` + `test` + `wrangler deploy --dry-run` |
 | `npm run dry-run` | bundles the Worker and writes the deploy artefact to `dist/` without uploading |
-| `npm run harvest` | re-fetches the seed data from e-rara/swisstopo (`--offline` uses the `.cache/`) |
+| `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo |
+| `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
 
 ## Cloudflare Workers deployment
@@ -100,19 +101,23 @@ after 8 s.
 
 ## Data refresh
 
-`scripts/harvest-seed.mjs` (owner: zurich-maps-0) rebuilds
+`scripts/fetch-records.mjs` (owner: zurich-maps-0) rebuilds
 `public/data/records.json`, `public/data/sources.json` and
 `public/data/overlays.json` from:
 
-- e-rara OAI-PMH (`set=zuz`, `oai_dc`) for catalogue metadata,
+- e-rara OAI-PMH (`set=zuz`, `set=landkarten`, `oai_dc`) for catalogue metadata,
 - e-rara DOI landing pages + IIIF Presentation 2.0 manifests for holding
-  institution, shelfmark, extent and image service,
+  institution, shelfmark, title, imprint, rights, extent and image service,
 - swisstopo WMTS capabilities (`EPSG/3857/1.0.0/WMTSCapabilities.xml`) for the
-  georeferenced historical map layers.
+  Zeitreise, Siegfriedkarte, Dufourkarte and SWISSIMAGE Zeitreise editions and
+  for the comparison layers in `overlays.json`.
 
-Responses are cached under `.cache/` (git-ignored); `--offline` re-uses them.
-No invented metadata: fields an upstream does not state stay `null`, and
-publication years are kept separate from depicted-map years.
+Responses are cached under `.cache/fetch/` (git-ignored); `--offline` re-uses
+them. At most 3 concurrent requests, a pause between calls and a descriptive
+`User-Agent`. No invented metadata: fields an upstream does not state stay
+`null`, publication years are kept separate from depicted-map years, and overlay
+records only describe editions the WMTS service advertises and serves (empty
+tiles are probed and skipped, see `records.json.skipped`).
 
 ## Troubleshooting
 

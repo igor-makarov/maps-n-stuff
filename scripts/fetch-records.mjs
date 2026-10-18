@@ -13,27 +13,43 @@
  * editions come from the WMTS Time dimension.
  *
  * Usage:
- *   node scripts/fetch-records.mjs --out public/data
+ *   node scripts/fetch-records.mjs --out public/data      # refresh from the network
+ *   node scripts/fetch-records.mjs --offline              # replay the .cache/ responses
  *   node scripts/fetch-records.mjs --out /tmp/out --no-write
  *
  * The script is deliberately dependency-free and polite: max 3 concurrent requests,
- * a short pause between manifest requests, and a descriptive User-Agent.
+ * a short pause between manifest requests, a descriptive User-Agent, and an on-disk
+ * response cache (`.cache/fetch/`, git-ignored) so repeated runs do not hammer the
+ * upstreams. `--offline` never opens a network connection.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const UA = 'Kartenzeit/1.0 (Canton-Zurich design study; contact: project maintainers)';
 const args = process.argv.slice(2);
 const outDir = resolve(getArg('--out') || 'public/data');
 const writeOutput = !args.includes('--no-write');
+const OFFLINE = args.includes('--offline');
 const RETRIEVED = '2026-10-18';
+const CACHE_DIR = new URL('../.cache/fetch/', import.meta.url);
 
 function getArg(name) {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : null;
 }
 
+function cacheFile(url, as) {
+  const hash = createHash('sha1').update(url).digest('hex').slice(0, 20);
+  return new URL(`./${hash}.${as === 'json' ? 'json' : 'txt'}`, CACHE_DIR);
+}
+
 async function get(url, { as = 'text', timeout = 25000 } = {}) {
+  const file = cacheFile(url, as);
+  if (OFFLINE) {
+    const cached = await readFile(file, 'utf8');
+    return as === 'json' ? JSON.parse(cached) : cached;
+  }
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
   try {
@@ -42,7 +58,10 @@ async function get(url, { as = 'text', timeout = 25000 } = {}) {
       signal: ctrl.signal,
     });
     if (!res.ok) throw new Error(`${res.status} ${url}`);
-    return as === 'json' ? await res.json() : await res.text();
+    const body = as === 'json' ? await res.json() : await res.text();
+    await mkdir(CACHE_DIR, { recursive: true });
+    await writeFile(file, as === 'json' ? JSON.stringify(body) : body);
+    return body;
   } finally {
     clearTimeout(timer);
   }
@@ -52,6 +71,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function decode(s) {
   return String(s || '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, num) => String.fromCodePoint(Number(num)))
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -225,74 +246,281 @@ async function pool(items, limit, fn) {
   return out.filter(Boolean);
 }
 
-/** swisstopo Zeitreise editions: only Time values advertised by WMTS capabilities. */
-async function swisstopoEditions() {
-  const caps = await get('https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml', { timeout: 60000 });
-  const idx = caps.indexOf('<ows:Identifier>ch.swisstopo.zeitreihen</ows:Identifier>');
-  if (idx < 0) throw new Error('zeitreihen layer missing from WMTS capabilities');
-  const block = caps.slice(idx, caps.indexOf('</Layer>', idx));
-  const times = [...block.matchAll(/<Value>(\d{8})<\/Value>/g)].map((m) => m[1]);
-  const titleMatch = caps.slice(Math.max(0, idx - 4000), idx).match(/<ows:Title>([^<]+)<\/ows:Title>/g);
-  const layerTitle = titleMatch ? decode(titleMatch[titleMatch.length - 1].replace(/<\/?ows:Title>/g, '')) : 'Zeitreise - Kartenwerke';
-  // The WGS84 bounding box is declared just before the layer identifier.
-  const head = caps.slice(Math.max(0, idx - 3000), idx);
-  const bboxMatch = head.match(/<ows:LowerCorner>([\d.\s]+)<\/ows:LowerCorner>\s*<ows:UpperCorner>([\d.\s]+)<\/ows:UpperCorner>/);
-  const extent = bboxMatch
-    ? {
-        west: Number(bboxMatch[1].split(/\s+/)[0]),
-        south: Number(bboxMatch[1].split(/\s+/)[1]),
-        east: Number(bboxMatch[2].split(/\s+/)[0]),
-        north: Number(bboxMatch[2].split(/\s+/)[1]),
-      }
-    : null;
-  const wantedYears = [1844, 1850, 1860, 1870, 1883, 1895, 1910, 1925, 1940, 1955, 1970, 1990, 2005, 2021];
-  const byYear = new Map();
-  for (const t of times) {
-    const y = Number(t.slice(0, 4));
-    const prev = byYear.get(y);
-    if (!prev || t > prev) byYear.set(y, t);
+const WMTS_CAPS = 'https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml';
+
+/**
+ * Parse a WMTS 1.0.0 GetCapabilities document:
+ *   layers     Map<layerId, { id, title, timeValues, urlTemplate, tileMatrixSet, maxZoom, extent }>
+ *   matrixSets Map<setId, maxZoom>  (from the TileMatrixSet definitions, identifiers are 0-based)
+ * Only layers that advertise both a `Time` dimension and a tile template are kept.
+ */
+export function parseWmtsCapabilities(xml) {
+  const matrixSets = new Map();
+  for (const m of xml.matchAll(/<TileMatrixSet>\s*<ows:Identifier>([^<]+)<\/ows:Identifier>([\s\S]*?)<\/TileMatrixSet>/g)) {
+    const count = m[2].split('<TileMatrix>').length - 1;
+    if (count > 1) matrixSets.set(m[1], count - 1);
   }
-  return wantedYears
-    .map((year) => {
-      const time = byYear.get(year) || [...byYear.keys()].sort((a, b) => Math.abs(a - year) - Math.abs(b - year)).map((y) => byYear.get(y))[0];
-      if (!time) return null;
-      const y = Number(time.slice(0, 4));
-      return {
-        id: `swisstopo:zeitreise-${time}`,
-        title: `Zeitreise – Kartenwerke, Ausgabe ${y}`,
-        editionDate: `${time.slice(0, 4)}-${time.slice(4, 6)}-${time.slice(6, 8)}`,
-        yearStart: y,
-        yearEnd: y,
+  const layers = new Map();
+  for (const block of xml.split('<Layer>').slice(1)) {
+    const id = block.match(/<ows:Identifier>([^<]+)<\/ows:Identifier>/);
+    if (!id) continue;
+    const title = block.match(/<ows:Title>([^<]*)<\/ows:Title>/);
+    const dim = block.match(/<Dimension[^>]*>([\s\S]*?)<\/Dimension>/);
+    const timeValues = dim ? [...dim[1].matchAll(/<Value>([^<]+)<\/Value>/g)].map((m) => decode(m[1])) : [];
+    const template = block.match(/<ResourceURL[^>]*template="([^"]+)"/);
+    const set = block.match(/<TileMatrixSetLink>[\s\S]*?<TileMatrixSet>([^<]+)<\/TileMatrixSet>/);
+    const bbox = block.match(/<ows:WGS84BoundingBox>[\s\S]*?<ows:LowerCorner>([^<]+)<\/ows:LowerCorner>[\s\S]*?<ows:UpperCorner>([^<]+)<\/ows:UpperCorner>/);
+    if (!timeValues.length || !template) continue;
+    const tileMatrixSet = set ? set[1] : null;
+    const lower = bbox ? bbox[1].split(/\s+/).map(Number) : null;
+    const upper = bbox ? bbox[2].split(/\s+/).map(Number) : null;
+    layers.set(id[1], {
+      id: id[1],
+      title: title ? decode(title[1]) : id[1],
+      timeValues,
+      urlTemplate: template[1],
+      tileMatrixSet,
+      maxZoom: (tileMatrixSet && matrixSets.get(tileMatrixSet)) || 17,
+      extent:
+        lower && upper && lower.every(Number.isFinite) && upper.every(Number.isFinite)
+          ? { west: lower[0], south: lower[1], east: upper[0], north: upper[1] }
+          : null,
+    });
+  }
+  return { layers, matrixSets };
+}
+
+let capabilitiesPromise = null;
+function wmtsLayers() {
+  if (!capabilitiesPromise) {
+    capabilitiesPromise = get(WMTS_CAPS, { timeout: 60000 }).then((xml) => parseWmtsCapabilities(xml));
+  }
+  return capabilitiesPromise;
+}
+
+/**
+ * Curated swisstopo series for the record list. `years` are the editions the
+ * gallery wants to show; the record always describes the edition the service
+ * actually advertises (exact year when available, otherwise the nearest one).
+ */
+const SWISSTOPO_SERIES = [
+  {
+    layerId: 'ch.swisstopo.zeitreihen',
+    slug: 'zeitreise',
+    collection: 'Zeitreise – Kartenwerke',
+    title: (year) => `Zeitreise – Kartenwerke, Ausgabe ${year}`,
+    years: [1844, 1850, 1860, 1870, 1883, 1895, 1910, 1925, 1940, 1955, 1970, 1990, 2005, 2021],
+    attribution: '© swisstopo – Zeitreise (Kartenwerke)',
+  },
+  {
+    layerId: 'ch.swisstopo.hiks-siegfried',
+    slug: 'siegfried',
+    collection: 'Siegfriedkarte 1:25 000',
+    title: (year) => `Siegfriedkarte 1:25 000, Ausgabe ${year}`,
+    years: [1870, 1880, 1890, 1900, 1910, 1920, 1930, 1940, 1949],
+    attribution: '© swisstopo – Siegfriedkarte',
+  },
+  {
+    layerId: 'ch.swisstopo.swissimage-product',
+    slug: 'swissimage',
+    collection: 'SWISSIMAGE Zeitreise (Luftbilder)',
+    title: (year) => `SWISSIMAGE Zeitreise, Luftbild ${year}`,
+    years: [1960, 1980, 2000, 2020],
+    attribution: '© swisstopo – SWISSIMAGE Zeitreise',
+  },
+  {
+    // Dedicated historical layer with full national coverage (the Time dimension
+    // of `swissimage-product` only has sparse 1946 imagery).
+    layerId: 'ch.swisstopo.swissimage-product_1946',
+    slug: 'swissimage',
+    collection: 'SWISSIMAGE Zeitreise (Luftbilder)',
+    title: (year) => `SWISSIMAGE Zeitreise, Luftbild ${year}`,
+    years: [1946],
+    attribution: '© swisstopo – SWISSIMAGE 1946',
+  },
+];
+
+/** Comparison layers offered by the picker (see `public/data/overlays.json`). */
+const OVERLAY_LAYER_IDS = [
+  'ch.swisstopo.zeitreihen',
+  'ch.swisstopo.hiks-siegfried',
+  'ch.swisstopo.hiks-dufour',
+  'ch.swisstopo.swissimage-product',
+  'ch.swisstopo.swissimage-product_1946',
+  'ch.swisstopo.pixelkarte-farbe-pk1000.noscale',
+  'ch.swisstopo.pixelkarte-farbe-pk500.noscale',
+  'ch.swisstopo.pixelkarte-farbe-pk200.noscale',
+  'ch.swisstopo.pixelkarte-farbe-pk100.noscale',
+  'ch.swisstopo.pixelkarte-farbe-pk50.noscale',
+  'ch.swisstopo.pixelkarte-farbe-pk25.noscale',
+  'ch.swisstopo.pixelkarte-grau-pk1000.noscale',
+];
+
+const SWISSTOPO_LICENSE = 'OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich';
+
+function swisstopoAttribution(layer) {
+  if (layer.id === 'ch.swisstopo.zeitreihen') return '© swisstopo – Zeitreise (Kartenwerke)';
+  if (layer.id === 'ch.swisstopo.swissimage-product') return '© swisstopo – SWISSIMAGE Zeitreise';
+  if (layer.id === 'ch.swisstopo.swissimage-product_1946') return '© swisstopo – SWISSIMAGE 1946';
+  if (layer.id === 'ch.swisstopo.hiks-siegfried') return '© swisstopo – Siegfriedkarte';
+  if (layer.id === 'ch.swisstopo.hiks-dufour') return '© swisstopo – Dufourkarte Erstausgabe';
+  return `© swisstopo – ${layer.title}`;
+}
+
+/** Tile URL from a WMTS template for fixed matrix / tile coordinates. */
+function tileUrl(layer, time, z, x, y) {
+  return layer.urlTemplate
+    .replace('{Time}', time)
+    .replace('{TileMatrixSet}', layer.tileMatrixSet || '3857')
+    .replace('{TileMatrix}', String(z))
+    .replace('{TileCol}', String(x))
+    .replace('{TileRow}', String(y));
+}
+
+const timeYear = (time) => Number(String(time).slice(0, 4));
+
+/** Web-Mercator tile coordinates (the same slippy scheme swisstopo serves). */
+function slippy(lat, lon, z) {
+  const n = 2 ** z;
+  const x = Math.floor(((lon + 180) / 360) * n);
+  const rad = (lat * Math.PI) / 180;
+  const y = Math.floor(((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n);
+  return [x, y];
+}
+
+/** Candidate preview locations, in priority order (Zürich first — the app's home view). */
+const PREVIEW_PLACES = [
+  ['Zürich', 47.3772, 8.5273],
+  ['Bern', 46.948, 7.4474],
+  ['Basel', 47.5596, 7.5886],
+  ['Lausanne', 46.5197, 6.6323],
+  ['Lugano', 46.0037, 8.9511],
+];
+/** A WMTS tile below this many bytes is a transparent/empty placeholder. */
+const MIN_TILE_BYTES = 2500;
+
+/**
+ * Tile byte size with an on-disk probe cache. Used to pick a preview tile that
+ * really contains imagery, and to drop editions the service advertises but
+ * serves empty (e.g. Zeitreise 1844–1848).
+ */
+async function tileSize(url) {
+  const file = cacheFile(`probe:${url}`, 'json');
+  let cached = null;
+  try {
+    cached = JSON.parse(await readFile(file, 'utf8'));
+  } catch {
+    cached = null;
+  }
+  if (OFFLINE) return cached ? cached.size : null;
+  const res = await fetch(url, { headers: { 'user-agent': UA } });
+  const size = res.ok ? (await res.arrayBuffer()).byteLength : null;
+  await mkdir(CACHE_DIR, { recursive: true });
+  await writeFile(file, JSON.stringify({ status: res.status, size }));
+  await sleep(90);
+  return size;
+}
+
+/** First preview tile with real imagery, or null when the edition is empty. */
+async function previewTile(layer, time) {
+  for (const [place, lat, lon] of PREVIEW_PLACES) {
+    for (const z of [12, 11]) {
+      const [x, y] = slippy(lat, lon, z);
+      const url = tileUrl(layer, time, z, x, y);
+      const size = await tileSize(url);
+      if (size && size >= MIN_TILE_BYTES) return { url, place, size };
+    }
+  }
+  return null;
+}
+
+/** The advertised edition closest to `year` (exact match wins). */
+function editionForYear(layer, year) {
+  const times = [...layer.timeValues].filter((t) => Number.isFinite(timeYear(t)));
+  if (!times.length) return null;
+  return times.sort((a, b) => Math.abs(timeYear(a) - year) - Math.abs(timeYear(b) - year) || a.localeCompare(b))[0];
+}
+
+/** swisstopo overlay records (type "overlay") for the curated series. */
+async function swisstopoOverlayRecords() {
+  const { layers } = await wmtsLayers();
+  const records = [];
+  const skipped = [];
+  for (const series of SWISSTOPO_SERIES) {
+    const layer = layers.get(series.layerId);
+    if (!layer) throw new Error(`WMTS capabilities missing ${series.layerId}`);
+    const chosen = new Set();
+    for (const year of series.years) {
+      const time = editionForYear(layer, year);
+      if (!time || chosen.has(time)) continue;
+      chosen.add(time);
+      const actualYear = timeYear(time);
+      const preview = await previewTile(layer, time);
+      if (!preview) {
+        skipped.push({ id: `swisstopo:${series.slug}-${time}`, reason: 'WMTS advertises this edition but serves empty tiles at the preview locations' });
+        continue;
+      }
+      const record = {
+        id: `swisstopo:${series.slug}-${time}`,
+        title: series.title(actualYear),
+        yearStart: actualYear,
+        yearEnd: actualYear,
         depictedYearStart: null,
         depictedYearEnd: null,
         creators: ['Bundesamt für Landestopografie swisstopo'],
         providerId: 'swisstopo',
         institution: 'Bundesamt für Landestopografie swisstopo',
-        rights: 'OGD swisstopo – Quellenangabe «©swisstopo» erforderlich',
-        recordUrl: 'https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen',
-        thumbnail: `https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/${time}/3857/10/536/365.png`,
+        rights: SWISSTOPO_LICENSE,
+        recordUrl: `https://map.geo.admin.ch/?lang=de&layers=${layer.id}&time=${time}`,
+        thumbnail: preview.url,
+        thumbnailPlace: `swisstopo WMTS tile, ${preview.place}`,
         iiifManifest: null,
         type: 'overlay',
-        collection: 'Zeitreise – Kartenwerke',
+        collection: series.collection,
         overlay: {
           kind: 'wmts',
-          layerId: 'ch.swisstopo.zeitreihen',
+          layerId: layer.id,
           timeValue: time,
-          urlTemplate: `https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/${time}/3857/{TileMatrix}/{TileCol}/{TileRow}.png`,
-          maxZoom: 18,
-          attribution: '© swisstopo – Zeitreise (Kartenwerke)',
+          urlTemplate: layer.urlTemplate.replace('{Time}', time),
+          maxZoom: layer.maxZoom,
+          attribution: series.attribution,
         },
-        extent: extent
-          ? {
-              west: Number(extent.west.toFixed(6)),
-              east: Number(extent.east.toFixed(6)),
-              south: Number(extent.south.toFixed(6)),
-              north: Number(extent.north.toFixed(6)),
-            }
+        extent: layer.extent
+          ? Object.fromEntries(Object.entries(layer.extent).map(([k, v]) => [k, Number(v.toFixed(6))]))
           : null,
       };
-    })
-    .filter(Boolean);
+      if (/^\d{8}$/.test(String(time))) {
+        record.editionDate = `${time.slice(0, 4)}-${time.slice(4, 6)}-${time.slice(6, 8)}`;
+      }
+      records.push(record);
+    }
+  }
+  return { records, skipped };
+}
+
+/** `public/data/overlays.json` document: curated georeferenced comparison layers. */
+async function swisstopoOverlayLayers() {
+  const { layers } = await wmtsLayers();
+  const overlays = [];
+  for (const id of OVERLAY_LAYER_IDS) {
+    const layer = layers.get(id);
+    if (!layer) continue;
+    overlays.push({
+      id: layer.id,
+      title: layer.title,
+      providerId: 'swisstopo',
+      urlTemplate: layer.urlTemplate,
+      timeValues: layer.timeValues,
+      maxZoom: layer.maxZoom,
+      tileMatrixSet: layer.tileMatrixSet,
+      extent: layer.extent
+        ? Object.fromEntries(Object.entries(layer.extent).map(([k, v]) => [k, Number(v.toFixed(6))]))
+        : null,
+      attribution: swisstopoAttribution(layer),
+      license: SWISSTOPO_LICENSE,
+    });
+  }
+  return overlays;
 }
 
 const zuzTitles = [];
@@ -362,7 +590,8 @@ async function main() {
     })
     .slice(0, 12);
 
-  const overlays = await swisstopoEditions();
+  const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
+  const overlayLayers = await swisstopoOverlayLayers();
   const records = [...zbRecords, ...ethRecords, ...overlays].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
   );
@@ -424,11 +653,29 @@ async function main() {
             record: 'https://www.swisstopo.admin.ch/de/zeitreise',
             discovery: 'https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen',
           },
+          {
+            id: 'siegfriedkarte',
+            name: 'Siegfriedkarte 1:25 000 (1870–1949)',
+            record: 'https://www.swisstopo.admin.ch/de/geodata/maps/historical/siegfriedkarte',
+            discovery: 'https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried',
+          },
+          {
+            id: 'dufourkarte',
+            name: 'Dufourkarte Erstausgabe',
+            record: 'https://www.swisstopo.admin.ch/de/geodata/maps/historical/dufourkarte',
+            discovery: 'https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour',
+          },
+          {
+            id: 'swissimage-zeitreise',
+            name: 'SWISSIMAGE Zeitreise (Luftbilder 1926–heute)',
+            record: 'https://www.swisstopo.admin.ch/de/geodata/images/swissimage-zeitreise',
+            discovery: 'https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product',
+          },
         ],
         endpoints: {
-          wmtsCapabilities: 'https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml',
+          wmtsCapabilities: WMTS_CAPS,
           tileTemplate:
-            'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/{time}/3857/{z}/{x}/{y}.png',
+            'https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}',
           basemapTemplate:
             'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg',
           search: 'https://api3.geo.admin.ch/rest/services/api/SearchServer',
@@ -439,7 +686,7 @@ async function main() {
         retrievalDate: RETRIEVED,
         apiHosts: ['wmts.geo.admin.ch', 'api3.geo.admin.ch', 'map.geo.admin.ch'],
         api: {
-          wmtsCapabilities: 'https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml',
+          wmtsCapabilities: WMTS_CAPS,
           wmtsTile:
             'https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}',
           searchServer: 'https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}',
@@ -457,7 +704,8 @@ async function main() {
     method:
       'e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for ' +
       'verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated "Kartendaten" ' +
-      'extent; swisstopo WMTS GetCapabilities for the Zeitreise editions. No title, date or coordinate is ' +
+      'extent; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
+      'editions and for the comparison layers in overlays.json. No title, date or coordinate is ' +
       'invented. Regenerate with: node scripts/fetch-records.mjs --out public/data',
     selection: {
       'e-rara:zuz': {
@@ -471,23 +719,56 @@ async function main() {
         rule: 'Swiss sheet maps from the landkarten set, requires a stated Kartendaten bbox',
       },
       'swisstopo:zeitreise': {
-        considered: overlays.length,
-        kept: overlays.length,
-        rule: 'one record per curated Zeitreise edition from the WMTS Time dimension',
+        considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
+        kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length,
+        rule: 'curated Zeitreise editions (exact or nearest advertised Time value)',
+      },
+      'swisstopo:hiks-siegfried': {
+        considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.hiks-siegfried')?.timeValues.length ?? 0,
+        kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length,
+        rule: 'one record per decade advertised in the Siegfriedkarte Time dimension (1870–1949)',
+      },
+      'swisstopo:swissimage-product': {
+        considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.swissimage-product')?.timeValues.length ?? 0,
+        kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length,
+        rule: 'representative SWISSIMAGE Zeitreise aerial mosaics (1960–2020)',
+      },
+      'swisstopo:swissimage-1946': {
+        considered: 1,
+        kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product_1946').length,
+        rule: 'the dedicated SWISSIMAGE 1946 historical aerial layer',
       },
     },
-    skipped: [],
+    skipped: overlaySkipped,
     records,
   };
   sources.generatedBy = 'scripts/fetch-records.mjs';
   sources.method = 'provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date';
   sources.generatedAt = new Date().toISOString();
 
-  console.log(`Built ${zbRecords.length} ZB maps, ${ethRecords.length} ETH maps, ${overlays.length} Zeitreise overlays (${records.length} records)`);
+  const overlaysDoc = {
+    generatedAt: new Date().toISOString(),
+    retrieved: RETRIEVED,
+    generator: 'scripts/fetch-records.mjs',
+    source: 'swisstopo WMTS 1.0.0 GetCapabilities (georeferenced historical map and aerial-image services)',
+    capabilities: WMTS_CAPS,
+    attribution: '© swisstopo',
+    license: SWISSTOPO_LICENSE,
+    overlays: overlayLayers,
+  };
+
+  console.log(
+    `Built ${zbRecords.length} ZB maps, ${ethRecords.length} ETH maps, ` +
+      `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
+      `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
+      `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +
+      `(${records.length} records, ${overlayLayers.length} comparison layers)`,
+  );
   if (writeOutput) {
     await mkdir(outDir, { recursive: true });
     await writeFile(resolve(outDir, 'records.json'), JSON.stringify(recordsDoc, null, 2) + '\n');
     await writeFile(resolve(outDir, 'sources.json'), JSON.stringify(sources, null, 2) + '\n');
+    await writeFile(resolve(outDir, 'overlays.json'), JSON.stringify(overlaysDoc, null, 2) + '\n');
     console.log('Wrote', outDir);
   } else {
     console.log(JSON.stringify(recordsDoc.records.slice(0, 3), null, 2));

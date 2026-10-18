@@ -17,7 +17,8 @@ independent project and not a cantonal website.
 What works today (verified with `wrangler dev` + headless Chromium):
 
 - pan/zoom map on swisstopo base tiles, with georeferenced historical map layers
-  (Zeitreise 1844–2021, Dufour) including edition slider, opacity and attribution;
+  (Zeitreise 1850–2021, Siegfriedkarte 1870–1949, Dufourkarte, SWISSIMAGE Zeitreise
+  aerial imagery 1946–2020) including edition slider, opacity and attribution;
 - place search against the swisstopo search service (proxied and edge-cached by the
   Worker) with keyboard-operable suggestions and “quick pick” places;
 - publication-year range, collection, type and “only in the current map view”
@@ -41,8 +42,9 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set currently holds 24 e-rara records (the UI states
-the real count); `public/vendor/leaflet` is vendored but unused; without network
+Known limitations: the seed set holds 55 records (28 e-rara maps from Zürich and
+ETH holdings plus 27 georeferenced swisstopo overlay editions; the UI states the
+real count). `public/vendor/leaflet` is vendored but unused; without network
 access the tiles and IIIF images stay empty while metadata remains readable.
 
 ## Swarm configuration

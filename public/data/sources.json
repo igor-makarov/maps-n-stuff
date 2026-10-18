@@ -59,11 +59,29 @@
           "name": "Zeitreise – Kartenwerke",
           "record": "https://www.swisstopo.admin.ch/de/zeitreise",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        },
+        {
+          "id": "siegfriedkarte",
+          "name": "Siegfriedkarte 1:25 000 (1870–1949)",
+          "record": "https://www.swisstopo.admin.ch/de/geodata/maps/historical/siegfriedkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
+        },
+        {
+          "id": "dufourkarte",
+          "name": "Dufourkarte Erstausgabe",
+          "record": "https://www.swisstopo.admin.ch/de/geodata/maps/historical/dufourkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
+        },
+        {
+          "id": "swissimage-zeitreise",
+          "name": "SWISSIMAGE Zeitreise (Luftbilder 1926–heute)",
+          "record": "https://www.swisstopo.admin.ch/de/geodata/images/swissimage-zeitreise",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
         }
       ],
       "endpoints": {
         "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/{time}/3857/{z}/{x}/{y}.png",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
         "basemapTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
         "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer"
       },
@@ -85,5 +103,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T21:49:57.026Z"
+  "generatedAt": "2026-10-18T22:00:54.694Z"
 }
