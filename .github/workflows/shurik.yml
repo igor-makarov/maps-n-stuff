@@ -41,7 +41,7 @@ on:
         description: Idle seconds between iterations; defaults to 0 on start
         type: string
       checkpoint-seconds:
-        description: 0 disables automatic task commits and pushes; positive intervals re-enable checkpoints
+        description: 0 disables periodic checkpoints; session-start and iteration-end saves remain
         type: string
       checkpoint-paths:
         description: JSON array of ignored task paths to retain; defaults to []
@@ -104,7 +104,7 @@ jobs:
           fi
       - id: shurik
         if: github.event_name != 'push' || steps.launch.outputs.initialize == 'true'
-        uses: igor-makarov/shurik@6780fdc0bb3e13ca9356dcb9a69b9443212a0389 # v2 + checkpoint-off support
+        uses: igor-makarov/shurik@v2
         with:
           inputs: ${{ github.event_name == 'push' && steps.launch.outputs.inputs || toJSON(inputs) }}
           checkpoint-seconds: ${{ inputs['checkpoint-seconds'] || '0' }}
@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - id: shurik
-        uses: igor-makarov/shurik@6780fdc0bb3e13ca9356dcb9a69b9443212a0389 # v2 + checkpoint-off support
+        uses: igor-makarov/shurik@v2
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
@@ -160,7 +160,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - uses: igor-makarov/shurik@6780fdc0bb3e13ca9356dcb9a69b9443212a0389 # v2 + checkpoint-off support
+      - uses: igor-makarov/shurik@v2
         env:
           SHURIK_ITERATION_RESULT: ${{ needs.iteration.result }}
         with:
