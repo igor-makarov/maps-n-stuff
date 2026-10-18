@@ -44,6 +44,7 @@ const results = [];
 const consoleMessages = [];
 const appInfo = [];
 const failedRequests = [];
+const apiRequests = []; // fetch()/XHR traffic: must stay on our own origin (CSP)
 let failures = 0;
 
 function check(name, ok, detail = '') {
@@ -307,6 +308,15 @@ cdp.on('Runtime.consoleAPICalled', (params) => {
 cdp.on('Runtime.exceptionThrown', (params) => {
   consoleMessages.push({ level: 'exception', text: params.exceptionDetails?.exception?.description || params.exceptionDetails?.text });
 });
+// Browser-level log entries: CSP violations, blocked mixed content, failed loads.
+cdp.on('Log.entryAdded', ({ entry }) => {
+  if (entry.level !== 'error') return;
+  if (/favicon/.test(entry.text || '')) return;
+  consoleMessages.push({ level: 'browser', text: `${entry.text} ${entry.url || ''}`.trim() });
+});
+cdp.on('Network.requestWillBeSent', (params) => {
+  if (params.type === 'Fetch' || params.type === 'XHR') apiRequests.push(params.request.url);
+});
 cdp.on('Network.responseReceived', (params) => {
   const { response } = params;
   if (response.status >= 400 && !/favicon/.test(response.url)) failedRequests.push({ status: response.status, url: response.url });
@@ -380,6 +390,8 @@ try {
     };
   })()`);
   check('detail links to the original collection record', Boolean(detail.sourceHref), detail.sourceHref ?? 'no link');
+  const viewerLink = await cdp.eval(`(() => { const a = [...document.querySelectorAll('#detail a')].find((n) => /content\\/zoom/.test(n.href)); return a?.href || null; })()`);
+  check('detail links to the library\'s own viewer', /^https:\/\/www\.e-rara\.ch\/[a-z]+\/content\/zoom\/\d+$/.test(viewerLink || ''), viewerLink ?? 'no viewer link');
   check('detail names the holding institution and rights', detail.institution && detail.rights, detail.text.slice(0, 120));
 
   // The IIIF manifest + first image come from e-rara; give the image service time
@@ -586,6 +598,15 @@ try {
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
   check('no failed asset or data requests', broken.length === 0, broken.slice(0, 4).map((b) => `${b.status} ${b.url}`).join(' | '));
+
+  // public/_headers ships `connect-src 'self'`: every fetch()/XHR must go through
+  // our own origin (the Worker proxy), and `img-src` allows the tile/IIIF hosts.
+  const offOrigin = [...new Set(apiRequests.filter((u) => !u.startsWith(BASE_URL)))];
+  check(
+    'fetch/XHR traffic stays same-origin (the CSP allows connect-src \'self\')',
+    offOrigin.length === 0,
+    offOrigin.length ? offOrigin.slice(0, 4).join(' | ') : `${new Set(apiRequests).size} same-origin API calls`,
+  );
 } catch (err) {
   check('browser check completed without throwing', false, err.message);
 } finally {

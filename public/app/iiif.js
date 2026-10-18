@@ -266,17 +266,25 @@ export function zoomPercent(view, stageWidth) {
 /* ----------------------------------------------------------------- metadata */
 
 /**
- * The holding library's own viewer for an e-rara record, derived from a
- * canonical `/<corpus>/content/…` record URL (never invented: without a corpus
- * in the URL this returns null and the UI only offers the record link).
+ * The holding library's own viewer for an e-rara record.
+ *
+ * Order of evidence: a harvested `viewerUrl`, then the corpus of a canonical
+ * record URL, then the title id from the IIIF manifest / record id. e-rara's
+ * router resolves *any* corpus prefix to the holding library's corpus
+ * (verified 2026-10-18 with curl: `/zut/content/zoom/22142031` → 301 →
+ * `/zuz/content/zoom/22142031` for a Zentralbibliothek sheet, and
+ * `/zuz/content/zoom/6507640` → 301 → `/zut/…` for an ETH-Bibliothek sheet), so
+ * `zut` is used as the entry point. Returns `null` when the record carries no
+ * e-rara title id at all.
  */
 export function eRaraViewerUrl(record) {
   const explicit = record?.viewerUrl;
   if (typeof explicit === 'string' && /^https:\/\/www\.e-rara\.ch\/[a-z]+\/content\/zoom\/\d+/.test(explicit)) return explicit;
   const url = record?.recordUrl;
   const match = typeof url === 'string' ? url.match(/^https:\/\/www\.e-rara\.ch\/([a-z]+)\/content\/(?:titleinfo|zoom|pageview)\/(\d+)/) : null;
-  if (!match) return null;
-  return `https://www.e-rara.ch/${match[1]}/content/zoom/${match[2]}`;
+  if (match) return `https://www.e-rara.ch/${match[1]}/content/zoom/${match[2]}`;
+  const titleId = eRaraTitleId(record?.iiifManifest) ?? (typeof record?.id === 'string' ? record.id.match(/^e-rara:(\d+)$/)?.[1] ?? null : null);
+  return titleId ? `https://www.e-rara.ch/zut/content/zoom/${titleId}` : null;
 }
 
 /** Title id of an e-rara manifest URL (`…/i3f/v20/6507640/manifest`). */

@@ -259,7 +259,17 @@ test('eRaraViewerUrl is derived only from a canonical e-rara URL', () => {
   assert.equal(
     eRaraViewerUrl({ recordUrl: 'https://doi.org/10.3931/e-rara-20964' }),
     null,
-    'a DOI record URL carries no corpus, so no viewer link is invented',
+    'a DOI-only record without any e-rara id gets no viewer link',
+  );
+  assert.equal(
+    eRaraViewerUrl({ recordUrl: 'https://doi.org/10.3931/e-rara-20964', iiifManifest: 'https://www.e-rara.ch/i3f/v20/6507640/manifest' }),
+    'https://www.e-rara.ch/zut/content/zoom/6507640',
+    'the title id from the manifest is enough: e-rara routes any corpus prefix to the right library',
+  );
+  assert.equal(
+    eRaraViewerUrl({ id: 'e-rara:22142031', recordUrl: 'https://doi.org/10.3931/e-rara-1' }),
+    'https://www.e-rara.ch/zut/content/zoom/22142031',
+    'the record id carries the same title id',
   );
   assert.equal(
     eRaraViewerUrl({ viewerUrl: 'https://www.e-rara.ch/zuz/content/zoom/999', recordUrl: 'https://doi.org/10.3931/e-rara-1' }),

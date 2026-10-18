@@ -25,7 +25,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   filters that drive both the result list and the map markers;
 - coordinated result list ↔ map selection, list/map/split view switch;
 - detail panel with publication vs depicted dates, institution, shelfmark, rights,
-  IIIF page-through preview (image API) and a prominent link to the original record;
+  an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
+  navigation), a link to the library's own viewer and a prominent link to the
+  original record — plus “use this sheet's period as the time filter”;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `vp`, `place`, `lat`, `lon`, `z`,
   `sel`, `view`, `sort`, `ov`, `ot`) and a keyboard route for every map action.
 
@@ -45,7 +47,8 @@ Source registry and verification evidence: [docs/data-sources.md](docs/data-sour
 Known limitations: the seed set holds 55 records (28 e-rara maps from Zürich and
 ETH holdings plus 27 georeferenced swisstopo overlay editions; the UI states the
 real count). `public/vendor/leaflet` is vendored but unused; without network
-access the tiles and IIIF images stay empty while metadata remains readable.
+access the tiles and IIIF images stay empty while metadata remains readable (the
+detail panel then keeps the metadata, the provider links and an explanation).
 
 ## Swarm configuration
 

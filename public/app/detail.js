@@ -105,7 +105,7 @@ export function init(ctx) {
               href: eRaraViewerUrl(record),
               target: '_blank',
               rel: 'noopener',
-              text: 'Im Bibliotheks-Viewer öffnen ↗',
+              text: 'Im e-rara-Viewer öffnen ↗',
             })
           : null,
         el('button', {
@@ -279,16 +279,27 @@ export function init(ctx) {
     }
   }
 
-  /** Direct fetch first, Worker proxy as fallback (e-rara sends CORS headers). */
+  /**
+   * JSON from an allowlisted upstream (IIIF manifest, image info).
+   *
+   * The site ships a strict `connect-src 'self'` CSP (public/_headers), so the
+   * same-origin Worker proxy is the *primary* path — it is also edge-cached
+   * (1 h). The direct call stays as a fallback for a deployment without the
+   * Worker (e.g. plain static hosting) — e-rara sends `access-control-allow-origin: *`.
+   */
   async function fetchJson(url) {
     try {
-      const res = await fetch(url, { headers: { accept: 'application/json' } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } catch {
       const res = await fetch(`/api/fetch?url=${encodeURIComponent(url)}&accept=application/json`);
       if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
       return await res.json();
+    } catch (proxyError) {
+      try {
+        const res = await fetch(url, { headers: { accept: 'application/json' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (directError) {
+        throw new Error(`${proxyError.message} / ${directError.message}`);
+      }
     }
   }
 
