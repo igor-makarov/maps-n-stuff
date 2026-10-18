@@ -30,6 +30,20 @@ fallback, the surviving facts, no raw developer string, no literal `null`, and a
 clean recovery after unblocking. New evidence screenshots `06-fullscreen.png`,
 `07-degraded.png`.
 
+## Follow-up in the same iteration
+
+- **`scrollIntoView()` in the sheet strip scrolled the whole panel** (found by
+  opening `?sel=<2-sheet work>&sh=2` at 320 px): the visible sheet is now centred
+  with `strip.scrollLeft`, which cannot touch an ancestor scroll container. New
+  harness check at 390 px asserts panel `scrollTop === 0`, title and viewer inside
+  the viewport.
+- **“Weitere Karten dieser Sammlung (n)”** in the detail panel: up to six sibling
+  sheets of the same upstream series as chips that switch the panel, plus
+  “Sammlung in der Ergebnisliste filtern” (sets the existing collection filter and
+  closes the panel). Counts and names come from the seed, nothing inferred; the
+  section is absent when a record has no series. Harness check: 6 chips, heading,
+  filter button and a real switch to another record's id.
+
 ## Verified
 
 - `npm run check` ✓ — validation, `node --test` **95/95**, `wrangler deploy

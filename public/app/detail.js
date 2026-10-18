@@ -164,6 +164,7 @@ export function init(ctx) {
       ]),
       reuseSection(record),
       factsSection(record),
+      relatedSection(record),
       el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite', id: 'detail-status' }),
       el('p', { class: 'zh-hint' }, [
         el('span', { text: 'Angaben stammen aus dem Datenlieferanten. ' }),
@@ -701,6 +702,68 @@ export function init(ctx) {
         el('span', { text: 'Bildrechte und Zitierweise stehen beim Datensatz des Anbieters. ' }),
         el('a', { href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'Rechtehinweis prüfen ↗' }),
       ]),
+    ]);
+  }
+
+  /* ------------------------------------------------- leading to the series */
+
+  /** Title short enough for a chip, without cutting a word in the middle. */
+  function shortenTitle(title, max = 72) {
+    const text = String(title ?? '').trim();
+    if (text.length <= max) return text;
+    const cut = text.slice(0, max);
+    const space = cut.lastIndexOf(' ');
+    return `${(space > 40 ? cut.slice(0, space) : cut).trimEnd()}…`;
+  }
+
+  /**
+   * Other digitised sheets of the same series: the way a visitor follows a single
+   * map into its collection (the OldMapsOnline “browse the series” step). Only
+   * records that really carry the same upstream series name are listed, and the
+   * list says how many there are — nothing is inferred or padded.
+   */
+  function relatedSection(record) {
+    const series = record.collection;
+    if (!series) return null;
+    const siblings = (ctx.data.records ?? [])
+      .filter((other) => other.id !== record.id && other.collection === series)
+      .sort((a, b) => (a.yearStart ?? 0) - (b.yearStart ?? 0));
+    if (siblings.length === 0) return null;
+    const shown = siblings.slice(0, 6);
+    return el('section', { id: 'detail-related' }, [
+      el('h3', { class: 'zh-heading zh-heading--4', text: `Weitere Karten dieser Sammlung (${siblings.length})` }),
+      el('p', { class: 'zh-hint', text: `Aus «${series}». Jahr und Urheber stehen so, wie der Anbieter sie nennt.` }),
+      el(
+        'ul',
+        { class: 'app-detail__related' },
+        shown.map((other) =>
+          el('li', {}, [
+            el('button', {
+              class: 'zh-button zh-button--ghost zh-button--small',
+              type: 'button',
+              text: `${formatYearRange(other.yearStart, other.yearEnd)} · ${shortenTitle(other.title)}`,
+              onclick: () => {
+                ctx.store.update({ selected: other.id, sheet: 1 });
+                ctx.bus.emit('record:selected', { record: other, source: 'detail-related' });
+              },
+            }),
+          ]),
+        ),
+      ),
+      siblings.length > shown.length
+        ? el('p', { class: 'zh-hint', text: `… und ${siblings.length - shown.length} weitere in dieser Sammlung.` })
+        : null,
+      el('button', {
+        class: 'zh-button zh-button--ghost zh-button--small',
+        type: 'button',
+        text: 'Sammlung in der Ergebnisliste filtern',
+        onclick: () => {
+          ctx.store.update({ collection: series, selected: '' });
+          close();
+          const live = qs('#results-live');
+          if (live) live.textContent = `Ergebnisliste auf die Sammlung «${series}» eingeschränkt.`;
+        },
+      }),
     ]);
   }
 

@@ -206,6 +206,24 @@
   max-width: 100%;
 }
 
+/* --------------------------------------------------- related sheets (series) */
+
+/* Chips that lead to the other sheets of the same upstream series. */
+.app-detail__related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny, 8px);
+  margin: 0 0 var(--zh-size-tiny, 8px);
+  padding: 0;
+  list-style: none;
+}
+
+.app-detail__related .zh-button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+
 /* -------------------------------------------------------------- fullscreen */
 
 /* The whole screen belongs to the sheet: neutral dark surround, the stage keeps

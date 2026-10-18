@@ -36,7 +36,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   link to the original record — plus “use this sheet's period as the time filter”;
   when the image service is unreachable the panel says so in plain German and keeps
   the metadata, the thumbnail and the provider link (verified by a check that blocks
-  the upstream on purpose);
+  the upstream on purpose); a “Weitere Karten dieser Sammlung” list leads from one
+  sheet to the other sheets of the same upstream series (and to the filtered result
+  list) — series names and counts come from the records, nothing is inferred;
 - a comparison list: pin up to four records from the result list, the detail
   panel or a shared `?cmp=…` link, and put two or more of them side by side with
   their real IIIF/WMTS previews, metadata and links back to the original records;

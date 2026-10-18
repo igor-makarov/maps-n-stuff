@@ -1778,7 +1778,42 @@ try {
   await cdp.eval(`document.querySelector('#point-filter-clear')?.click()`);
   await sleep(400);
 
+  /* --- 8k. the detail panel leads to the series ------------------------- */
+  const seriesRecord = [...recordIndex.values()].find(
+    (record) => record.collection && [...recordIndex.values()].filter((other) => other.collection === record.collection && other.id !== record.id).length >= 2,
+  );
+  if (seriesRecord) {
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(seriesRecord.id)}` });
+    await cdp.waitFor(`document.querySelector('#detail-related') ? true : ''`, { label: 'related section', timeout: 15_000 });
+    const related = await cdp.eval(`(() => {
+      const section = document.querySelector('#detail-related');
+      return {
+        heading: section?.querySelector('h3')?.textContent || '',
+        chips: section?.querySelectorAll('li button').length ?? 0,
+        filterButton: [...(section?.querySelectorAll('button') ?? [])].some((button) => /Sammlung in der Ergebnisliste/.test(button.textContent)),
+        before: document.querySelector('#detail-title')?.textContent?.slice(0, 50) || '',
+      };
+    })()`);
+    await cdp.click('#detail-related li button');
+    let switched = null;
+    try {
+      switched = await cdp.waitFor(
+        `(() => { const sel = new URLSearchParams(location.search).get('sel'); const title = document.querySelector('#detail-title')?.textContent || ''; return sel && sel !== ${JSON.stringify(seriesRecord.id)} && title && title !== ${JSON.stringify(related.before)} ? { sel, title: title.slice(0, 50) } : ''; })()`,
+        { label: 'related record switch', timeout: 10_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'the detail panel leads to the other sheets of the same series',
+      related.chips >= 2 && /Weitere Karten dieser Sammlung/.test(related.heading) && related.filterButton === true && Boolean(switched?.sel) && switched.sel !== seriesRecord.id,
+      `${seriesRecord.id} · "${related.heading}" · ${related.chips} chips · filter=${related.filterButton} -> ${JSON.stringify(switched)}`,
+    );
+  } else {
+    check('the detail panel leads to the other sheets of the same series', false, 'no record with 2+ siblings in the seed');
+  }
 
+  // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
