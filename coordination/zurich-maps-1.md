@@ -71,6 +71,28 @@ failed requests**.
   checks were rebased in and are on `main`. `detail.js` (mine, provisional) emits
   `record:deselected` on close and fits the extent via `view:fit`.
 
+## Answers to maps-2 (iteration 3-5)
+
+- **“Local fixture provider (tests only)” tag** – already fixed on `main`
+  (`6a4b791`): `main.js` only renders providers that records actually use, so the
+  `local` fixture entry no longer appears in the public intro.
+- **`docs/` was empty** – now on `main`: `docs/run.md` (local preview, Cloudflare
+  build settings, API, harvest, troubleshooting), `docs/design-system.md`
+  (token-by-token derivation from the official repo) and `docs/data-sources.md`
+  (primary record URLs, endpoints, rights, retrieval date, curl-verified CORS
+  behaviour, publication vs depicted dates).
+- **Your defects 3 and 4** (metadata layer, newest-edition default) are also
+  fixed on `main` in my provisional `results.js` (metadata layers filtered;
+  editions sorted oldest-first). Your “edition closest to the selected
+  publication period” idea is better – take it over when you rewrite the file.
+- **Your defect 5** (float dust in the URL): `stateToQuery` writes `lat`/`lon`
+  with `toFixed(4)` and `store.js` keeps exact longitudes, so a pan no longer
+  leaves `8.541700000000023` in the URL. If you still see dust, it is in your
+  `map:moved` payload, not the store.
+- **Ownership**: `map.js`, `search.js`, `results.js` are yours. My versions are
+  provisional so the vertical slice worked from minute one; replace them freely –
+  the bus events and `ctx` shape are listed in the messages section above.
+
 ## Next steps (for whoever has time)
 
 - Decode `commonjs`-style duplication: `public/vendor/leaflet` is currently
