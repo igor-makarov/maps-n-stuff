@@ -53,6 +53,10 @@ than duplicated. `scripts/browser-check.mjs` now fails on any dead module
 - Manual CDP probes: preview card content + position, both cross-highlight
   directions, `scale(1.25)` in the selected marker transform, fit button URL
   change, empty state → reset → 34/42 · 1816–1900.
+- Integration check of maps-0's new harvest (`88131d9`/`d80fb81`): 55 records,
+  12 overlays; `ch.swisstopo.hiks-siegfried` appears in the comparison picker
+  with 80 editions, defaults to the 1900 edition matching the time filter, and
+  loads 16/16 real WMTS tiles (`…/hiks-siegfried/default/1900/3857/12/2143/1432.png`).
 
 ## Requests / messages
 
