@@ -118,6 +118,35 @@ test('facets and yearBounds describe the corpus', () => {
   assert.equal(indexRecords(fixture).get('e-rara:1').title.includes('Zürich'), true);
 });
 
+test('overlay records match the advertised comparison layers', async () => {
+  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  const { overlays } = JSON.parse(await readFile(new URL('../public/data/overlays.json', import.meta.url), 'utf8'));
+  const byId = new Map(overlays.map((layer) => [layer.id, layer]));
+  const overlayRecords = records.records.filter((record) => record.type === 'overlay');
+  assert.ok(overlayRecords.length >= 10, `expected overlay records, found ${overlayRecords.length}`);
+  for (const record of overlayRecords) {
+    const layer = byId.get(record.overlay.layerId);
+    assert.ok(layer, `${record.id}: layer ${record.overlay.layerId} missing from overlays.json`);
+    assert.ok(layer.timeValues.includes(record.overlay.timeValue), `${record.id}: ${record.overlay.timeValue} not advertised by the layer`);
+    assert.equal(record.overlay.maxZoom, layer.maxZoom, `${record.id}: maxZoom must match the layer's TileMatrixSet`);
+    assert.equal(
+      record.overlay.urlTemplate,
+      layer.urlTemplate.replace('{Time}', record.overlay.timeValue),
+      `${record.id}: urlTemplate must be the advertised template for its own edition`,
+    );
+    assert.ok(record.thumbnail.startsWith('https://wmts.geo.admin.ch/'), `${record.id}: thumbnail must be a WMTS tile`);
+    assert.ok(record.thumbnail.includes(`/${record.overlay.timeValue}/`), `${record.id}: thumbnail must show its own edition`);
+  }
+});
+
+test('skipped harvest entries are documented, never silent', async () => {
+  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  assert.ok(Array.isArray(records.skipped));
+  for (const entry of records.skipped) {
+    assert.ok(entry.id && typeof entry.reason === 'string' && entry.reason.length > 20, `skipped entry needs id + reason: ${JSON.stringify(entry)}`);
+  }
+});
+
 test('loadRecords reads the shipped seed file and validates it', async () => {
   const raw = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
   const fetchStub = async () => ({ ok: true, json: async () => raw });
