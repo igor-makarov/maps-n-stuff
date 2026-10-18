@@ -1,0 +1,505 @@
+/*!
+ * Components – derived from the Kanton Zürich frontend atoms
+ * (atm-button, atm-form_input, atm-tag, atm-heading, search_result_item,
+ *  layout/header, layout/footer). Shapes, colours and focus behaviour follow
+ *  the official SCSS; the markup here is our own.
+ */
+
+/* ---------- Buttons (button.scss: black fill, 1px radius, black weight) ---------- */
+.zh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--zh-size-small-regular);
+  min-height: var(--zh-size-bigger-big);
+  min-width: var(--zh-size-bigger-big);
+  padding: 1px var(--zh-size-large) 0;
+  border: none;
+  border-radius: var(--zh-radius);
+  background: var(--zh-black);
+  color: var(--zh-white);
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-regular);
+  font-weight: 900;
+  line-height: var(--zh-line-bigger);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--zh-transition-simple) var(--zh-easing-default);
+}
+
+.zh-button:hover {
+  background: var(--zh-black-80);
+  color: var(--zh-white);
+}
+
+.zh-button:disabled,
+.zh-button[aria-disabled='true'] {
+  background: var(--zh-black-40);
+  cursor: not-allowed;
+}
+
+.zh-button--small {
+  min-height: var(--zh-size-big);
+  padding: 0 var(--zh-size-regular);
+  font-size: var(--zh-font-small);
+}
+
+.zh-button--secondary {
+  background: var(--zh-color-accent-dark);
+}
+
+.zh-button--secondary:hover {
+  background: var(--zh-black);
+}
+
+.zh-button--ghost {
+  background: transparent;
+  color: var(--zh-black);
+  border: 2px solid var(--zh-black);
+}
+
+.zh-button--ghost:hover {
+  background: var(--zh-black-10);
+  color: var(--zh-black);
+}
+
+.zh-button--icon {
+  padding: 0;
+  width: var(--zh-size-bigger-big);
+}
+
+.zh-button__icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: currentColor;
+}
+
+/* ---------- Chips (compact toggles, tag.scss geometry) ---------- */
+.zh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zh-size-mini);
+  padding: var(--zh-size-mini) var(--zh-size-tiny);
+  border: 2px solid var(--zh-color-border-strong);
+  border-radius: var(--zh-radius-tag);
+  background: var(--zh-white);
+  color: var(--zh-black-60);
+  font-family: var(--zh-font-base);
+  font-size: var(--zh-font-tiny);
+  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color var(--zh-transition-simple) var(--zh-easing-default),
+    color var(--zh-transition-simple) var(--zh-easing-default);
+}
+
+.zh-chip:hover {
+  border-color: var(--zh-black);
+  color: var(--zh-black);
+}
+
+.zh-chip[aria-pressed='true'],
+.zh-chip.is-active {
+  background: var(--zh-black);
+  border-color: var(--zh-black);
+  color: var(--zh-white);
+}
+
+/* ---------- Tags (atm-tag) ---------- */
+.zh-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zh-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zh-size-mini);
+  width: fit-content;
+  padding: var(--zh-size-mini) var(--zh-size-tiny);
+  border: 2px solid var(--zh-color-border-strong);
+  border-radius: var(--zh-radius-tag);
+  color: var(--zh-black-60);
+  font-size: var(--zh-font-tiny);
+  line-height: 1.4;
+}
+
+.zh-tag--blue {
+  border-color: var(--zh-blue);
+  color: var(--zh-darkblue);
+  background: var(--zh-blue-soft);
+}
+
+.zh-tag--turquoise {
+  border-color: var(--zh-turquoise);
+  color: var(--zh-turquoise);
+  background: var(--zh-turquoise-soft);
+}
+
+.zh-tag--green {
+  border-color: var(--zh-green);
+  color: var(--zh-green);
+  background: var(--zh-green-soft);
+}
+
+.zh-tag--solid {
+  background: var(--zh-black);
+  border-color: var(--zh-black);
+  color: var(--zh-white);
+}
+
+/* ---------- Form controls (form_input.scss) ---------- */
+.zh-label,
+.zh-legend {
+  display: block;
+  margin-bottom: var(--zh-size-mini);
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+  color: var(--zh-color-text);
+}
+
+.zh-input,
+.zh-select {
+  width: 100%;
+  min-height: var(--zh-size-bigger-big);
+  padding: var(--zh-size-tiny) var(--zh-size-small-regular);
+  border: 2px solid var(--zh-black);
+  border-radius: var(--zh-radius);
+  background: var(--zh-white);
+  color: var(--zh-black);
+  font-family: var(--zh-font-base);
+  font-size: var(--zh-font-regular);
+}
+
+.zh-input--small {
+  min-height: var(--zh-size-big);
+  font-size: var(--zh-font-small);
+}
+
+.zh-input::placeholder {
+  color: var(--zh-black-60);
+}
+
+.zh-input:focus-visible,
+.zh-select:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: 2px;
+}
+
+.zh-input[aria-invalid='true'] {
+  border-color: var(--zh-red);
+}
+
+input[type='range'].zh-input {
+  min-height: var(--zh-size-large);
+  padding: 0;
+  border: 0;
+  accent-color: var(--zh-color-accent);
+}
+
+.zh-field {
+  margin-bottom: var(--zh-size-small-regular);
+}
+
+.zh-field--inline {
+  display: flex;
+  align-items: center;
+  gap: var(--zh-size-tiny);
+}
+
+.zh-fieldset {
+  margin: 0 0 var(--zh-size-large);
+  padding: 0;
+  border: 0;
+}
+
+.zh-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zh-size-tiny);
+}
+
+.zh-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--zh-size-tiny);
+  font-size: var(--zh-font-small);
+  cursor: pointer;
+}
+
+.zh-check input {
+  inline-size: 18px;
+  block-size: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--zh-color-accent-dark);
+  flex: none;
+}
+
+/* ---------- Panel (details/summary) ---------- */
+.zh-panel {
+  background: var(--zh-color-surface);
+  border: 1px solid var(--zh-color-border);
+  border-top: var(--zh-rule) solid var(--zh-color-text);
+  margin-bottom: var(--zh-size-regular);
+}
+
+.zh-panel__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  padding: var(--zh-size-small-regular) var(--zh-size-regular);
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-bigger-regular);
+  font-weight: 900;
+  cursor: pointer;
+  list-style: none;
+}
+
+.zh-panel__summary::-webkit-details-marker {
+  display: none;
+}
+
+.zh-panel__summary::after {
+  content: '▾';
+  font-size: var(--zh-font-small);
+  transition: transform var(--zh-transition-fade) var(--zh-easing-default);
+}
+
+.zh-panel[open] .zh-panel__summary::after {
+  transform: rotate(180deg);
+}
+
+.zh-panel__body {
+  padding: 0 var(--zh-size-regular) var(--zh-size-regular);
+}
+
+/* ---------- Cards / result items ---------- */
+.zh-card {
+  background: var(--zh-color-surface);
+  border: 1px solid var(--zh-color-border);
+  border-left: var(--zh-size-mini) solid var(--zh-color-accent);
+  padding: var(--zh-size-regular);
+}
+
+.zh-deflist {
+  margin: 0;
+  font-size: var(--zh-font-small);
+}
+
+.zh-deflist dt {
+  font-family: var(--zh-font-black);
+  margin-top: var(--zh-size-small-regular);
+}
+
+.zh-deflist dd {
+  margin: 0 0 var(--zh-size-mini);
+  color: var(--zh-color-text-soft);
+}
+
+.zh-deflist dd a {
+  word-break: break-word;
+}
+
+/* ---------- Site header ---------- */
+.zh-header {
+  background: var(--zh-white);
+  box-shadow: var(--zh-shadow-header);
+  position: relative;
+  z-index: var(--zh-z-header);
+}
+
+.zh-header__bar {
+  background: var(--zh-black);
+  color: var(--zh-white);
+}
+
+.zh-header__bar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  min-height: var(--zh-size-big);
+  padding-block: var(--zh-size-mini);
+}
+
+.zh-header__note {
+  margin: 0;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-black-20);
+  max-width: 60ch;
+}
+
+.zh-header__note a {
+  color: var(--zh-white);
+}
+
+.zh-header__meta {
+  display: flex;
+  gap: var(--zh-size-regular);
+  font-size: var(--zh-font-tiny);
+}
+
+.zh-header__meta a {
+  color: var(--zh-white);
+}
+
+.zh-header__main {
+  display: grid;
+  gap: var(--zh-size-regular);
+  padding-block: var(--zh-size-large);
+  /* Single column below 840 px: minmax(0, 1fr) lets the column shrink to the
+     viewport. Without it the implicit auto track took the search input's
+     intrinsic width (UA size=20 ≈ 247 px) and the header overflowed 320 px
+     phones by ~37 px. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 840px) {
+  .zh-header__main {
+    grid-template-columns: minmax(240px, 320px) minmax(320px, 1fr);
+    align-items: center;
+  }
+}
+
+.zh-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--zh-size-small-regular);
+  text-decoration: none;
+  color: var(--zh-black);
+}
+
+.zh-brand:hover {
+  color: var(--zh-black);
+}
+
+.zh-brand__mark {
+  width: 34px;
+  height: 41px;
+  flex: none;
+}
+
+.zh-brand__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.zh-brand__name {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-large);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.zh-brand__claim {
+  font-size: var(--zh-font-small);
+  color: var(--zh-color-text-soft);
+}
+
+/* ---------- Search + suggestions (combobox) ---------- */
+.zh-search {
+  position: relative;
+}
+
+.zh-search__field {
+  display: flex;
+  gap: var(--zh-size-tiny);
+}
+
+.zh-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.zh-search__status {
+  margin: var(--zh-size-mini) 0 0;
+  font-size: var(--zh-font-small);
+  color: var(--zh-color-text-soft);
+  min-height: 1.4em;
+}
+
+.zh-suggestions {
+  position: absolute;
+  z-index: var(--zh-z-overlay);
+  inset-inline: 0;
+  top: calc(100% - 1.4em);
+  margin: 0;
+  padding: var(--zh-size-mini);
+  list-style: none;
+  background: var(--zh-white);
+  border: 1px solid var(--zh-black);
+  box-shadow: var(--zh-shadow-card);
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.zh-suggestions li {
+  margin: 0;
+}
+
+.zh-suggestions button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  width: 100%;
+  padding: var(--zh-size-tiny) var(--zh-size-small-regular);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--zh-font-small);
+  text-align: left;
+  cursor: pointer;
+}
+
+.zh-suggestions button[aria-selected='true'],
+.zh-suggestions button:hover {
+  background: var(--zh-blue-soft);
+}
+
+.zh-suggestions .zh-suggestions__type {
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-tiny);
+  white-space: nowrap;
+}
+
+/* ---------- Footer ---------- */
+.zh-footer {
+  margin-top: var(--zh-size-small-huge);
+  background: var(--zh-white);
+  border-top: var(--zh-rule) solid var(--zh-black);
+  padding-block: var(--zh-size-large);
+  font-size: var(--zh-font-small);
+}
+
+.zh-footer__inner {
+  display: grid;
+  gap: var(--zh-size-small-regular);
+}
+
+.zh-footer p {
+  margin: 0;
+  max-width: none;
+}
+
+.zh-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-small-regular);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zh-footer__fine {
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-tiny);
+}

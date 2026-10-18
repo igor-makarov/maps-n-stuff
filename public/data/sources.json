@@ -1,0 +1,119 @@
+{
+  "retrieved": "2026-10-18",
+  "generatedBy": "scripts/fetch-records.mjs",
+  "note": "Zürich and Swiss historical maps from primary institutional sources. Records are copied from upstream IIIF/OAI metadata; no dates or places are inferred.",
+  "providers": [
+    {
+      "id": "e-rara",
+      "name": "e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
+      "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
+      "institutions": [
+        "Zentralbibliothek Zürich",
+        "ETH-Bibliothek Zürich"
+      ],
+      "homepage": "https://www.e-rara.ch/",
+      "home": "https://www.e-rara.ch/",
+      "collections": [
+        {
+          "id": "zuz-wildkarte",
+          "name": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich"
+        },
+        {
+          "id": "landkarten",
+          "name": "Schweizer Landkarten aus vier Jahrhunderten",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten"
+        },
+        {
+          "id": "cartesgeneve",
+          "name": "Karten von Genf und seiner Umgebung (e-rara-Set cartesgeneve)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-90735",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=cartesgeneve"
+        }
+      ],
+      "endpoints": {
+        "oai": "https://www.e-rara.ch/oai",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}",
+        "thumbnail": "IIIF thumbnail from the manifest"
+      },
+      "rights": "Public Domain Mark 1.0 (PDM 1.0) per record; see each record and e-rara terms.",
+      "attribution": "e-rara.ch / holding institution, CC0 metadata and PDM imagery",
+      "terms": "https://www.e-rara.ch/terms",
+      "retrievalDate": "2026-10-18",
+      "apiHosts": [
+        "www.e-rara.ch"
+      ],
+      "api": {
+        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve; ListSets is paginated)",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
+        "docs": "https://www.e-rara.ch/"
+      }
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo – Bundesamt für Landestopografie (geoadmin geoservices)",
+      "operator": "Bundesamt für Landestopografie swisstopo",
+      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+      "home": "https://www.swisstopo.admin.ch/",
+      "collections": [
+        {
+          "id": "zeitreise",
+          "name": "Zeitreise – Kartenwerke",
+          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        },
+        {
+          "id": "siegfriedkarte",
+          "name": "Siegfriedkarte 1:25 000 (1870–1949)",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
+        },
+        {
+          "id": "dufourkarte",
+          "name": "Dufourkarte Erstausgabe",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
+        },
+        {
+          "id": "swissimage-zeitreise",
+          "name": "SWISSIMAGE HIST (historische Luftbilder)",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
+        },
+        {
+          "id": "swissimage-1946",
+          "name": "SWISSIMAGE HIST 1946",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
+        }
+      ],
+      "endpoints": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "basemapTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
+        "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer"
+      },
+      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
+      "attribution": "© swisstopo",
+      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
+      "retrievalDate": "2026-10-18",
+      "apiHosts": [
+        "wmts.geo.admin.ch",
+        "api3.geo.admin.ch",
+        "map.geo.admin.ch"
+      ],
+      "api": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "searchServer": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}",
+        "mapViewer": "https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}"
+      }
+    }
+  ],
+  "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
+  "generatedAt": "2026-10-18T22:40:28.362Z"
+}

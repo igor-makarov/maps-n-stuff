@@ -1,0 +1,23 @@
+{
+  // Cloudflare Workers site: static assets from ./public + a small request
+  // handler in src/worker/index.js for /api/* (allowlisted upstream proxy).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zurich-maps",
+  "main": "src/worker/index.js",
+  "compatibility_date": "2025-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Only /api/* reaches the Worker; everything else is served straight from
+    // the asset store (fast path, no Worker invocation, no asset cost).
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": {
+    "enabled": true
+  },
+  "dev": {
+    "port": 8787
+  }
+}

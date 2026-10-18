@@ -1,0 +1,148 @@
+/*
+ * Detail view + IIIF viewer styles (owner: zurich-maps-3).
+ *
+ * Loaded after zh-components.css/app.css, so it only *adds* the detail-panel
+ * rules the viewer needs; the canton design tokens themselves stay in
+ * zh-tokens.css (owner: zurich-maps-1). Layout follows the canton grid: one
+ * column, generous indentation, black rules, 1px radius, no shadows on text.
+ */
+
+@media (min-width: 840px) {
+  /* A map preview needs more room than a text panel, but stays a side panel. */
+  .app-detail {
+    width: min(760px, 94vw);
+  }
+}
+
+.app-detail__preview-wrap,
+.app-viewer {
+  display: grid;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+/* ---------------------------------------------------------------- viewer */
+
+.app-viewer__stage {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--zh-black-10, #f0f0f0);
+  border: 1px solid var(--zh-black-20, #d9d9d9);
+  height: clamp(240px, 46vh, 520px);
+  touch-action: none; /* drag pans the sheet; the panel scrolls around it */
+  cursor: grab;
+  outline-offset: -3px;
+}
+
+.app-viewer__stage--static {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: auto;
+  cursor: default;
+}
+
+.app-viewer__stage--static img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.app-viewer__stage[data-dragging='true'] {
+  cursor: grabbing;
+}
+
+.app-viewer__stage:focus-visible {
+  outline: 3px solid var(--zh-color-focus, #0070b4);
+  outline-offset: -3px;
+}
+
+.app-viewer__image {
+  position: absolute;
+  user-select: none;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+
+.app-viewer__stage[data-state='loading'] .zh-spinner {
+  display: inline-block;
+  position: absolute;
+  top: var(--zh-size-regular, 16px);
+  left: var(--zh-size-regular, 16px);
+  z-index: 1;
+}
+
+.app-viewer__stage[data-state='ready'] .zh-spinner,
+.app-viewer__stage[data-state='error'] .zh-spinner {
+  display: none;
+}
+
+.app-viewer__stage[data-state='loading'] {
+  cursor: progress;
+}
+
+.app-viewer__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+.app-viewer__controls .zh-button {
+  min-width: 44px; /* touch target */
+}
+
+.app-viewer__readout {
+  font-size: var(--zh-font-tiny, 0.8125rem);
+  color: var(--zh-color-text-soft, #666);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-viewer__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+  margin-left: auto;
+}
+
+/* `display: flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__nav[hidden] {
+  display: none;
+}
+
+.app-viewer__caption {
+  margin: 0;
+  font-size: var(--zh-font-tiny, 0.8125rem);
+  color: var(--zh-color-text-soft, #666);
+  line-height: var(--zh-line-medium, 1.45);
+}
+
+.app-viewer__hint {
+  margin: 0;
+  font-size: var(--zh-font-tiny, 0.8125rem);
+  color: var(--zh-color-text-soft, #666);
+}
+
+.app-viewer__fallback {
+  display: grid;
+  gap: var(--zh-size-tiny, 8px);
+  justify-items: start;
+  padding: var(--zh-size-regular, 16px);
+  background: var(--zh-black-10, #f0f0f0);
+  border: 1px solid var(--zh-black-20, #d9d9d9);
+}
+
+.app-viewer__fallback img {
+  max-height: 32vh;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .app-viewer__stage {
+    height: clamp(200px, 38vh, 380px);
+  }
+
+  .app-viewer__nav {
+    margin-left: 0;
+  }
+}
