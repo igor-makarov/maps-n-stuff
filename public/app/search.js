@@ -28,9 +28,10 @@ export function init(ctx) {
   input.value = ctx.store.getState().place || '';
   renderQuickLinks();
 
+  let quickLinks = null;
   function renderQuickLinks() {
     if (!status) return;
-    const wrap = el('span', { class: 'zh-quickranges', id: 'place-quick' }, [
+    const wrap = el('span', { class: 'zh-quickranges', id: 'place-quick', role: 'group', 'aria-label': 'Schnellauswahl Orte' }, [
       el('span', { class: 'zh-hint', text: 'Schnellauswahl: ' }),
       ...QUICK.map((place) =>
         el('button', {
@@ -40,8 +41,9 @@ export function init(ctx) {
         }, [place.label]),
       ),
     ]);
-    status.after(wrap);
-    document.querySelector('#place-quick')?.replaceWith(wrap);
+    if (quickLinks?.isConnected) quickLinks.replaceWith(wrap);
+    else status.after(wrap);
+    quickLinks = wrap;
   }
 
   function close() {
@@ -53,12 +55,23 @@ export function init(ctx) {
     input.removeAttribute('aria-activedescendant');
   }
 
+  function uniquePlaces(items) {
+    const seen = new Set();
+    return items.filter((item) => {
+      const key = `${String(item.label).toLowerCase()}|${item.lat?.toFixed?.(3) ?? ''}|${item.lon?.toFixed?.(3) ?? ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   function open(items, source) {
-    state.items = items;
+    const unique = uniquePlaces(items);
+    state.items = unique;
     state.source = source;
-    state.active = items.length > 0 ? 0 : -1;
+    state.active = unique.length > 0 ? 0 : -1;
     list.replaceChildren(
-      ...items.map((item, index) =>
+      ...unique.map((item, index) =>
         el('li', { role: 'none' }, [
           el(
             'button',
@@ -78,8 +91,8 @@ export function init(ctx) {
         ]),
       ),
     );
-    list.hidden = items.length === 0;
-    input.setAttribute('aria-expanded', items.length > 0 ? 'true' : 'false');
+    list.hidden = unique.length === 0;
+    input.setAttribute('aria-expanded', unique.length > 0 ? 'true' : 'false');
     updateActive();
   }
 
@@ -102,6 +115,12 @@ export function init(ctx) {
     input.value = place.label;
     ctx.store.update({ place: place.label, lat: place.lat, lon: place.lon, zoom: targetZoom });
     ctx.bus.emit('place:selected', { ...place, zoom: targetZoom, source: state.source });
+    // A "Datensatz" suggestion is a record, not a gazetteer place: open it too.
+    const record = place.recordId ? ctx.data.recordIndex?.get(place.recordId) : null;
+    if (record) {
+      ctx.store.update({ selected: record.id });
+      ctx.bus.emit('record:selected', { record, source: 'search' });
+    }
     setStatus(status, `Kartenausschnitt auf „${place.label}“ gesetzt (${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}).`);
     close();
   }
@@ -135,6 +154,7 @@ export function init(ctx) {
     state.controller?.abort();
     state.controller = new AbortController();
     setStatus(status, 'Orte werden gesucht …');
+    form.setAttribute('aria-busy', 'true');
     try {
       const res = await fetch(`/api/search/places?q=${encodeURIComponent(query)}&limit=8`, { signal: state.controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -158,6 +178,8 @@ export function init(ctx) {
           ? `Ortssuche nicht erreichbar (${err.message}) – Vorschläge aus den Datensätzen.`
           : `Ortssuche derzeit nicht erreichbar (${err.message}).`,
       );
+    } finally {
+      form.setAttribute('aria-busy', 'false');
     }
   }
 
@@ -179,6 +201,12 @@ export function init(ctx) {
     } else if (event.key === 'ArrowUp' && !list.hidden) {
       event.preventDefault();
       setActive(Math.max(0, state.active - 1));
+    } else if (event.key === 'Home' && !list.hidden) {
+      event.preventDefault();
+      setActive(0);
+    } else if (event.key === 'End' && !list.hidden) {
+      event.preventDefault();
+      setActive(state.items.length - 1);
     } else if (event.key === 'Enter') {
       if (!list.hidden && state.active >= 0 && state.items[state.active]) {
         event.preventDefault();

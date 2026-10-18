@@ -69,8 +69,9 @@ export function init(ctx) {
   };
 
   container.setAttribute('tabindex', '0');
-  container.setAttribute('role', 'application');
-  container.setAttribute('aria-label', 'Interaktive Karte historischer Karten; Pfeiltasten verschieben, Plus und Minus zoomen');
+  container.setAttribute('role', 'region');
+  container.setAttribute('aria-roledescription', 'Interaktive Karte');
+  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen');
 
   const baseLayer = el('div', { class: 'map-layer map-layer--base', 'aria-hidden': 'true' });
   const overlayLayer = el('div', { class: 'map-layer map-layer--overlay', 'aria-hidden': 'true' });
@@ -87,6 +88,7 @@ export function init(ctx) {
 
   const cache = new Map(); // tile key -> <img>
   const markers = new Map(); // record id -> <button>
+  let lastOverlayKey = ''; // layer + edition currently displayed
 
   function templateFor(layer, time) {
     return layer.urlTemplate.replace('{Time}', encodeURIComponent(time ?? layer.timeValues?.[0] ?? 'current'));
@@ -104,9 +106,18 @@ export function init(ctx) {
 
     renderTiles(baseLayer, cache, 'base', BASE_LAYER.urlTemplate, null, originX, originY, w, h, z, scale);
     if (state.overlay) {
+      // Switching the layer or its edition replaces the overlay completely; the
+      // old tiles stay in the cache (bounded) but must leave the DOM, otherwise
+      // they paint over the newly requested edition.
+      const overlayKey = `${state.overlay.id}@${state.overlayTime ?? ''}`;
+      if (overlayKey !== lastOverlayKey) {
+        overlayLayer.replaceChildren();
+        lastOverlayKey = overlayKey;
+      }
       renderTiles(overlayLayer, cache, `ov:${state.overlay.id}`, state.overlay.urlTemplate, state.overlayTime, originX, originY, w, h, z, scale);
     } else {
       overlayLayer.replaceChildren();
+      lastOverlayKey = '';
     }
     renderMarkers(originX, originY, w, h, z);
     renderExtent(originX, originY, z);
@@ -126,7 +137,9 @@ export function init(ctx) {
     for (let x = x0; x <= x1; x += 1) {
       const wrapped = ((x % scale) + scale) % scale;
       for (let y = y0; y <= y1; y += 1) {
-        const key = `${kind}/${tileZ}/${wrapped}/${y}`;
+        // The Time dimension is part of the cache key – otherwise switching the
+        // edition of a Zeitreise layer kept showing the previously loaded tiles.
+        const key = `${kind}/${time ?? 'now'}/${tileZ}/${wrapped}/${y}`;
         visible.add(key);
         let img = tileCache.get(key);
         if (!img) {
@@ -365,6 +378,9 @@ export function init(ctx) {
   });
 
   container.addEventListener('keydown', (event) => {
+    // Arrow keys only move the map while the map region itself has focus; on a
+    // marker button they would move the button's anchor out from under the user.
+    if (event.target !== container) return;
     const step = event.shiftKey ? 160 : 60;
     const keys = {
       ArrowLeft: () => panByPixels(-step, 0),

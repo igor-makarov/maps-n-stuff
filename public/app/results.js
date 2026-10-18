@@ -95,9 +95,14 @@ export function init(ctx) {
     'input',
     debounce(() => ctx.store.update({ q: textEl.value.trim() }), 200),
   );
-  const commitYears = debounce((patch) => ctx.store.update(patch), 250);
-  yearFrom?.addEventListener('input', () => commitYears({ from: clampYear(yearFrom.value, years) }));
-  yearTo?.addEventListener('input', () => commitYears({ to: clampYear(yearTo.value, years) }));
+  // One debounced commit that reads *both* fields: a shared debounce used to
+  // drop the first patch when a user edited "von" and "bis" in quick succession.
+  const commitYears = debounce(() => {
+    if (!yearFrom || !yearTo) return;
+    ctx.store.update({ from: clampYear(yearFrom.value, years), to: clampYear(yearTo.value, years) });
+  }, 250);
+  yearFrom?.addEventListener('input', commitYears);
+  yearTo?.addEventListener('input', commitYears);
 
   resetEl?.addEventListener('click', () => {
     ctx.store.update({ from: years.min, to: years.max, provider: '', type: '', q: '', selected: '', overlay: '', otime: '', viewport: '' });
@@ -120,6 +125,27 @@ export function init(ctx) {
 
   /** Editions ascending: slider left = oldest, and the default is a historical one. */
   const editionsOf = (layer) => [...(layer?.timeValues ?? [])].sort();
+
+  /** Publication year encoded in an edition value (`YYYYMMDD`, `YYYY`, …). */
+  const editionYear = (value) => {
+    const match = String(value ?? '').match(/^(\d{4})/);
+    return match ? Number(match[1]) : null;
+  };
+
+  /**
+   * The edition that best matches a publication year: the newest edition that is
+   * not later than the year, else the oldest one. Never invents an edition.
+   */
+  function editionForYear(layer, year) {
+    const values = editionsOf(layer);
+    if (values.length === 0) return '';
+    let best = values.find((value) => editionYear(value) !== null) ?? values[0];
+    for (const value of values) {
+      const valueYear = editionYear(value);
+      if (valueYear !== null && valueYear <= Number(year) && editionYear(best) !== null) best = value;
+    }
+    return best;
+  }
   if (overlayEl && layers.length > 0) {
     const historical = layers.filter(isHistorical).sort((a, b) => a.title.localeCompare(b.title, 'de'));
     const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'de'));
@@ -130,10 +156,38 @@ export function init(ctx) {
     );
     overlayEl.addEventListener('change', () => {
       const layer = layers.find((l) => l.id === overlayEl.value) ?? null;
-      const first = editionsOf(layer)[0] ?? '';
-      ctx.store.update({ overlay: layer?.id ?? '', otime: first });
-      applyOverlay(layer, first);
+      const edition = editionForYear(layer, ctx.store.getState().to);
+      ctx.store.update({ overlay: layer?.id ?? '', otime: edition });
+      applyOverlay(layer, edition);
     });
+  }
+
+  // Explicit "match the time filter" action: choosing an edition is a user
+  // decision, so nothing changes behind their back.
+  const syncButton = el('button', {
+    class: 'zh-chip zh-chip--action',
+    type: 'button',
+    id: 'overlay-sync-year',
+    onclick: () => {
+      const state = ctx.store.getState();
+      const layer = layers.find((l) => l.id === state.overlay);
+      if (!layer) return;
+      setEdition(layer, editionForYear(layer, state.to));
+      if (overlayNote) {
+        setStatus(overlayNote, `Ausgabe ${formatTime(ctx.store.getState().otime)} zum Zeitraum bis ${state.to} gewählt.`);
+      }
+    },
+  }, ['Ausgabe passend zum Zeitraum']);
+  overlayTimeWrap?.append(syncButton);
+
+  /** Move the edition slider + store + map to one edition value. */
+  function setEdition(layer, value) {
+    const values = editionsOf(layer);
+    if (!value || values.length === 0) return;
+    if (overlayTime && values.length > 1) overlayTime.value = String(Math.max(0, values.indexOf(value)));
+    updateTimeOutput(layer, value);
+    ctx.store.update({ otime: value });
+    ctx.bus.emit('overlay:time', { time: value, layer });
   }
 
   function applyOverlay(layer, time) {
@@ -147,6 +201,8 @@ export function init(ctx) {
     if (overlayOpacityField) overlayOpacityField.hidden = false;
     overlayOpacity?.dispatchEvent(new Event('input'));
     const values = editionsOf(layer);
+    syncButton.hidden = values.length <= 1;
+    syncButton.textContent = `Ausgabe für ${ctx.store.getState().to}`;
     if (overlayTimeWrap && overlayTime && values.length > 1) {
       overlayTimeWrap.hidden = false;
       overlayTime.min = '0';
@@ -170,14 +226,15 @@ export function init(ctx) {
     overlayTimeOut.textContent = value ? `${formatTime(value)} (${layer.id})` : '';
   }
 
-    overlayTime?.addEventListener(
+  overlayTime?.addEventListener(
     'input',
     debounce(() => {
       const layer = layers.find((l) => l.id === ctx.store.getState().overlay);
       const values = editionsOf(layer);
       const value = values[Number(overlayTime.value)];
+      if (!value) return;
       updateTimeOutput(layer, value);
-      ctx.store.update({ otime: value ?? '' });
+      ctx.store.update({ otime: value });
       ctx.bus.emit('overlay:time', { time: value, layer });
     }, 120),
   );
@@ -343,7 +400,10 @@ export function init(ctx) {
     viewBounds = bounds;
     if (ctx.store.getState().viewport === '1') apply();
   });
-  ctx.store.subscribe((_, changed) => {
+  ctx.store.subscribe((next, changed) => {
+    if (changed.some((key) => ['from', 'to'].includes(key)) && !syncButton.hidden) {
+      syncButton.textContent = `Ausgabe für ${next.to}`;
+    }
     if (changed.some((key) => ['from', 'to', 'provider', 'type', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
     else if (changed.includes('selected')) {
       for (const item of listEl.children) {

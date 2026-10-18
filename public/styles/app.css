@@ -384,7 +384,9 @@
   max-width: calc(100% - var(--zh-size-big));
 }
 
-.map-badge .zh-tag {
+/* Readability on top of imagery: the attribution tags get a translucent white
+   plate. Solid tags keep their own black fill — otherwise white on white. */
+.map-badge .zh-tag:not(.zh-tag--solid) {
   background: rgb(255 255 255 / 92%);
 }
 
@@ -418,6 +420,16 @@
   border-left: var(--zh-rule) solid var(--zh-black);
   box-shadow: var(--zh-shadow-card);
   animation: zh-slide-in var(--zh-transition-default) var(--zh-easing-decelerate);
+}
+
+
+/* Touch: vertical swipes scroll the page, horizontal swipes pan the map. A full
+   height map with `touch-action: none` would trap the scroll on phones. */
+@media (pointer: coarse) {
+  .app-map {
+    height: 56vh;
+    touch-action: pan-y;
+  }
 }
 
 @media (min-width: 840px) {
