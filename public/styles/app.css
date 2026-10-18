@@ -1024,6 +1024,32 @@ body.app-compare--open {
   .app-intro__more-short {
     display: inline;
   }
+  /* Toolbar: keep it to three compact rows on a 320 px phone. The “Ansicht”
+     and “Sortierung” labels stay in the accessibility tree (the chips and the
+     select keep their accessible names) but stop eating horizontal room, so the
+     three view chips fit one row. */
+  .app-toolbar {
+    padding: var(--zh-size-tiny) var(--zh-size-small-regular);
+    gap: var(--zh-size-tiny);
+  }
+  .app-toolbar__group {
+    flex-wrap: wrap;
+  }
+  .app-toolbar .zh-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .app-toolbar__label {
+    font-size: var(--zh-font-regular);
+  }
+
   /* Quick picks (search) and quick year ranges stay on one scrollable line
      instead of wrapping into a tall block above the map. */
   #place-quick,
