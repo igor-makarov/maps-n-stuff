@@ -2,7 +2,8 @@
 
 Four coordinated Shurik agents build an OldMapsOnline-style historical-map
 application using the official Canton Zürich design system and original map
-collections. The shared brief is in [PROMPT.md](PROMPT.md). Agents choose their own
+collections, delivered as a **Cloudflare Workers site** with Wrangler configuration
+and local preview/deploy commands. The shared brief is in [PROMPT.md](PROMPT.md). Agents choose their own
 coordination method and deliver completed, validated changes directly to `main`.
 
 ## Swarm configuration
