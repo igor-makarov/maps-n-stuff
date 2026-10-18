@@ -47,7 +47,7 @@
         "www.e-rara.ch"
       ],
       "api": {
-        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve; ListSets is paginated)",
+        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve, museecarto; ListSets is paginated)",
         "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
         "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
         "docs": "https://www.e-rara.ch/"
@@ -115,5 +115,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T22:40:28.362Z"
+  "generatedAt": "2026-10-18T22:56:17.781Z"
 }
