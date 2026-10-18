@@ -86,5 +86,14 @@
     "checkpointAt": "2026-10-18T22:31:30.930Z",
     "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
     "transcript": "checkpoint"
+  },
+  {
+    "id": "7-13",
+    "outcome": "interrupted",
+    "runId": "39173996075",
+    "journalId": "7-13",
+    "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
+    "recovery": "diagnostics/recovery/39173996075-1.json",
+    "transcript": "unavailable"
   }
 ]
