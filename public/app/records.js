@@ -120,12 +120,14 @@ export function filterRecords(state, records) {
   const to = Number(state?.to ?? Infinity);
   const provider = state?.provider || '';
   const type = state?.type || '';
+  const collection = state?.collection || '';
   return records.filter(
     (record) =>
       matchesQuery(record, state?.q) &&
       overlapsRange(record, from, to) &&
       (!provider || record.providerId === provider) &&
-      (!type || record.type === type),
+      (!type || record.type === type) &&
+      (!collection || record.collection === collection),
   );
 }
 
@@ -156,11 +158,13 @@ export function recordsInBounds(records, bounds) {
 export function facets(records) {
   const providers = new Map();
   const types = new Map();
+  const collections = new Map();
   for (const record of records) {
     providers.set(record.providerId, (providers.get(record.providerId) ?? 0) + 1);
     types.set(record.type ?? 'map', (types.get(record.type ?? 'map') ?? 0) + 1);
+    if (record.collection) collections.set(record.collection, (collections.get(record.collection) ?? 0) + 1);
   }
-  return { providers, types };
+  return { providers, types, collections };
 }
 
 export function extentUnion(records) {

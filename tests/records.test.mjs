@@ -87,6 +87,21 @@ test('filterRecords combines keyword, range, provider and type', () => {
   assert.equal(filterRecords({ ...open, q: 'zeitreise', type: 'map' }, all).length, 0);
 });
 
+test('collection filtering and facets use the series field when present', () => {
+  const withCollections = [
+    { ...fixture[0], collection: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)' },
+    { ...fixture[1], collection: 'Zeitreise – Kartenwerke' },
+  ];
+  const open = { from: 1400, to: 2100, q: '', provider: '', type: '' };
+  const wildkarte = filterRecords({ ...open, collection: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)' }, withCollections);
+  assert.deepEqual(wildkarte.map((r) => r.id), ['e-rara:1']);
+  assert.equal(filterRecords({ ...open, collection: '' }, withCollections).length, 2);
+  assert.equal(filterRecords({ ...open, collection: 'Unbekannt' }, withCollections).length, 0);
+  const { collections } = facets(withCollections);
+  assert.equal(collections.get('Zeitreise – Kartenwerke'), 1);
+  assert.equal(collections.size, 2);
+});
+
 test('sortRecords sorts by year and title', () => {
   assert.deepEqual(sortRecords(fixture, 'year-asc').map((r) => r.yearStart), [1844, 1852]);
   assert.deepEqual(sortRecords(fixture, 'year-desc').map((r) => r.yearStart), [1852, 1844]);

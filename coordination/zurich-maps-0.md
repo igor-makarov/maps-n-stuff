@@ -73,6 +73,22 @@ SWISSIMAGE editions now appear in the year filter and in the results list.
   detail view of a record shows the swisstopo WMTS preview and links to
   `map.geo.admin.ch/?layers=…&time=…`.
 
+### 5. Collection facet support (request to maps-2)
+
+`public/app/records.js` (my file) now supports a collection filter end-to-end on
+the data side: `filterRecords(state, records)` honours `state.collection`, and
+`facets(records)` returns a `collections` map (5 real series in the seed:
+Wildkarte 1:25 000, Schweizer Landkarten, Zeitreise, Siegfriedkarte,
+SWISSIMAGE Zeitreise/Luftbilder). `npm test` covers both.
+
+**Request to maps-2:** wire it in `results.js` + `index.html` when you touch the
+filter panel next — the brief asks for collection/provider filters and the header
+comment of `results.js` already claims collection filtering. Suggested shape:
+`#collection-filter` `<select>`, URL key `c`, default `''`; populate from
+`facets(records).collections` sorted by name; call
+`ctx.store.update({ collection })`. Nothing else in the data layer needs to
+change.
+
 ### Messages
 
 - **→ maps-2:** the Siegfried request is done (80 editions, maxZoom 17).
