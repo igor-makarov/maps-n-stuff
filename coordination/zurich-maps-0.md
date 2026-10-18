@@ -1,5 +1,90 @@
 # zurich-maps-0 status
 
+## Iteration 4-6 (2026-10-18, ~22:00–22:2x UTC) — data layer
+
+Landed on `main` as `88131d9` (rebased over maps-2's `45ad3c2`, so the commit hash
+on `main` may differ; the content is the same).
+
+### 1. One harvest script, and it also writes `overlays.json`
+
+There were **two** generators: `scripts/harvest-seed.mjs` (older, wrote a smaller
+`records.json` without the current selection metadata) and
+`scripts/fetch-records.mjs` (the one that actually produced the committed seed).
+`npm run harvest` pointed at the old one, so a refresh would have silently
+replaced the richer dataset. Fixed:
+
+- `scripts/fetch-records.mjs` now writes `records.json`, `sources.json` **and**
+  `overlays.json`; `scripts/harvest-seed.mjs` is deleted.
+- `npm run harvest` / `npm run harvest:offline` point at it.
+- Every upstream response (OAI pages, manifests, capabilities, tile probes) is
+  cached under `.cache/fetch/` (git-ignored); `--offline` reproduces the committed
+  files with no network access (verified: byte-identical record set).
+
+### 2. Comparison layers: Siegfried + SWISSIMAGE (answers maps-2's request)
+
+`overlays.json` now has 12 curated layers. Added:
+
+- `ch.swisstopo.hiks-siegfried` – 80 editions 1870–1949, matrix set `3857_17`,
+  **maxZoom 17** (read from the TileMatrixSet definition, not assumed).
+- `ch.swisstopo.swissimage-product` – 100 aerial editions 1926–2025 + `current`,
+  maxZoom 20, and the dedicated `ch.swisstopo.swissimage-product_1946` layer.
+- The coverage-metadata layer `…swissimage-product.metadata` stays filtered; the
+  `pixelkarte-*` layers remain in the “modern” group.
+
+Records: **55** (28 e-rara maps + 27 swisstopo overlay editions: 13 Zeitreise, 9
+Siegfried, 1 SWISSIMAGE 1946, 4 SWISSIMAGE modern). Siegfried decades and the
+SWISSIMAGE editions now appear in the year filter and in the results list.
+
+### 3. Honesty fixes in the seed
+
+- The WMTS advertises Zeitreise **1844–1848 but serves empty tiles** (verified at
+  z8–z12 for Zürich/Bern/Basel/Lausanne/Lugano). Those editions are no longer
+  offered; they are listed in `records.json.skipped` with the probe result.
+- `thumbnail` is now a tile the harvest actually **probed as non-empty**;
+  `thumbnailPlace` names the probe location (Zürich first, Bern for the 1870
+  Siegfried mosaic, which does not cover Zürich yet). No metadata was invented:
+  the record title/date still come from the advertised `Time` value.
+
+### 4. Small unblocking edits in other owners' files (please review)
+
+- `public/app/results.js` (maps-2): `isHistorical` now also matches `swissimage`,
+  and the optgroup label mentions SWISSIMAGE; without it the new aerial layers
+  would have been listed under “Moderne Landeskarten”.
+- `public/app/search.js`: I had independently fixed the same TDZ crash as maps-3's
+  `6c18514`; I kept **their** version on rebase, no duplicate.
+
+### Verified
+
+- `npm test` 52/52 ✓ · `npm run build` ✓ · `npm run check` (incl.
+  `wrangler deploy --dry-run`) ✓
+- `scripts/browser-check.mjs` (maps-3's harness, 27 checks) against
+  `npx wrangler dev`: **27/27** — 55 records, 37 in the default range, Zeitreise
+  tiles render, place search returns 8 swisstopo suggestions, no console errors,
+  no failed requests.
+- A targeted Siegfried/SWISSIMAGE walkthrough: picker offers all three new layers;
+  1860–1910 lists 5 Siegfriedkarte records; 12 Siegfried-1900 tiles load; the
+  detail view of a record shows the swisstopo WMTS preview and links to
+  `map.geo.admin.ch/?layers=…&time=…`.
+
+### Messages
+
+- **→ maps-2:** the Siegfried request is done (80 editions, maxZoom 17).
+  `results.js` got the two-line `isHistorical`/label change above — please keep or
+  supersede it consciously. `state.overlay.maxZoom` is now per-layer, so the map
+  stops requesting z18 from the 3857_17 Siegfried raster. Consider grouping
+  `swissimage` under the historical label in your new UI work.
+- **→ maps-3:** the probe/`skipped` fields are additive; the D4 schema is
+  unchanged. The harness caught the TDZ crash before I saw it too — thanks.
+  `records.json.skipped` now has one documented entry (Zeitreise 1844).
+- **→ maps-1:** `sources.json` no longer carries the unused `local` fixture
+  provider (records never used it; `records.test.mjs` keeps its own in-memory
+  fixture). If any UI copy counts providers, it now reports 2. Docs I touched:
+  README, `docs/run.md`, `docs/data-sources.md`.
+- **→ all:** `npm run harvest` is safe to run again (cached, bounded, writes all
+  three data files).
+
+---
+
 Iteration 1-1 (2026-10-18, UTC). Member `zurich-maps-0`.
 
 ## Reaction to the maps-1 contract (accepted)
