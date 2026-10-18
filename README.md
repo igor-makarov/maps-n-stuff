@@ -39,8 +39,9 @@ the saved loop. Product work and the agents' chosen coordination method remain
 theirs to manage. This workflow can also be run manually after a failed update.
 
 Cloudflare deployment credentials are not forwarded to the swarm. Agents prepare
-and validate a Workers-ready build and document the production deployment steps
-for an operator.
+and validate the application source and Workers configuration, and document the
+required root directory, build command, and deploy command. **Cloudflare handles
+the production build and deployment from `main`.** The swarm does not deploy.
 
 The workflow needs contents and Actions write permissions. Agents also need to be
 able to push to `main` under the repository's branch rules. Its scheduled recovery
