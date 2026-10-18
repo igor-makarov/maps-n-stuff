@@ -9,6 +9,7 @@ docs owner. Newest entry first; earlier iterations are kept below.
 | --- | --- |
 | `70192ec` | **cleanup: the unused vendored Leaflet copy is removed** (7 files, 192 KiB). Nothing referenced `public/vendor/leaflet` — not `map.js` (own slippy map), not the HTML/CSS, not the harness (grep-verified). `NOTICE.md` lost its Leaflet row, `README.md` its “vendored but unused” limitation; coordination **D5** records the decision. The deployed asset set is now 30 files (was 40) and every one of them is used. |
 | `9bf7583` | **design system: control height corrected to the official 48 px** and re-verified against the upstream files. See below. |
+| `(this commit)` | **shell: cantonal “Nach oben” control** (`mdl-back2top`): 48 px circle with the 24 px arrow, fixed bottom-right with the upstream margin curve, hidden until the page is scrolled, click scrolls to the top and moves focus to `#main`. One additive harness check; the integrated harness is **90/90** after rebasing over maps-3's fullscreen/degraded-upstream checks and maps-2's point filter (two rebase rounds, conflicts in `browser-check.mjs`/`docs/run.md` resolved by keeping both sides' checks and facts). |
 | (in `70192ec`) | `docs/run.md` harness count 71 → 72 (incl. “Suchlink kopieren”); `coordination/README.md` status board now states the real iteration-7-13 state of all four members instead of “scaffold in progress”. |
 
 ### The arithmetic error this iteration found and fixed
@@ -46,7 +47,15 @@ map-first harness check (`mapVisible > 200` at 1440 and 840) stays green.
   --dry-run` (30 asset files).
 - `node scripts/browser-check.mjs` **72/72** against `wrangler dev` after both
   commits — including map-first (1440: 612/288 · 840: 682/218), the contrast
-  sweep, compare, multi-sheet and the device-local list checks.
+  sweep, compare, multi-sheet and the device-local list checks. After the
+  “Nach oben” control and rebasing over maps-3's `5299f0a`/`e7806e5`/`929e2c2`
+  (fullscreen viewer, keyboard sheet strip, degraded-upstream section,
+  placeholder scan, phone sheet-strip fix) and maps-2's `c936f0a`/`7a7a87d`/`7c24eca` (point filter, skip list, shared link):
+  **90/90** on the integrated tree, `npm test` 101/101. The new check: hidden at
+  the top, 48×48 px / 50 % radius / 48 px from the corner when scrolled, click →
+  `scrollY 6`, focus `#main`, button hidden again. The rebase conflict in
+  `browser-check.mjs`/`docs/run.md` was resolved by keeping both sides' checks
+  and facts.
 - Token/geometry comparison against upstream commit `552ceb6`
   (`src/assets/css/globals/_variables.scss`, `src/atoms/button/button.scss`,
   `src/atoms/form_input/form_input.scss`): font/spacing/line-height/grid/

@@ -1210,3 +1210,44 @@ body.app-compare--open {
 .app-filters__actions .zh-button {
   flex: 1 1 auto;
 }
+
+/* ---------- “Nach oben” (shell: maps-1, cantonal `mdl-back2top`) ----------
+   48 px circle ($sizeSmallHuge) fixed to the bottom-right corner, hidden until
+   the page is scrolled (see wireBackToTop in main.js). The offset follows the
+   upstream margin curve: 24 → 32 → 40 → 48 px. */
+.app-backtotop {
+  position: fixed;
+  right: var(--zh-size-large);
+  bottom: var(--zh-size-large);
+  z-index: var(--zh-z-overlay);
+  border-radius: 50%;
+  box-shadow: var(--zh-shadow-card);
+  /* Keep it away from the detail panel (z 1100) and below the compare view. */
+  pointer-events: auto;
+}
+
+.app-backtotop__icon {
+  width: var(--zh-size-large);
+  height: var(--zh-size-large);
+}
+
+@media (min-width: 600px) {
+  .app-backtotop {
+    right: var(--zh-size-big);
+    bottom: var(--zh-size-big);
+  }
+}
+
+@media (min-width: 840px) {
+  .app-backtotop {
+    right: var(--zh-size-bigger-big);
+    bottom: var(--zh-size-bigger-big);
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-backtotop {
+    right: var(--zh-size-small-huge);
+    bottom: var(--zh-size-small-huge);
+  }
+}

@@ -10,7 +10,7 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
 | Source | Used for |
 | --- | --- |
 | <https://www.zh.ch/de/webangebote-entwickeln-und-gestalten.html> (and its `…/inhalt/designsystem.html` + `…/designsystem/community/ressourcen.html` pages) | scope of the design system, accessibility requirements (WCAG 2.2 AA, eCH-0059), pointer to the frontend repository |
-| <https://github.com/Kanton-Zurich/frontend-designsystem> (Apache-2.0, `master`) | tokens and component behaviour: `src/assets/css/globals/_variables.scss`, `_fonts.scss`, `_grid.scss`, `src/atoms/button/button.scss`, `src/atoms/headings/headings.scss`, `src/atoms/tag/tag.scss`, `src/atoms/loading_circle/loading_circle.scss`, `src/assets/fonts/Inter-{Regular,Black}.woff2` |
+| <https://github.com/Kanton-Zurich/frontend-designsystem> (Apache-2.0, `master`) | tokens and component behaviour: `src/assets/css/globals/_variables.scss`, `_fonts.scss`, `_grid.scss`, `src/atoms/button/button.scss`, `src/atoms/headings/headings.scss`, `src/atoms/tag/tag.scss`, `src/atoms/loading_circle/loading_circle.scss`, `src/atoms/form_input/form_input.scss`, `src/modules/back2top/back2top.scss`, `src/assets/fonts/Inter-{Regular,Black}.woff2` |
 | <https://www.zh.ch/de/politik-staat/kanton/kantonale-verwaltung/corporatedesign.html> | corporate-design context: the cantonal colours/typography are the reference; the coat of arms and logo are protected marks we do **not** use |
 
 ## Tokens (`public/styles/zh-tokens.css`)
@@ -73,6 +73,11 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   and range inputs use the cantonal blue as `accent-color`. The input border is
   black instead of the upstream `#949494` default because a #949494 boundary on
   white is only 2.9:1 — below the 3:1 that SC 1.4.11 asks for.
+- **“Nach oben”** (`mdl-back2top`): a fixed 48 px circle (`$sizeSmallHuge`)
+  with the cantonal black button fill, a 24 px arrow icon and the upstream
+  corner-margin curve (24 → 32 → 40 → 48 px). It appears only once the page is
+  scrolled and moves focus to the content start when used (`.app-backtotop`,
+  `wireBackToTop()` in `main.js`).
 - **Focus**: 3 px `#0070b4` outline with 2 px offset on every interactive
   element via `:focus-visible`; the canton's “flying focus” concept is
   referenced but a plain, high-contrast ring is used for predictability.

@@ -1851,6 +1851,59 @@ try {
     check('the detail panel leads to the other sheets of the same series', false, 'no record with 2+ siblings in the seed');
   }
 
+  // “Nach oben” (cantonal `mdl-back2top`, wired in main.js): hidden at the top
+  // of the page, appears once scrolled, and moves focus to the content start so
+  // a keyboard user is not stranded on a control that just disappeared. The
+  // detail panel (z 1100) intentionally covers the page-level button, so close
+  // it first — the button belongs to the page, not the panel.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'back-to-top page' });
+  await sleep(500);
+  const backAtTop = await cdp.eval(`document.querySelector('#back-to-top')?.hidden ?? null`);
+  await cdp.eval(`window.scrollTo({ top: 4000, behavior: 'instant' }); true`);
+  let backButton = null;
+  try {
+    backButton = await cdp.waitFor(
+      `(() => {
+        const b = document.querySelector('#back-to-top');
+        if (!b || b.hidden) return '';
+        const r = b.getBoundingClientRect();
+        return {
+          w: Math.round(r.width), h: Math.round(r.height),
+          radius: getComputedStyle(b).borderRadius,
+          right: Math.round(window.innerWidth - r.right),
+          bottom: Math.round(window.innerHeight - r.bottom),
+        };
+      })()`,
+      { label: 'back-to-top visible', timeout: 5_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  await cdp.click('#back-to-top').catch(() => {});
+  let backState = null;
+  try {
+    backState = await cdp.waitFor(
+      `(() => window.scrollY < 40 ? { scrollY: Math.round(window.scrollY), active: document.activeElement?.id || '', hidden: document.querySelector('#back-to-top')?.hidden } : '')()`,
+      { label: 'scrolled back to top', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    '“Nach oben” appears when scrolled and returns to the content start',
+    backAtTop === true &&
+      backButton &&
+      backButton.w >= 44 &&
+      backButton.h >= 44 &&
+      backButton.radius === '50%' &&
+      backState?.active === 'main' &&
+      backState.hidden === true,
+    `${JSON.stringify(backButton)} -> ${JSON.stringify(backState)}`,
+  );
+  await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
+
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

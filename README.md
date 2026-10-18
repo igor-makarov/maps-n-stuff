@@ -48,8 +48,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   selection again;
 - a map-first shell: the intro is a compact band from 1024 px, so the map and the
   result controls are on the first screen at desktop sizes (measured: map starts
-  at 604 px of a 900 px viewport), with a “Direkt zur Karte” link and a keyboard
-  route to every map action;
+  at 612 px of a 900 px viewport), with a “Direkt zur Karte” link, a keyboard
+  route to every map action and the cantonal “Nach oben” control once the page
+  is scrolled;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `at`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in

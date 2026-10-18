@@ -344,6 +344,20 @@
       </section>
     </main>
 
+    <!-- “Nach oben” (cantonal `mdl-back2top`): a 48 px circle that appears once
+         the page is scrolled; wired in main.js so it also moves focus. -->
+    <button
+      class="zh-button zh-button--icon app-backtotop"
+      id="back-to-top"
+      type="button"
+      aria-label="Zurück nach oben"
+      hidden
+    >
+      <svg class="zh-button__icon app-backtotop__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M11 19.5V9.1L6.4 13.7 4.7 12 12 4.7l7.3 7.3-1.7 1.7L13 9.1v10.4Z" />
+      </svg>
+    </button>
+
     <footer class="zh-footer">
       <div class="zh-shell zh-footer__inner">
         <p><strong>Kartenzeit</strong> – Open-Source-Demo für historische Karten. Gestaltungsreferenz: Kanton Zürich.</p>

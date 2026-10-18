@@ -186,6 +186,30 @@ function initViewSwitch() {
   apply(ctx.store.getState().view);
 }
 
+/**
+ * “Nach oben” (cantonal `mdl-back2top`): the button only exists once the page is
+ * scrolled, and it moves focus to the content start after scrolling, so a
+ * keyboard user is not stranded on a control that has just been hidden.
+ */
+function wireBackToTop() {
+  const button = qs('#back-to-top');
+  if (!button) return;
+  const visible = () => window.scrollY >= Math.max(600, window.innerHeight * 1.5);
+  const sync = () => {
+    button.hidden = !visible();
+  };
+  window.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync, { passive: true });
+  button.addEventListener('click', () => {
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    const main = qs('#main');
+    if (main && typeof main.focus === 'function') main.focus({ preventScroll: true });
+    sync();
+  });
+  sync();
+}
+
 async function main() {
   document.documentElement.dataset.app = 'kartenzeit';
   initViewSwitch();
@@ -218,6 +242,7 @@ async function main() {
 
   renderIntro();
   wirePermalinkCopy();
+  wireBackToTop();
   await initModules();
   reportModuleProblems();
 
