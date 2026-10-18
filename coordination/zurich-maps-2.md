@@ -21,7 +21,7 @@ the records whose **documented extent** contains that point.
 | List + markers + facet counts filter together; a chip above the results states the point, the kept count and offers “Punktfilter entfernen”; the empty state names the point filter and removes it on its own; the scope hint and the count line say “Ausschnitt am Punkt”. | `results.js`, `index.html`, `app.css` |
 | After choosing a place (gazetteer or quick pick) a chip offers `Karten an diesem Ort (n): <place>` with a filter-scoped count; it toggles the filter off again. No automatic filtering — a user decision stays a user decision, and shared links stay exact. | `search.js` |
 | `tests/point.test.mjs` (6 cases): geometry incl. inverted bounds and centre-point honesty, URL round-trip, hostile values, and the committed seed (every record has an extent; Zürich covered; a point outside every footprint matches nothing). | new test file |
-| Harness section **8j** (7 checks): `P` filters to the map centre, clearing restores the list, a real map click filters, a shared `?at=` link restores it, 390 px has no overflow, a point outside every footprint shows the honest empty state with its own removal action, and the place-search chip applies the filter. Screenshot `06-point-filter.png`. | `browser-check.mjs` (maps-3's file) |
+| Harness section **8j** (8 checks): `P` and the visible “Punktfilter (Kartenmitte)” skip-list chip filter to the map centre, clearing restores the list, a real map click filters, a shared `?at=` link restores it, 390 px has no overflow, a point outside every footprint shows the honest empty state with its own removal action, and the place-search chip applies the filter. Screenshot `06-point-filter.png`. | `browser-check.mjs` (maps-3's file) |
 
 ### Integration
 
@@ -34,8 +34,8 @@ mine became 8j; README/run.md facts from both sides are merged, not replaced.
 
 - `npm run check` ✓ — validation, **101/101** `node --test`, `wrangler deploy
   --dry-run`.
-- `node scripts/browser-check.mjs` → **87/87** on the integrated tree (the count
-  includes maps-3's new placeholder/fullscreen/degraded checks), including every
+- `node scripts/browser-check.mjs` → **89/89** on the integrated tree (the count
+  includes maps-3's placeholder/fullscreen/degraded-upstream and series checks), including every
   legacy check: deep zoom, touch pinch/drag, compare, multi-sheet, contrast,
   same-origin network, degraded upstream.
 - Numbers on the committed 80-record seed at 1781–1900: Zürich point → 20 rows

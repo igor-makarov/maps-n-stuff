@@ -1648,7 +1648,7 @@ try {
     JSON.stringify(pointOff),
   );
 
-  const mapCentre = await cdp.eval(`(() => { const r = document.querySelector('#map').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+  const mapCentre = await cdp.eval(`(() => { window.scrollTo({ top: 0, behavior: 'instant' }); const r = document.querySelector('#map').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: mapCentre.x, y: mapCentre.y, button: 'left', clickCount: 1 });
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: mapCentre.x, y: mapCentre.y, button: 'left', clickCount: 1 });
   let pointClick = null;
@@ -1671,6 +1671,34 @@ try {
     Boolean(pointClick) && /at=47\.37|at=47\.38/.test(pointClick.url) && pointClick.rows > 0 && pointClick.rows < rowsBeforePoint,
     JSON.stringify(pointClick),
   );
+
+  // The visible keyboard skip list under the map is the discoverable route to
+  // the same filter (the ⌖ control inside the map is only reachable after it).
+  await cdp.click('#point-filter-clear');
+  await sleep(400);
+  await cdp.click('[data-map-cmd="point"]');
+  let pointChip = null;
+  try {
+    pointChip = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#point-filter');
+        if (!chip || chip.hidden) return '';
+        const rows = document.querySelectorAll('#result-list > *').length;
+        if (rows >= ${rowsBeforePoint}) return '';
+        return { url: location.search, rows, label: document.querySelector('[data-map-cmd="point"]').textContent.trim() };
+      })()`,
+      { label: 'skip-list point filter', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the map skip list offers the point filter for keyboard users',
+    Boolean(pointChip) && pointChip.url.includes('at=') && pointChip.rows > 0 && /Punktfilter/.test(pointChip.label),
+    JSON.stringify(pointChip),
+  );
+  await cdp.click('#point-filter-clear');
+  await sleep(400);
 
   await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=47.3769%2C8.5417` });
   await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'shared point page' });

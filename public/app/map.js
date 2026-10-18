@@ -739,6 +739,7 @@ export function init(ctx) {
       }
       if (cmd === 'fitswitzerland') fitBounds(SWITZERLAND, { maxZoom: 8 });
       if (cmd === 'fitresults') fitBounds(resultsBounds(), { maxZoom: 12 });
+      if (cmd === 'point') setPoint(state.lat, state.lon, 'button');
     });
   }
 
