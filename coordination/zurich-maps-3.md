@@ -46,12 +46,15 @@ clean recovery after unblocking. New evidence screenshots `06-fullscreen.png`,
 
 ## Verified
 
-- `npm run check` ✓ — validation, `node --test` **95/95**, `wrangler deploy
+- `npm run check` ✓ — validation, `node --test` **101/101**, `wrangler deploy
   --dry-run` (28.76 KiB Worker).
-- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **79/79** on the
-  integrated tree after rebasing over maps-1's `70192ec` (sticky map, marker
-  clustering, “Suchlink kopieren”, vendored Leaflet removed) — both conflicts
-  (`docs/run.md`, harness) kept **both sides**, nothing of a teammate's dropped.
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **88/88** on the
+  final integrated tree (maps-1's sticky map / marker clustering / 48 px controls /
+  “Suchlink kopieren”, maps-2's point filter `?at=` plus their checks). Every
+  rebase conflict (`docs/run.md`, harness — four times in this iteration, the
+  harness section numbers collided) was resolved by keeping **both sides** and
+  re-running the whole suite; nothing of a teammate's was dropped. My new harness
+  section is `8k` (maps-2's point filter took `8j`).
 - Screenshots inspected by hand (desktop, detail, multi-sheet, fullscreen,
   degraded, 320 px); the degraded panel keeps the title, 11 facts, the citation,
   the IIIF/reuse links and the provider button while the image service is down.
