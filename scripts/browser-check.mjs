@@ -784,6 +784,92 @@ try {
     );
   }
 
+  /* --- 8c. comparison list and side-by-side view ------------------------ */
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'compare page' });
+  await sleep(600);
+
+  /** Select result `index`, pin it, and report the resulting shareable state. */
+  const pinResult = async (index) => {
+    await cdp.pressKey('Escape'); // close detail/compare overlays from the previous round
+    await sleep(300);
+    await cdp.click('#result-list > *', { index });
+    await cdp.waitFor(`document.querySelector('#detail') && !document.querySelector('#detail').hidden`, { label: `detail for result ${index}` });
+    await sleep(400);
+    await cdp.pressKey('Escape'); // the panel overlays the compare list
+    await sleep(300);
+    await cdp.eval(`(() => { const panel = document.querySelector('#compare-panel'); if (panel) panel.open = true; return true; })()`);
+    await sleep(200);
+    await cdp.click('#compare-add');
+    await sleep(500);
+    return cdp.eval(`(() => {
+      const params = new URLSearchParams(location.search);
+      return {
+        cmp: params.get('cmp') || '',
+        status: document.querySelector('#compare-status')?.textContent || '',
+        add: document.querySelector('#compare-add')?.textContent || '',
+        toolbarHidden: document.querySelector('#compare-open')?.hidden,
+        listItems: document.querySelectorAll('#compare-list .app-compare__item').length,
+      };
+    })()`);
+  };
+
+  const pinOne = await pinResult(0);
+  const pinTwo = await pinResult(1);
+  const pinnedIds = (pinTwo.cmp || pinOne.cmp).split(',').filter(Boolean);
+  check(
+    'compare: two records can be pinned and the list is shareable',
+    pinnedIds.length === 2 &&
+      pinTwo.listItems === 2 &&
+      pinTwo.toolbarHidden === false &&
+      /gemerkt/.test(pinTwo.status) &&
+      new URLSearchParams(await cdp.eval(`location.search`)).get('cmp') === pinnedIds.join(','),
+    `${pinnedIds.join(' + ')} · status: ${pinTwo.status.slice(0, 60)}`,
+  );
+
+  await cdp.click('#compare-open');
+  await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view', timeout: 10_000 });
+  try {
+    await cdp.waitFor(
+      `(() => { const images = [...document.querySelectorAll('#compare-view-body .app-compare__image')]; return images.length >= 2 && images.every((img) => img.complete && img.naturalWidth > 0); })()`,
+      { label: 'compare images', timeout: 30_000 },
+    );
+  } catch {
+    /* the assertion below reports the images that did (not) load */
+  }
+  const panes = await cdp.eval(`(() => [...document.querySelectorAll('#compare-view-body .app-compare__pane')].map((pane) => {
+    const img = pane.querySelector('img');
+    return {
+      title: pane.querySelector('h3')?.textContent || '',
+      caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').slice(0, 130),
+      img: img ? { src: img.src, w: img.naturalWidth, h: img.naturalHeight } : null,
+      link: pane.querySelector('a[href]')?.href || '',
+    };
+  }))()`);
+  check(
+    'compare view shows both sheets with real images and source links',
+    panes.length === 2 && panes.every((pane) => pane.title && pane.img && pane.img.w > 200 && pane.img.h > 200 && /^https?:\/\//.test(pane.link) && /Zentralbibliothek|ETH-Bibliothek|swisstopo/.test(pane.caption)),
+    panes.map((pane) => `${pane.title.slice(0, 26)}:${pane.img ? `${pane.img.w}×${pane.img.h}` : 'no image'}`).join(' | '),
+  );
+
+  await cdp.pressKey('Escape');
+  await sleep(500);
+  const compareClosed = await cdp.eval(`document.querySelector('#compare-view')?.hidden === true`);
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(pinnedIds.join(','))}` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'shared compare link' });
+  await sleep(600);
+  const sharedCompare = await cdp.eval(`(() => ({
+    open: document.querySelector('#compare-panel')?.open === true,
+    items: document.querySelectorAll('#compare-list .app-compare__item').length,
+    toolbar: document.querySelector('#compare-open')?.hidden === false,
+    status: document.querySelector('#compare-status')?.textContent || '',
+  }))()`);
+  check(
+    'a shared ?cmp= link restores the comparison list',
+    compareClosed && sharedCompare.open && sharedCompare.items === 2 && sharedCompare.toolbar,
+    `${compareClosed ? 'closed' : 'still open'} -> ${JSON.stringify(sharedCompare)}`,
+  );
+
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
