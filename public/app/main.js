@@ -84,18 +84,21 @@ function renderIntro() {
   const facts = qs('#intro-facts');
   if (facts) {
     const providersInUse = new Set(ctx.data.records.map((r) => r.providerId));
-    const withPreview = ctx.data.records.filter((r) => r.thumbnail).length;
-    const withExtent = ctx.data.records.filter((r) => r.extent).length;
+    const withManifest = ctx.data.records.filter((r) => r.iiifManifest).length;
+    const collections = new Set(ctx.data.records.map((r) => r.collection).filter(Boolean)).size;
     facts.replaceChildren(
-      ...[ 
-        ['Digitalisate', `${withPreview}`],
+      ...[
+        ['Digitalisate', `${ctx.data.records.length}`],
         ['Zeitraum', `${ctx.data.years.min}–${ctx.data.years.max}`],
-        ['Sammlungen', `${providersInUse.size}`],
-        ['Kartenausschnitt bekannt', `${withExtent}`],
+        ['Anbieter', `${providersInUse.size}`],
+        ['IIIF-Bildservice', `${withManifest}`],
       ].flatMap(([term, value]) => [
         el('li', {}, [el('span', { class: 'zh-facts__value', text: value }), el('span', { class: 'zh-facts__term', text: term })]),
       ]),
     );
+    // Honest, additive detail: only shown when it is not simply the total.
+    const withExtent = ctx.data.records.filter((r) => r.extent).length;
+    facts.title = `${collections} Sammlungen · ${withExtent} von ${ctx.data.records.length} Datensätzen mit Kartenausschnitt · ${ctx.data.overlays.length} georeferenzierte swisstopo-Kartenwerke`;
   }
 
   const tagList = qs('#intro-tags');
