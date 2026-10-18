@@ -30,15 +30,19 @@ const optionalModules = [
   ['search', './search.js'],
   ['results', './results.js'],
   ['detail', './detail.js'],
+  ['compare', './compare.js'],
 ];
 
 async function initModules() {
   const loaded = [];
+  ctx.moduleApis = {};
   for (const [name, specifier] of optionalModules) {
     try {
       const module = await import(specifier);
       if (typeof module.init === 'function') {
-        await module.init(ctx);
+        // Modules may return a small API (used by the browser checks); the shell
+        // only stores it, it never reaches into another module's internals.
+        ctx.moduleApis[name] = await module.init(ctx);
         loaded.push(name);
       }
     } catch (err) {

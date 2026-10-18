@@ -200,6 +200,22 @@
             <ol class="app-result-list" id="result-list"></ol>
             <div class="zh-state" id="results-state" hidden></div>
           </section>
+
+          <details class="zh-panel app-compare" id="compare-panel">
+            <summary class="zh-panel__summary">Vergleich<span id="compare-count"></span></summary>
+            <div class="zh-panel__body">
+              <p class="zh-hint">
+                Bis zu vier Datensätze merken und zwei davon nebeneinanderstellen. Die Liste steht im Link
+                (<code>?cmp=</code>) und lässt sich teilen.
+              </p>
+              <div class="app-compare__actions">
+                <button class="zh-button zh-button--small" type="button" id="compare-add">Zuerst einen Datensatz auswählen</button>
+                <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-clear">Liste leeren</button>
+              </div>
+              <ul class="app-compare__list" id="compare-list"></ul>
+              <p class="zh-hint" id="compare-status" role="status" aria-live="polite"></p>
+            </div>
+          </details>
         </aside>
 
         <section class="app-mapwrap" aria-labelledby="map-heading">
@@ -276,6 +292,26 @@
         </p>
       </div>
     </footer>
+
+    <!-- Vergleichsansicht: eigenständiges Modul (public/app/compare.js) -->
+    <section
+      class="app-compare-view"
+      id="compare-view"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="compare-view-title"
+      hidden
+    >
+      <header class="app-compare-view__bar">
+        <h2 class="zh-heading zh-heading--5" id="compare-view-title">Vergleich</h2>
+        <div class="app-compare-view__actions">
+          <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-view-copy">Permalink kopieren</button>
+          <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-view-list">Liste bearbeiten</button>
+          <button class="zh-button zh-button--small" type="button" id="compare-view-close">Schliessen (<kbd>Esc</kbd>)</button>
+        </div>
+      </header>
+      <div class="app-compare-view__body" id="compare-view-body"></div>
+    </section>
 
     <!-- Detailansicht: eigenständiges Modul (public/app/detail.js) -->
     <aside class="app-detail" id="detail" role="dialog" aria-modal="false" aria-labelledby="detail-title" hidden>

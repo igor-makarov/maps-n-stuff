@@ -98,14 +98,14 @@ async function checkHtmlAssets() {
     if (ref.endsWith('/') || ref.startsWith('/api/')) continue;
     await access(abs('public', ref.replace(/^\//, ''))).catch(() => fail(`public/index.html references missing asset ${ref}`));
   }
-  for (const id of ['place-search', 'place-input', 'place-suggestions', 'result-list', 'results-state', 'map', 'detail', 'detail-body', 'scrim', 'year-from', 'year-to', 'overlay-select', 'text-filter']) {
+  for (const id of ['place-search', 'place-input', 'place-suggestions', 'result-list', 'results-state', 'map', 'detail', 'detail-body', 'scrim', 'year-from', 'year-to', 'overlay-select', 'text-filter', 'compare-panel', 'compare-list', 'compare-view', 'compare-view-body']) {
     if (!html.includes(`id="${id}"`)) fail(`public/index.html: missing element #${id} (contracted UI hook)`);
   }
   notes.push(`public/index.html: ${new Set(refs).size} asset references, all present`);
 }
 
 async function checkModules() {
-  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'src/worker/index.js'];
+  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'src/worker/index.js'];
   for (const file of modules) {
     try {
       await run(process.execPath, ['--check', abs(file)]);
@@ -131,7 +131,7 @@ async function checkModules() {
     if (!worker.includes(endpoint)) fail(`src/worker/index.js: endpoint ${endpoint} missing`);
   }
   const main = await readFile(abs('public/app/main.js'), 'utf8');
-  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js']) {
+  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js', 'compare.js']) {
     if (!main.includes(moduleName)) fail(`public/app/main.js: optional module ${moduleName} not wired`);
   }
   notes.push(`modules: ${modules.length} checked, optional modules wired`);

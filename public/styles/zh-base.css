@@ -14,6 +14,14 @@ html {
   scroll-behavior: smooth;
 }
 
+/* The `hidden` attribute must always win over a component's own `display`.
+   Without this, a full-screen overlay that is toggled with `hidden` (the
+   comparison view, the detail panel) stays in the layout and swallows every
+   mouse click even while it is "closed". */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--zh-color-bg);

@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, place, lat, lon, zoom, selected, view, sort, overlay, otime }
+ *   store.getState()            -> { q, from, to, provider, type, place, lat, lon, zoom, selected, view, sort, overlay, otime, cmp }
  *   store.update({ from: 1800 }) -> merge, sync URL (replaceState), notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *
@@ -29,6 +29,7 @@ export const STATE_DEFAULTS = Object.freeze({
   sort: 'year-asc',
   overlay: '', // swisstopo layer id of the comparison layer
   otime: '', // time value for that layer (YYYYMMDD where the layer is a Zeitreise layer)
+  cmp: '', // comma-separated record ids pinned in the comparison list (max 4)
 });
 
 /** URL parameter names kept short for shareable links. */
@@ -48,10 +49,11 @@ export const PARAM = {
   sort: 'sort',
   overlay: 'ov',
   otime: 'ot',
+  cmp: 'cmp',
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime'],
+  string: ['q', 'provider', 'type', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
   number: ['from', 'to', 'lat', 'lon', 'zoom'],
 };
 
@@ -117,6 +119,15 @@ export function sanitise(state) {
   out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
   out.q = String(out.q || '').slice(0, 200);
   out.place = String(out.place || '').slice(0, 200);
+  // The compare list is a hand-editable URL value: keep only ids that match the
+  // data contract "<providerId>:<record id>" (lower-case provider, safe value
+  // characters) and never more than four of them.
+  out.cmp = String(out.cmp || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(id))
+    .slice(0, 4)
+    .join(',');
   return out;
 }
 

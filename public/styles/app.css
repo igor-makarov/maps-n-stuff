@@ -642,3 +642,222 @@
     height: 64px;
   }
 }
+
+/* ---- Compare list and comparison view (public/app/compare.js) ---- */
+.app-compare__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+  margin-bottom: var(--zh-size-small-regular);
+}
+
+.app-compare__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--zh-size-small-regular);
+}
+
+.app-compare__item {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--zh-size-small-regular);
+  align-items: start;
+  padding-bottom: var(--zh-size-small-regular);
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.app-compare__item:last-child {
+  border-bottom: 0;
+}
+
+.app-compare__item--unknown .app-compare__title {
+  color: var(--zh-bordeaux);
+}
+
+.app-compare__thumb,
+.app-compare__placeholder {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black-20);
+}
+
+.app-compare__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--zh-size-mini);
+  font-size: var(--zh-font-mini);
+  color: var(--zh-color-text-soft);
+  text-align: center;
+}
+
+.app-compare__meta {
+  display: grid;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare__title {
+  font-family: var(--zh-font-black);
+  font-weight: 900;
+  line-height: var(--zh-line-medium);
+}
+
+.app-compare__itemactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare__empty {
+  display: block;
+  padding: var(--zh-size-small-regular) 0;
+}
+
+/* Full-screen comparison: two (or more) real previews next to each other. */
+.app-compare-view {
+  position: fixed;
+  inset: 0;
+  z-index: var(--zh-z-detail);
+  background: var(--zh-color-bg);
+  border-top: var(--zh-rule) solid var(--zh-black);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-compare-view__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  padding: var(--zh-size-small-regular) var(--zh-size-regular);
+  background: var(--zh-white);
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.app-compare-view__bar h2 {
+  margin: 0;
+}
+
+.app-compare-view__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare-view__body {
+  display: grid;
+  gap: var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+  max-width: var(--zh-max-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+@media (min-width: 840px) {
+  .app-compare-view__body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--zh-column-gap);
+    padding: var(--zh-size-large);
+  }
+}
+
+.app-compare__pane {
+  margin: 0;
+  background: var(--zh-white);
+  border: 1px solid var(--zh-color-border);
+  border-top: var(--zh-rule) solid var(--zh-blue);
+  display: grid;
+  gap: var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+}
+
+.app-compare__paneimage {
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  overflow: auto;
+}
+
+.app-compare__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.app-compare__pane figcaption {
+  display: grid;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare__pane figcaption h3,
+.app-compare__pane figcaption p {
+  margin: 0;
+}
+
+.app-compare__paneindex {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--zh-font-tiny);
+}
+
+.app-compare__paneactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+  margin-top: var(--zh-size-mini);
+}
+
+body.app-compare--open {
+  overflow: hidden;
+}
+
+.app-compare__box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--zh-size-mini);
+  width: 100%;
+}
+
+.app-compare__item > .app-compare__box {
+  width: 96px;
+}
+
+.app-compare__loading {
+  font-size: var(--zh-font-tiny);
+  text-align: center;
+}
+
+.app-compare__paneimage .app-compare__box {
+  padding: var(--zh-size-mini);
+}
+
+/* Comparison previews keep the whole sheet visible next to its metadata. */
+.app-compare__image {
+  max-height: 62vh;
+  width: auto;
+  object-fit: contain;
+}
+
+/* <kbd> inside a cantonal button keeps the button's colours (the base style
+   gives keyboard keys a light chip look that would go white-on-black). */
+.zh-button kbd {
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
