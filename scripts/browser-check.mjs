@@ -1055,6 +1055,7 @@ try {
       src: document.querySelector('.app-viewer__image')?.src || '',
       hint: /Blatt wechseln: Alt/.test(document.querySelector('.app-viewer__hint')?.textContent || ''),
     }))()`);
+    await cdp.screenshot(path.join(OUT_DIR, '05-multi-sheet.png')).then(() => report.screenshots.push('05-multi-sheet.png'));
     await cdp.click('#page-next');
     let sheetTwoSrc = sheetOne.src;
     try {
