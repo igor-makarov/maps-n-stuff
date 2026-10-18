@@ -1,1 +1,1 @@
-{"format":1,"type":"record","seq":1,"ordinal":0,"payload":{"type":"document","id":2,"content":{"version":1,"kind":"base","value":{}}}}
+{"format":1,"type":"record","seq":2130,"ordinal":0,"payload":{"type":"document","id":2,"content":{"version":1,"kind":"base","value":{"run":{"taskId":184,"inputs":[10]},"tools":[{"callId":"call_bf0d67c98074cabde9d113dc8b3aa58f","name":"write","taskId":186,"status":"done","entry":187}]}}}}

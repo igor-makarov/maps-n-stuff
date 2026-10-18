@@ -1,1 +1,1 @@
-{"format":1,"type":"record","seq":1,"ordinal":2,"payload":{"type":"document","id":4,"content":{"version":1,"kind":"base","value":{"models":{},"tools":{}}}}}
+{"format":1,"type":"record","seq":2127,"ordinal":3,"payload":{"type":"document","id":4,"content":{"version":1,"kind":"base","value":{"models":{"opencode-go/deepseek-v4.1-flash":{"input":82896,"output":52925,"cacheRead":1322962,"cacheWrite":0,"reasoning":20342,"totalTokens":1458783,"cost":{"input":0.0124344,"output":0.031755,"cacheRead":0.0039688860000000005,"cacheWrite":0,"total":0.048158285999999995}}},"tools":{}}}}}
