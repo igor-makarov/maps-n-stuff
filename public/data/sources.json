@@ -10,6 +10,7 @@
       "institutions": [
         "Bibliothèque de Genève",
         "ETH-Bibliothek Zürich",
+        "Universitätsbibliothek Bern",
         "Zentralbibliothek Zürich"
       ],
       "homepage": "https://www.e-rara.ch/",
@@ -38,10 +39,18 @@
           "name": "Weltkarten aus dem Musée cartographique (e-rara-Set museecarto)",
           "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
           "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding institution named by the manifest"
+        },
+        {
+          "id": "zurich-plaene",
+          "name": "Pläne aus Zürich (Stadt und Umgebung)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 18 records kept"
         }
       ],
       "endpoints": {
         "oai": "https://www.e-rara.ch/oai",
+        "sru": "https://www.e-rara.ch/sru",
         "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
         "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}",
         "thumbnail": "IIIF thumbnail from the manifest"
@@ -55,6 +64,8 @@
       ],
       "api": {
         "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve, museecarto; ListSets is paginated)",
+        "oaiGetRecord": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:www.e-rara.ch:{titleId}",
+        "sru": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query={cql}&startRecord={n}&maximumRecords=100&recordSchema=mods (CQL indexes: dc.title, dc.subject, dc.creator; MODS records carry <vl:id>, <vl:prefix> and <coordinates>)",
         "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
         "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
         "docs": "https://www.e-rara.ch/"
@@ -122,5 +133,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T23:06:44.052Z"
+  "generatedAt": "2026-10-18T23:39:02.237Z"
 }

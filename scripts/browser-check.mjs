@@ -510,15 +510,24 @@ try {
   await cdp.waitFor(`document.querySelector('#detail') && !document.querySelector('#detail').hidden`, { label: 'detail panel', timeout: 15_000 });
   const detailOpen = await cdp.eval(`document.querySelector('#detail').textContent.trim().length`);
   check('selecting a record opens the detail panel', detailOpen > 100, `${detailOpen} chars`);
+  // The expectation is read from the record data, not from a hardcoded list of
+  // libraries: the seed holds e-rara works from ZB Zürich, ETH-Bibliothek, the
+  // Universitätsbibliothek Bern and the Bibliothèque de Genève.
+  const selectedId = await cdp.eval(`document.querySelector('#result-list > *')?.dataset.recordId || null`);
+  const selectedRecord = selectedId ? recordIndex.get(selectedId) : null;
   const detail = await cdp.eval(`(() => {
     const d = document.querySelector('#detail');
+    const text = d.textContent.replace(/\\s+/g, ' ');
     const link = [...d.querySelectorAll('a')].find((a) => /e-rara|geo\\.admin|zb\\.uzh/.test(a.href));
     const img = d.querySelector('#detail-preview img, #detail-preview img');
+    const expected = ${JSON.stringify(selectedRecord?.institution ?? null)};
     return {
-      text: d.textContent.replace(/\\s+/g, ' ').slice(0, 400),
+      text: text.slice(0, 400),
       sourceHref: link?.href || null,
-      institution: /Zentralbibliothek|ETH-Bibliothek|swisstopo/.test(d.textContent),
-      rights: /Public Domain|Rechte|OGD|©/i.test(d.textContent),
+      institution: expected
+        ? text.includes(expected)
+        : /Zentralbibliothek|ETH-Bibliothek|swisstopo|Universitätsbibliothek|Bibliothèque/.test(text),
+      rights: /Public Domain|Rechte|OGD|©/i.test(text),
       previewSrc: img?.src || null,
       previewLoaded: Boolean(img && img.complete && img.naturalWidth > 0),
     };
@@ -526,7 +535,7 @@ try {
   check('detail links to the original collection record', Boolean(detail.sourceHref), detail.sourceHref ?? 'no link');
   const viewerLink = await cdp.eval(`(() => { const a = [...document.querySelectorAll('#detail a')].find((n) => /content\\/zoom/.test(n.href)); return a?.href || null; })()`);
   check('detail links to the library\'s own viewer', /^https:\/\/www\.e-rara\.ch\/[a-z]+\/content\/zoom\/\d+$/.test(viewerLink || ''), viewerLink ?? 'no viewer link');
-  check('detail names the holding institution and rights', detail.institution && detail.rights, detail.text.slice(0, 120));
+  check('detail names the holding institution and rights', detail.institution && detail.rights, `${selectedRecord?.institution ?? '?'} · ${detail.text.slice(0, 100)}`);
 
   // The reuse links are filled from the manifest response (image service + METS).
   // The image-service link is rendered from the harvested record immediately, but

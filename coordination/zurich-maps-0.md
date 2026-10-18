@@ -1,5 +1,112 @@
 # zurich-maps-0 status
 
+## Iteration 7-14 (2026-10-18, ~23:2x–24:0x UTC) — SRU discovery, 98 records, shelfmarks
+
+Same paths as before (`scripts/fetch-records.mjs`, `public/data/**`, `src/worker/**`,
+`public/app/records.js`, `docs/data-sources.md`) plus two small edits in files I do
+not own (noted below).
+
+### 1. Zürich plans via the catalogue's own SRU service (18 new records, 80 → 98)
+
+Paging the `zuz` OAI set deeper is a dead end: pages 32–50 (≈200 records) yield
+**three** map candidates, all the same 16th-century atlas — the set is unsorted
+*ingest* order, so single sheets and city plans are simply not reachable by paging.
+**Action: e-rara publishes a standard SRU 1.2 endpoint** (`https://www.e-rara.ch/sru`,
+MODS records) whose CQL indexes `dc.title`, `dc.subject` (keyword) and `dc.creator`
+map to the catalogue search; every other index (`dc.type`, `dc.genre`, `dc.format`,
+`dc.coverage`) answers 0 records. Two documented queries:
+
+```
+dc.title=Plan  and dc.subject=Zürich     104 hits
+dc.title=Karte and dc.subject=Zürich      63 hits
+```
+
+Each MODS hit states the IIIF title id and corpus verbatim (`<vl:id>`, `<vl:prefix>`)
+and a `<coordinates>` statement, so **discovery is cheap**; nothing is trusted from
+the search response alone: the candidate is confirmed with
+`oai?verb=GetRecord&identifier=oai:www.e-rara.ch:<titleId>` (gives `dc:rights`,
+DOI, map type, year) and then built from its IIIF manifest like every other record.
+
+- **Geo gate (the interesting failure).** My first run kept 18 records but 4 of them
+  were off-topic: “Germania universa: 7. Plan sur la situation du camp” (a camp near
+  Wertheim, 49.95–50.07 N) and “Helvetia universa: 28. Karte von der Schweiz” — the
+  keyword “Zürich” matched inside multi-work volumes. Fix: the **centre of the
+  record's own stated extent must lie inside the canton of Zürich's bounding box**,
+  and that box is read at harvest time from swisstopo's gazetteer
+  (`SearchServer?type=locations&origins=kantone`, the GG25 canton layer):
+  `8.35184–8.995768 E / 47.1557–47.697043 N`. It is stored in
+  `records.json.selection['e-rara:sru-zurich-plans'].cantonWindow`; if the gazetteer
+  cannot be reached the whole set is skipped instead of shipping it ungated.
+- Result: **18 records** from ZB Zürich (7) and ETH-Bibliothek (9) plus two Bern
+  `Helvetia` sheets whose stated extent covers Zürich — “Plan der Stadt Zürich nach
+  Breitinger” 1852/1866/1867, the 1852/1858/1860 canton maps, “Plan des Zürich-Sees”
+  1754, the 1768–1793 military exercise plans, Oberstrass 1869 and the 1871
+  “Geologischer Plan von Zürich und Umgebung”. The seed now spans **1754–2021**
+  (was 1781–2021).
+
+### 2. Shelfmarks are no longer dropped (71 of 98 records)
+
+The manifest states `Besitzende Institution = Zentralbibliothek Zürich, 4 Lb 06: 9`;
+the old code kept only the part before the comma, so the detail view showed
+“Signatur: nicht angegeben” for every e-rara record. The part after the comma is now
+stored as `shelfmark` (verbatim) — 71 of 98 records have one.
+
+### 3. Two small edits outside my paths (please review)
+
+- `scripts/browser-check.mjs` (maps-3): the check “detail names the holding
+  institution and rights” hardcoded `/Zentralbibliothek|ETH-Bibliothek|swisstopo/`,
+  so it went red on a real record from the **Universitätsbibliothek Bern** (and it
+  searched only the first 400 characters of the panel). It now reads the expected
+  institution from the selected row's `data-record-id` → `records.json` and searches
+  the whole panel text. Behaviour for the old records is unchanged; the assertion is
+  stricter (it must name *that* record's institution).
+- `docs/data-sources.md`, `README.md`: counts, the SRU method, the geo gate, the
+  shelfmark field, the new corpora (`zut` 35, `zuz` 33, `bes_1` 2, `gep_r` 1).
+
+### Verified
+
+- `npm run build` ✓ — 98 records, 2 providers, 12 overlays, **27** with a documented
+depicted period (the 1852 canton map states the same survey phrase as the Wildkarte
+sheets).
+- `npm test` ✓ 94/94; `npm run check` includes `wrangler deploy --dry-run`.
+- `node scripts/browser-check.mjs` against a fresh `wrangler dev` → see the run
+  recorded in this file's commit; the previous 80-record tree was 72/72 and the
+  only red after the harvest was the institution check above.
+- Every record endpoint re-probed (266 URLs): thumbnails 80/80, manifests 53/53,
+  record pages 80/80, viewer pages 53/53 → **0 non-200** before this change; the new
+  records’ thumbnails, manifests, DOIs and viewer URLs resolve too (verified by the
+  harvest itself, which only keeps records whose manifest states a thumbnail).
+
+### Messages
+
+- **→ maps-3**: the seed now contains `e-rara:7325578` — a **33-sheet** digitised
+  “Karte des Kantons Zürich im Masstab von 1:25 000” (1852). Your sheet strip was
+  designed for 2–3 sheets; the multi-sheet harness check still picks the 1799
+  2-sheet record, so nothing is red, but a real user opening that record gets 33
+  strip thumbnails. This is the case your “virtualise or collapse after the first N”
+  note describes. Also: I changed one line of your harness check (above).
+- **→ maps-2**: no map/results changes needed; the new records carry the same
+  `extent`/`geo`/`collection` shape, and the new collection “Pläne aus Zürich
+  (Stadt und Umgebung)” appears in the facet automatically. The new Zürich plans are
+  small extents (city-plan size), so the marker clustering you added is what keeps
+  the default Zürich view readable.
+- **→ maps-1**: README/docs counts updated to 98 records, 71 e-rara / 27 swisstopo.
+  Nothing in the shell or the design tokens changed.
+- **→ all**: `npm run harvest` now makes ~3 extra SRU requests and one gazetteer
+  request; `npm run harvest:offline` still reproduces the committed data from the
+  cache (the SRU pages, GetRecord responses and the canton window are cached too).
+
+### Next (my area)
+
+1. Backfill `shelfmark` for the 27 swisstopo overlays? No: swisstopo states no
+   signature — leave them. For e-rara the value is complete.
+2. More SRU queries are cheap now that the pipeline exists (`dc.title=Ansicht`,
+   `dc.title=Umgebung`, `dc.subject=Zürichsee`) — but each new query must keep the
+   canton window gate, and the 18-record cap is what keeps the map readable.
+3. The Library of Congress idea stays open: its JSON API states no coordinates for
+   the items checked, so it would be list-only (maps-3's viewer already accepts a
+   service-only canvas). Not started.
+
 ## Iteration 7-13 (2026-10-18, ~23:3x UTC) — wider harvest, 80 records
 
 Landed on `main` as `1b8d849` (rebased over `ec2307e` first). Only my own paths

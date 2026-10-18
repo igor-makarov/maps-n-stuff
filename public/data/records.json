@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-18T23:06:44.052Z",
+  "generatedAt": "2026-10-18T23:39:02.237Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
-  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
+  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 (CQL via dc.title/dc.subject) for the Zürich plan material the sorted OAI paging does not reach, each hit confirmed by OAI GetRecord and its manifest; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
@@ -23,6 +23,22 @@
       "considered": 53,
       "kept": 0,
       "rule": "map records of the set, oldest first, requires a stated Kartendaten bbox and a holding institution named by the manifest"
+    },
+    "e-rara:sru-zurich-plans": {
+      "queries": [
+        "dc.title=Plan and dc.subject=Zürich",
+        "dc.title=Karte and dc.subject=Zürich"
+      ],
+      "considered": 92,
+      "kept": 18,
+      "cantonWindow": {
+        "west": 8.35184,
+        "south": 47.1557,
+        "east": 8.995768,
+        "north": 47.697043
+      },
+      "cantonWindowSource": "swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): the centre of the record's own stated extent must lie inside it",
+      "rule": "map genre, a stated year and a stated MODS coordinates statement in the SRU record, then confirmed by OAI GetRecord and a IIIF manifest that states the holding institution and a Kartendaten extent; one entry per title and year, oldest first"
     },
     "swisstopo:zeitreise": {
       "considered": 178,
@@ -53,6 +69,74 @@
   ],
   "records": [
     {
+      "id": "e-rara:29362556",
+      "title": "Helvetia miscellanea: 19/B. Plan des Zürich=Sees",
+      "yearStart": 1754,
+      "yearEnd": 1754,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Herrliberger, David"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29362557/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29362556/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.55,
+        "east": 8.83333,
+        "north": 47.36667,
+        "south": 47.2
+      },
+      "geo": {
+        "lat": 47.28334,
+        "lon": 8.69167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29362557",
+      "shelfmark": "MUE Ryh 3210 : 19 B",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29362556",
+      "imprint": "[Zürich] : [D. Herrliberger], [1754]"
+    },
+    {
+      "id": "e-rara:8751536",
+      "title": "Plan einer Action, die den 18. Aug. 1766 von dem Militarischen Collegio zu Beendigung Ihrer Exercitien mit Zuzug Frejwilliger Liebhaber exequirt worden",
+      "yearStart": 1768,
+      "yearEnd": 1768,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Holzhalb, Johann Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27223",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8751538/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8751536/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.51667,
+        "north": 47.35,
+        "south": 47.33333
+      },
+      "geo": {
+        "lat": 47.34166,
+        "lon": 8.50833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8751538",
+      "shelfmark": "3 Ly 54: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751536",
+      "imprint": "[Zürich] : [Militarische Gesellschaft], 1768"
+    },
+    {
       "id": "e-rara:7203621",
       "title": "Carte de la Suisse Romande qui comprend le Pays de Vaud et le gouvernement d'Aigle, dépendant du canton de Berne",
       "yearStart": 1781,
@@ -81,9 +165,44 @@
         "lon": 6.54167
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7203623",
+      "shelfmark": "Rar KS 99",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203621",
       "imprint": "Genève : chez F. Monty, 1781"
+    },
+    {
+      "id": "e-rara:8966144",
+      "title": "Plan einer Action, welche von lobl. Militarischer Gesellschaft exequiert worden den 13t. September 1773",
+      "yearStart": 1787,
+      "yearEnd": 1787,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Holzhalb, Johann Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-28177",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8966145/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8966144/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.53333,
+        "north": 47.38333,
+        "south": 47.36667
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.525
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8966145",
+      "shelfmark": "3 Lh 54: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8966144",
+      "imprint": "[Zürich] : [Militarische Gesellschaft], 1787"
     },
     {
       "id": "e-rara:6698004",
@@ -114,9 +233,146 @@
         "lon": 7.04167
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6698006",
+      "shelfmark": "Rar KS 355",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6698004",
       "imprint": "[Genève] : [Verlag nicht ermittelbar], [1788]"
+    },
+    {
+      "id": "e-rara:8716118",
+      "title": "Plan der Attaque auf die Brüke und das Dorf Leimbach von der militarischen Gesellschaft mit Zuzug Freywilliger ab der Landschaft exequirt den 14. Septbr. 1778",
+      "yearStart": 1790,
+      "yearEnd": 1790,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Hans Kaspar"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27095",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8716120/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8716118/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.51667,
+        "north": 47.35,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.33334,
+        "lon": 8.50833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8716120",
+      "shelfmark": "3 Lo 54: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8716118",
+      "imprint": "Zürich : Militarische Gesellschaft, 1790"
+    },
+    {
+      "id": "e-rara:8716037",
+      "title": "Plan einer Attaque, welche lobl. Militarischer Gesellschaft in Zürich mit Zuzug Freywilliger ab der Landschaft an der ausseren Sihl exequirt worden, den 13. ten September 1779",
+      "yearStart": 1791,
+      "yearEnd": 1791,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Meyer, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27079",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8716039/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8716037/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.53333,
+        "north": 47.38333,
+        "south": 47.36667
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.525
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8716039",
+      "shelfmark": "3 Lh 54: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8716037",
+      "imprint": "Zürich : Herausgegeben von dem Militarischen Gesellschaft in Zürich, 1791"
+    },
+    {
+      "id": "e-rara:8751556",
+      "title": "Plan dess Passages über den Sihlfluss und die hernach auf das mit Infanterie verstärkte Artillerie-Lager auf der Wolishofer Allment tentirte Attaque, von der Militarischen Gesellschaft mit Zuzug Freywilliger Zürcherscher Landmilliz executirt den 8. August 1780",
+      "yearStart": 1792,
+      "yearEnd": 1792,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Hans Kaspar"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27227",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8751558/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8751556/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.51667,
+        "north": 47.35,
+        "south": 47.33333
+      },
+      "geo": {
+        "lat": 47.34166,
+        "lon": 8.50833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8751558",
+      "shelfmark": "3 Ly 54: 5",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751556",
+      "imprint": "Zürich : Militar-Schule in Zürich, 1792"
+    },
+    {
+      "id": "e-rara:8751561",
+      "title": "Plan der Attaque auf die Brükkenschanz u. das Lager auf der Wollishofer Allment von der Militarischen Gesellschaft mit Zuzug Freywilliger Zürcherscher Landmiliz exequirt den 6. August 1782",
+      "yearStart": 1793,
+      "yearEnd": 1793,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Hans Kaspar"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27228",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8751563/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8751561/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.51667,
+        "north": 47.35,
+        "south": 47.33333
+      },
+      "geo": {
+        "lat": 47.34166,
+        "lon": 8.50833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8751563",
+      "shelfmark": "3 Ly 54: 6",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751561",
+      "imprint": "Zürich : Militar-Schule in Zürich, 1793"
     },
     {
       "id": "e-rara:7246431",
@@ -147,6 +403,7 @@
         "lon": 8.21667
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7246433",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246431",
       "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
@@ -180,6 +437,7 @@
         "lon": 8.75833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7246443",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246441",
       "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
@@ -213,6 +471,7 @@
         "lon": 8.725
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258404",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258402",
       "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
@@ -246,6 +505,7 @@
         "lon": 8.75
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258364",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258362",
       "imprint": "Aarau : J. R. Meyer, 1796"
@@ -279,6 +539,7 @@
         "lon": 7.93333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7246420",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246418",
       "imprint": "Aarau : J. R. Meyer, 1796"
@@ -312,6 +573,7 @@
         "lon": 7.59167
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258379",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258377",
       "imprint": "Aarau : J. R. Meyer, 1797"
@@ -345,6 +607,7 @@
         "lon": 9.90834
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258369",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258367",
       "imprint": "Aarau : J. R. Meyer, 1798"
@@ -378,6 +641,7 @@
         "lon": 7.58333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258399",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258397",
       "imprint": "Aarau : J. R. Meyer, 1798"
@@ -411,6 +675,7 @@
         "lon": 6.44167
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258374",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258372",
       "imprint": "Aarau : J. R. Meyer, 1798"
@@ -444,6 +709,7 @@
         "lon": 8.20833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6485162",
+      "shelfmark": "Rar K 804",
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6485160",
       "imprint": "Basle : Chrétien de Mechel, 1799"
@@ -477,6 +743,7 @@
         "lon": 6.43333
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258354",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258352",
       "imprint": "Aarau : J. R. Meyer, 1801"
@@ -510,6 +777,7 @@
         "lon": 9.88334
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7258389",
+      "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258387",
       "imprint": "Aarau : J. R. Meyer, 1802"
@@ -543,9 +811,78 @@
         "lon": 8.79167
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6505452",
+      "shelfmark": "Rar K 504",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505450",
       "imprint": "[Zürich] : [Orell Füssli & Comp.], 1803"
+    },
+    {
+      "id": "e-rara:29263472",
+      "title": "Helvetia orientalis - nordöstlicher Teil (Zürich): 48. Plan de la ville et des environs de Zürich",
+      "yearStart": 1804,
+      "yearEnd": 1804,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Breitinger, David"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-116671",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29263473/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29263472/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.45,
+        "east": 8.6,
+        "north": 47.41667,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.36667,
+        "lon": 8.525
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29263473",
+      "shelfmark": "MUE Ryh 3214 : 48",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29263472",
+      "imprint": "Zurich : [Verlag nicht ermittelbar], 1804"
+    },
+    {
+      "id": "e-rara:6505490",
+      "title": "Plan de la ville et des environs de Zürich",
+      "yearStart": 1804,
+      "yearEnd": 1804,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Breitinger, David"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20938",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6505492/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6505490/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.45,
+        "east": 8.6,
+        "north": 47.41667,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.36667,
+        "lon": 8.525
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6505492",
+      "shelfmark": "Rar KS 272",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505490",
+      "imprint": "Zürich : [Verlag nicht ermittelbar], 1804"
     },
     {
       "id": "e-rara:6484871",
@@ -576,6 +913,7 @@
         "lon": 8.55833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6484873",
+      "shelfmark": "Rar KS 363",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484871",
       "imprint": "Luzern : Eglin, [1807?]"
@@ -609,6 +947,7 @@
         "lon": 8.20833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6697959",
+      "shelfmark": "Rar KS 547",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6697957",
       "imprint": "Zürich : zu finden bey Orell, Füssli und Compagnie, 1809"
@@ -642,6 +981,7 @@
         "lon": 8.225
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6484201",
+      "shelfmark": "Rar K 294",
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484199",
       "imprint": "[Zürich] : [Fuessli & Comp.], [1813]"
@@ -675,6 +1015,7 @@
         "lon": 7.7
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6507643",
+      "shelfmark": "Rar K 1061",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6507640",
       "imprint": "[Bern] : [Verlag nicht ermittelbar], [1816]"
@@ -708,6 +1049,7 @@
         "lon": 7.375
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/7203586",
+      "shelfmark": "Rar K 1044",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203584",
       "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1819]"
@@ -741,9 +1083,45 @@
         "lon": 9.41667
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6505512",
+      "shelfmark": "Rar K 505",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505510",
       "imprint": "[St. Gallen] : J. L. Gsell sc., [1827?]"
+    },
+    {
+      "id": "e-rara:9006197",
+      "title": "Geschichte der Kriegsbegebenheiten in Helvetien und Rhätien als Handbuch zum Militairunterricht für Schweizeroffiziere aller Waffen: Plan der Gegend von Zürich",
+      "yearStart": 1827,
+      "yearEnd": 1827,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Wieland, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-28416",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/9006198/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/9006197/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.38333,
+        "east": 8.6,
+        "north": 47.46667,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.39167,
+        "lon": 8.49167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/9006198",
+      "shelfmark": "4 Kw 55: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/9006197",
+      "sheet": "Plan der Gegend von Zürich",
+      "imprint": "[Basel] : [Schweighauser], [1827]"
     },
     {
       "id": "e-rara:6484810",
@@ -774,6 +1152,7 @@
         "lon": 8.65
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6484812",
+      "shelfmark": "Rar K 295",
       "canvasCount": 3,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484810",
       "imprint": "Zürich : Heinrich Keller, 1828"
@@ -807,6 +1186,7 @@
         "lon": 8.26666
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6507723",
+      "shelfmark": "Rar K 497",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6507721",
       "imprint": "Zürich : bey Heinrich Keller, 1830"
@@ -840,6 +1220,7 @@
         "lon": 8.40834
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6697985",
+      "shelfmark": "Rar KS 454",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6697983",
       "imprint": "Luzern : bey Xav. Meyer, [1833?]"
@@ -873,6 +1254,7 @@
         "lon": 8.75833
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/6526405",
+      "shelfmark": "Rar KS 450",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526403",
       "imprint": "Zurigo ; S. Gallo : Enrico Füssli & Co. : Huber & Co., [1835?]"
@@ -905,6 +1287,7 @@
         "lat": 46.875,
         "lon": 8.45833
       },
+      "shelfmark": "Rar K 530",
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526415",
       "imprint": "[St. Gallen] : [Huber], [1836]"
     },
@@ -937,6 +1320,7 @@
         "lon": 6.16667
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/25996179",
+      "shelfmark": "CIG 39P 76",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/25996178",
       "imprint": "London : E. Stanford, [entre 1837-1840]"
@@ -977,6 +1361,75 @@
       "editionDate": "1850-12-31"
     },
     {
+      "id": "e-rara:7325578",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000",
+      "yearStart": 1852,
+      "yearEnd": 1852,
+      "depictedYearStart": 1843,
+      "depictedYearEnd": 1851,
+      "creators": [
+        "Wild, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23720",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7319448/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7325578/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.36667,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.675
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7319448",
+      "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "Rar KA 156",
+      "canvasCount": 33,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7325578",
+      "imprint": "Zürich : Topographisches Bureau, 1852-[1868]"
+    },
+    {
+      "id": "e-rara:7193220",
+      "title": "Plan der Stadt Zürich nach Breitinger",
+      "yearStart": 1852,
+      "yearEnd": 1852,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Pestalozzi, Ludwig"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23039",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7193222/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7193220/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.36667,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.35833,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7193222",
+      "shelfmark": "K 213068",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7193220",
+      "imprint": "[Zürich] : [Verlag nicht ermittelbar], 1852"
+    },
+    {
       "id": "e-rara:8924108",
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Fehraltorf",
       "yearStart": 1853,
@@ -1006,6 +1459,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924109",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 19 Expl 3",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924108",
       "sheet": "Fehraltorf",
@@ -1041,6 +1495,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924093",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 15",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924092",
       "sheet": "Kyburg",
@@ -1076,6 +1531,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924037",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 4 Ed 1853",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924036",
       "sheet": "Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
@@ -1111,6 +1567,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924125",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 23 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924124",
       "sheet": "Uster",
@@ -1146,6 +1603,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924089",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 14 Expl 3",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924088",
       "sheet": "Kloten",
@@ -1181,6 +1639,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924121",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 22",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924120",
       "sheet": "Küsnacht",
@@ -1216,6 +1675,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924077",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 11 Expl 5",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924076",
       "sheet": "Winterthur",
@@ -1251,6 +1711,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924105",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 18 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924104",
       "sheet": "Zürich",
@@ -1286,6 +1747,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924117",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 21 Ed 1855",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924116",
       "sheet": "Birmensdorf",
@@ -1321,6 +1783,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924101",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 17 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924100",
       "sheet": "Dietikon",
@@ -1356,6 +1819,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924137",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 26 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924136",
       "sheet": "Horgen",
@@ -1391,6 +1855,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924133",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 25",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924132",
       "sheet": "Affoltern",
@@ -1426,6 +1891,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924153",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 30",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924152",
       "sheet": "Hirzel",
@@ -1461,6 +1927,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924085",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 13 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924084",
       "sheet": "Regensberg",
@@ -1496,6 +1963,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924149",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 29",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924148",
       "sheet": "Knonau",
@@ -1531,10 +1999,45 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924141",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 27 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924140",
       "sheet": "Stäfa",
       "imprint": "[Zürich] : [Topographisches Bureau], [1857]"
+    },
+    {
+      "id": "e-rara:6484938",
+      "title": "Karte des Kantons Zürich",
+      "yearStart": 1858,
+      "yearEnd": 1858,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Ziegler, Jakob Melchior"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20762",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484940/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484938/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.26667,
+        "east": 9.45,
+        "north": 47.73333,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.44167,
+        "lon": 8.85834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484940",
+      "shelfmark": "Rar KS 293",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484938",
+      "imprint": "Winterthur : J. Wurster u. Comp., 1858"
     },
     {
       "id": "e-rara:8924068",
@@ -1566,6 +2069,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924069",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 10",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924068",
       "sheet": "Bülach",
@@ -1601,6 +2105,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924157",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 31 Ed 1858",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924156",
       "sheet": "Richtersweil",
@@ -1636,10 +2141,45 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924073",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 9 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924072",
       "sheet": "Weiach",
       "imprint": "[Zürich] : [Topographisches Bureau], [1859]"
+    },
+    {
+      "id": "e-rara:6697962",
+      "title": "Karte des Kantons Zürich für den Schul- und Handgebrauch",
+      "yearStart": 1860,
+      "yearEnd": 1860,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21665",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6697964/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6697962/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.36667,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.675
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6697964",
+      "shelfmark": "Rar KS 546",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6697962",
+      "imprint": "Winterthur : Verlag v. J. Wurster u. Comp., [ca. 1860]"
     },
     {
       "id": "e-rara:8924128",
@@ -1671,6 +2211,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924129",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 24 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924128",
       "sheet": "Hinweil",
@@ -1706,6 +2247,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924145",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 28 Expl 3",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924144",
       "sheet": "Wald",
@@ -1776,6 +2318,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924113",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 20",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924112",
       "sheet": "Bauma",
@@ -1811,6 +2354,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924097",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 16 Expl 4",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924096",
       "sheet": "Elgg",
@@ -1846,6 +2390,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924061",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 7",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924060",
       "sheet": "Andelfingen",
@@ -1881,6 +2426,7 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924081",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 12 Expl 2",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924080",
       "sheet": "Frauenfeld",
@@ -1916,10 +2462,113 @@
       },
       "imageService": "https://www.e-rara.ch/i3f/v20/8924049",
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
+      "shelfmark": "4 Kb 76: 4: 3",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924048",
       "sheet": "Stammheim",
       "imprint": "[Zürich] : [Topographisches Bureau], [1863]"
+    },
+    {
+      "id": "e-rara:7203559",
+      "title": "Plan der Stadt Zürich nach Breitinger",
+      "yearStart": 1866,
+      "yearEnd": 1866,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss-Keiser, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23142",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7203561/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7203559/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.36667,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.35833,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7203561",
+      "shelfmark": "Rar KS 559",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203559",
+      "imprint": "Zürich : J.J. Hofer, 1866"
+    },
+    {
+      "id": "e-rara:7193204",
+      "title": "Plan der Stadt Zürich nach Breitinger",
+      "yearStart": 1867,
+      "yearEnd": 1867,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss-Keiser, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23036",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7193206/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7193204/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.36667,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.35833,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7193206",
+      "shelfmark": "K 213067",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7193204",
+      "imprint": "Zürich : J.J. Hofer, 1867"
+    },
+    {
+      "id": "e-rara:7186872",
+      "title": "Übersichts-Plan der Gemeinde Oberstrass",
+      "yearStart": 1869,
+      "yearEnd": 1869,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hofer, J. J."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-22985",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7186874/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7186872/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.53333,
+        "east": 8.55,
+        "north": 47.4,
+        "south": 47.38333
+      },
+      "geo": {
+        "lat": 47.39167,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7186874",
+      "shelfmark": "K 322046",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7186872",
+      "imprint": "Zürich : J. J. Hofer, 1869"
     },
     {
       "id": "swisstopo:siegfried-1870",
@@ -1989,6 +2638,40 @@
         "north": 48.230651
       },
       "editionDate": "1870-12-31"
+    },
+    {
+      "id": "e-rara:32107672",
+      "title": "Geologischer Plan von Zürich und Umgebung",
+      "yearStart": 1871,
+      "yearEnd": 1871,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Escher von der Linth, Arnold"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-149331",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/32107673/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/32107672/manifest",
+      "type": "map",
+      "collection": "Pläne aus Zürich (Stadt und Umgebung)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.56667,
+        "north": 47.38333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.36666,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/32107673",
+      "shelfmark": "Rar KS 1098",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/32107672",
+      "imprint": "Zürich : Naturforschende Gesellschaft ; Winterthur : Wurster, Randegger & Cie., 1871"
     },
     {
       "id": "swisstopo:siegfried-1880",

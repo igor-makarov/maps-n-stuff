@@ -243,7 +243,14 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
   const year = candidate.year || parseYear(imprint);
   if (!year || (maxYear && year > maxYear)) return null;
   const depicted = parseDepictedYears(meta, candidate, year);
-  const institution = (meta['Besitzende Institution'] || '').replace(/\s*,.*$/, '').trim();
+  // “Besitzende Institution = Zentralbibliothek Zürich, 4 Lb 06: 9” — the provider
+  // states the library and the shelfmark in one field, so both are kept verbatim
+  // (the shelfmark was previously dropped; the detail view shows “Signatur”).
+  const institutionField = (meta['Besitzende Institution'] || '').trim();
+  const institution = institutionField.replace(/\s*,.*$/, '').trim();
+  const shelfmark = institutionField.includes(',')
+    ? institutionField.slice(institutionField.indexOf(',') + 1).trim()
+    : '';
   // Some sets hold works from several libraries; never guess the holding library.
   if (requireInstitution && !institution) return null;
   const thumb = manifest.thumbnail?.['@id'];
@@ -279,17 +286,118 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
   }
   if (imageService) record.imageService = imageService;
   if (depicted) record.depictedSource = depicted.depictedSource;
+  if (shelfmark) record.shelfmark = shelfmark;
   if (canvases.length) record.canvasCount = canvases.length;
-  // The library's own deep-zoom viewer, straight from the provider's landing page.
-  try {
-    const canonical = await canonicalViewer(candidate.doi, candidate.titleId);
-    if (canonical) record.viewerUrl = canonical.viewerUrl;
-  } catch {
-    /* stay without viewerUrl: the UI derives a working link from the manifest id */
+  // The library's own deep-zoom viewer. SRU-discovered candidates carry the
+  // holding corpus verbatim in the catalogue record (`vl:prefix`); otherwise the
+  // corpus is read from the DOI landing page `og:url`, which also verifies the id
+  // against the manifest. It is never constructed from a guess.
+  if (candidate.corpus) {
+    record.viewerUrl = `https://www.e-rara.ch/${candidate.corpus}/content/zoom/${candidate.titleId}`;
+  } else {
+    try {
+      const canonical = await canonicalViewer(candidate.doi, candidate.titleId);
+      if (canonical) record.viewerUrl = canonical.viewerUrl;
+    } catch {
+      /* stay without viewerUrl: the UI derives a working link from the manifest id */
+    }
   }
   if (sheet && candidate.zuz) record.sheet = sheet;
   if (imprint) record.imprint = imprint;
   return record;
+}
+
+/**
+ * e-rara SRU discovery (SRU 1.2 with CQL over the catalogue's own search index).
+ *
+ * The OAI sets are unsorted ingest order, so map material that is not part of a
+ * digitised series (city plans, single sheets) is hard to find by paging them.
+ * The platform publishes a standard SRU 1.2 endpoint (MODS records) whose CQL
+ * indexes `dc.title`, `dc.subject` (keyword) and `dc.creator` map to the
+ * catalogue's search fields; anything else answers 0 records. Each hit states the
+ * IIIF title id and holding corpus verbatim (`<vl:id>`, `<vl:prefix>`) plus the
+ * MODS `<coordinates>` statement. SRU only *finds* candidates — every record is
+ * still built from the OAI record and the IIIF manifest, never from the search
+ * response alone.
+ */
+const SRU_ENDPOINT = 'https://www.e-rara.ch/sru';
+
+function sruUrl(cql, start = 1) {
+  return (
+    `${SRU_ENDPOINT}?operation=searchRetrieve&version=1.2&query=${encodeURIComponent(cql)}` +
+    `&startRecord=${start}&maximumRecords=100&recordSchema=mods`
+  );
+}
+
+async function sruSearch(cql, maxRecords = 100) {
+  const hits = [];
+  for (let start = 1; start <= maxRecords; start += 100) {
+    const xml = await get(sruUrl(cql, start));
+    const chunks = [...xml.matchAll(/<srw:record>([\s\S]*?)<\/srw:record>/g)].map((m) => m[1]);
+    if (!chunks.length) break;
+    for (const chunk of chunks) {
+      const hit = parseSruRecord(chunk);
+      if (hit) hits.push(hit);
+    }
+    if (chunks.length < 100) break;
+    await sleep(120);
+  }
+  return hits;
+}
+
+/**
+ * The canton of Zürich's bounding box as stated by swisstopo's gazetteer
+ * (`SearchServer`, origin `kantone` = the GG25 canton layer). It is used only as an
+ * *inclusion window* for SRU discovery — the centre of a candidate's own stated
+ * extent must lie inside it, so a keyword hit for a Switzerland- or Germany-wide
+ * map cannot end up in a Zürich set. It is never written into a record.
+ */
+async function zurichCantonWindow() {
+  const data = await get(
+    'https://api3.geo.admin.ch/rest/services/api/SearchServer' +
+      '?searchText=Z%C3%BCrich&type=locations&origins=kantone&sr=4326&limit=1',
+    { as: 'json', timeout: 20000 },
+  );
+  const box = data?.results?.[0]?.attrs?.geom_st_box2d || '';
+  const m = box.match(/BOX\(([-\d.]+) ([-\d.]+),([-\d.]+) ([-\d.]+)\)/);
+  if (!m) return null;
+  return { west: +m[1], south: +m[2], east: +m[3], north: +m[4] };
+}
+
+/** One SRU/MODS record → the candidate shape `manifestRecord` expects. */
+function parseSruRecord(chunk) {
+  const extra = (chunk.match(/<srw:extraRecordData[\s\S]*?<\/srw:extraRecordData>/) || [''])[0];
+  const titleId = first(extra, 'vl:id');
+  if (!titleId) return null;
+  const genres = all(chunk, 'genre');
+  const w3c = (chunk.match(/<dateIssued encoding="w3cdtf"[^>]*>(\d{4})/) || [])[1];
+  return {
+    titleId,
+    corpus: first(extra, 'vl:prefix') || null,
+    signature: first(extra, 'vl:signature') || null,
+    title: first(chunk, 'title') || '',
+    year: Number(w3c) || parseYear(first(chunk, 'dateIssued')),
+    isMap: genres.some((g) => /^(map|altkarte)$/i.test(g)),
+    // A stated extent in the catalogue record is a *gate* for spending a manifest
+    // request; the record's own extent still comes from the manifest.
+    coordinates: first(chunk, 'coordinates') || null,
+    creators: all(chunk, 'namePart').filter(Boolean),
+    doi: all(chunk, 'identifier').find((i) => i.startsWith('10.3931/')) || null,
+  };
+}
+
+/** Confirm an SRU hit through OAI `GetRecord` and its IIIF manifest. */
+async function sruPlanRecord(candidate, options) {
+  const identifier = encodeURIComponent(`oai:www.e-rara.ch:${candidate.titleId}`);
+  const xml = await get(
+    `https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=${identifier}`,
+  );
+  const chunk = (xml.match(/<record>([\s\S]*?)<\/record>/) || [])[1];
+  if (!chunk) return null;
+  const oai = parseOai(chunk);
+  // Same gates as every other set: a map with an upstream publication year.
+  if (!oai.isMap || !oai.year) return null;
+  return manifestRecord({ ...oai, corpus: candidate.corpus }, options);
 }
 
 async function pool(items, limit, fn) {
@@ -611,15 +719,41 @@ const SOURCE_SETS = {
   },
 };
 
+/**
+ * SRU/CQL searches used for discovery, with the queries stated verbatim so the
+ * resulting set can be reproduced (and audited) without reading this file.
+ * `dc.title` maps to the catalogue's German title index and `dc.subject` to the
+ * keyword index; both clauses are ANDed by the server. Any other CQL index
+ * (`dc.type`, `dc.genre`, `dc.format`, `dc.coverage`, …) answers 0 records.
+ */
+const SRU_SEARCHES = {
+  zurichPlans: {
+    id: 'zurich-plaene',
+    name: 'Pläne aus Zürich (Stadt und Umgebung)',
+    queries: ['dc.title=Plan and dc.subject=Zürich', 'dc.title=Karte and dc.subject=Zürich'],
+    rule:
+      'map genre, a stated year and a stated MODS coordinates statement in the SRU record, ' +
+      'then confirmed by OAI GetRecord and a IIIF manifest that states the holding institution ' +
+      'and a Kartendaten extent; one entry per title and year, oldest first',
+  },
+};
+
 async function main() {
-  const [zuz, land, geneva, muse] = await Promise.all([
+  const [zuz, land, geneva, muse, planHits, karteHits, zurichWindow] = await Promise.all([
     oaiRecords('zuz', 32),
     oaiRecords('landkarten', 12),
     oaiRecords('cartesgeneve', 6),
     oaiRecords('museecarto', 6),
+    sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
+    sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
+    zurichCantonWindow(),
   ]);
   console.log(
     `OAI: ${zuz.length} ZB records, ${land.length} landkarten, ${geneva.length} cartesgeneve, ${muse.length} museecarto`,
+  );
+  console.log(
+    `SRU: ${planHits.length} + ${karteHits.length} Zürich plan hits; canton window ` +
+      (zurichWindow ? JSON.stringify(zurichWindow) : 'UNAVAILABLE (set skipped)'),
   );
 
   const zuzMaps = zuz.map(parseOai).filter((r) => r.isMap && r.titleId && r.year);
@@ -711,6 +845,47 @@ async function main() {
     10,
   );
 
+  // --- SRU-discovered Zürich plans -----------------------------------------
+  // Discovery only: the catalogue's SRU search finds the plan material that the
+  // OAI sets (unsorted ingest order) do not surface, and every hit is then built
+  // from its OAI record and IIIF manifest like any other record.
+  const sruSeen = new Set([...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords].map((r) => r.id));
+  const sruCandidates = [];
+  for (const hit of [...planHits, ...karteHits]) {
+    const id = `e-rara:${hit.titleId}`;
+    if (sruSeen.has(id)) continue;
+    if (!hit.isMap || !hit.year || !hit.coordinates) continue;
+    sruSeen.add(id);
+    sruCandidates.push(hit);
+  }
+  sruCandidates.sort((a, b) => a.year - b.year);
+  const zurichPlanHits = zurichWindow
+    ? await pool(sruCandidates.slice(0, 44), 3, (c) =>
+        sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichPlans.name, maxYear: 1930 }),
+      )
+    : [];
+  /** Inside the canton window: the centre of the record's own stated extent. */
+  const inZurich = (r) =>
+    Boolean(zurichWindow) &&
+    r.geo?.lon >= zurichWindow.west &&
+    r.geo?.lon <= zurichWindow.east &&
+    r.geo?.lat >= zurichWindow.south &&
+    r.geo?.lat <= zurichWindow.north;
+  // One entry per title and year (duplicate copies of the same edition), oldest first.
+  const planSeen = new Set();
+  const zurichPlanRecords = [];
+  for (const r of zurichPlanHits
+    .filter(Boolean)
+    .filter((r) => r.extent && inZurich(r))
+    .sort((a, b) => a.yearStart - b.yearStart)) {
+    const key = `${r.title}|${r.yearStart}`;
+    if (planSeen.has(key)) continue;
+    planSeen.add(key);
+    zurichPlanRecords.push(r);
+    if (zurichPlanRecords.length >= 18) break;
+  }
+  console.log(`SRU kept ${zurichPlanRecords.length} Zürich plans of ${sruCandidates.length} candidates`);
+
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
   const records = [
@@ -718,6 +893,7 @@ async function main() {
     ...ethRecords,
     ...geneveRecords,
     ...museRecords,
+    ...zurichPlanRecords,
     ...overlays,
   ].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
@@ -735,7 +911,9 @@ async function main() {
         // Derived from the harvested records, so the registry cannot drift from the data.
         institutions: [
           ...new Set(
-            [...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords].map((r) => r.institution),
+            [...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords, ...zurichPlanRecords].map(
+              (r) => r.institution,
+            ),
           ),
         ].sort((a, b) => a.localeCompare(b, 'de')),
         homepage: 'https://www.e-rara.ch/',
@@ -770,9 +948,20 @@ async function main() {
               'no manifest of this set states a "Kartendaten" extent, and its works come from several ' +
               'libraries, so a record would also need the holding institution named by the manifest',
           },
+          {
+            id: SRU_SEARCHES.zurichPlans.id,
+            name: SRU_SEARCHES.zurichPlans.name,
+            // An actual harvested record from this search, not a guessed page.
+            record: zurichPlanRecords[0]?.recordUrl ?? SRU_SEARCHES.zurichPlans.queries[0],
+            discovery: SRU_SEARCHES.zurichPlans.queries.map((q) => sruUrl(q)).join(' | '),
+            note:
+              `SRU/CQL discovery (${SRU_SEARCHES.zurichPlans.queries.join(' | ')}): ` +
+              `${sruCandidates.length} candidates with a stated extent, ${zurichPlanRecords.length} records kept`,
+          },
         ],
         endpoints: {
           oai: 'https://www.e-rara.ch/oai',
+          sru: SRU_ENDPOINT,
           iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
           iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}',
           thumbnail: 'IIIF thumbnail from the manifest',
@@ -786,6 +975,12 @@ async function main() {
           oaiPmh:
             'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} ' +
             '(sets: zuz, landkarten, cartesgeneve, museecarto; ListSets is paginated)',
+          oaiGetRecord:
+            'https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:www.e-rara.ch:{titleId}',
+          sru:
+            'https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query={cql}&startRecord={n}' +
+            '&maximumRecords=100&recordSchema=mods (CQL indexes: dc.title, dc.subject, dc.creator; MODS ' +
+            'records carry <vl:id>, <vl:prefix> and <coordinates>)',
           iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
           iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg',
           docs: 'https://www.e-rara.ch/',
@@ -861,8 +1056,10 @@ async function main() {
     method:
       'e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF ' +
       'Presentation 2.0 manifest per title for ' +
-      'verbatim title, imprint, creators, holding institution, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
-      'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
+      'verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
+      'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 ' +
+      '(CQL via dc.title/dc.subject) for the Zürich plan material the sorted OAI paging does not reach, each hit ' +
+      'confirmed by OAI GetRecord and its manifest; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
       'editions and for the comparison layers in overlays.json. No title, date or coordinate is ' +
       'invented. Regenerate with: node scripts/fetch-records.mjs --out public/data',
     selection: {
@@ -885,6 +1082,16 @@ async function main() {
         considered: museCandidates.length,
         kept: museRecords.length,
         rule: 'map records of the set, oldest first, requires a stated Kartendaten bbox and a holding institution named by the manifest',
+      },
+      'e-rara:sru-zurich-plans': {
+        queries: SRU_SEARCHES.zurichPlans.queries,
+        considered: sruCandidates.length,
+        kept: zurichPlanRecords.length,
+        cantonWindow: zurichWindow,
+        cantonWindowSource:
+          'swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): ' +
+          'the centre of the record\'s own stated extent must lie inside it',
+        rule: SRU_SEARCHES.zurichPlans.rule,
       },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
