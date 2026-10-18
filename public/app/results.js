@@ -4,7 +4,7 @@
  */
 
 import { debounce, el, formatYearRange, qs, setStatus } from './dom.js';
-import { facets, filterRecords, recordsInBounds, sortRecords } from './records.js';
+import { facets, filterRecords, matchesQuery, overlapsRange, recordsInBounds, sortRecords } from './records.js';
 import { STATE_DEFAULTS } from './store.js';
 
 const TYPE_LABELS = {
@@ -37,6 +37,8 @@ export function init(ctx) {
   const overlayOpacityField = qs('#overlay-opacity-field');
   const viewportEl = qs('#viewport-filter');
   const viewportCount = qs('#viewport-count');
+  const collectionEl = qs('#collection-filter');
+  const facetHint = qs('#facet-hint');
   const overlayNote = qs('#overlay-note');
   const resetEl = qs('#reset-filters');
 
@@ -71,8 +73,13 @@ export function init(ctx) {
     }
   };
 
+  // Counts live in the DOM so they can follow the current period without
+  // rebuilding the inputs (rebuilding them would drop keyboard focus).
+  const facetLabels = new Map(); // "provider:e-rara" -> the label span
+
   const buildCheckboxes = (wrap, entries, key) => {
     if (!wrap) return;
+    const stateKey = key === 'providers' ? 'provider' : 'type';
     wrap.replaceChildren(
       ...[...entries.entries()].map(([value, count]) => {
         const id = `${key}-${value}`;
@@ -80,16 +87,72 @@ export function init(ctx) {
           type: 'checkbox',
           id,
           value,
-          onchange: () => ctx.store.update({ [key === 'providers' ? 'provider' : 'type']: input.checked ? value : '' }),
+          onchange: () => ctx.store.update({ [stateKey]: input.checked ? value : '' }),
         });
-        input.checked = (key === 'providers' ? ctx.store.getState().provider : ctx.store.getState().type) === value;
-        return el('label', { class: 'zh-check', for: id }, [input, el('span', { text: `${value} (${count})` })]);
+        input.checked = ctx.store.getState()[stateKey] === value;
+        const label = el('span', { text: `${value} (${count})` });
+        facetLabels.set(`${stateKey}:${value}`, label);
+        return el('label', { class: 'zh-check', for: id }, [input, label]);
       }),
     );
   };
 
   buildCheckboxes(providerWrap, providers, 'providers');
   buildCheckboxes(typeWrap, types, 'types');
+
+  /* ---------- collection ("Kartenwerk") facet ---------- */
+
+  const collectionNames = [...facets(records).collections.keys()].sort((a, b) => a.localeCompare(b, 'de'));
+  const collectionOptions = new Map(); // collection name -> { option, unknown }
+
+  function buildCollectionOptions() {
+    if (!collectionEl) return;
+    const nodes = [el('option', { value: '', text: 'alle Kartenwerke' })];
+    for (const name of collectionNames) {
+      const option = el('option', {
+        value: name,
+        text: `${name} (${facets(records).collections.get(name) ?? 0})`,
+        dataset: { count: String(facets(records).collections.get(name) ?? 0) },
+      });
+      collectionOptions.set(name, { option, unknown: false });
+      nodes.push(option);
+    }
+    collectionEl.replaceChildren(...nodes);
+    collectionEl.addEventListener('change', () => ctx.store.update({ collection: collectionEl.value }));
+  }
+  buildCollectionOptions();
+
+  // A collection name from a hand-written URL may not be in the seed data: keep
+  // it selectable so the filter is visible and can be cleared honestly.
+  function ensureCollectionOption(name) {
+    if (!collectionEl || !name || collectionOptions.has(name)) return;
+    const option = el('option', { value: name, text: `${name} (nicht im Bestand)`, dataset: { count: '0', unknown: '1' } });
+    collectionOptions.set(name, { option, unknown: true });
+    collectionEl.append(option);
+  }
+
+  /** Counts per facet for the records inside the current period and keyword. */
+  function syncFacetCounts(state) {
+    const scoped = records.filter((record) => overlapsRange(record, state.from, state.to) && matchesQuery(record, state.q));
+    const counts = facets(scoped);
+    const countOf = (map, name) => map.get(name) ?? 0;
+    for (const [key, node] of facetLabels) {
+      const separator = key.indexOf(':');
+      const dimension = key.slice(0, separator);
+      const name = key.slice(separator + 1);
+      node.textContent = `${name} (${countOf(dimension === 'provider' ? counts.providers : counts.types, name)})`;
+    }
+    for (const [name, entry] of collectionOptions) {
+      const count = countOf(counts.collections, name);
+      entry.option.dataset.count = String(count);
+      entry.option.textContent = entry.unknown ? `${name} (nicht im Bestand)` : `${name} (${count})`;
+    }
+    if (facetHint) {
+      facetHint.textContent = `${scoped.length} von ${records.length} Datensätzen im Zeitraum ${state.from}–${state.to}${
+        state.q ? ` mit „${state.q}“` : ''
+      }: die Zahlen in Klammern gelten für diesen Ausschnitt.`;
+    }
+  }
 
   sortEl?.addEventListener('change', () => ctx.store.update({ sort: sortEl.value }));
   textEl?.addEventListener(
@@ -116,6 +179,7 @@ export function init(ctx) {
       to: Math.min(years.max, STATE_DEFAULTS.to),
       provider: STATE_DEFAULTS.provider,
       type: STATE_DEFAULTS.type,
+      collection: STATE_DEFAULTS.collection,
       q: STATE_DEFAULTS.q,
       selected: STATE_DEFAULTS.selected,
       overlay: STATE_DEFAULTS.overlay,
@@ -332,7 +396,7 @@ export function init(ctx) {
         stateEl.className = 'zh-state zh-state--empty';
         stateEl.replaceChildren(
           el('span', { class: 'zh-state__title', text: 'Keine Treffer für diese Filter' }),
-          el('span', { text: 'Zeitraum erweitern, Sammlung abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:' }),
+          el('span', { text: 'Zeitraum erweitern, Sammlung oder Anbieter abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:' }),
           el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: resetFilters }, ['Alle Filter zurücksetzen']),
         );
       }
@@ -354,6 +418,7 @@ export function init(ctx) {
     const parts = [`${filtered.length} von ${records.length} Datensätzen`, `${state.from}–${state.to}`];
     if (state.provider) parts.push(state.provider);
     if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
+    if (state.collection) parts.push(state.collection);
     if (state.q) parts.push(`„${state.q}“`);
     if (state.viewport === '1') parts.push('im Kartenausschnitt');
     countEl.textContent = parts.join(' · ');
@@ -379,6 +444,11 @@ export function init(ctx) {
     }
     if (textEl && textEl.value !== state.q) textEl.value = state.q;
     if (sortEl && sortEl.value !== state.sort) sortEl.value = state.sort;
+    if (collectionEl) {
+      ensureCollectionOption(state.collection);
+      if (collectionEl.value !== state.collection) collectionEl.value = state.collection;
+    }
+    syncFacetCounts(state);
     if (yearFrom && document.activeElement !== yearFrom) yearFrom.value = String(state.from);
     if (yearTo && document.activeElement !== yearTo) yearTo.value = String(state.to);
     if (yearFill) {
@@ -472,7 +542,7 @@ export function init(ctx) {
     if (changed.some((key) => ['from', 'to'].includes(key)) && !syncButton.hidden) {
       syncButton.textContent = `Ausgabe für ${next.to}`;
     }
-    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
+    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'collection', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
     else if (changed.includes('selected')) {
       for (const item of listEl.children) {
         const button = item.querySelector('button');

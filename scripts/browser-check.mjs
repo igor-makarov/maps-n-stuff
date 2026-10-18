@@ -376,6 +376,43 @@ try {
   const urlAfterFilter = await cdp.eval(`location.search`);
   check('filter state is written to the shareable URL', /to=1850/.test(urlAfterFilter), urlAfterFilter);
 
+  /* --- 2b. collection facet (series from the data) ---------------------- */
+  const collectionFacet = await cdp.eval(`(() => {
+    const select = document.querySelector('#collection-filter');
+    if (!select) return null;
+    const options = [...select.options].map((o) => ({ value: o.value, text: o.textContent.trim() }));
+    return { options, hint: document.querySelector('#facet-hint')?.textContent || '' };
+  })()`);
+  const zeroCounts = (collectionFacet?.options ?? []).filter((o) => /\(0\)$/.test(o.text)).length;
+  check(
+    'collection facet lists the real series with counts for the current period',
+    Boolean(collectionFacet) && collectionFacet.options.length >= 3 && zeroCounts > 0 && /Zeitraum 1816–1850/.test(collectionFacet.hint),
+    `${collectionFacet?.options.length ?? 0} options, ${zeroCounts} empty in period, hint: ${collectionFacet?.hint ?? 'missing'}`,
+  );
+  const collectionChoice = await cdp.eval(`(() => {
+    const select = document.querySelector('#collection-filter');
+    if (!select) return null;
+    const best = [...select.options]
+      .filter((o) => o.value)
+      .map((option) => ({ option, count: Number(option.dataset.count || 0) }))
+      .sort((a, b) => b.count - a.count)[0];
+    if (!best || !best.count) return null;
+    select.value = best.option.value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return { value: best.option.value, label: best.option.textContent.trim(), count: best.count };
+  })()`);
+  await sleep(500);
+  const collectionRows = await cdp.eval(`document.querySelectorAll('#result-list > *').length`);
+  const collectionUrl = new URLSearchParams(await cdp.eval(`location.search`));
+  check(
+    'choosing a collection filters the list and is shareable',
+    Boolean(collectionChoice) && collectionRows > 0 && collectionRows < afterCount && collectionUrl.get('c') === collectionChoice?.value,
+    `${collectionChoice?.label ?? 'none'} -> ${collectionRows} rows, c=${collectionUrl.get('c') ?? ''} (was ${afterCount})`,
+  );
+  // Back to all series so the detail checks below keep their e-rara record.
+  await cdp.eval(`(() => { const s = document.querySelector('#collection-filter'); s.value = ''; s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await sleep(500);
+
   /* --- 3. record detail + IIIF ------------------------------------------ */
   await cdp.click('#result-list > *');
   await cdp.waitFor(`document.querySelector('#detail') && !document.querySelector('#detail').hidden`, { label: 'detail panel', timeout: 15_000 });
@@ -674,6 +711,22 @@ try {
   await sleep(1200);
   const contrast = await cdp.eval(CONTRAST_SWEEP);
   check('visible text meets WCAG 2.2 AA contrast', contrast.badCount === 0, describeContrast(contrast));
+
+  /* --- 8b. a shared link with a collection filter ----------------------- */
+  if (collectionChoice?.value) {
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1816&to=1850&c=${encodeURIComponent(collectionChoice.value)}` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'collection deep link' });
+    const deepLink = await cdp.eval(`(() => ({
+      value: document.querySelector('#collection-filter')?.value,
+      rows: document.querySelectorAll('#result-list > *').length,
+      count: document.querySelector('#result-count')?.textContent || '',
+    }))()`);
+    check(
+      'a shared link with ?c= restores the collection filter',
+      deepLink.value === collectionChoice.value && deepLink.rows > 0 && deepLink.count.includes(collectionChoice.value),
+      JSON.stringify(deepLink),
+    );
+  }
 
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

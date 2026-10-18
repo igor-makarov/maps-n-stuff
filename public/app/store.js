@@ -19,6 +19,7 @@ export const STATE_DEFAULTS = Object.freeze({
   to: 1900,
   provider: '', // providerId or '' for all
   type: '', // record type or '' for all
+  collection: '', // upstream series/collection name or '' for all (facet from the data)
   viewport: '', // '1' = only records inside the current map view
   place: '', // selected place label
   lat: 47.3769, // Zürich as the initial view (documented default, not a search result)
@@ -39,6 +40,7 @@ export const PARAM = {
   to: 'to',
   provider: 'p',
   type: 't',
+  collection: 'c',
   viewport: 'vp',
   place: 'place',
   lat: 'lat',
@@ -53,7 +55,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
+  string: ['q', 'provider', 'type', 'collection', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
   number: ['from', 'to', 'lat', 'lon', 'zoom'],
 };
 
@@ -119,6 +121,9 @@ export function sanitise(state) {
   out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
   out.q = String(out.q || '').slice(0, 200);
   out.place = String(out.place || '').slice(0, 200);
+  // A collection name comes from the data (never invented) and from the URL, so
+  // keep it short and printable; an unknown name simply yields no results.
+  out.collection = String(out.collection || '').slice(0, 120);
   // The compare list is a hand-editable URL value: keep only ids that match the
   // data contract "<providerId>:<record id>" (lower-case provider, safe value
   // characters) and never more than four of them.
