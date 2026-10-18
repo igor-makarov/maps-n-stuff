@@ -140,9 +140,11 @@ after 8 s.
 `public/data/records.json`, `public/data/sources.json` and
 `public/data/overlays.json` from:
 
-- e-rara OAI-PMH (`set=zuz`, `set=landkarten`, `oai_dc`) for catalogue metadata,
+- e-rara OAI-PMH (`set=zuz`, `set=landkarten`, `set=cartesgeneve`, `oai_dc`) for
+  catalogue metadata,
 - e-rara DOI landing pages + IIIF Presentation 2.0 manifests for holding
-  institution, shelfmark, title, imprint, rights, extent and image service,
+  institution, shelfmark, title, imprint, rights, extent, canvas count, image
+  service and the library's canonical viewer URL (`og:url` corpus),
 - swisstopo WMTS capabilities (`EPSG/3857/1.0.0/WMTSCapabilities.xml`) for the
   Zeitreise, Siegfriedkarte, Dufourkarte and SWISSIMAGE Zeitreise editions and
   for the comparison layers in `overlays.json`.
@@ -152,7 +154,9 @@ them. At most 3 concurrent requests, a pause between calls and a descriptive
 `User-Agent`. No invented metadata: fields an upstream does not state stay
 `null`, publication years are kept separate from depicted-map years, and overlay
 records only describe editions the WMTS service advertises and serves (empty
-tiles are probed and skipped, see `records.json.skipped`).
+tiles are probed and skipped, see `records.json.skipped`). Which records were
+considered and kept per OAI set, and by which rule, is written into
+`records.json.selection`.
 
 ## Troubleshooting
 

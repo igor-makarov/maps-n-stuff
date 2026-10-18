@@ -50,11 +50,13 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 55 records (28 e-rara maps from Zürich and
-ETH holdings plus 27 georeferenced swisstopo overlay editions; the UI states the
-real count). `public/vendor/leaflet` is vendored but unused; without network
-access the tiles and IIIF images stay empty while metadata remains readable (the
-detail panel then keeps the metadata, the provider links and an explanation).
+Known limitations: the seed set holds 66 records (39 e-rara maps — 20 ZB Zürich
+Wildkarte sheets, 18 Swiss maps from ETH-Bibliothek holdings, 1 map from the
+Bibliothèque de Genève — plus 27 georeferenced swisstopo overlay editions; the UI
+states the real count and `records.json.selection` documents the rule per set).
+`public/vendor/leaflet` is vendored but unused; without network access the tiles
+and IIIF images stay empty while metadata remains readable (the detail panel then
+keeps the metadata, the provider links and an explanation).
 
 ## Swarm configuration
 
