@@ -29,7 +29,6 @@ const ALLOWLIST = [
 const USER_AGENT =
   'zurich-maps/0.1 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
 
-const HTML_ESCAPE = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 function json(body, init = {}) {
   return new Response(JSON.stringify(body, null, 1), {
@@ -216,4 +215,7 @@ export default {
   },
 };
 
-export { ALLOWLIST, isAllowed, VERSION, HTML_ESCAPE };
+// NOTE: only `default` may be exported from a Workers entrypoint. workerd rejects
+// non-function named exports at startup ("Incorrect type for map entry 'VERSION'"
+// is the exact failure), so constants stay module-private and are exercised through
+// the HTTP surface (see tests/worker.test.mjs → /api/health).

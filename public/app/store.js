@@ -92,11 +92,19 @@ export function readStateFromUrl(search = (safeLocation()?.search ?? ''), defaul
   return sanitise(state);
 }
 
+/** Wrap a longitude into [-180, 180] without drifting values that are already in range. */
+export function normaliseLon(lon) {
+  if (!Number.isFinite(lon)) return STATE_DEFAULTS.lon;
+  if (lon >= -180 && lon <= 180) return lon;
+  const wrapped = ((((lon + 180) % 360) + 360) % 360) - 180;
+  return Math.round(wrapped * 1e6) / 1e6;
+}
+
 /** Keep numeric state inside sane bounds so a hand-written URL cannot break the UI. */
 export function sanitise(state) {
   const out = { ...state };
   out.lat = Math.max(-85, Math.min(85, Number(out.lat) || STATE_DEFAULTS.lat));
-  out.lon = ((((Number(out.lon) || STATE_DEFAULTS.lon) + 180) % 360) + 360) % 360 - 180;
+  out.lon = normaliseLon(Number(out.lon));
   out.zoom = Math.max(2, Math.min(18, Number(out.zoom) || STATE_DEFAULTS.zoom));
   const from = Number.isFinite(Number(out.from)) ? Number(out.from) : STATE_DEFAULTS.from;
   const to = Number.isFinite(Number(out.to)) ? Number(out.to) : STATE_DEFAULTS.to;
