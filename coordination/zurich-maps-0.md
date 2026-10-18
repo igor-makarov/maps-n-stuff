@@ -1,5 +1,74 @@
 # zurich-maps-0 status
 
+## Iteration 7-13 (2026-10-18, ~23:3x UTC) — wider harvest, 80 records
+
+Landed on `main` as `1b8d849` (rebased over `ec2307e` first). Only my own paths
+changed: `scripts/fetch-records.mjs`, `public/data/{records,sources,overlays}.json`.
+
+### What changed
+
+The ZB OAI set (`zuz`) turns out to hold **54,999 records** — it is the whole ZB
+corpus, not a map set — so 22 pages yielded only 41 map candidates, 20 of which
+survived the sheet cap. Deeper paging plus wider candidate windows:
+
+| Set | pages | window | kept |
+| --- | --- | --- | --- |
+| `zuz` (ZB Zürich) | 22 → 32 | 48 → 72 | 20 → **26** Wildkarte sheets |
+| `landkarten` (ETH-Bibliothek) | 10 → 12 | 30 → 50 | 18 → **26** |
+| `cartesgeneve` | 4 → 6 | 14 → **40** | 1 (unchanged, but no longer accidental) |
+| `museecarto` | — → 6 | — → 20 | **0** (documented below) |
+
+- **Genf regression caught before it shipped.** The first run of the wider window
+  dropped the 1837 “Geneva” sheet (Bibliothèque de Genève), because a 14-candidate
+  slice sorted by year loses 19th-century sheets behind older ones. `cartesgeneve`
+  is now sliced at 40 candidates with the reason written into the script, and the
+  record is back. This is exactly the kind of silent loss a re-harvest can cause;
+  the number is now data-driven instead of hand-tuned.
+- **`museecarto` is probed and reported honestly**: 53 map candidates, **0 kept**,
+  because no manifest of that set states a `Kartendaten` extent, and its works come
+  from several libraries — so `manifestRecord` only accepts one when the manifest
+  itself names the holding institution (`requireInstitution`). No institution is
+  ever guessed. `records.json.selection['e-rara:museecarto']` records this.
+- `sources.json` OAI description now lists all four sets; the swisstopo/overlay
+  data is unchanged (12 layers, same editions).
+
+Result: **80 records** — 26 ZB Zürich Wildkarte sheets, 26 Swiss maps from the
+ETH-Bibliothek set, 1 Geneva sheet, 27 swisstopo overlay editions. 2 providers, 5
+collections, still every record with an upstream year and a stated bbox.
+
+### Verified
+
+- `npm run build` (`scripts/validate.mjs`) ✓ — 80 records, 2 providers, 12 overlays.
+- `npm test` ✓ **83/83** (the suite is data-driven; nothing hardcoded the old count).
+- `wrangler dev` on 127.0.0.1:8787 + `node scripts/browser-check.mjs` → **54/56**.
+  Green: module boot (“80 Datensätze · 12 Kartenwerke”), place search, keyboard
+  map/selection, shared URL state, the detail→time hand-off, mobile + 320 px
+  layouts, contrast sweep (1264 elements), collection link, comparison list and
+  view, multi-sheet navigation, no console errors, no failed requests,
+  same-origin-only traffic.
+- **Red (2): the two touch checks** in the IIIF viewer — “pinch-zoom asks for a
+  smaller IIIF region” and “one-finger drag pans the sheet”. Both report
+  `full/490,… -> full/490,… state=loading`, i.e. the viewer never issued a new
+  region request; the drag log *does* show two different regions arriving
+  (`…5223,4718/710` for two positions). The record under test changed with this
+  harvest (`e-rara:7203623`, the first row of the default period), so I am not
+  treating these as a data-caused regression yet, but they are **not verified
+  green** and are the first thing to look at next iteration — see “Next”.
+
+### Next (my area)
+
+1. Decide whether the two touch failures are a harness race or a real pointer
+   bug for the newly selected record (compare `viewForCanvas`/`regionRequest`
+   output for `e-rara:7203623` against the old first row).
+2. Keep growing Zürich depth from the same OAI set (`zuz` is 54,999 records; the
+   harvest still only reads 320 of them) — but only with the stated-bbox and
+   stated-institution gates; consider paging by `from`/`until` to sample more
+   systematically instead of reading the first N pages.
+3. The `overlays.json` swisstopo part did not change this iteration; the LOC
+   world-coverage idea from last iteration is still open (its JSON API has no
+   coordinates for the items checked, so it would be list-only — an honest taste
+   decision, not a data question).
+
 ## Iteration 6-12 (2026-10-18, 22:31–23:2x UTC) — data layer + integration fixes
 
 Owner of the same paths as before (`src/worker/**`, `public/data/**`,
