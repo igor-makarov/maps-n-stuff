@@ -1044,6 +1044,63 @@ try {
     check('a real multi-sheet work offers working sheet navigation', false, 'no multi-sheet record in the seed');
   }
 
+  /* --- 8e. the open sheet is shareable URL state (?sh=) ----------------- */
+  if (multiSheet) {
+    const total = multiSheet.canvasCount;
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}&sh=${total}` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'deep-linked sheet', timeout: 25_000 });
+    const deepLink = await cdp.eval(`(() => ({
+      label: document.querySelector('#page-label')?.textContent || '',
+      active: document.querySelector('#page-strip [aria-current="true"]')?.dataset.sheet ?? null,
+      strip: document.querySelectorAll('#page-strip [data-sheet]').length,
+      stripHidden: document.querySelector('#page-strip')?.hidden,
+    }))()`);
+    check(
+      'a shared ?sh= link opens that sheet and the strip marks it',
+      deepLink.label === `Blatt ${total} von ${total}` && deepLink.active === String(total - 1) && deepLink.strip === total && deepLink.stripHidden === false,
+      `${multiSheet.id} sh=${total} -> ${JSON.stringify(deepLink)}`,
+    );
+
+    let thumbs = { loaded: 0, total: 0 };
+    try {
+      thumbs = await cdp.waitFor(
+        `(() => { const imgs = [...document.querySelectorAll('#page-strip img')]; const loaded = imgs.filter((img) => img.naturalWidth > 0).length; return imgs.length > 0 && loaded === imgs.length ? { loaded, total: imgs.length } : ''; })()`,
+        { label: 'sheet thumbnails', timeout: 20_000 },
+      );
+    } catch {
+      thumbs = await cdp.eval(`(() => { const imgs = [...document.querySelectorAll('#page-strip img')]; return { loaded: imgs.filter((img) => img.naturalWidth > 0).length, total: imgs.length }; })()`);
+    }
+    check('the sheet strip shows a real thumbnail per sheet', thumbs.loaded === total, JSON.stringify(thumbs));
+
+    // Out-of-range values are clamped to the real canvas count and written back.
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}&sh=99` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'clamped sheet', timeout: 25_000 });
+    await sleep(300);
+    const clamped = await cdp.eval(`(() => ({ label: document.querySelector('#page-label')?.textContent || '', sh: new URLSearchParams(location.search).get('sh') }))()`);
+    check(
+      'an out-of-range sheet number is clamped and written back to the URL',
+      clamped.label === `Blatt ${total} von ${total}` && clamped.sh === String(total),
+      JSON.stringify(clamped),
+    );
+
+    // The strip is a real control: clicking a sheet switches the viewer and URL.
+    await cdp.click('#page-strip [data-sheet="0"]');
+    let stripSwitch = null;
+    try {
+      stripSwitch = await cdp.waitFor(
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; const sh = new URLSearchParams(location.search).get('sh'); return label === 'Blatt 1 von ${total}' && sh === null ? { label, sh } : ''; })()`,
+        { label: 'strip click', timeout: 10_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'clicking a sheet in the strip switches to it (sheet 1 is the default URL state)',
+      stripSwitch?.label === `Blatt 1 von ${total}` && stripSwitch?.sh === null,
+      JSON.stringify(stripSwitch),
+    );
+  }
+
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));

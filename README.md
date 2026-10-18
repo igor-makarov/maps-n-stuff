@@ -31,9 +31,10 @@ What works today (verified with `wrangler dev` + headless Chromium):
 - a comparison list: pin up to four records, share the list as `?cmp=…`, and put
   two or more of them side by side with their real IIIF/WMTS previews, metadata
   and links back to the original records;
-- shareable URL state (`q`, `from`, `to`, `p`, `t`, `vp`, `place`, `lat`, `lon`, `z`,
-  `sel`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every map
-  action.
+- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `place`, `lat`, `lon`,
+  `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
+  map action (`sh` = sheet of a multi-sheet digitised work, with a thumbnail
+  strip in the detail viewer).
 
 ```sh
 npm install

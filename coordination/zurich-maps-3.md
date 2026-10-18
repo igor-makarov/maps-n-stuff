@@ -1,5 +1,75 @@
 # zurich-maps-3 status
 
+Iteration 7-12 (2026-10-18, ~22:50–23:2x UTC). Member `zurich-maps-3`. Paths as
+before: `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`,
+`tests/**`, `scripts/browser-check.mjs`.
+
+## Landed on `main` this iteration (`9f84c4f`)
+
+**Multi-sheet works are now first-class, and the open sheet is shareable state.**
+
+- `store.js` (maps-1's file, additive): new `sheet` state key + short URL param
+  `sh`, default 1, clamped to 1–999 in `sanitise` (the real canvas count is only
+  known after the manifest loads, so detail.js clamps again and writes back).
+- `detail.js`: a newly chosen work starts on sheet 1; a URL with `?sel=<id>&sh=2`
+  opens sheet 2 (deep link + reload paths pass `keepSheet`). `showCanvas()` reads
+  the sheet from the store, clamps it to `manifest.canvases.length` and rewrites a
+  mismatch so a shared URL can never name a sheet that does not exist. Closing the
+  panel resets `sh` so a closed panel leaves no stale sheet in the URL.
+- **Sheet strip** under the viewer stage: one button per canvas with a real
+  thumbnail (`iiif.sheetThumbUrl`: manifest `thumbnail`, else the documented
+  `…/full/96,/0/default.jpg` sizeByW derivative), the sheet number, `aria-current`
+  on the visible one and a click handler that switches sheets. Hidden for the
+  common single-sheet case; the `‹ Blatt / Blatt n von N / Blatt ›` controls and
+  Alt+←/→ keep working.
+- `iiif.js`: `sheetThumbUrl()` (unit-tested: manifest thumbnail wins, service
+  derivation, `null` when neither exists).
+- Tests: `tests/store.test.mjs` (round-trip, default omitted, clamps 0/negative/
+  9999/'quatsch'/'2.7'), `tests/iiif.test.mjs` (3 cases), `tests/site.test.mjs`
+  (`#page-strip` added to the module-rendered ids).
+- Harness: 4 new checks — `?sh=<last>` deep link marks the right strip button,
+  one real thumbnail per sheet loads, `?sh=99` is clamped and written back,
+  clicking sheet 1 switches the viewer and removes `sh` (it is the default).
+
+Note: an earlier session (6-11) had started the same `sheet` work but timed out
+before committing it; it was redone cleanly against today's tree — nothing of it
+was on `main` and nothing was lost except that draft.
+
+## Verified
+
+- `npm run check` ✓ — validation, **85/85** `node --test`, `wrangler deploy
+  --dry-run`.
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **56/56** on a
+  real `wrangler dev`, including the four new checks and the existing deep-zoom,
+  touch, comparison, contrast, CSP and no-console-error checks.
+- Real multi-sheet fixture used: `e-rara:6485160` (2 canvases, no manifest
+  thumbnails, so the derived 96 px IIIF derivatives are what the strip loads).
+
+## Messages
+
+- **→ maps-1**: two additive edits in your files. `store.js` gains the documented
+  `sheet` key/`sh` param (same pattern as `collection`); `README.md` and
+  `docs/run.md` now list `c` and `sh` in the URL key list (the harness count went
+  from 36 to 56). Revert freely if you disagree.
+- **→ maps-2**: results/map are untouched by this change. If you ever set
+  `selected` yourself, detail.js resets `sheet` to 1 when the work changes, so no
+  coordination is needed.
+- **→ maps-0**: `canvasCount` is now used in the strip header path only via the
+  manifest; the harvested value stays the pre-manifest fact in “Umfang”. If a
+  future provider has canvases without image services, the strip falls back to
+  the number button (no invented thumbnail).
+
+## Next (my area)
+
+- Library of Congress support in `detail.js` (`record.imageService`-only records,
+  no manifest) once maps-0 harvests it: `previewSection` currently requires
+  `iiifManifest`; the viewer factory already accepts a service-only canvas.
+- Sheet strip polish for works with many sheets (10+): virtualise or collapse
+  after the first N with a “alle Blätter” toggle.
+- Real-device touch check (pinch baseline still only synthetic).
+
+---
+
 Iteration 4-6 (2026-10-18 21:54–23:0x UTC). Member `zurich-maps-3` — owns
 `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`, `tests/`,
 `scripts/browser-check.mjs`. Earlier iterations of this member landed the initial

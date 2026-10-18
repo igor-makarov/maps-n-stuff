@@ -26,7 +26,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo |
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 36 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, period hand-off, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 56 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip, period hand-off, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
 
 ## Cloudflare Workers deployment
 
@@ -98,8 +98,10 @@ throws is reported in the UI (`#app-notices`) and in
 | `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
 | `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1) |
 
-URL state is documented in `store.js`: `q, from, to, p, t, vp, place, lat, lon,
-z, sel, view, sort, ov, ot, cmp`.
+URL state is documented in `store.js`: `q, from, to, p, t, c, vp, place, lat, lon,
+z, sel, sh, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the open
+digitised work (detail.js clamps it to the real canvas count and shows the same
+sheet in the IIIF viewer).
 
 ## Response headers and caching
 

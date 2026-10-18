@@ -97,6 +97,7 @@ test('every UI selectors used by the app modules exists in the shell', () => {
     '#page-nav',
     '#page-next',
     '#page-prev',
+    '#page-strip',
     '#preview-meta',
     '#reuse-links',
     '#viewer-resolution',

@@ -1,23 +1,28 @@
 {
-  "generatedAt": "2026-10-18T22:40:28.362Z",
+  "generatedAt": "2026-10-18T22:56:17.781Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
   "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
-      "kept": 20,
+      "kept": 26,
       "rule": "maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox"
     },
     "e-rara:landkarten": {
-      "considered": 72,
-      "kept": 18,
+      "considered": 89,
+      "kept": 26,
       "rule": "every map of the set that is not a series volume, oldest first, requires a stated Kartendaten bbox"
     },
     "e-rara:cartesgeneve": {
-      "considered": 39,
+      "considered": 58,
       "kept": 1,
       "rule": "map records of the set, oldest first, requires a stated Kartendaten bbox"
+    },
+    "e-rara:museecarto": {
+      "considered": 53,
+      "kept": 0,
+      "rule": "map records of the set, oldest first, requires a stated Kartendaten bbox and a holding institution named by the manifest"
     },
     "swisstopo:zeitreise": {
       "considered": 178,
@@ -47,6 +52,39 @@
     }
   ],
   "records": [
+    {
+      "id": "e-rara:7203621",
+      "title": "Carte de la Suisse Romande qui comprend le Pays de Vaud et le gouvernement d'Aigle, dépendant du canton de Berne",
+      "yearStart": 1781,
+      "yearEnd": 1781,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Mallet, Henri"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23152",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7203623/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7203621/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.83333,
+        "east": 7.25,
+        "north": 47.16667,
+        "south": 46.13333
+      },
+      "geo": {
+        "lat": 46.65,
+        "lon": 6.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7203623",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203621",
+      "imprint": "Genève : chez F. Monty, 1781"
+    },
     {
       "id": "e-rara:6698004",
       "title": "Carte du gouvernement d'Aigle",
@@ -81,6 +119,303 @@
       "imprint": "[Genève] : [Verlag nicht ermittelbar], [1788]"
     },
     {
+      "id": "e-rara:7246431",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, 1. Carte générale de l'atlas Suisse",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23356",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7246433/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7246431/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.95,
+        "east": 10.48333,
+        "north": 47.8,
+        "south": 45.81667
+      },
+      "geo": {
+        "lat": 46.80833,
+        "lon": 8.21667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7246433",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246431",
+      "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
+    },
+    {
+      "id": "e-rara:7246441",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Canton de Schaffhausen et partie du canton de Zurich",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23358",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7246443/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7246441/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.16667,
+        "east": 9.35,
+        "north": 47.85,
+        "south": 47.3
+      },
+      "geo": {
+        "lat": 47.575,
+        "lon": 8.75833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7246443",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246441",
+      "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
+    },
+    {
+      "id": "e-rara:7258402",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Majeure partie des cantons de Bellinzona et de Lugano et les frontières de la République Italienne",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23384",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258404/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258402/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.15,
+        "east": 9.3,
+        "north": 46.23333,
+        "south": 45.68333
+      },
+      "geo": {
+        "lat": 45.95833,
+        "lon": 8.725
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258404",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258402",
+      "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
+    },
+    {
+      "id": "e-rara:7258362",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie du canton de Lucerne, d'Unterwalden, d'Uri et Zurich, le canton Glarus, Schweiz et Zug",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23376",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258364/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258362/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.16667,
+        "east": 9.33333,
+        "north": 47.31667,
+        "south": 46.76667
+      },
+      "geo": {
+        "lat": 47.04167,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258364",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258362",
+      "imprint": "Aarau : J. R. Meyer, 1796"
+    },
+    {
+      "id": "e-rara:7246418",
+      "title": "Sammelband ETH-BIB KS: Carte d'une partie très interessante de la Suisse à l'usage des voyageurs",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23354",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7246420/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7246418/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.43333,
+        "east": 8.43333,
+        "north": 47,
+        "south": 46.16667
+      },
+      "geo": {
+        "lat": 46.58334,
+        "lon": 7.93333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7246420",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246418",
+      "imprint": "Aarau : J. R. Meyer, 1796"
+    },
+    {
+      "id": "e-rara:7258377",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie du canton de Berne, du Vallais et canton de Fribourg",
+      "yearStart": 1797,
+      "yearEnd": 1797,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23379",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258379/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258377/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.01667,
+        "east": 8.16667,
+        "north": 46.78333,
+        "south": 46.23333
+      },
+      "geo": {
+        "lat": 46.50833,
+        "lon": 7.59167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258379",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258377",
+      "imprint": "Aarau : J. R. Meyer, 1797"
+    },
+    {
+      "id": "e-rara:7258367",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie des Grisons, du haut Rheinthal et ses frontières au gouvernement d'Arlberg et Tyrol",
+      "yearStart": 1798,
+      "yearEnd": 1798,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23377",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258369/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258367/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 9.31667,
+        "east": 10.5,
+        "north": 47.3,
+        "south": 46.73333
+      },
+      "geo": {
+        "lat": 47.01667,
+        "lon": 9.90834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258369",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258367",
+      "imprint": "Aarau : J. R. Meyer, 1798"
+    },
+    {
+      "id": "e-rara:7258397",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie du c.ton du Vallais et le versant des eaux du Piemont",
+      "yearStart": 1798,
+      "yearEnd": 1798,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23383",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258399/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258397/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.01667,
+        "east": 8.15,
+        "north": 46.23333,
+        "south": 45.7
+      },
+      "geo": {
+        "lat": 45.96667,
+        "lon": 7.58333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258399",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258397",
+      "imprint": "Aarau : J. R. Meyer, 1798"
+    },
+    {
+      "id": "e-rara:7258372",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Plus grande partie de la Suisse romande ou canton du Léman",
+      "yearStart": 1798,
+      "yearEnd": 1798,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23378",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258374/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258372/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.86667,
+        "east": 7.01667,
+        "north": 46.78333,
+        "south": 46.23333
+      },
+      "geo": {
+        "lat": 46.50833,
+        "lon": 6.44167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258374",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258372",
+      "imprint": "Aarau : J. R. Meyer, 1798"
+    },
+    {
       "id": "e-rara:6485160",
       "title": "Carte générale de la Suisse suivant les nouvelles divisions, qui comprennent les ci-devant XIII cantons, leurs alliés et sujets, et forment actuellement la république helvétique une et invisible",
       "yearStart": 1799,
@@ -112,6 +447,72 @@
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6485160",
       "imprint": "Basle : Chrétien de Mechel, 1799"
+    },
+    {
+      "id": "e-rara:7258352",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, La comté de Neufchatel et partie des cantons de Leman et Fribourg",
+      "yearStart": 1801,
+      "yearEnd": 1801,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23374",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258354/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258352/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.85,
+        "east": 7.01667,
+        "north": 47.31667,
+        "south": 46.76667
+      },
+      "geo": {
+        "lat": 47.04167,
+        "lon": 6.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258354",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258352",
+      "imprint": "Aarau : J. R. Meyer, 1801"
+    },
+    {
+      "id": "e-rara:7258387",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie des Grisons et de la Valteline",
+      "yearStart": 1802,
+      "yearEnd": 1802,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23381",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258389/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258387/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 9.3,
+        "east": 10.46667,
+        "north": 46.76667,
+        "south": 46.2
+      },
+      "geo": {
+        "lat": 46.48333,
+        "lon": 9.88334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258389",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258387",
+      "imprint": "Aarau : J. R. Meyer, 1802"
     },
     {
       "id": "e-rara:6505450",
@@ -277,6 +678,39 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6507640",
       "imprint": "[Bern] : [Verlag nicht ermittelbar], [1816]"
+    },
+    {
+      "id": "e-rara:7203584",
+      "title": "Carte de l'ancien évêché de Bâle",
+      "yearStart": 1819,
+      "yearEnd": 1819,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Buchwalder, Antoine Joseph"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23146",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7203586/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7203584/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 6.83333,
+        "east": 7.91667,
+        "north": 47.56667,
+        "south": 47.03333
+      },
+      "geo": {
+        "lat": 47.3,
+        "lon": 7.375
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7203586",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203584",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1819]"
     },
     {
       "id": "e-rara:6505510",
@@ -506,171 +940,6 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/25996178",
       "imprint": "London : E. Stanford, [entre 1837-1840]"
-    },
-    {
-      "id": "e-rara:6526408",
-      "title": "Carte des Cantons Thurgau",
-      "yearStart": 1838,
-      "yearEnd": 1838,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Sulzberger, Johann Jakob"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21032",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6526410/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6526408/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.66667,
-        "east": 9.56667,
-        "north": 47.7,
-        "south": 47.36667
-      },
-      "geo": {
-        "lat": 47.53334,
-        "lon": 9.11667
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6526410",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526408",
-      "imprint": "Zürich : bey Heinr. Fuessli & Co., [1838]"
-    },
-    {
-      "id": "e-rara:6726803",
-      "title": "La Suisse à l'usage des écoles",
-      "yearStart": 1838,
-      "yearEnd": 1838,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Keller, Heinrich"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21826",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6726805/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6726803/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 5.95,
-        "east": 10.5,
-        "north": 47.8,
-        "south": 45.8
-      },
-      "geo": {
-        "lat": 46.8,
-        "lon": 8.225
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6726805",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6726803",
-      "imprint": "Zürich : Heinrich Keller, untre Zäune No. 367, 1838"
-    },
-    {
-      "id": "e-rara:6505505",
-      "title": "Carte von dem Canton Aargau",
-      "yearStart": 1840,
-      "yearEnd": 1840,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Scheuermann, Samuel Johann Jakob"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20941",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6505507/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6505505/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 7.7,
-        "east": 8.46667,
-        "north": 47.63333,
-        "south": 47.11667
-      },
-      "geo": {
-        "lat": 47.375,
-        "lon": 8.08333
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6505507",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505505",
-      "imprint": "Aarau : Scheurmann, 1840"
-    },
-    {
-      "id": "e-rara:6484571",
-      "title": "Karte der Cantone St. Gallen und Appenzell",
-      "yearStart": 1840,
-      "yearEnd": 1840,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Bernet, J."
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20707",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484574/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484571/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.8,
-        "east": 9.66667,
-        "north": 47.7,
-        "south": 46.88333
-      },
-      "geo": {
-        "lat": 47.29167,
-        "lon": 9.23334
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6484573",
-      "canvasCount": 2,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484571",
-      "imprint": "St.Gallen ; Bern : Huber et Comp., 1840"
-    },
-    {
-      "id": "e-rara:6484353",
-      "title": "Karte der Schweiz mit Randnamen",
-      "yearStart": 1840,
-      "yearEnd": 1840,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Keller, Heinrich"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20684",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484355/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484353/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 5.95,
-        "east": 10.5,
-        "north": 47.8,
-        "south": 45.8
-      },
-      "geo": {
-        "lat": 46.8,
-        "lon": 8.225
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6484355",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484353",
-      "imprint": "Zürich : Keller, 1840"
     },
     {
       "id": "swisstopo:zeitreise-18501231",
@@ -1388,6 +1657,40 @@
       "imprint": "[Zürich] : [Topographisches Bureau], [1860]"
     },
     {
+      "id": "e-rara:8924144",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Wald",
+      "yearStart": 1860,
+      "yearEnd": 1860,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27983",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924145/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924144/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.81667,
+        "east": 9,
+        "north": 47.3,
+        "south": 47.21667
+      },
+      "geo": {
+        "lat": 47.25834,
+        "lon": 8.90834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924145",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924144",
+      "sheet": "Wald",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1860]"
+    },
+    {
       "id": "swisstopo:zeitreise-18601231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1860",
       "yearStart": 1860,
@@ -1421,6 +1724,176 @@
         "north": 48.230651
       },
       "editionDate": "1860-12-31"
+    },
+    {
+      "id": "e-rara:8924112",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Bauma",
+      "yearStart": 1861,
+      "yearEnd": 1861,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27975",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924113/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924112/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.81667,
+        "east": 9,
+        "north": 47.43333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.39167,
+        "lon": 8.90834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924113",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924112",
+      "sheet": "Bauma",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1861]"
+    },
+    {
+      "id": "e-rara:8924096",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Elgg",
+      "yearStart": 1861,
+      "yearEnd": 1861,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27971",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924097/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924096/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.81667,
+        "east": 8.98333,
+        "north": 47.5,
+        "south": 47.41667
+      },
+      "geo": {
+        "lat": 47.45834,
+        "lon": 8.9
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924097",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924096",
+      "sheet": "Elgg",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1861]"
+    },
+    {
+      "id": "e-rara:8924060",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Andelfingen",
+      "yearStart": 1862,
+      "yearEnd": 1862,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27962",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924061/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924060/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.83333,
+        "north": 47.63333,
+        "south": 47.55
+      },
+      "geo": {
+        "lat": 47.59166,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924061",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924060",
+      "sheet": "Andelfingen",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1862]"
+    },
+    {
+      "id": "e-rara:8924080",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Frauenfeld",
+      "yearStart": 1862,
+      "yearEnd": 1862,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27967",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924081/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924080/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.83333,
+        "east": 9,
+        "north": 47.56667,
+        "south": 47.48333
+      },
+      "geo": {
+        "lat": 47.525,
+        "lon": 8.91667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924081",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924080",
+      "sheet": "Frauenfeld",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1862]"
+    },
+    {
+      "id": "e-rara:8924048",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Stammheim",
+      "yearStart": 1863,
+      "yearEnd": 1863,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27959",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924049/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924048/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.85,
+        "north": 47.71667,
+        "south": 47.63333
+      },
+      "geo": {
+        "lat": 47.675,
+        "lon": 8.75833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924049",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924048",
+      "sheet": "Stammheim",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1863]"
     },
     {
       "id": "swisstopo:siegfried-1870",

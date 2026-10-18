@@ -54,6 +54,22 @@ test('sanitise keeps a hand-written URL from breaking the UI', () => {
   assert.equal(state.q.length, 200, 'free text is capped');
 });
 
+test('the sheet number round-trips through the URL and is clamped by sanitise', () => {
+  assert.equal(STATE_DEFAULTS.sheet, 1, 'a work starts on its first sheet');
+  const query = stateToQuery({ ...STATE_DEFAULTS, selected: 'e-rara:11', sheet: 3 });
+  const params = new URLSearchParams(query);
+  assert.equal(params.get(PARAM.sheet), '3');
+  const back = readStateFromUrl(`?${query}`);
+  assert.equal(back.selected, 'e-rara:11');
+  assert.equal(back.sheet, 3);
+  assert.equal(new URLSearchParams(stateToQuery({ ...STATE_DEFAULTS, sheet: 1 })).has(PARAM.sheet), false, 'sheet 1 is the default and stays out of the URL');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: 0 }).sheet, 1);
+  assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: -4 }).sheet, 1);
+  assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: 9999 }).sheet, 999);
+  assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: 'quatsch' }).sheet, 1);
+  assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: '2.7' }).sheet, 2, 'fractional sheet numbers are floored');
+});
+
 test('createStore updates, notifies subscribers with changed keys and stays silent on no-ops', () => {
   const store = createStore({ initial: { q: '' } });
   const seen = [];

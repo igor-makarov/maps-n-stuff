@@ -19,6 +19,7 @@ import {
   imageRequestUrl,
   panView,
   parseManifest,
+  sheetThumbUrl,
   viewForCanvas,
   zoomPercent,
   zoomView,
@@ -40,11 +41,15 @@ export function init(ctx) {
   let viewer = null;
 
   /** `source` records where the selection came from; the viewer behaves the same. */
-  function open(record) {
+  function open(record, { keepSheet = false } = {}) {
     if (!record) return;
+    const changedWork = current?.id !== record.id;
     current = record;
     manifest = null;
-    page = 0;
+    // A newly chosen work starts on its first sheet; an explicitly shared `sh`
+    // value (deep link or reload) is kept and clamped to the real canvas count
+    // once the manifest is parsed.
+    if (changedWork && !keepSheet) ctx.store.update({ sheet: 1 });
     const wasOpen = !panel.hidden;
     if (!wasOpen) opener = document.activeElement;
     render(record);
@@ -62,6 +67,9 @@ export function init(ctx) {
     if (panel.hidden) return;
     viewer?.destroy();
     viewer = null;
+    page = 0;
+    // A closed panel must not leave a sheet number behind in the shared URL.
+    if (ctx.store.getState().sheet !== 1) ctx.store.update({ sheet: 1 });
     panel.hidden = true;
     if (scrim) scrim.hidden = true;
     panel.setAttribute('aria-modal', 'false');
@@ -223,6 +231,15 @@ export function init(ctx) {
 
     const viewerEl = el('div', { class: 'app-viewer', id: 'detail-preview' }, [
       stage,
+      // One button per sheet of a multi-sheet work; filled once the manifest is
+      // parsed, hidden for the (common) single-sheet case.
+      el('div', {
+        class: 'app-viewer__sheets',
+        id: 'page-strip',
+        role: 'group',
+        'aria-label': 'Blätter dieses Kartenwerks',
+        hidden: true,
+      }),
       controls,
       el('p', { class: 'app-viewer__caption' }, [
         el('span', { id: 'preview-meta', text: 'IIIF-Vorschau wird geladen …' }),
@@ -273,7 +290,7 @@ export function init(ctx) {
     if (!record.iiifManifest) return;
     try {
       manifest = parseManifest(await fetchJson(record.iiifManifest));
-      page = 0;
+      renderSheetStrip();
       showCanvas();
     } catch (err) {
       // Without a manifest the reuse block must not stay on "Weitere Links
@@ -311,10 +328,16 @@ export function init(ctx) {
   /* --------------------------------------------------------------- viewer */
 
   function showCanvas() {
-    const canvas = manifest?.canvases?.[page];
+    const total = manifest?.canvases?.length ?? 0;
+    if (total === 0) return;
+    // The sheet number is shareable state; clamp it to what the work really has
+    // and write a mismatch back, so the URL never names a sheet that is not there.
+    const wanted = Math.floor(Number(ctx.store.getState().sheet) || 1);
+    page = Math.max(0, Math.min(total - 1, wanted - 1));
+    if (ctx.store.getState().sheet !== page + 1) ctx.store.update({ sheet: page + 1 });
+    const canvas = manifest.canvases[page];
     if (!canvas) return;
     const pageLabel = qs('#page-label');
-    const total = manifest.canvases.length;
     if (pageLabel) pageLabel.textContent = `Blatt ${page + 1} von ${total}`;
     viewer?.setCanvas(canvas, { label: canvas.label });
     updateReuseLinks(current);
@@ -324,13 +347,74 @@ export function init(ctx) {
     const next = qs('#page-next');
     if (prev) prev.disabled = page === 0;
     if (next) next.disabled = page === total - 1;
+    updateSheetStrip(total);
   }
 
   function gotoPage(next) {
     const total = manifest?.canvases?.length ?? 0;
     if (total === 0) return;
-    page = Math.max(0, Math.min(total - 1, next));
+    const target = Math.max(0, Math.min(total - 1, Math.floor(Number(next) || 0)));
+    ctx.store.update({ sheet: target + 1 });
     showCanvas();
+  }
+
+  /** Build one button per sheet (real thumbnail when the manifest offers one). */
+  function renderSheetStrip() {
+    const strip = qs('#page-strip');
+    if (!strip) return;
+    const canvases = manifest?.canvases ?? [];
+    if (canvases.length <= 1) {
+      strip.hidden = true;
+      strip.replaceChildren();
+      return;
+    }
+    strip.replaceChildren(
+      ...canvases.map((canvas, index) =>
+        el(
+          'button',
+          {
+            class: 'app-viewer__sheet',
+            type: 'button',
+            'data-sheet': String(index),
+            'aria-label': `Blatt ${index + 1} von ${canvases.length}: ${canvas.label}`,
+            title: canvas.label,
+            onclick: () => gotoPage(index),
+          },
+          [
+            sheetThumbUrl(canvas)
+              ? el('img', {
+                  src: sheetThumbUrl(canvas),
+                  alt: '',
+                  loading: 'lazy',
+                  decoding: 'async',
+                  onerror: (event) => {
+                    event.currentTarget.hidden = true;
+                  },
+                })
+              : null,
+            el('span', { class: 'app-viewer__sheetnum', text: String(index + 1) }),
+          ],
+        ),
+      ),
+    );
+    strip.hidden = false;
+  }
+
+  /** Mark the visible sheet in the strip without rebuilding it. */
+  function updateSheetStrip(total) {
+    const strip = qs('#page-strip');
+    if (!strip) return;
+    strip.hidden = total <= 1;
+    for (const button of strip.querySelectorAll('[data-sheet]')) {
+      const active = Number(button.dataset.sheet) === page;
+      button.classList.toggle('is-active', active);
+      if (active) {
+        button.setAttribute('aria-current', 'true');
+        button.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      } else {
+        button.removeAttribute('aria-current');
+      }
+    }
   }
 
   function showPreviewFallback(record, message) {
@@ -485,7 +569,7 @@ export function init(ctx) {
   ctx.bus.on('records:loaded', () => {
     const id = ctx.store.getState().selected;
     const record = ctx.data.recordIndex.get(id);
-    if (id && record && panel.hidden) open(record);
+    if (id && record && panel.hidden) open(record, { keepSheet: true });
   });
 
   scrim?.addEventListener('click', close);
@@ -504,7 +588,7 @@ export function init(ctx) {
   const initial = ctx.store.getState().selected;
   if (initial) {
     const record = ctx.data.recordIndex.get(initial);
-    if (record) open(record);
+    if (record) open(record, { keepSheet: true });
   }
 
   return { open, close, gotoPage };

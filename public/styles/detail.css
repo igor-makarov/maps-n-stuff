@@ -123,6 +123,75 @@
   color: var(--zh-color-text-soft, #666);
 }
 
+/* ------------------------------------------------------------- sheet strip */
+
+/* One button per sheet of a multi-sheet work, between stage and controls. */
+.app-viewer__sheets {
+  display: flex;
+  gap: var(--zh-size-tiny, 8px);
+  overflow-x: auto;
+  padding: var(--zh-size-tiny, 8px) 0;
+  scrollbar-width: thin;
+}
+
+/* `display: flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__sheets[hidden] {
+  display: none;
+}
+
+.app-viewer__sheet {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 0;
+  background: var(--zh-black-5, #f7f7f7);
+  border: 1px solid var(--zh-color-border-strong, #ccc);
+  border-radius: 1px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.app-viewer__sheet img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}
+
+.app-viewer__sheet img[hidden] {
+  display: none;
+}
+
+.app-viewer__sheetnum {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 0 4px;
+  background: var(--zh-black, #000);
+  color: #fff;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-viewer__sheet:hover {
+  border-color: var(--zh-black, #000);
+}
+
+.app-viewer__sheet:focus-visible {
+  outline: 3px solid var(--zh-color-focus, #0070b4);
+  outline-offset: 2px;
+}
+
+.app-viewer__sheet.is-active {
+  border-color: var(--zh-blue, #0070b4);
+  outline: 2px solid var(--zh-blue, #0070b4);
+  outline-offset: -2px;
+}
+
 .app-viewer__fallback {
   display: grid;
   gap: var(--zh-size-tiny, 8px);
