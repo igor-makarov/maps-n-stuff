@@ -10,6 +10,21 @@
     />
     <meta name="color-scheme" content="light" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0070b4" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kartenzeit" />
+    <meta property="og:locale" content="de_CH" />
+    <meta property="og:title" content="Kartenzeit – Historische Karten entdecken" />
+    <meta
+      property="og:description"
+      content="Historische Karten aus echten Sammlungen auf einer interaktiven Karte entdecken: nach Ort, Zeitraum und Sammlung filtern und zum Originaldatensatz der besitzenden Institution springen."
+    />
+    <meta name="twitter:card" content="summary" />
+    <!-- Decompressed IIIF sheets are large; the two text faces are the only
+         render-blocking resources beyond the stylesheets. -->
+    <link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Inter-Black.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="alternate" type="application/json" href="/data/records.json" title="Datensätze (JSON)" />
     <link rel="stylesheet" href="/styles/zh-tokens.css" />
     <link rel="stylesheet" href="/styles/zh-base.css" />
     <link rel="stylesheet" href="/styles/zh-components.css" />
@@ -83,17 +98,21 @@
     <main id="main" class="zh-shell app-main" tabindex="-1">
       <div class="zh-state zh-state--error" id="app-notices" role="status" hidden></div>
       <section class="app-intro" aria-labelledby="intro-heading">
-        <h1 class="zh-heading zh-heading--bordered" id="intro-heading">
+        <h1 class="zh-heading zh-heading--1 zh-heading--bordered" id="intro-heading">
           Historische Karten aus Archiven und Bibliotheken
         </h1>
         <ul class="zh-facts" id="intro-facts" aria-label="Bestand in Zahlen"></ul>
         <p class="zh-lead">
-          Der Bestand umfasst aktuell <span id="intro-count">…</span> digitalisierte Karten und Atlanten aus echten
+          Der Bestand umfasst aktuell <span id="intro-count" data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
           Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte und
           die historischen Kartenwerke stammen von swisstopo, die Blätter von den e-rara-Partnerbibliotheken
           (Zentralbibliothek Zürich, ETH-Bibliothek Zürich, Bibliothèque de Genève).
         </p>
-        <p class="app-intro__more"><a class="zh-link" href="#about">Mehr über Bestand, Quellen und Rechte</a></p>
+        <p class="app-intro__more">
+          <a class="zh-link" href="#about">Mehr über Bestand, Quellen und Rechte</a>
+          <span aria-hidden="true"> · </span>
+          <a class="zh-link" href="#map">Direkt zur Karte</a>
+        </p>
         <ul class="zh-tags" id="intro-tags" aria-label="Datenquellen"></ul>
       </section>
 
@@ -271,6 +290,12 @@
           <article class="zh-card">
             <h3 class="zh-heading zh-heading--4">Wie gearbeitet wird</h3>
             <p>
+              Der Bestand umfasst aktuell <span data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
+              Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte
+              und die historischen Kartenwerke stammen von swisstopo, die Blätter von den e-rara-Partnerbibliotheken
+              (Zentralbibliothek Zürich, ETH-Bibliothek Zürich, Bibliothèque de Genève).
+            </p>
+            <p>
               Ortsnamen kommen live von der swisstopo-Suche, die historischen Blätter aus dem OAI-PMH- und
               IIIF-Angebot von e-rara (den Sammlungen der beteiligten Bibliotheken). Jeder Treffer nennt besitzende Institution,
               Rechtehinweis und Publikationsjahr; das angezeigte Kartenbild kann vom Publikationsjahr abweichen und
@@ -340,6 +365,21 @@
       <div class="app-detail__inner" id="detail-body"></div>
     </aside>
     <div class="app-scrim" id="scrim" hidden></div>
+
+    <!-- Structured data describes the app, not a catalogue of its own: every
+         record is served by /data/records.json with its original source URL. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Kartenzeit",
+        "description": "Historische Karten und Atlanten aus echten Sammlungen auf einer interaktiven Karte entdecken.",
+        "inLanguage": "de-CH",
+        "applicationCategory": "ReferenceApplication",
+        "isAccessibleForFree": true,
+        "isBasedOn": ["https://www.e-rara.ch/", "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata"]
+      }
+    </script>
 
     <script type="module" src="/app/main.js"></script>
   </body>

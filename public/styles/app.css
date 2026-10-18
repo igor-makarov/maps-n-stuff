@@ -23,6 +23,57 @@
   display: none;
 }
 
+/* Map-first composition: from 1024 px the orientation block becomes a compact
+   band instead of a full-height page. The headline keeps its cantonal 3 px rule
+   across the full width; the stock figures move to the right of the lead
+   paragraph and carry the characteristic 3 px left rule instead of a bottom
+   rule. Only the clamped lead text is truncated — the complete wording stands
+   in “Über das Projekt” (#about), which the “mehr” link targets. */
+@media (min-width: 1024px) {
+  .app-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(280px, 4fr);
+    grid-template-areas:
+      'head head'
+      'lead facts'
+      'more tags';
+    gap: var(--zh-size-small-regular) var(--zh-column-gap);
+    align-items: start;
+    padding: var(--zh-size-regular);
+    margin-bottom: var(--zh-size-regular);
+  }
+  .app-intro > .zh-heading--1 {
+    grid-area: head;
+    margin-bottom: 0;
+  }
+  .app-intro > .zh-lead {
+    grid-area: lead;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .app-intro__more {
+    grid-area: more;
+    display: block;
+    margin: 0;
+  }
+  .app-intro > .zh-facts {
+    grid-area: facts;
+    margin: 0;
+    padding: 0 0 0 var(--zh-indent);
+    border-bottom: 0;
+    border-left: var(--zh-rule) solid var(--zh-black);
+    gap: var(--zh-size-small-regular) var(--zh-size-regular);
+  }
+  .app-intro > .zh-tags {
+    grid-area: tags;
+    margin: 0;
+    justify-content: flex-start;
+  }
+}
+
 /* Facts strip: cantonal “chapter number” rhythm — value first, label under it. */
 .zh-facts {
   display: flex;
@@ -915,7 +966,7 @@ body.app-compare--open {
      the full wording lives in “Über das Projekt” and the result list. */
   .app-intro .zh-lead {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: var(--zh-size-tiny);

@@ -365,6 +365,15 @@ input[type='range'].zh-input {
   .zh-header__main {
     grid-template-columns: minmax(240px, 320px) minmax(320px, 1fr);
     align-items: center;
+    /* Keep the first screen for the map: the language bar and the header only
+       need one line each on a wide viewport. */
+    padding-block: var(--zh-size-regular);
+  }
+  .zh-header__bar-inner {
+    padding-block: 2px;
+  }
+  .zh-header__note {
+    max-width: none;
   }
 }
 

@@ -81,8 +81,12 @@ function reportModuleProblems() {
 }
 
 function renderIntro() {
-  const count = qs('#intro-count');
-  if (count) count.textContent = String(ctx.data.records.length);
+  // The count appears in the lead paragraph and again in “Über das Projekt”,
+  // where the full wording stands (the lead is clamped on small screens).
+  const count = String(ctx.data.records.length);
+  for (const node of document.querySelectorAll('#intro-count, [data-record-count]')) {
+    node.textContent = count;
+  }
 
   // Facts strip: only statements the data actually supports.
   const facts = qs('#intro-facts');
