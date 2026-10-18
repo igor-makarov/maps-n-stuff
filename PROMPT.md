@@ -100,10 +100,13 @@ appropriate asset/SPA routing, and documented local preview, build, and
 `wrangler deploy` commands. Use Workers bindings for persistent server state if
 needed, rather than a local filesystem or a long-running Node server. Keep
 Cloudflare credentials and other secrets out of the repository. This swarm is not
-configured with Cloudflare deployment credentials: produce a deployment-ready
-build, validate locally, and document the exact deployment steps and missing
-configuration for an operator. Do not obtain or expose deployment credentials.
-Use Cloudflare Workers as the deployment target.
+configured with Cloudflare deployment credentials. **Cloudflare will handle the
+production build and deployment from `main`.** Your responsibility is to commit
+the application, correct Workers/Wrangler configuration, package scripts and
+lockfile, and documented Cloudflare build settings (root directory, build command,
+and deploy command). Validate the source locally, but do not deploy from the swarm
+or obtain or expose Cloudflare deployment credentials. Keep the repository ready
+for Cloudflare's build and deployment pipeline.
 
 Prioritize a complete vertical slice early, then expand and polish it:
 
