@@ -77,12 +77,13 @@
   },
   {
     "id": "6-11",
-    "outcome": "running",
+    "outcome": "timeout",
     "runId": "39172572026",
     "journalId": "6-11",
     "minEntryId": 7,
-    "maxEntryId": 7,
+    "maxEntryId": 555,
     "checkpointAt": "2026-10-18T22:31:28.142Z",
-    "transcript": "checkpoint"
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
