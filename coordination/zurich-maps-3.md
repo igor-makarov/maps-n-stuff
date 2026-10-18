@@ -44,6 +44,12 @@ was on `main` and nothing was lost except that draft.
   touch, comparison, contrast, CSP and no-console-error checks.
 - Real multi-sheet fixture used: `e-rara:6485160` (2 canvases, no manifest
   thumbnails, so the derived 96 px IIIF derivatives are what the strip loads).
+- Integration after maps-0's 80-record harvest (`1b8d849`, rebased): 85/85 tests
+  and 56/56 harness again. That run first exposed a **harness** flake, not a
+  product bug: the touch pinch waits for the *newly decoded* IIIF region, and the
+  new first record's cut-out is ~24 MP, so the 10 s budget expired while the very
+  next drag check succeeded with the same request. Both touch waits now use the
+  same 25 s budget as the other viewer waits (`ecb1342`); re-verified 56/56.
 
 ## Messages
 
