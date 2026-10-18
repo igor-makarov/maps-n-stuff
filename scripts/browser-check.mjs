@@ -1320,6 +1320,40 @@ try {
   // Back to the documented default combination for anything that follows.
   await cdp.eval(`document.querySelector('[data-view="split"]')?.click(); true`);
   await sleep(400);
+  /* --- 8h. pin/unpin from the detail panel ------------------------------ */
+  // Runs after 8f, which leaves the device-local Merkliste empty and the URL
+  // clean, so the first record really starts unpinned.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'results for detail pin' });
+  await cdp.click('#result-list > *');
+  await cdp.waitFor(`document.querySelector('#detail-pin') ? true : ''`, { label: 'detail pin button', timeout: 10_000 });
+  const pinBefore = await cdp.eval(`(() => { const b = document.querySelector('#detail-pin'); return { exists: Boolean(b), pressed: b?.getAttribute('aria-pressed'), cmp: new URLSearchParams(location.search).get('cmp') }; })()`);
+  await cdp.click('#detail-pin');
+  let pinnedFromDetail = null;
+  try {
+    pinnedFromDetail = await cdp.waitFor(
+      `(() => { const cmp = new URLSearchParams(location.search).get('cmp'); if (!cmp) return ''; const b = document.querySelector('#detail-pin'); return { cmp, pressed: b?.getAttribute('aria-pressed'), items: document.querySelectorAll('#compare-list .app-compare__item').length }; })()`,
+      { label: 'pinned from detail', timeout: 10_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the detail panel pins the open record for the comparison',
+    pinBefore.exists === true && pinBefore.pressed === 'false' && !pinBefore.cmp && pinnedFromDetail?.pressed === 'true' && pinnedFromDetail?.cmp && pinnedFromDetail.items >= 1,
+    `${JSON.stringify(pinBefore)} -> ${JSON.stringify(pinnedFromDetail)}`,
+  );
+  await cdp.click('#detail-pin');
+  let unpinnedFromDetail = null;
+  try {
+    unpinnedFromDetail = await cdp.waitFor(
+      `(() => { if (new URLSearchParams(location.search).get('cmp')) return ''; const b = document.querySelector('#detail-pin'); return { pressed: b?.getAttribute('aria-pressed'), items: document.querySelectorAll('#compare-list .app-compare__item').length }; })()`,
+      { label: 'unpinned from detail', timeout: 10_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check('the same button unpins the record again', unpinnedFromDetail?.pressed === 'false', JSON.stringify(unpinnedFromDetail));
 
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

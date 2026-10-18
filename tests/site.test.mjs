@@ -92,6 +92,7 @@ test('every UI selectors used by the app modules exists in the shell', () => {
   // Ids the modules render themselves (inside #detail-body) instead of the shell.
   const dynamic = new Set([
     '#detail-preview',
+    '#detail-pin',
     '#detail-status',
     '#page-label',
     '#page-nav',
