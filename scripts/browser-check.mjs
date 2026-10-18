@@ -379,6 +379,9 @@ try {
   check('filter state is written to the shareable URL', /to=1850/.test(urlAfterFilter), urlAfterFilter);
 
   /* --- 2b. collection facet (series from the data) ---------------------- */
+  // The period start is the slider's, not a constant: the seed's earliest
+  // publication year moves whenever the harvest grows.
+  const periodRange = await cdp.eval(`(() => ({ from: document.querySelector('#year-from')?.value, to: document.querySelector('#year-to')?.value }))()`);
   const collectionFacet = await cdp.eval(`(() => {
     const select = document.querySelector('#collection-filter');
     if (!select) return null;
@@ -386,10 +389,14 @@ try {
     return { options, hint: document.querySelector('#facet-hint')?.textContent || '' };
   })()`);
   const zeroCounts = (collectionFacet?.options ?? []).filter((o) => /\(0\)$/.test(o.text)).length;
+  const periodHint = periodRange?.from && periodRange?.to ? `Zeitraum ${periodRange.from}–${periodRange.to}` : null;
   check(
     'collection facet lists the real series with counts for the current period',
-    Boolean(collectionFacet) && collectionFacet.options.length >= 3 && zeroCounts > 0 && /Zeitraum 1816–1850/.test(collectionFacet.hint),
-    `${collectionFacet?.options.length ?? 0} options, ${zeroCounts} empty in period, hint: ${collectionFacet?.hint ?? 'missing'}`,
+    Boolean(collectionFacet) &&
+      collectionFacet.options.length >= 3 &&
+      zeroCounts > 0 &&
+      (periodHint ? collectionFacet.hint.includes(periodHint) : /Zeitraum \d{4}–\d{4}/.test(collectionFacet.hint)),
+    `${collectionFacet?.options.length ?? 0} options, ${zeroCounts} empty in period, expected "${periodHint}", hint: ${collectionFacet?.hint ?? 'missing'}`,
   );
   const collectionChoice = await cdp.eval(`(() => {
     const select = document.querySelector('#collection-filter');
@@ -707,6 +714,14 @@ try {
   check('a shared ?sel= URL reopens the detail panel', restored.sel === true, JSON.stringify(restored));
 
   /* --- 6b. detail → time filter hand-off ------------------------------- */
+  // Read the year from the panel itself: the first record in the current result
+  // set changes whenever the seed grows, so a hard-coded year would make this
+  // check fail for reasons that have nothing to do with the hand-off.
+  const periodExpected = await cdp.eval(`(() => {
+    const text = document.querySelector('#detail')?.textContent || '';
+    const m = text.match(/Publikationsjahr\\s*(\\d{4})(?:\\s*[–-]\\s*(\\d{4}))?/);
+    return m ? { from: m[1], to: m[2] || m[1] } : null;
+  })()`);
   const periodButton = await cdp.eval(`(() => {
     const button = [...document.querySelectorAll('#detail button')].find((b) => /Zeitraum/.test(b.textContent));
     if (!button) return null;
@@ -719,11 +734,12 @@ try {
     'the detail panel can push its own period into the time filter',
     periodButton === true &&
       appliedPeriod.panelHidden === true &&
-      appliedPeriod.from === '1816' &&
-      appliedPeriod.to === '1816' &&
       appliedPeriod.count >= 1 &&
-      appliedPeriod.state.length > 0,
-    JSON.stringify(appliedPeriod),
+      appliedPeriod.state.length > 0 &&
+      (periodExpected
+        ? appliedPeriod.from === periodExpected.from && appliedPeriod.to === periodExpected.to
+        : appliedPeriod.from === appliedPeriod.to),
+    `${JSON.stringify(appliedPeriod)} expected ${JSON.stringify(periodExpected)}`,
   );
 
   /* --- 7. mobile layout ------------------------------------------------- */
