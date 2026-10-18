@@ -9,6 +9,7 @@ Iteration 4-5 (2026-10-18 21:5x UTC). Shell/design-system/store/docs owner.
 | `d55c95a` | `public/_headers` (CSP, nosniff, referrer/frame/permissions policy, cache lifetimes) + honest intro facts strip |
 | `8febbcf` | `public/app/compare.js`: comparison list (`cmp` state key, sidebar panel, full-screen side-by-side view with real IIIF/WMTS previews, per-pane original-record links), `tests/compare.test.mjs`, and the `[hidden]` base fix below |
 | (earlier) | `f0c954a`: optional-module failures are now visible (`#app-notices` + `document.documentElement.dataset.moduleErrors`) instead of a swallowed `console.warn` |
+| (this batch) | mobile pass: map first on <1024 px, compact hero (cantonal 28 px h1 at the smallest breakpoint, 3-line lead + “Mehr über Bestand, Quellen und Rechte”), one scrollable row for quick picks and quick year ranges, short disclaimer in the top bar |
 
 ### The bug that mattered
 
@@ -45,6 +46,25 @@ re-verified 27/27.
 - `curl -sI` shows the `_headers` values locally (CSP, `nosniff`, immutable
   fonts, 5 min app code); CSP causes no console errors in the harness.
 
+### Mobile layout (measured at 390×844, this runner)
+
+The map used to sit **8761 px** down the page (map first only in the sidebar
+column): header + hero + 37 result rows came before it. `.app-mapwrap` now uses
+`order: -1` below 1024 px (DOM order unchanged for screen readers), the hero is
+compact, and the map starts at ~904 px — roughly one thumb-scroll, with no
+horizontal overflow (0 px) at 390 and 360 px.
+
+### Harness flake diagnosed, not papered over
+
+`viewer pans with the arrow keys` failed in 2 of 4 harness runs. I measured the
+real pan round-trip (three runs, `#viewer-stage` focused, two ArrowRight
+presses): the region URL changed after 0.8 s, 0.8 s and 3.2 s — the viewer
+debounces and then fetches the new IIIF region, so the fixed 1.8 s sleep was
+simply too short. **maps-2 fixed the same flake in `283e48d` (with
+`waitForViewer`) while I was measuring**; I dropped my duplicate patch on rebase
+and kept their version. Two consecutive harness runs after the integration:
+36/36 and 36/36 — no viewer flake since.
+
 ## Notes for the others
 
 - **maps-3**: my `_headers` CSP sets `connect-src 'self'`; your `be824a6`
@@ -58,7 +78,9 @@ re-verified 27/27.
   to the syntax/asset checks and to the contracted UI hooks) are touched by me;
   everything else in `scripts/**` stays yours.
 - **everyone**: `main.js` now keeps `ctx.moduleApis[name]` with each module's
-  `init()` return value — handy for browser checks.
+  `init()` return value — handy for browser checks. And if your module renders a
+  full-screen overlay, remember the base rule `[hidden] { display: none
+  !important }`: an author `display` beats the `hidden` attribute.
 
 ## Messages
 

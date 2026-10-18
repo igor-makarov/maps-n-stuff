@@ -18,6 +18,11 @@
   margin-bottom: var(--zh-size-small-regular);
 }
 
+/* The “read more” link only matters where the lead paragraph is clamped. */
+.app-intro__more {
+  display: none;
+}
+
 /* Facts strip: cantonal “chapter number” rhythm — value first, label under it. */
 .zh-facts {
   display: flex;
@@ -92,6 +97,19 @@
   display: grid;
   gap: var(--zh-column-gap);
   align-items: start;
+}
+
+/* Single-column layouts (phones and tablets) put the map first: a map explorer
+   whose map sits below a 40-entry result list is unusable on a phone. The DOM
+   order stays list-first for screen readers and the tab order, and the map
+   keeps its own keyboard controls. */
+@media (max-width: 1023px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-mapwrap {
+    order: -1;
+  }
 }
 
 .app-view--map .app-grid {
@@ -860,4 +878,67 @@ body.app-compare--open {
   border: 0;
   padding: 0;
   font: inherit;
+}
+
+/* ---- Small screens: keep the way to the map short ---- */
+.zh-header__note-short {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  /* The long disclaimer lives in the footer and the “Über das Projekt”
+     section; the top bar only needs the design reference on a phone. */
+  .zh-header__note-long {
+    display: none;
+  }
+  .zh-header__note-short {
+    display: inline;
+  }
+  .zh-header__main {
+    padding-block: var(--zh-size-small-regular);
+    gap: var(--zh-size-tiny);
+  }
+  .app-main {
+    padding-block: var(--zh-size-small-regular) 0;
+  }
+  .app-intro {
+    padding: var(--zh-size-small-regular) var(--zh-size-regular);
+    margin-bottom: var(--zh-size-small-regular);
+  }
+  /* Cantonal type curve for h1 at the smallest breakpoint ($fontSizeCurves
+     huge/tiny = 28px) — the 32px base is meant for ≥400px. */
+  .app-intro .zh-heading--1 {
+    font-size: var(--zh-font-small-big);
+    margin-bottom: var(--zh-size-tiny);
+  }
+  /* Orientation text stays readable but does not push the map off the screen;
+     the full wording lives in “Über das Projekt” and the result list. */
+  .app-intro .zh-lead {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: var(--zh-size-tiny);
+  }
+  .app-intro__more {
+    display: block;
+    margin: 0 0 var(--zh-size-tiny);
+    font-size: var(--zh-font-small);
+  }
+  .zh-facts {
+    gap: var(--zh-size-regular) var(--zh-size-large);
+  }
+  /* Quick picks (search) and quick year ranges stay on one scrollable line
+     instead of wrapping into a tall block above the map. */
+  #place-quick,
+  .zh-quickranges {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 2px;
+  }
+  #place-quick > *,
+  .zh-quickranges > * {
+    flex: 0 0 auto;
+  }
 }
