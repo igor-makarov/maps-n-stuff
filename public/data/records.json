@@ -1,940 +1,1386 @@
 {
- "generatedAt": "2026-10-18T21:28:25.608Z",
- "method": "e-rara OAI-PMH set=zuz (3 pages) + DOI landing pages + IIIF manifests + swisstopo WMTS capabilities",
- "skipped": [],
- "records": [
-  {
-   "id": "e-rara:11",
-   "title": "Rudimentorum Cosmographicorum Ioan. Honteri Coronensis libri III. cum tabellis Geographicis elegantissimis : De variarum rerum nomenclaturis per classes, liber I",
-   "titleAlt": [
-    "Rudimenta Cosmographica"
-   ],
-   "yearStart": 1558,
-   "yearEnd": 1558,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Honterus, Johannes"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, AW 803",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-11",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/3604/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/3602/manifest",
-   "type": "atlas",
-   "publisher": "Apud Froschouerum",
-   "imprint": "Tiguri : Apud Froschouerum, Anno M.D.LVIII",
-   "languages": [
-    "lat"
-   ],
-   "extent": {
-    "west": -180,
-    "east": 180,
-    "south": -90,
-    "north": 90
-   },
-   "extentStatement": "unterschiedliche Massstäbe (W 180°-E 180°/N 90°-S 90°)",
-   "canvasCount": 92,
-   "subjectPlace": "Zürich (upstream coverage field)",
-   "geo": {
-    "lat": 47.377213,
-    "lon": 8.527311
-   },
-   "geoNote": "Point = swisstopo SearchServer result for \"Zürich (ZH)\", coverage field says Zürich"
+  "generatedAt": "2026-10-18T21:49:57.026Z",
+  "retrieved": "2026-10-18",
+  "generator": "scripts/fetch-records.mjs",
+  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated \"Kartendaten\" extent; swisstopo WMTS GetCapabilities for the Zeitreise editions. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
+  "selection": {
+    "e-rara:zuz": {
+      "considered": 41,
+      "kept": 16,
+      "rule": "maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox"
+    },
+    "e-rara:landkarten": {
+      "considered": 21,
+      "kept": 12,
+      "rule": "Swiss sheet maps from the landkarten set, requires a stated Kartendaten bbox"
+    },
+    "swisstopo:zeitreise": {
+      "considered": 14,
+      "kept": 14,
+      "rule": "one record per curated Zeitreise edition from the WMTS Time dimension"
+    }
   },
-  {
-   "id": "e-rara:27955",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 01 [Titelblatt zur] Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 01 [Titelblatt zur] Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich",
-    "Wildkarte / 01 [Titelblatt zur] Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich"
-   ],
-   "yearStart": 1866,
-   "yearEnd": 1866,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 1",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27955",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924033/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924032/manifest",
-   "type": "map",
-   "publisher": "Topographisches Bureau",
-   "imprint": "Zürich : Topographisches Bureau, [1866]",
-   "languages": [
-    "ger"
-   ],
-   "extent": null,
-   "extentStatement": null,
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27956",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 04/1 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 04/1 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
-    "Wildkarte / 04/1 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich"
-   ],
-   "yearStart": 1853,
-   "yearEnd": 1853,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 4 Ed 1853",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27956",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924037/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924036/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1853]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.9833,
-    "south": 47.15,
-    "north": 47.7
-   },
-   "extentStatement": "1:250 000 (E 8°21'-E 8°59'/N 47°42'-N 47°09')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27957",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 04/2 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 04/2 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
-    "Wildkarte / 04/2 Uebersicht der Blätter der Topographischen Karte des Kantons Zürich"
-   ],
-   "yearStart": 1867,
-   "yearEnd": 1867,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 4 Ed 1867 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27957",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924041/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924040/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1867]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.9833,
-    "south": 47.15,
-    "north": 47.7
-   },
-   "extentStatement": "1:250 000 (E 8°21'-E 8°59'/N 47°42'-N 47°09')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27958",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 02 Rheinau",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 02 Rheinau",
-    "Wildkarte / 02 Rheinau"
-   ],
-   "yearStart": 1864,
-   "yearEnd": 1864,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27958",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924045/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924044/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1864]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5167,
-    "east": 8.6833,
-    "south": 47.6333,
-    "north": 47.7167
-   },
-   "extentStatement": "1:25 000 (E 8°31'-E 8°41'/N 47°43'-N 47°38')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27959",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 03 Stammheim",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 03 Stammheim",
-    "Wildkarte / 03 Stammheim"
-   ],
-   "yearStart": 1863,
-   "yearEnd": 1863,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 3",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27959",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924049/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924048/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1863]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.6667,
-    "east": 8.85,
-    "south": 47.6333,
-    "north": 47.7167
-   },
-   "extentStatement": "1:25 000 (E 8°40'-E 8°51'/N 47°43'-N 47°38')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27960",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 05 Wyl",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 05 Wyl",
-    "Wildkarte / 05 Wyl"
-   ],
-   "yearStart": 1866,
-   "yearEnd": 1866,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 5",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27960",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924053/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924052/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1866]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.5167,
-    "south": 47.5667,
-    "north": 47.65
-   },
-   "extentStatement": "1:25 000 (E 8°21'-E 8°31'/N 47°39'-N 47°34')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27961",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 06 Flaach",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 06 Flaach",
-    "Wildkarte / 06 Flaach"
-   ],
-   "yearStart": 1864,
-   "yearEnd": 1864,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 6",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27961",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924057/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924056/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1864]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5,
-    "east": 8.6833,
-    "south": 47.5667,
-    "north": 47.6333
-   },
-   "extentStatement": "1:25 000 (E 8°30'-E 8°41'/N 47°38'-N 47°34')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27962",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 07 Andelfingen",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 07 Andelfingen",
-    "Wildkarte / 07 Andelfingen"
-   ],
-   "yearStart": 1862,
-   "yearEnd": 1862,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 7",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27962",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924061/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924060/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1862]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.6667,
-    "east": 8.8333,
-    "south": 47.55,
-    "north": 47.6333
-   },
-   "extentStatement": "1:25 000 (E 8°40'-E 8°50'/N 47°38'-N 47°33')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27963",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 08 Herdern",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 08 Herdern",
-    "Wildkarte / 08 Herdern"
-   ],
-   "yearStart": 1863,
-   "yearEnd": 1863,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 8 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27963",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924065/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924064/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1863]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.8333,
-    "east": 9,
-    "south": 47.55,
-    "north": 47.6333
-   },
-   "extentStatement": "1:25 000 (E 8°50'-E 9°00'/N 47°38'-N 47°33')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27964",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 10 Bülach",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 10 Bülach",
-    "Wildkarte / 10 Bülach"
-   ],
-   "yearStart": 1858,
-   "yearEnd": 1858,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 10",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27964",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924069/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924068/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1858]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5,
-    "east": 8.6833,
-    "south": 47.4833,
-    "north": 47.5833
-   },
-   "extentStatement": "1:25 000 (E 8°30'-E 8°41'/N 47°35'-N 47°29')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27965",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 09 Weiach",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 09 Weiach",
-    "Wildkarte / 09 Weiach"
-   ],
-   "yearStart": 1859,
-   "yearEnd": 1859,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 9 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27965",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924073/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924072/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1859]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.5167,
-    "south": 47.4833,
-    "north": 47.5833
-   },
-   "extentStatement": "1:25 000 (E 8°21'-E 8°31'/N 47°35'-N 47°29')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27966",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 11 Winterthur",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 11 Winterthur",
-    "Wildkarte / 11 Winterthur"
-   ],
-   "yearStart": 1854,
-   "yearEnd": 1854,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 11 Expl 5",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27966",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924077/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924076/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1854]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.6667,
-    "east": 8.85,
-    "south": 47.4833,
-    "north": 47.5667
-   },
-   "extentStatement": "1:25 000 (E 8°40'-E 8°51'/N 47°34'-N 47°29')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27967",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 12 Frauenfeld",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 12 Frauenfeld",
-    "Wildkarte / 12 Frauenfeld"
-   ],
-   "yearStart": 1862,
-   "yearEnd": 1862,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 12 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27967",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924081/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924080/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1862]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.8333,
-    "east": 9,
-    "south": 47.4833,
-    "north": 47.5667
-   },
-   "extentStatement": "1:25 000 (E 8°50'-E 9°00'/N 47°34'-N 47°29')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27968",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 13 Regensberg",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 13 Regensberg",
-    "Wildkarte / 13 Regensberg"
-   ],
-   "yearStart": 1856,
-   "yearEnd": 1856,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 13 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27968",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924085/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924084/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1856]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.5167,
-    "south": 47.4167,
-    "north": 47.5167
-   },
-   "extentStatement": "1:25 000 (E 8°21'-E 8°31'/N 47°31'-N 47°25')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27969",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 14 Kloten",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 14 Kloten",
-    "Wildkarte / 14 Kloten"
-   ],
-   "yearStart": 1854,
-   "yearEnd": 1854,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 14 Expl 3",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27969",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924089/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924088/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1854]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5,
-    "east": 8.6833,
-    "south": 47.4167,
-    "north": 47.5167
-   },
-   "extentStatement": "1:25 000 (E 8°30'-E 8°41'/N 47°31'-N 47°25')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27970",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 15 Kyburg",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 15 Kyburg",
-    "Wildkarte / 15 Kyburg"
-   ],
-   "yearStart": 1853,
-   "yearEnd": 1853,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 15",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27970",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924093/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924092/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1853]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.6667,
-    "east": 8.8333,
-    "south": 47.4167,
-    "north": 47.5
-   },
-   "extentStatement": "1:25 000 (E 8°40'-E 8°50'/N 47°30'-N 47°25')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27971",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 16 Elgg",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 16 Elgg",
-    "Wildkarte / 16 Elgg"
-   ],
-   "yearStart": 1861,
-   "yearEnd": 1861,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 16 Expl 4",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27971",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924097/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924096/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1861]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.8167,
-    "east": 8.9833,
-    "south": 47.4167,
-    "north": 47.5
-   },
-   "extentStatement": "1:25 000 (E 8°49'-E 8°59'/N 47°30'-N 47°25')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27972",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 17 Dietikon",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 17 Dietikon",
-    "Wildkarte / 17 Dietikon"
-   ],
-   "yearStart": 1855,
-   "yearEnd": 1855,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 17 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27972",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924101/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924100/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1855]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.5167,
-    "south": 47.35,
-    "north": 47.45
-   },
-   "extentStatement": "1:25 000 (E 8°21'-E 8°31'/N 47°27'-N 47°21')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27973",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 18 Zürich",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 18 Zürich",
-    "Wildkarte / 18 Zürich"
-   ],
-   "yearStart": 1854,
-   "yearEnd": 1854,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 18 Expl 2",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27973",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924105/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924104/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1854]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5,
-    "east": 8.6833,
-    "south": 47.35,
-    "north": 47.4333
-   },
-   "extentStatement": "1:25 000 (E 8°30'-E 8°41'/N 47°26'-N 47°21')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27974",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 19 Fehraltorf",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 19 Fehraltorf",
-    "Wildkarte / 19 Fehraltorf"
-   ],
-   "yearStart": 1853,
-   "yearEnd": 1853,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 19 Expl 3",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27974",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924109/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924108/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1853]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.6667,
-    "east": 8.8333,
-    "south": 47.35,
-    "north": 47.4333
-   },
-   "extentStatement": "1:25 000 (E 8°40'-E 8°50'/N 47°26'-N 47°21')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27975",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 20 Bauma",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 20 Bauma",
-    "Wildkarte / 20 Bauma"
-   ],
-   "yearStart": 1861,
-   "yearEnd": 1861,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Brack, Johann Jakob"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 20",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27975",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924113/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924112/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1861]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.8167,
-    "east": 9,
-    "south": 47.35,
-    "north": 47.4333
-   },
-   "extentStatement": "1:25 000 (E 8°49'-E 9°00'/N 47°26'-N 47°21')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27976",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 21/1 Birmensdorf",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 21/1 Birmensdorf",
-    "Wildkarte / 21/1 Birmensdorf"
-   ],
-   "yearStart": 1855,
-   "yearEnd": 1855,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 21 Ed 1855",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27976",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924117/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924116/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1855]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.35,
-    "east": 8.5167,
-    "south": 47.2833,
-    "north": 47.3833
-   },
-   "extentStatement": "1:25 000 (E 8°21'-E 8°31'/N 47°23'-N 47°17')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  },
-  {
-   "id": "e-rara:27977",
-   "title": "Karte des Kantons Zürich im Masstab von 1:25 000 : nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein gravirt im topographischen Bureau in Zürich / 22 Küsnacht",
-   "titleAlt": [
-    "Topographische Karte des Kantons Zürich / 22 Küsnacht",
-    "Wildkarte / 22 Küsnacht"
-   ],
-   "yearStart": 1854,
-   "yearEnd": 1854,
-   "depictedYearStart": null,
-   "depictedYearEnd": null,
-   "creators": [
-    "Graf, Josef"
-   ],
-   "providerId": "e-rara",
-   "institution": "Zentralbibliothek Zürich",
-   "shelfmark": "Zentralbibliothek Zürich, 4 Kb 76: 4: 22",
-   "rights": "PDM 1.0",
-   "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27977",
-   "thumbnail": "https://www.e-rara.ch/i3f/v20/8924121/full/304/0/default.jpg",
-   "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924120/manifest",
-   "type": "map",
-   "publisher": "[Topographisches Bureau]",
-   "imprint": "[Zürich] : [Topographisches Bureau], [1854]",
-   "languages": [
-    "ger"
-   ],
-   "extent": {
-    "west": 8.5,
-    "east": 8.6833,
-    "south": 47.2833,
-    "north": 47.3833
-   },
-   "extentStatement": "1:25 000 (E 8°30'-E 8°41'/N 47°23'-N 47°17')",
-   "canvasCount": 1,
-   "subjectPlace": null,
-   "geo": null,
-   "geoNote": null
-  }
- ]
+  "skipped": [],
+  "records": [
+    {
+      "id": "e-rara:6507640",
+      "title": "Karte vom Thunersee",
+      "yearStart": 1816,
+      "yearEnd": 1816,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Wagner, L."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20964",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6507643/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6507640/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.53333,
+        "east": 7.86667,
+        "north": 46.78333,
+        "south": 46.6
+      },
+      "geo": {
+        "lat": 46.69167,
+        "lon": 7.7
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6507643",
+      "imprint": "[Bern] : [Verlag nicht ermittelbar], [1816]"
+    },
+    {
+      "id": "e-rara:6484810",
+      "title": "Der Canton Zürich mit seinen nähern Angränzungen",
+      "yearStart": 1828,
+      "yearEnd": 1828,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20744",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484813/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484810/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.33333,
+        "east": 8.96667,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.65
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484812",
+      "imprint": "Zürich : Heinrich Keller, 1828"
+    },
+    {
+      "id": "e-rara:6484571",
+      "title": "Karte der Cantone St. Gallen und Appenzell",
+      "yearStart": 1840,
+      "yearEnd": 1840,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bernet, J."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20707",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484574/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484571/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.8,
+        "east": 9.66667,
+        "north": 47.7,
+        "south": 46.88333
+      },
+      "geo": {
+        "lat": 47.29167,
+        "lon": 9.23334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484573",
+      "imprint": "St.Gallen ; Bern : Huber et Comp., 1840"
+    },
+    {
+      "id": "e-rara:6484353",
+      "title": "Karte der Schweiz mit Randnamen",
+      "yearStart": 1840,
+      "yearEnd": 1840,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20684",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484355/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484353/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.95,
+        "east": 10.5,
+        "north": 47.8,
+        "south": 45.8
+      },
+      "geo": {
+        "lat": 46.8,
+        "lon": 8.225
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484355",
+      "imprint": "Zürich : Keller, 1840"
+    },
+    {
+      "id": "swisstopo:zeitreise-18441231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1844",
+      "editionDate": "1844-12-31",
+      "yearStart": 1844,
+      "yearEnd": 1844,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18441231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18441231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18441231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6526543",
+      "title": "Karte der centralen Schweiz",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Leuzinger, Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21040",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6526545/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6526543/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.23333,
+        "east": 9.06667,
+        "north": 47.35,
+        "south": 46.65
+      },
+      "geo": {
+        "lat": 47,
+        "lon": 8.65
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6526545",
+      "imprint": "Zürich : bei Heinrich Fuessli u. Comp., [1850?]"
+    },
+    {
+      "id": "swisstopo:zeitreise-18501231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1850",
+      "editionDate": "1850-12-31",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18501231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18501231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18501231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6484943",
+      "title": "Carte du canton de Vaud",
+      "yearStart": 1853,
+      "yearEnd": 1853,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Fr. Malté, Stuttgart"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20763",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484945/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484943/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 6,
+        "east": 7.25,
+        "north": 47.18333,
+        "south": 46.16667
+      },
+      "geo": {
+        "lat": 46.675,
+        "lon": 6.625
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484945",
+      "imprint": "Lausanne : publiée par F. Weber, 1853"
+    },
+    {
+      "id": "e-rara:8924108",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Fehraltorf",
+      "yearStart": 1853,
+      "yearEnd": 1853,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27974",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924109/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924108/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.83333,
+        "north": 47.43333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.39167,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924109",
+      "sheet": "Fehraltorf",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1853]"
+    },
+    {
+      "id": "e-rara:8924092",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Kyburg",
+      "yearStart": 1853,
+      "yearEnd": 1853,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27970",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924093/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924092/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.83333,
+        "north": 47.5,
+        "south": 47.41667
+      },
+      "geo": {
+        "lat": 47.45834,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924093",
+      "sheet": "Kyburg",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1853]"
+    },
+    {
+      "id": "e-rara:8924036",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
+      "yearStart": 1853,
+      "yearEnd": 1853,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27956",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924037/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924036/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.66667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924037",
+      "sheet": "Uebersicht der Blätter der Topographischen Karte des Kantons Zürich",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1853]"
+    },
+    {
+      "id": "e-rara:8924124",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Uster",
+      "yearStart": 1853,
+      "yearEnd": 1853,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27978",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924125/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924124/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.83333,
+        "north": 47.36667,
+        "south": 47.28333
+      },
+      "geo": {
+        "lat": 47.325,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924125",
+      "sheet": "Uster",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1853]"
+    },
+    {
+      "id": "e-rara:8924088",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Kloten",
+      "yearStart": 1854,
+      "yearEnd": 1854,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27969",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924089/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924088/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.68333,
+        "north": 47.51667,
+        "south": 47.41667
+      },
+      "geo": {
+        "lat": 47.46667,
+        "lon": 8.59166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924089",
+      "sheet": "Kloten",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
+    },
+    {
+      "id": "e-rara:8924120",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Küsnacht",
+      "yearStart": 1854,
+      "yearEnd": 1854,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27977",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924121/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924120/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.68333,
+        "north": 47.38333,
+        "south": 47.28333
+      },
+      "geo": {
+        "lat": 47.33333,
+        "lon": 8.59166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924121",
+      "sheet": "Küsnacht",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
+    },
+    {
+      "id": "e-rara:8924076",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Winterthur",
+      "yearStart": 1854,
+      "yearEnd": 1854,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27966",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924077/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924076/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.85,
+        "north": 47.56667,
+        "south": 47.48333
+      },
+      "geo": {
+        "lat": 47.525,
+        "lon": 8.75833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924077",
+      "sheet": "Winterthur",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
+    },
+    {
+      "id": "e-rara:8924104",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Zürich",
+      "yearStart": 1854,
+      "yearEnd": 1854,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27973",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924105/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924104/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.68333,
+        "north": 47.43333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.39167,
+        "lon": 8.59166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924105",
+      "sheet": "Zürich",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
+    },
+    {
+      "id": "e-rara:8924116",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Birmensdorf",
+      "yearStart": 1855,
+      "yearEnd": 1855,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27976",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924117/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924116/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.51667,
+        "north": 47.38333,
+        "south": 47.28333
+      },
+      "geo": {
+        "lat": 47.33333,
+        "lon": 8.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924117",
+      "sheet": "Birmensdorf",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1855]"
+    },
+    {
+      "id": "e-rara:8924100",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Dietikon",
+      "yearStart": 1855,
+      "yearEnd": 1855,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27972",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924101/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924100/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.51667,
+        "north": 47.45,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.4,
+        "lon": 8.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924101",
+      "sheet": "Dietikon",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1855]"
+    },
+    {
+      "id": "e-rara:8924136",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Horgen",
+      "yearStart": 1855,
+      "yearEnd": 1855,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27981",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924137/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924136/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.68333,
+        "north": 47.3,
+        "south": 47.21667
+      },
+      "geo": {
+        "lat": 47.25834,
+        "lon": 8.59166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924137",
+      "sheet": "Horgen",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1855]"
+    },
+    {
+      "id": "e-rara:8924132",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Affoltern",
+      "yearStart": 1856,
+      "yearEnd": 1856,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27980",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924133/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924132/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.51667,
+        "north": 47.3,
+        "south": 47.21667
+      },
+      "geo": {
+        "lat": 47.25834,
+        "lon": 8.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924133",
+      "sheet": "Affoltern",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1856]"
+    },
+    {
+      "id": "e-rara:8924152",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Hirzel",
+      "yearStart": 1856,
+      "yearEnd": 1856,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27985",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924153/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924152/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.68333,
+        "north": 47.23333,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.19167,
+        "lon": 8.59166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924153",
+      "sheet": "Hirzel",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1856]"
+    },
+    {
+      "id": "e-rara:8924084",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Regensberg",
+      "yearStart": 1856,
+      "yearEnd": 1856,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27968",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924085/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924084/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.51667,
+        "north": 47.51667,
+        "south": 47.41667
+      },
+      "geo": {
+        "lat": 47.46667,
+        "lon": 8.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924085",
+      "sheet": "Regensberg",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1856]"
+    },
+    {
+      "id": "e-rara:8924148",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Knonau",
+      "yearStart": 1857,
+      "yearEnd": 1857,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27984",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924149/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924148/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.35,
+        "east": 8.51667,
+        "north": 47.23333,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.19167,
+        "lon": 8.43333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924149",
+      "sheet": "Knonau",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1857]"
+    },
+    {
+      "id": "e-rara:8924140",
+      "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Stäfa",
+      "yearStart": 1857,
+      "yearEnd": 1857,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Graf, Josef"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27982",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8924141/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8924140/manifest",
+      "type": "map",
+      "collection": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+      "extent": {
+        "west": 8.66667,
+        "east": 8.83333,
+        "north": 47.3,
+        "south": 47.21667
+      },
+      "geo": {
+        "lat": 47.25834,
+        "lon": 8.75
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8924141",
+      "sheet": "Stäfa",
+      "imprint": "[Zürich] : [Topographisches Bureau], [1857]"
+    },
+    {
+      "id": "e-rara:6484938",
+      "title": "Karte des Kantons Zürich",
+      "yearStart": 1858,
+      "yearEnd": 1858,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Ziegler, Jakob Melchior"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20762",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484940/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484938/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.26667,
+        "east": 9.45,
+        "north": 47.73333,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.44167,
+        "lon": 8.85834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484940",
+      "imprint": "Winterthur : J. Wurster u. Comp., 1858"
+    },
+    {
+      "id": "swisstopo:zeitreise-18601231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1860",
+      "editionDate": "1860-12-31",
+      "yearStart": 1860,
+      "yearEnd": 1860,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18601231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18601231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18601231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6485166",
+      "title": "Karte des Kantons Graubünden",
+      "yearStart": 1866,
+      "yearEnd": 1866,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Mengold, G.W."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20798",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6485168/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6485166/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.86667,
+        "east": 9.25,
+        "north": 47.21667,
+        "south": 46.76667
+      },
+      "geo": {
+        "lat": 46.99167,
+        "lon": 9.05833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6485168",
+      "imprint": "Chur : Verlag der Leonhard Hitz'schen Buchhandlung, 1866"
+    },
+    {
+      "id": "swisstopo:zeitreise-18701231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1870",
+      "editionDate": "1870-12-31",
+      "yearStart": 1870,
+      "yearEnd": 1870,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18701231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18701231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18701231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6507673",
+      "title": "Karte des Kantons Luzern",
+      "yearStart": 1880,
+      "yearEnd": 1880,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Müllhaupt, Fritz"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20969",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6507675/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6507673/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.83333,
+        "east": 8.53333,
+        "north": 47.28333,
+        "south": 46.73333
+      },
+      "geo": {
+        "lat": 47.00833,
+        "lon": 8.18333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6507675",
+      "imprint": "Luzern : Verlag von Schiffmann's Buchhandlung (C.F Prell), [1880?]"
+    },
+    {
+      "id": "swisstopo:zeitreise-18831231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1883",
+      "editionDate": "1883-12-31",
+      "yearStart": 1883,
+      "yearEnd": 1883,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18831231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18831231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18831231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6484927",
+      "title": "Relief-Karte der Schweiz",
+      "yearStart": 1884,
+      "yearEnd": 1884,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Leuzinger, Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20760",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484929/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484927/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.76667,
+        "east": 10.5,
+        "north": 47.85,
+        "south": 45.68333
+      },
+      "geo": {
+        "lat": 46.76667,
+        "lon": 8.13334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484929",
+      "imprint": "Zürich : J. Wurster & Co., [1884]"
+    },
+    {
+      "id": "e-rara:6484259",
+      "title": "Archäologische Karte des Kantons Zürich",
+      "yearStart": 1894,
+      "yearEnd": 1894,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Heierli, Jacob"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20671",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7102389/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484259/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.36667,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.675
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7102388",
+      "imprint": "[Zürich] : Verlag der Erziehungsdirection des Kantons Zürich, [1894]"
+    },
+    {
+      "id": "swisstopo:zeitreise-18951231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1895",
+      "editionDate": "1895-12-31",
+      "yearStart": 1895,
+      "yearEnd": 1895,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18951231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "18951231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18951231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "e-rara:6484932",
+      "title": "Karte des Kantons Schaffhausen",
+      "yearStart": 1897,
+      "yearEnd": 1897,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Gerster, Johann Sebastian"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20761",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484934/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484932/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.38333,
+        "east": 8.88333,
+        "north": 47.8,
+        "south": 47.55
+      },
+      "geo": {
+        "lat": 47.675,
+        "lon": 8.63333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484934",
+      "imprint": "Schaffhausen : C. Schoch's Buchhandlung, [1897?]"
+    },
+    {
+      "id": "swisstopo:zeitreise-19101231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1910",
+      "editionDate": "1910-12-31",
+      "yearStart": 1910,
+      "yearEnd": 1910,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19101231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19101231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19101231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19251231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1925",
+      "editionDate": "1925-12-31",
+      "yearStart": 1925,
+      "yearEnd": 1925,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19251231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19251231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19251231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19401231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1940",
+      "editionDate": "1940-12-31",
+      "yearStart": 1940,
+      "yearEnd": 1940,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19401231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19401231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19401231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19551231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1955",
+      "editionDate": "1955-12-31",
+      "yearStart": 1955,
+      "yearEnd": 1955,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19551231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19551231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19551231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19701231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1970",
+      "editionDate": "1970-12-31",
+      "yearStart": 1970,
+      "yearEnd": 1970,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19701231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19701231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19701231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-19901231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 1990",
+      "editionDate": "1990-12-31",
+      "yearStart": 1990,
+      "yearEnd": 1990,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19901231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "19901231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/19901231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-20051231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 2005",
+      "editionDate": "2005-12-31",
+      "yearStart": 2005,
+      "yearEnd": 2005,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20051231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "20051231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20051231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    },
+    {
+      "id": "swisstopo:zeitreise-20211231",
+      "title": "Zeitreise – Kartenwerke, Ausgabe 2021",
+      "editionDate": "2021-12-31",
+      "yearStart": 2021,
+      "yearEnd": 2021,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bundesamt für Landestopografie swisstopo"
+      ],
+      "providerId": "swisstopo",
+      "institution": "Bundesamt für Landestopografie swisstopo",
+      "rights": "OGD swisstopo – Quellenangabe «©swisstopo» erforderlich",
+      "recordUrl": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen",
+      "thumbnail": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20211231/3857/10/536/365.png",
+      "iiifManifest": null,
+      "type": "overlay",
+      "collection": "Zeitreise – Kartenwerke",
+      "overlay": {
+        "kind": "wmts",
+        "layerId": "ch.swisstopo.zeitreihen",
+        "timeValue": "20211231",
+        "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/20211231/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
+        "maxZoom": 18,
+        "attribution": "© swisstopo – Zeitreise (Kartenwerke)"
+      },
+      "extent": {
+        "west": 5.140242,
+        "east": 11.47757,
+        "south": 45.398181,
+        "north": 48.230651
+      }
+    }
+  ]
 }

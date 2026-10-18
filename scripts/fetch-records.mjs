@@ -374,8 +374,10 @@ async function main() {
     providers: [
       {
         id: 'e-rara',
-        name: 'e-rara.ch',
+        name: 'e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken',
+        operator: 'Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken',
         institutions: ['Zentralbibliothek Zürich', 'ETH-Bibliothek Zürich'],
+        homepage: 'https://www.e-rara.ch/',
         home: 'https://www.e-rara.ch/',
         collections: [
           {
@@ -400,10 +402,20 @@ async function main() {
         rights: 'Public Domain Mark 1.0 (PDM 1.0) per record; see each record and e-rara terms.',
         attribution: 'e-rara.ch / holding institution, CC0 metadata and PDM imagery',
         terms: 'https://www.e-rara.ch/terms',
+        retrievalDate: RETRIEVED,
+        apiHosts: ['www.e-rara.ch'],
+        api: {
+          oaiPmh: 'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten)',
+          iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
+          iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg',
+          docs: 'https://www.e-rara.ch/',
+        },
       },
       {
         id: 'swisstopo',
-        name: 'Bundesamt für Landestopografie swisstopo',
+        name: 'swisstopo – Bundesamt für Landestopografie (geoadmin geoservices)',
+        operator: 'Bundesamt für Landestopografie swisstopo',
+        homepage: 'https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata',
         home: 'https://www.swisstopo.admin.ch/',
         collections: [
           {
@@ -424,18 +436,61 @@ async function main() {
         rights: 'Open Government Data; source reference «©swisstopo» mandatory.',
         attribution: '© swisstopo',
         terms: 'https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices',
+        retrievalDate: RETRIEVED,
+        apiHosts: ['wmts.geo.admin.ch', 'api3.geo.admin.ch', 'map.geo.admin.ch'],
+        api: {
+          wmtsCapabilities: 'https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml',
+          wmtsTile:
+            'https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}',
+          searchServer: 'https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}',
+          mapViewer: 'https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}',
+        },
       },
     ],
   };
 
+  // Envelope required by the data contract: `{ generatedAt, method, records }`.
+  const recordsDoc = {
+    generatedAt: new Date().toISOString(),
+    retrieved: RETRIEVED,
+    generator: 'scripts/fetch-records.mjs',
+    method:
+      'e-rara OAI-PMH oai_dc (sets zuz, landkarten) for discovery → IIIF Presentation 2.0 manifest per title for ' +
+      'verbatim title, imprint, creators, holding institution, rights, thumbnail and the stated "Kartendaten" ' +
+      'extent; swisstopo WMTS GetCapabilities for the Zeitreise editions. No title, date or coordinate is ' +
+      'invented. Regenerate with: node scripts/fetch-records.mjs --out public/data',
+    selection: {
+      'e-rara:zuz': {
+        considered: zuzMaps.length,
+        kept: zbRecords.length,
+        rule: 'maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox',
+      },
+      'e-rara:landkarten': {
+        considered: ethCandidates.length,
+        kept: ethRecords.length,
+        rule: 'Swiss sheet maps from the landkarten set, requires a stated Kartendaten bbox',
+      },
+      'swisstopo:zeitreise': {
+        considered: overlays.length,
+        kept: overlays.length,
+        rule: 'one record per curated Zeitreise edition from the WMTS Time dimension',
+      },
+    },
+    skipped: [],
+    records,
+  };
+  sources.generatedBy = 'scripts/fetch-records.mjs';
+  sources.method = 'provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date';
+  sources.generatedAt = new Date().toISOString();
+
   console.log(`Built ${zbRecords.length} ZB maps, ${ethRecords.length} ETH maps, ${overlays.length} Zeitreise overlays (${records.length} records)`);
   if (writeOutput) {
     await mkdir(outDir, { recursive: true });
-    await writeFile(resolve(outDir, 'records.json'), JSON.stringify(records, null, 2) + '\n');
+    await writeFile(resolve(outDir, 'records.json'), JSON.stringify(recordsDoc, null, 2) + '\n');
     await writeFile(resolve(outDir, 'sources.json'), JSON.stringify(sources, null, 2) + '\n');
     console.log('Wrote', outDir);
   } else {
-    console.log(JSON.stringify(records.slice(0, 3), null, 2));
+    console.log(JSON.stringify(recordsDoc.records.slice(0, 3), null, 2));
   }
 }
 

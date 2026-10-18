@@ -1,47 +1,89 @@
 {
- "generatedAt": "2026-10-18T21:28:25.608Z",
- "method": "e-rara OAI-PMH set=zuz (3 pages) + DOI landing pages + IIIF manifests + swisstopo WMTS capabilities",
- "providers": [
-  {
-   "id": "e-rara",
-   "name": "e-rara – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
-   "operator": "Zentralbibliothek Zürich (ZB) with Swiss university libraries",
-   "homepage": "https://www.e-rara.ch/",
-   "recordUrlPattern": "https://www.e-rara.ch/zuz/doi/10.3931/e-rara-{id}",
-   "api": {
-    "oai": "https://www.e-rara.ch/zuz/oai?verb=ListRecords&metadataPrefix=oai_dc&set=zuz (OAI-PMH 2.0, oai_dc)",
-    "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest (IIIF Presentation API 2.0)",
-    "image": "https://www.e-rara.ch/i3f/v20/{imageId}/{region}/{size}/{rotation}/{quality}.{format} (IIIF Image API 2, level2)",
-    "cors": "access-control-allow-origin: * (verified 2026-10-18)"
-   },
-   "rights": "Per record, from dc:rights (mostly PDM 1.0 = Public Domain Mark) and the item’s own rights statement.",
-   "attribution": "Zentralbibliothek Zürich via e-rara",
-   "retrievalDate": "2026-10-18",
-   "verified": "2026-10-18"
-  },
-  {
-   "id": "swisstopo",
-   "name": "swisstopo – Bundesamt für Landestopografie, geoadmin geoservices",
-   "operator": "Bundesamt für Landestopografie swisstopo",
-   "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
-   "recordUrlPattern": "https://map.geo.admin.ch/?layers={layerId}&time={time}",
-   "api": {
-    "wmts": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext} (WMTS 1.0.0)",
-    "capabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-    "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n} (CORS *)"
-   },
-   "rights": "Open Government Data / swisstopo geoservices terms, attribution required.",
-   "attribution": "© swisstopo",
-   "retrievalDate": "2026-10-18",
-   "verified": "2026-10-18"
-  },
-  {
-   "id": "local",
-   "name": "Local fixture provider (tests only)",
-   "operator": "this repository",
-   "rights": "CC0 fixtures used to keep the UI testable when upstreams are unreachable.",
-   "attribution": "repository fixtures",
-   "retrievalDate": "2026-10-18"
-  }
- ]
+  "retrieved": "2026-10-18",
+  "generatedBy": "scripts/fetch-records.mjs",
+  "note": "Zürich and Swiss historical maps from primary institutional sources. Records are copied from upstream IIIF/OAI metadata; no dates or places are inferred.",
+  "providers": [
+    {
+      "id": "e-rara",
+      "name": "e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
+      "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
+      "institutions": [
+        "Zentralbibliothek Zürich",
+        "ETH-Bibliothek Zürich"
+      ],
+      "homepage": "https://www.e-rara.ch/",
+      "home": "https://www.e-rara.ch/",
+      "collections": [
+        {
+          "id": "zuz-wildkarte",
+          "name": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich"
+        },
+        {
+          "id": "landkarten",
+          "name": "Schweizer Landkarten aus vier Jahrhunderten",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/"
+        }
+      ],
+      "endpoints": {
+        "oai": "https://www.e-rara.ch/oai",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}",
+        "thumbnail": "IIIF thumbnail from the manifest"
+      },
+      "rights": "Public Domain Mark 1.0 (PDM 1.0) per record; see each record and e-rara terms.",
+      "attribution": "e-rara.ch / holding institution, CC0 metadata and PDM imagery",
+      "terms": "https://www.e-rara.ch/terms",
+      "retrievalDate": "2026-10-18",
+      "apiHosts": [
+        "www.e-rara.ch"
+      ],
+      "api": {
+        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten)",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
+        "docs": "https://www.e-rara.ch/"
+      }
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo – Bundesamt für Landestopografie (geoadmin geoservices)",
+      "operator": "Bundesamt für Landestopografie swisstopo",
+      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+      "home": "https://www.swisstopo.admin.ch/",
+      "collections": [
+        {
+          "id": "zeitreise",
+          "name": "Zeitreise – Kartenwerke",
+          "record": "https://www.swisstopo.admin.ch/de/zeitreise",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        }
+      ],
+      "endpoints": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/{time}/3857/{z}/{x}/{y}.png",
+        "basemapTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
+        "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer"
+      },
+      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
+      "attribution": "© swisstopo",
+      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
+      "retrievalDate": "2026-10-18",
+      "apiHosts": [
+        "wmts.geo.admin.ch",
+        "api3.geo.admin.ch",
+        "map.geo.admin.ch"
+      ],
+      "api": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "searchServer": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}",
+        "mapViewer": "https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}"
+      }
+    }
+  ],
+  "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
+  "generatedAt": "2026-10-18T21:49:57.026Z"
 }
