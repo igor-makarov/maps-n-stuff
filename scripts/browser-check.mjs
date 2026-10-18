@@ -42,6 +42,7 @@ const CHROME = ['chromium', 'chromium-browser', 'google-chrome', 'google-chrome-
 
 const results = [];
 const consoleMessages = [];
+const appInfo = [];
 const failedRequests = [];
 let failures = 0;
 
@@ -291,9 +292,17 @@ await new Promise((resolve, reject) => {
 const cdp = new CDP(ws);
 
 cdp.on('Runtime.consoleAPICalled', (params) => {
-  if (['error', 'warning'].includes(params.type)) {
-    consoleMessages.push({ level: params.type, text: params.args.map((a) => a.value ?? a.description ?? a.type).join(' ') });
+  const text = params.args.map((a) => a.value ?? a.description ?? a.type).join(' ');
+  if (params.type === 'info' || params.type === 'log') {
+    appInfo.push(text);
+    return;
   }
+  if (!['error', 'warning'].includes(params.type)) return;
+  // main.js catches a module whose init() throws and logs a warning. That is the
+  // right runtime behaviour, but it means a whole feature can be dead while the
+  // console stays quiet, so the harness treats it as a failure.
+  const deadModule = /\[kartenzeit\] module ".*" not available/.test(text);
+  consoleMessages.push({ level: deadModule ? 'error' : params.type, text });
 });
 cdp.on('Runtime.exceptionThrown', (params) => {
   consoleMessages.push({ level: 'exception', text: params.exceptionDetails?.exception?.description || params.exceptionDetails?.text });
@@ -422,13 +431,52 @@ try {
   await sleep(500);
 
   /* --- 4. place search (Worker -> swisstopo) ---------------------------- */
-  await cdp.typeInto('#place-input', 'Rheinau');
-  await sleep(1200);
-  const suggestions = await cdp.eval(`(() => {
+  const moduleReport = await cdp.eval(`(() => ({
+    ready: document.documentElement.dataset.app || '',
+    modules: document.querySelectorAll('[data-module]').length,
+  }))()`);
+  const loadedLine = appInfo.find((line) => /Modul\(e\)|modules/i.test(line)) || '';
+  const failedModules = consoleMessages.filter((m) => /not available/.test(m.text)).map((m) => m.text.slice(0, 90));
+  check(
+    'every UI module initialises',
+    failedModules.length === 0 && /map|search|results|detail/.test(loadedLine + JSON.stringify(moduleReport)),
+    failedModules.length ? failedModules.join(' | ') : `${loadedLine.slice(0, 120)} ${JSON.stringify(moduleReport)}`,
+  );
+
+  const quickPicks = await cdp.eval(`document.querySelectorAll('#place-quick .zh-chip').length`);
+  check('place search offers keyboard-reachable quick picks', quickPicks >= 3, `${quickPicks} chips`);
+
+  const typed = await cdp.typeInto('#place-input', 'Rheinau');
+  let suggestions = null;
+  try {
+    await cdp.waitFor(
+      `(() => { const l = document.querySelector('#place-suggestions'); return l && !l.hidden && l.querySelectorAll('li').length > 0; })()`,
+      { label: 'place suggestions', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below with diagnostics */
+  }
+  suggestions = await cdp.eval(`(() => {
     const list = document.querySelector('#place-suggestions');
-    return list ? { hidden: list.hidden, items: list.querySelectorAll('li, option').length, text: list.textContent.trim().slice(0, 120) } : null;
+    return list ? { hidden: list.hidden, items: list.querySelectorAll('li, option').length, text: list.textContent.trim().slice(0, 120), input: document.querySelector('#place-input').value, status: document.querySelector('#place-status').textContent.trim().slice(0, 120) } : null;
   })()`);
-  check('place search reaches the swisstopo search service', Boolean(suggestions && (suggestions.items > 0 || /Rheinau/.test(suggestions.text))), JSON.stringify(suggestions));
+  check(
+    'place search reaches the swisstopo search service',
+    Boolean(suggestions && (suggestions.items > 0 || /Rheinau/.test(suggestions.text))),
+    `${JSON.stringify(suggestions)} (typed "${typed}")`,
+  );
+
+  // Choose the first suggestion with the keyboard: the map must re-centre and the
+  // place has to survive in the URL (shareable state).
+  await cdp.pressKey('ArrowDown');
+  await cdp.pressKey('Enter');
+  await sleep(1200);
+  const placeChosen = await cdp.eval(`(() => ({ search: location.search, label: document.querySelector('#place-input').value, listHidden: document.querySelector('#place-suggestions').hidden }))()`);
+  check(
+    'keyboard selection of a suggestion sets the shared map place',
+    Boolean(placeChosen.label) && /place=/.test(placeChosen.search) && placeChosen.listHidden,
+    JSON.stringify(placeChosen),
+  );
 
   /* --- 5. keyboard map control ----------------------------------------- */
   const keyboard = await cdp.eval(`(() => {
