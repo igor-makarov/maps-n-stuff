@@ -275,6 +275,29 @@
   min-width: 0;
 }
 
+/* Active point filter (“Karten an diesem Punkt”): a chip row that says what is
+   filtered and offers one clear action, above the result list. */
+.app-pointfilter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny);
+  margin: 0 0 var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+  border: 2px solid var(--zh-color-accent);
+  background: var(--zh-blue-soft);
+}
+
+.app-pointfilter .zh-hint {
+  flex: 1 1 12rem;
+  margin: 0;
+  color: var(--zh-black);
+}
+
+.app-pointfilter .zh-hint strong {
+  font-weight: 900;
+}
+
 .app-result-list {
   display: grid;
   gap: var(--zh-size-small-regular);
@@ -594,6 +617,22 @@
   position: absolute;
   border: 2px dashed var(--zh-black);
   background: rgb(0 112 180 / 12%);
+  pointer-events: none;
+}
+
+/* Crosshair for the active point filter (“Karten an diesem Punkt”). */
+.map-point {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 3px solid var(--zh-color-accent);
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--zh-color-accent), var(--zh-color-accent)) center / 2px 100% no-repeat,
+    linear-gradient(var(--zh-color-accent), var(--zh-color-accent)) center / 100% 2px no-repeat,
+    rgb(255 255 255 / 70%);
+  box-shadow: 0 0 0 2px var(--zh-white);
   pointer-events: none;
 }
 

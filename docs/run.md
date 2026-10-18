@@ -26,7 +26,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo |
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 80 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, period hand-off, collection/histogram/compare, map-only and list-only view layouts, marker pins, marker clustering, the sticky map, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 87 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, period hand-off, collection/histogram/compare, the point filter (keyboard, map click, `?at=` link, empty state, 390 px), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
 
 ## Cloudflare Workers deployment
 
@@ -94,14 +94,16 @@ throws is reported in the UI (`#app-notices`) and in
 | File | Provides |
 | --- | --- |
 | `main.js`, `store.js`, `dom.js`, `records.js` | shell, URL-backed state + bus, DOM/format helpers, record loading/indexing/filtering |
-| `map.js`, `search.js`, `results.js` | slippy map with WMTS overlays, place combobox, filters + result list (owner: zurich-maps-2) |
+| `map.js`, `search.js`, `results.js` | slippy map with WMTS overlays, place combobox and “Karten an diesem Ort” point filter, filters + result list (owner: zurich-maps-2) |
 | `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
 | `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1). Also keeps the pinned ids in this browser (`localStorage['kartenzeit.cmp.v1']`, ids only, never sent to a server); a link that carries `?cmp=` always wins over the stored list |
 
-URL state is documented in `store.js`: `q, from, to, p, t, c, vp, place, lat, lon,
-z, sel, sh, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the open
+URL state is documented in `store.js`: `q, from, to, p, t, c, vp, at, place, lat,
+lon, z, sel, sh, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the open
 digitised work (detail.js clamps it to the real canvas count and shows the same
-sheet in the IIIF viewer).
+sheet in the IIIF viewer). `at` is the point filter `"lat,lon"`: only records
+whose documented extent covers that point remain in the list and on the map
+(`coversPoint` in `records.js`; a record without a stated extent cannot match).
 
 ## Response headers and caching
 

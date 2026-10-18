@@ -1595,6 +1595,190 @@ try {
   })()`);
   check('no placeholder value (null/undefined/NaN) is rendered in the UI', leaks.length === 0, leaks.slice(0, 6).join(' | '));
 
+  /* --- 8j. point filter: browse the maps that cover a place ----------- */
+  // The OldMapsOnline step after finding a place: narrow the list to the maps
+  // whose documented extent covers a point. Keyboard route (P / the map-centre
+  // button), a real map click, the shared URL and the honest empty state.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'point filter page' });
+  await sleep(700);
+  const rowsBeforePoint = await cdp.eval(`document.querySelectorAll('#result-list > *').length`);
+  await cdp.eval(`document.querySelector('#map').focus()`);
+  await cdp.pressKey('p');
+  let pointOn = null;
+  try {
+    pointOn = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#point-filter');
+        if (!chip || chip.hidden) return '';
+        // The list render is debounced (40 ms): wait for the filtered rows too,
+        // otherwise this reads the previous list and fails on a race.
+        const rows = document.querySelectorAll('#result-list > *').length;
+        if (rows >= ${rowsBeforePoint}) return '';
+        return {
+          url: location.search,
+          text: document.querySelector('#point-filter-text')?.textContent || '',
+          rows,
+          crosshair: Boolean(document.querySelector('.map-point')),
+        };
+      })()`,
+      { label: 'point filter on', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'keyboard: P filters the results to the map-centre point',
+    Boolean(pointOn?.url.includes('at=')) && pointOn.rows > 0 && pointOn.rows < rowsBeforePoint && pointOn.crosshair && /Karten an diesem Punkt/.test(pointOn.text),
+    JSON.stringify(pointOn),
+  );
+
+  await cdp.click('#point-filter-clear');
+  await sleep(500);
+  const pointOff = await cdp.eval(`({
+    url: location.search,
+    hidden: document.querySelector('#point-filter').hidden,
+    rows: document.querySelectorAll('#result-list > *').length,
+    crosshair: Boolean(document.querySelector('.map-point')),
+  })`);
+  check(
+    'clearing the point filter restores the whole result list',
+    !pointOff.url.includes('at=') && pointOff.hidden && pointOff.rows === rowsBeforePoint && !pointOff.crosshair,
+    JSON.stringify(pointOff),
+  );
+
+  const mapCentre = await cdp.eval(`(() => { const r = document.querySelector('#map').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: mapCentre.x, y: mapCentre.y, button: 'left', clickCount: 1 });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: mapCentre.x, y: mapCentre.y, button: 'left', clickCount: 1 });
+  let pointClick = null;
+  try {
+    pointClick = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#point-filter');
+        if (!chip || chip.hidden) return '';
+        const rows = document.querySelectorAll('#result-list > *').length;
+        if (rows >= ${rowsBeforePoint}) return '';
+        return { url: location.search, rows };
+      })()`,
+      { label: 'point filter after click', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'a real map click filters the results to the clicked point',
+    Boolean(pointClick) && /at=47\.37|at=47\.38/.test(pointClick.url) && pointClick.rows > 0 && pointClick.rows < rowsBeforePoint,
+    JSON.stringify(pointClick),
+  );
+
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=47.3769%2C8.5417` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'shared point page' });
+  await sleep(600);
+  const sharedPoint = await cdp.eval(`({
+    url: location.search,
+    hidden: document.querySelector('#point-filter').hidden,
+    text: document.querySelector('#point-filter-text').textContent,
+    rows: document.querySelectorAll('#result-list > *').length,
+  })`);
+  check(
+    'a shared ?at= link restores the point filter',
+    !sharedPoint.hidden && sharedPoint.url.includes('at=47.3769') && /Karten an diesem Punkt/.test(sharedPoint.text) && sharedPoint.rows > 0,
+    JSON.stringify(sharedPoint),
+  );
+  // Evidence screenshot for the new interaction (chip + crosshair on the map).
+  await cdp.eval(`document.querySelector('#point-filter')?.scrollIntoView({ block: 'center' }); true`);
+  await sleep(300);
+  await cdp.screenshot(path.join(OUT_DIR, '06-point-filter.png')).then(() => report.screenshots.push('06-point-filter.png'));
+
+  // The chip row must survive the smallest cantonal breakpoint, like every other
+  // filter control (390 px is the phone the rest of the harness uses).
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=47.3769%2C8.5417` });
+  await cdp.waitFor(`(() => { const chip = document.querySelector('#point-filter'); return chip && !chip.hidden && document.querySelector('#point-filter-clear'); })()`, { label: 'mobile point filter', timeout: 8_000 });
+  await sleep(500);
+  const mobilePoint = await cdp.eval(`({
+    overflow: document.documentElement.scrollWidth - window.innerWidth,
+    chipVisible: document.querySelector('#point-filter').getBoundingClientRect().height > 20,
+    clear: document.querySelector('#point-filter-clear').textContent.trim(),
+  })`);
+  check(
+    '390 px: the point filter chip stays inside the page',
+    mobilePoint.overflow <= 1 && mobilePoint.chipVisible && /Punktfilter/.test(mobilePoint.clear),
+    JSON.stringify(mobilePoint),
+  );
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=52.5200%2C13.4050` });
+  let emptyPoint = null;
+  try {
+    emptyPoint = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#point-filter');
+        if (!chip || chip.hidden) return '';
+        const state = document.querySelector('#results-state');
+        return { rows: document.querySelectorAll('#result-list > *').length, empty: state?.hidden === false, text: state?.textContent.slice(0, 90) || '' };
+      })()`,
+      { label: 'empty point state', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  const pointRemove = await cdp.eval(`(() => {
+    const button = [...document.querySelectorAll('#results-state button')].find((b) => /Punktfilter/.test(b.textContent));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  await sleep(500);
+  const afterPointRemove = await cdp.eval(`({ rows: document.querySelectorAll('#result-list > *').length, at: new URLSearchParams(location.search).get('at') })`);
+  check(
+    'a point outside every footprint says so and can be removed on its own',
+    Boolean(emptyPoint) && emptyPoint.rows === 0 && emptyPoint.empty && pointRemove === true && afterPointRemove.rows > 0 && !afterPointRemove.at,
+    `${JSON.stringify(emptyPoint)} remove=${pointRemove} ${JSON.stringify(afterPointRemove)}`,
+  );
+
+  // Place search -> “Karten an diesem Ort”: the quick picks need no network, so
+  // this check also runs when the gazetteer is unreachable.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'place action page' });
+  await sleep(600);
+  const rowsBeforePlace = await cdp.eval(`document.querySelectorAll('#result-list > *').length`);
+  await cdp.eval(`document.querySelector('#place-quick button').click()`);
+  let placeBrowse = null;
+  try {
+    placeBrowse = await cdp.waitFor(
+      `(() => { const chip = document.querySelector('#place-action button'); return chip ? { text: chip.textContent, pressed: chip.getAttribute('aria-pressed') } : ''; })()`,
+      { label: 'place browse chip', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  await cdp.eval(`document.querySelector('#place-action button')?.click()`);
+  let placeApplied = null;
+  try {
+    placeApplied = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#point-filter');
+        if (!chip || chip.hidden) return '';
+        const rows = document.querySelectorAll('#result-list > *').length;
+        if (rows >= ${rowsBeforePlace}) return '';
+        return { url: location.search, rows };
+      })()`,
+      { label: 'place point filter', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'place search offers browsing the maps that cover the chosen place',
+    Boolean(placeBrowse && /Karten an diesem Ort/.test(placeBrowse.text)) && Boolean(placeApplied) && placeApplied.url.includes('at=47.3769') && placeApplied.rows > 0 && placeApplied.rows < rowsBeforePlace,
+    `chip ${JSON.stringify(placeBrowse)} -> ${JSON.stringify(placeApplied)}`,
+  );
+  await cdp.eval(`document.querySelector('#point-filter-clear')?.click()`);
+  await sleep(400);
+
+
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));

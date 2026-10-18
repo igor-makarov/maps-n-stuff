@@ -5,7 +5,8 @@
  */
 
 import { debounce, el, qs, setStatus } from './dom.js';
-import { matchesQuery, recordCenter } from './records.js';
+import { coversPoint, filterRecords, matchesQuery, recordCenter } from './records.js';
+import { parsePoint, sanitisePoint } from './store.js';
 
 const MIN_CHARS = 2;
 const QUICK = [
@@ -47,9 +48,60 @@ export function init(ctx) {
   const state = { items: [], active: -1, controller: null, source: null };
 
   let quickLinks = null;
+  // The last place the user chose; when it has a position, offer the point
+  // filter (“browse the maps that cover this place”, the OldMapsOnline step).
+  let chosenPlace = null;
+  const actionWrap = el('div', { class: 'zh-quickranges', id: 'place-action', hidden: true });
+  if (status?.after) status.after(actionWrap);
+  if (status) {
+    const initialAt = parsePoint(ctx.store.getState().at);
+    if (initialAt && ctx.store.getState().place) chosenPlace = { label: ctx.store.getState().place, lat: initialAt.lat, lon: initialAt.lon };
+  }
 
   input.value = ctx.store.getState().place || '';
   renderQuickLinks();
+  renderPlaceAction();
+
+  /** Records in the current filters whose documented extent covers the place. */
+  function countAtPoint(point) {
+    if (!point) return 0;
+    return filterRecords(ctx.store.getState(), ctx.data.records).filter((record) => coversPoint(record, point.lat, point.lon)).length;
+  }
+
+  /** The chip under the search status: one click filters the list to this place. */
+  function renderPlaceAction() {
+    if (!actionWrap) return;
+    const point = chosenPlacePoint();
+    if (!point) {
+      actionWrap.hidden = true;
+      actionWrap.replaceChildren();
+      return;
+    }
+    const active = ctx.store.getState().at === sanitisePoint(`${point.lat},${point.lon}`);
+    const count = countAtPoint(point);
+    const label = chosenPlace.label.length > 42 ? `${chosenPlace.label.slice(0, 39)}…` : chosenPlace.label;
+    const button = el('button', {
+      class: 'zh-chip zh-chip--action',
+      type: 'button',
+      'aria-pressed': active ? 'true' : 'false',
+      title: active
+        ? 'Punktfilter wieder entfernen; danach gilt wieder der ganze Bestand im Zeitraum.'
+        : 'Nur Datensätze zeigen, deren dokumentierter Kartenausschnitt diesen Ort enthält.',
+      onclick: () => ctx.store.update({ at: active ? '' : sanitisePoint(`${point.lat},${point.lon}`) }),
+    }, [count === 0 ? `Karten an diesem Ort – im Zeitraum keine (${label})` : `Karten an diesem Ort (${count}): ${label}`]);
+    actionWrap.replaceChildren(button);
+    actionWrap.hidden = false;
+  }
+
+  function chosenPlacePoint() {
+    if (!chosenPlace) return null;
+    if (Number.isFinite(chosenPlace.lat) && Number.isFinite(chosenPlace.lon)) return { lat: chosenPlace.lat, lon: chosenPlace.lon };
+    const bbox = chosenPlace.bbox;
+    if (bbox && [bbox.west, bbox.east, bbox.south, bbox.north].every(Number.isFinite)) {
+      return { lat: (bbox.south + bbox.north) / 2, lon: (bbox.west + bbox.east) / 2 };
+    }
+    return null;
+  }
 
   function renderQuickLinks() {
     if (!status) return;
@@ -135,6 +187,8 @@ export function init(ctx) {
   function choose(place, { zoom } = {}) {
     const targetZoom = zoom ?? zoomForBbox(place.bbox) ?? 12;
     const hasPoint = Number.isFinite(place.lat) && Number.isFinite(place.lon);
+    chosenPlace = { label: place.label, lat: place.lat, lon: place.lon, bbox: place.bbox ?? null };
+    renderPlaceAction();
     input.value = place.label;
     if (hasPoint) {
       ctx.store.update({ place: place.label, lat: place.lat, lon: place.lon, zoom: targetZoom });
@@ -279,9 +333,11 @@ export function init(ctx) {
 
   submit?.setAttribute('type', 'submit');
 
-  // Keep the field in sync when another module changes the place (e.g. reset).
+  // Keep the field in sync when another module changes the place (e.g. reset),
+  // and re-count the “Karten an diesem Ort” chip when the filters change.
   ctx.store.subscribe((next, changed) => {
     if (changed.includes('place') && next.place && next.place !== input.value) input.value = next.place;
+    if (changed.some((key) => ['from', 'to', 'q', 'provider', 'type', 'collection', 'at'].includes(key))) renderPlaceAction();
   });
 
   return { suggest, choose };

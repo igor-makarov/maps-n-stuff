@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, place, lat, lon, zoom, selected, sheet, view, sort, overlay, otime, cmp }
+ *   store.getState()            -> { q, from, to, provider, type, at, place, lat, lon, zoom, selected, sheet, view, sort, overlay, otime, cmp }
  *   store.update({ from: 1800 }) -> merge, sync URL (replaceState), notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *
@@ -21,6 +21,7 @@ export const STATE_DEFAULTS = Object.freeze({
   type: '', // record type or '' for all
   collection: '', // upstream series/collection name or '' for all (facet from the data)
   viewport: '', // '1' = only records inside the current map view
+  at: '', // "lat,lon" point filter: only records whose documented extent covers this point
   place: '', // selected place label
   lat: 47.3769, // Zürich as the initial view (documented default, not a search result)
   lon: 8.5417,
@@ -43,6 +44,7 @@ export const PARAM = {
   type: 't',
   collection: 'c',
   viewport: 'vp',
+  at: 'at',
   place: 'place',
   lat: 'lat',
   lon: 'lon',
@@ -57,7 +59,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
+  string: ['q', 'provider', 'type', 'collection', 'viewport', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -100,6 +102,25 @@ export function readStateFromUrl(search = (safeLocation()?.search ?? ''), defaul
   return sanitise(state);
 }
 
+/**
+ * Parse the point filter `"lat,lon"`; null when the value is not a real point.
+ * Used by the map (crosshair), the result filter and the tests.
+ */
+export function parsePoint(value) {
+  const parts = String(value ?? '').split(',');
+  if (parts.length !== 2) return null;
+  const lat = Number(parts[0]);
+  const lon = Number(parts[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return { lat: Math.max(-85, Math.min(85, lat)), lon: normaliseLon(lon) };
+}
+
+/** Canonical `"lat,lon"` for the URL/state; '' when there is no usable point. */
+export function sanitisePoint(value) {
+  const point = parsePoint(value);
+  return point ? `${point.lat.toFixed(4)},${point.lon.toFixed(4)}` : '';
+}
+
 /** Wrap a longitude into [-180, 180] without drifting values that are already in range. */
 export function normaliseLon(lon) {
   if (!Number.isFinite(lon)) return STATE_DEFAULTS.lon;
@@ -121,6 +142,7 @@ export function sanitise(state) {
   if (!['split', 'map', 'list'].includes(out.view)) out.view = STATE_DEFAULTS.view;
   if (!['year-asc', 'year-desc', 'title'].includes(out.sort)) out.sort = STATE_DEFAULTS.sort;
   out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
+  out.at = sanitisePoint(out.at);
   out.q = String(out.q || '').slice(0, 200);
   out.place = String(out.place || '').slice(0, 200);
   // A collection name comes from the data (never invented) and from the URL, so

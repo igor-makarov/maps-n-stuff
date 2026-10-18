@@ -4,8 +4,8 @@
  */
 
 import { debounce, el, formatYearRange, qs, setStatus } from './dom.js';
-import { facets, filterRecords, matchesQuery, overlapsRange, recordsInBounds, sortRecords } from './records.js';
-import { STATE_DEFAULTS } from './store.js';
+import { coversPoint, facets, filterRecords, matchesQuery, overlapsRange, recordsInBounds, sortRecords } from './records.js';
+import { STATE_DEFAULTS, parsePoint } from './store.js';
 
 const TYPE_LABELS = {
   map: 'Einzelkarte',
@@ -39,6 +39,9 @@ export function init(ctx) {
   const viewportCount = qs('#viewport-count');
   const collectionEl = qs('#collection-filter');
   const facetHint = qs('#facet-hint');
+  const pointFilterEl = qs('#point-filter');
+  const pointFilterText = qs('#point-filter-text');
+  const pointFilterClear = qs('#point-filter-clear');
   const overlayNote = qs('#overlay-note');
   const resetEl = qs('#reset-filters');
 
@@ -131,9 +134,15 @@ export function init(ctx) {
     collectionEl.append(option);
   }
 
-  /** Counts per facet for the records inside the current period and keyword. */
+  /** Counts per facet for the records inside the current period, keyword and point. */
   function syncFacetCounts(state) {
-    const scoped = records.filter((record) => overlapsRange(record, state.from, state.to) && matchesQuery(record, state.q));
+    const point = parsePoint(state.at);
+    const scoped = records.filter(
+      (record) =>
+        overlapsRange(record, state.from, state.to) &&
+        matchesQuery(record, state.q) &&
+        (!point || coversPoint(record, point.lat, point.lon)),
+    );
     const counts = facets(scoped);
     const countOf = (map, name) => map.get(name) ?? 0;
     for (const [key, node] of facetLabels) {
@@ -150,7 +159,7 @@ export function init(ctx) {
     if (facetHint) {
       facetHint.textContent = `${scoped.length} von ${records.length} Datensätzen im Zeitraum ${state.from}–${state.to}${
         state.q ? ` mit „${state.q}“` : ''
-      }: die Zahlen in Klammern gelten für diesen Ausschnitt.`;
+      }${point ? ` und Ausschnitt am Punkt ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°` : ''}: die Zahlen in Klammern gelten für diesen Ausschnitt.`;
     }
   }
 
@@ -169,6 +178,32 @@ export function init(ctx) {
   yearTo?.addEventListener('input', commitYears);
 
   resetEl?.addEventListener('click', resetFilters);
+  pointFilterClear?.addEventListener('click', () => ctx.store.update({ at: '' }));
+
+  /**
+   * The active point filter, stated above the list: what it means, how many
+   * records it keeps, and one button to remove only this filter.
+   */
+  function renderPointFilter(point, count) {
+    if (!pointFilterEl) return;
+    if (!point) {
+      pointFilterEl.hidden = true;
+      if (pointFilterText) pointFilterText.replaceChildren();
+      return;
+    }
+    pointFilterEl.hidden = false;
+    if (pointFilterText) {
+      pointFilterText.replaceChildren(
+        el('strong', { text: `Karten an diesem Punkt (${count})` }),
+        el('span', {
+          text: ` – nur Datensätze, deren dokumentierter Kartenausschnitt ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}° enthält.`,
+        }),
+      );
+    }
+    if (pointFilterClear) {
+      pointFilterClear.setAttribute('aria-label', `Punktfilter ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}° entfernen`);
+    }
+  }
 
   /** One definition for the filter reset: toolbar button and empty state.
    *  Restores the documented initial view, clamped to what the data offers:
@@ -180,6 +215,7 @@ export function init(ctx) {
       provider: STATE_DEFAULTS.provider,
       type: STATE_DEFAULTS.type,
       collection: STATE_DEFAULTS.collection,
+      at: STATE_DEFAULTS.at,
       q: STATE_DEFAULTS.q,
       selected: STATE_DEFAULTS.selected,
       overlay: STATE_DEFAULTS.overlay,
@@ -392,11 +428,21 @@ export function init(ctx) {
     if (filtered.length === 0) {
       listEl.replaceChildren();
       if (stateEl) {
+        const state = ctx.store.getState();
         stateEl.hidden = false;
         stateEl.className = 'zh-state zh-state--empty';
         stateEl.replaceChildren(
           el('span', { class: 'zh-state__title', text: 'Keine Treffer für diese Filter' }),
-          el('span', { text: 'Zeitraum erweitern, Sammlung oder Anbieter abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:' }),
+          el('span', {
+            text: state.at
+              ? 'An diesem Punkt hat kein Datensatz einen dokumentierten Kartenausschnitt im gewählten Zeitraum. Zeitraum erweitern, Punktfilter entfernen – oder alles auf einmal zurücksetzen:'
+              : 'Zeitraum erweitern, Sammlung oder Anbieter abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:',
+          }),
+          state.at
+            ? el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: () => ctx.store.update({ at: '' }) }, [
+                'Punktfilter entfernen',
+              ])
+            : null,
           el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: resetFilters }, ['Alle Filter zurücksetzen']),
         );
       }
@@ -420,6 +466,7 @@ export function init(ctx) {
     if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
     if (state.collection) parts.push(state.collection);
     if (state.q) parts.push(`„${state.q}“`);
+    if (state.at) parts.push('Ausschnitt am Punkt');
     if (state.viewport === '1') parts.push('im Kartenausschnitt');
     countEl.textContent = parts.join(' · ');
     if (liveEl) liveEl.textContent = `${filtered.length} Treffer. ${filtered[0] ? `Erster Treffer: ${filtered[0].title}.` : ''}`;
@@ -428,6 +475,8 @@ export function init(ctx) {
   function apply() {
     const state = ctx.store.getState();
     let filtered = sortRecords(filterRecords(state, records), state.sort);
+    const point = parsePoint(state.at);
+    if (point) filtered = filtered.filter((record) => coversPoint(record, point.lat, point.lon));
     let outsideCount = 0;
     if (state.viewport === '1') {
       const allInBounds = new Set(recordsInBounds(filtered, viewBounds).map((r) => r.id));
@@ -435,6 +484,7 @@ export function init(ctx) {
       filtered = filtered.filter((record) => allInBounds.has(record.id));
     }
     if (viewportEl && viewportEl.checked !== (state.viewport === '1')) viewportEl.checked = state.viewport === '1';
+    renderPointFilter(point, filtered.length);
     if (viewportCount) {
       viewportCount.textContent =
         state.viewport === '1'                 ? outsideCount > 0
@@ -543,7 +593,7 @@ export function init(ctx) {
     if (changed.some((key) => ['from', 'to'].includes(key)) && !syncButton.hidden) {
       syncButton.textContent = `Ausgabe für ${next.to}`;
     }
-    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'collection', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
+    if (changed.some((key) => ['from', 'to', 'provider', 'type', 'collection', 'at', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
     else if (changed.includes('selected')) {
       for (const item of listEl.children) {
         const button = item.querySelector('button');

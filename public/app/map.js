@@ -17,6 +17,7 @@
 
 import { debounce, el, formatYearRange, qs } from './dom.js';
 import { recordCenter } from './records.js';
+import { parsePoint, sanitisePoint } from './store.js';
 
 const TILE = 256;
 
@@ -92,6 +93,7 @@ export function init(ctx) {
     lat: ctx.store.getState().lat,
     lon: ctx.store.getState().lon,
     zoom: Math.round(ctx.store.getState().zoom),
+    at: ctx.store.getState().at,
     overlay: null,
     overlayTime: null,
     records: [],
@@ -103,7 +105,7 @@ export function init(ctx) {
   container.setAttribute('tabindex', '0');
   container.setAttribute('role', 'region');
   container.setAttribute('aria-roledescription', 'Interaktive Karte');
-  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen, Home zeigt Zürich, Ende passt alle Treffer ein');
+  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen, Home zeigt Zürich, Ende passt alle Treffer ein, P filtert auf die Kartenmitte. Ein Klick auf die Karte filtert die Treffer auf den angeklickten Punkt.');
 
   const baseLayer = el('div', { class: 'map-layer map-layer--base', 'aria-hidden': 'true' });
   const overlayLayer = el('div', { class: 'map-layer map-layer--overlay', 'aria-hidden': 'true' });
@@ -124,6 +126,17 @@ export function init(ctx) {
         onclick: () => fitBounds(resultsBounds(), { maxZoom: 12 }),
       },
       ['⤢'],
+    ),
+    el(
+      'button',
+      {
+        class: 'zh-button zh-button--small',
+        type: 'button',
+        title: 'Punktfilter auf die Kartenmitte setzen (ohne Maus)',
+        'aria-label': 'Punktfilter auf die Kartenmitte setzen',
+        onclick: () => setPoint(state.lat, state.lon, 'center'),
+      },
+      ['⌖'],
     ),
   ]);
 
@@ -232,6 +245,7 @@ export function init(ctx) {
     }
     renderMarkers(originX, originY, w, h, z);
     renderExtent(originX, originY, z);
+    renderPoint(originX, originY, z);
     updateBadge();
     updateVisibleCount();
     updateLive();
@@ -472,6 +486,26 @@ export function init(ctx) {
     );
   }
 
+  /** Crosshair for the active point filter; rendered on top of the selected extent. */
+  function renderPoint(originX, originY, z) {
+    const point = parsePoint(state.at);
+    if (!point) return;
+    const x = lonToTileX(point.lon, z) * TILE - originX;
+    const y = latToTileY(point.lat, z) * TILE - originY;
+    const w = container.clientWidth || 640;
+    const h = container.clientHeight || 420;
+    if (!Number.isFinite(x) || !Number.isFinite(y) || x < -24 || y < -24 || x > w + 24 || y > h + 24) return;
+    shapeLayer.append(
+      el('div', {
+        class: 'map-point',
+        'data-at': state.at,
+        'aria-hidden': 'true',
+        title: `Punktfilter: ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°`,
+        style: `transform: translate3d(${x}px, ${y}px, 0)`,
+      }),
+    );
+  }
+
   function updateBadge() {
     const items = [
       el('span', { class: 'zh-tag', text: BASE_LAYER.attribution }),
@@ -558,6 +592,29 @@ export function init(ctx) {
     push();
   }
 
+  /**
+   * Point filter: only records whose documented extent covers this point stay in
+   * the result list. The map only writes state (shareable, one source of truth);
+   * results.js renders the chip and filters.
+   */
+  function setPoint(lat, lon, source = 'map') {
+    const at = sanitisePoint(`${lat},${lon}`);
+    if (!at) return;
+    ctx.store.update({ at });
+    ctx.bus.emit('point:selected', { at, source });
+  }
+
+  /** Client coordinates -> geo point -> point filter. Used by a real map click. */
+  function setPointFromClient(clientX, clientY) {
+    const rect = container.getBoundingClientRect();
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
+    const cx = lonToTileX(state.lon, state.zoom) * TILE;
+    const cy = latToTileY(state.lat, state.zoom) * TILE;
+    const lon = tileXToLon((cx + (clientX - rect.left) - rect.width / 2) / TILE, state.zoom);
+    const lat = tileYToLat((cy + (clientY - rect.top) - rect.height / 2) / TILE, state.zoom);
+    setPoint(lat, lon, 'map-click');
+  }
+
   function fitBounds(bounds, { padding = 48, maxZoom = 15 } = {}) {
     if (!bounds) return;
     const w = container.clientWidth || 640;
@@ -589,10 +646,11 @@ export function init(ctx) {
   /* ---------------- interaction ---------------- */
 
   let dragging = null;
+  const DRAG_THRESHOLD = 4; // px: below this a pointer gesture is a click, not a pan
   container.addEventListener('pointerdown', (event) => {
     if (event.target.closest('button, a, select, input')) return;
     if (event.button !== 0 && event.pointerType === 'mouse') return;
-    dragging = { x: event.clientX, y: event.clientY };
+    dragging = { startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, moved: false };
     container.classList.add('is-dragging');
     container.setPointerCapture?.(event.pointerId);
   });
@@ -600,7 +658,10 @@ export function init(ctx) {
     if (!dragging) return;
     const dx = event.clientX - dragging.x;
     const dy = event.clientY - dragging.y;
-    dragging = { x: event.clientX, y: event.clientY };
+    if (!dragging.moved && Math.hypot(event.clientX - dragging.startX, event.clientY - dragging.startY) > DRAG_THRESHOLD) {
+      dragging.moved = true;
+    }
+    dragging = { ...dragging, x: event.clientX, y: event.clientY };
     const cx = lonToTileX(state.lon, state.zoom) * TILE - dx;
     const cy = latToTileY(state.lat, state.zoom) * TILE - dy;
     state.lon = tileXToLon(cx / TILE, state.zoom);
@@ -608,15 +669,19 @@ export function init(ctx) {
     render();
     push();
   });
-  const endDrag = () => {
+  const endDrag = (event, { allowClick = false } = {}) => {
     if (!dragging) return;
+    const wasClick = allowClick && !dragging.moved;
     dragging = null;
     container.classList.remove('is-dragging');
     push.flush();
+    // A click that did not pan the map selects the point under the pointer for
+    // the point filter (OldMapsOnline's “browse maps at this place” gesture).
+    if (wasClick && event) setPointFromClient(event.clientX, event.clientY);
   };
-  container.addEventListener('pointerup', endDrag);
-  container.addEventListener('pointercancel', endDrag);
-  container.addEventListener('lostpointercapture', endDrag);
+  container.addEventListener('pointerup', (event) => endDrag(event, { allowClick: true }));
+  container.addEventListener('pointercancel', () => endDrag());
+  container.addEventListener('lostpointercapture', () => endDrag());
 
   container.addEventListener(
     'wheel',
@@ -652,6 +717,8 @@ export function init(ctx) {
         push();
       },
       End: () => fitBounds(resultsBounds(), { maxZoom: 12 }),
+      p: () => setPoint(state.lat, state.lon, 'keyboard'),
+      P: () => setPoint(state.lat, state.lon, 'keyboard'),
     };
     const action = keys[event.key];
     if (!action) return;
@@ -698,6 +765,10 @@ export function init(ctx) {
   /* ---------------- store / bus wiring ---------------- */
 
   ctx.store.subscribe((next, changed) => {
+    if (changed.includes('at') && next.at !== state.at) {
+      state.at = next.at;
+      render();
+    }
     const interesting = changed.filter((key) => ['lat', 'lon', 'zoom'].includes(key));
     if (interesting.length === 0) return;
     if (Math.abs(next.lat - state.lat) < 1e-6 && Math.abs(next.lon - state.lon) < 1e-6 && Math.round(next.zoom) === state.zoom) return;
@@ -773,6 +844,7 @@ export function init(ctx) {
     render,
     fitBounds,
     zoomBy,
+    setPoint,
     setOverlay,
     getView: () => ({ ...state }),
     getMarkers: () => ({

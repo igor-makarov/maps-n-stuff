@@ -21,6 +21,12 @@ What works today (verified with `wrangler dev` + headless Chromium):
   aerial imagery 1946–2020) including edition slider, opacity and attribution;
 - place search against the swisstopo search service (proxied and edge-cached by the
   Worker) with keyboard-operable suggestions and “quick pick” places;
+- **browse the maps that cover a place**: a click on the map (or the map-centre
+  button, or `P` with the map focused) filters the list to records whose
+  documented footprint contains that point; after a place search a
+  “Karten an diesem Ort” chip does the same. The filter is visible above the
+  results, carries its own “Punktfilter entfernen” action, draws a crosshair on
+  the map and is shareable as `at=lat,lon`;
 - publication-year range, collection, type and “only in the current map view”
   filters that drive both the result list and the map markers;
 - coordinated result list ↔ map selection, list/map/split view switch;
@@ -41,11 +47,11 @@ What works today (verified with `wrangler dev` + headless Chromium):
   result controls are on the first screen at desktop sizes (measured: map starts
   at 604 px of a 900 px viewport), with a “Direkt zur Karte” link and a keyboard
   route to every map action;
-- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `place`, `lat`, `lon`,
+- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `at`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a
-  26-sheet work does not add 26 stops).
+  26-sheet work does not add 26 stops; `at` = point filter).
 
 ```sh
 npm install

@@ -144,6 +144,20 @@ export function bboxIntersects(a, b) {
   return a.west <= b.east && a.east >= b.west && a.south <= b.north && a.north >= b.south;
 }
 
+/**
+ * Does the record's documented extent cover this point?
+ *
+ * Strictly the published bbox (bounds inclusive) — a record's `geo` point is a
+ * centre, not a coverage claim, so it is deliberately not used here. A record
+ * without a usable extent cannot match, and the caller can say so honestly.
+ */
+export function coversPoint(record, lat, lon) {
+  const e = record?.extent;
+  if (!e || ![e.west, e.east, e.south, e.north].every(Number.isFinite)) return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  return lat >= e.south && lat <= e.north && lon >= e.west && lon <= e.east;
+}
+
 /** Records whose point or bbox lies inside the current map view. */
 export function recordsInBounds(records, bounds) {
   if (!bounds) return records;
