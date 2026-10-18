@@ -147,7 +147,13 @@ test('modules only talk to the contracted context (ctx.store/ctx.bus/ctx.data)',
   for (const [name, source] of Object.entries(modules)) {
     if (helpers.has(name)) continue;
     assert.match(source, /export function init\(ctx\)/, `${name}: modules expose init(ctx)`);
-    assert.ok(!/localStorage/.test(source), `${name}: no hidden localStorage state (URL is the source of truth)`);
+    // The URL stays the source of truth for shared state. One documented
+    // exception: the comparison list (“Merkliste”, the brief's saved maps) may
+    // also be kept device-locally under its versioned key — a link that carries
+    // `?cmp=` always wins over it, and only record ids are stored.
+    const storageOk =
+      name === 'compare.js' && /kartenzeit\.cmp\.v1/.test(source) && !/document\.cookie/.test(source);
+    assert.ok(!/localStorage/.test(source) || storageOk, `${name}: no hidden localStorage state (URL is the source of truth)`);
     assert.ok(!/document\.cookie/.test(source), `${name}: no cookie writes`);
   }
 });

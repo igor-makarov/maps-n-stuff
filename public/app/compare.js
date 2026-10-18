@@ -14,6 +14,36 @@ import { el, qs, setStatus, trapFocus, copyText } from './dom.js';
 
 const MAX_PINNED = 4;
 const COMPARE_WIDTH = 1200; // IIIF Image API width for a readable comparison
+const STORAGE_KEY = 'kartenzeit.cmp.v1'; // device-local “Merkliste”, never sent anywhere
+
+/**
+ * The pinned list is shareable through `?cmp=`; it is also kept in this browser
+ * so a visitor finds their own list again after a reload or a later visit. Only
+ * the record ids are stored, nothing else, and a failing/blocked localStorage
+ * (private mode, disabled storage) simply means “no saved list”.
+ */
+export function readStoredIds() {
+  try {
+    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return [...new Set(parsed.filter((id) => typeof id === 'string' && id.trim() && !id.includes(',')))]
+      .map((id) => id.trim())
+      .slice(0, MAX_PINNED);
+  } catch {
+    return [];
+  }
+}
+
+export function writeStoredIds(ids) {
+  try {
+    if (ids.length === 0) globalThis.localStorage?.removeItem(STORAGE_KEY);
+    else globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(ids.slice(0, MAX_PINNED)));
+  } catch {
+    /* storage unavailable: the URL remains the only carrier of the list */
+  }
+}
 
 export function init(ctx) {
   const panel = qs('#compare-panel');
@@ -315,8 +345,10 @@ export function init(ctx) {
   });
 
   ctx.store.subscribe((state, changed) => {
-    if (changed.includes('cmp')) render();
-    else if (changed.includes('selected')) updateAddButton();
+    if (changed.includes('cmp')) {
+      writeStoredIds(pinnedIds());
+      render();
+    } else if (changed.includes('selected')) updateAddButton();
   });
 
   ctx.bus.on('records:loaded', () => render());
@@ -345,6 +377,18 @@ export function init(ctx) {
     // hiding it behind a closed panel.
     panel.open = true;
     setStatus(status, `${pinnedIds().length} gemerkte Datensätze aus dem Link geladen – «Vergleichen» öffnet die Gegenüberstellung.`, 'info');
+  } else if (pinnedIds().length === 0) {
+    // No list in the link: fall back to the list saved in this browser.
+    const saved = readStoredIds();
+    if (saved.length > 0) {
+      ctx.store.update({ cmp: saved.join(',') });
+      if (saved.length >= 2) panel.open = true;
+      setStatus(
+        status,
+        `${saved.length} gemerkte${saved.length === 1 ? 'r Datensatz' : ' Datensätze'} aus diesem Browser wiederhergestellt – die Liste liegt nur lokal und steht zusätzlich im Link (?cmp=).`,
+        'info',
+      );
+    }
   }
 
   return { open: openCompare, close: closeCompare, add: addSelected, clear: clearAll };

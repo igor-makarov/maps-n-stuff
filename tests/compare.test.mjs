@@ -49,3 +49,63 @@ test('the compare module is wired into the shell as an optional module', async (
     assert.ok(html.includes(`id="${id}"`), `index.html provides #${id}`);
   }
 });
+
+/**
+ * Device-local “Merkliste” (the brief's saved maps). The shareable `?cmp=` link
+ * stays authoritative; the stored list is only read when a page load carries no
+ * list at all. Storage access must never throw into the app (private mode).
+ */
+test('the saved list is read from localStorage under its versioned key only', async () => {
+  const { readStoredIds, writeStoredIds } = await import('../public/app/compare.js');
+  const store = new Map();
+  const original = globalThis.localStorage;
+  globalThis.localStorage = {
+    getItem: (key) => (store.has(key) ? store.get(key) : null),
+    setItem: (key, value) => store.set(key, String(value)),
+    removeItem: (key) => store.delete(key),
+  };
+  try {
+    assert.deepEqual(readStoredIds(), [], 'no saved list means an empty list');
+
+    writeStoredIds(['e-rara:6507640', 'e-rara:6484810']);
+    assert.equal(store.get('kartenzeit.cmp.v1'), JSON.stringify(['e-rara:6507640', 'e-rara:6484810']));
+    assert.deepEqual(readStoredIds(), ['e-rara:6507640', 'e-rara:6484810']);
+
+    // Hostile or stale values: junk, duplicates, separators, too many entries.
+    store.set('kartenzeit.cmp.v1', JSON.stringify(['e-rara:1', 'e-rara:1', '', 'a,b', 42, 'e-rara:2', 'e-rara:3', 'e-rara:4', 'e-rara:5']));
+    assert.deepEqual(readStoredIds(), ['e-rara:1', 'e-rara:2', 'e-rara:3', 'e-rara:4']);
+    store.set('kartenzeit.cmp.v1', '{not json');
+    assert.deepEqual(readStoredIds(), [], 'a corrupt value is ignored, not thrown');
+
+    // Clearing removes the entry instead of leaving an empty list behind.
+    writeStoredIds([]);
+    assert.equal(store.has('kartenzeit.cmp.v1'), false);
+  } finally {
+    if (original === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = original;
+  }
+});
+
+test('storage failures stay silent (private mode, disabled storage)', async () => {
+  const { readStoredIds, writeStoredIds } = await import('../public/app/compare.js');
+  const original = globalThis.localStorage;
+  globalThis.localStorage = {
+    getItem: () => {
+      throw new Error('SecurityError: storage disabled');
+    },
+    setItem: () => {
+      throw new Error('QuotaExceededError');
+    },
+    removeItem: () => {
+      throw new Error('SecurityError: storage disabled');
+    },
+  };
+  try {
+    assert.deepEqual(readStoredIds(), []);
+    assert.doesNotThrow(() => writeStoredIds(['e-rara:1']));
+    assert.doesNotThrow(() => writeStoredIds([]));
+  } finally {
+    if (original === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = original;
+  }
+});

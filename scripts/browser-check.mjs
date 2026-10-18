@@ -1101,6 +1101,83 @@ try {
     );
   }
 
+  /* --- 8f. device-local list + map-first shell -------------------------- */
+  // The pinned list is also kept in this browser. A plain page load (no ?cmp=)
+  // must bring it back; «Liste leeren» must remove it from the device again.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'saved list page' });
+  let savedList = null;
+  try {
+    savedList = await cdp.waitFor(
+      `(() => {
+        const items = document.querySelectorAll('#compare-list .app-compare__item').length;
+        const stored = localStorage.getItem('kartenzeit.cmp.v1');
+        return items >= 2 && stored ? { items, stored, status: document.querySelector('#compare-status')?.textContent || '', cmp: new URLSearchParams(location.search).get('cmp') || '' } : '';
+      })()`,
+      { label: 'restored list', timeout: 15_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the list pinned in this browser comes back without a link',
+    savedList?.items === 2 && savedList?.cmp.split(',').filter(Boolean).length === 2 && /Browser/.test(savedList?.status || ''),
+    savedList ? `${savedList.items} gemerkt · ${JSON.stringify(savedList.status.slice(0, 70))}` : 'no restored list',
+  );
+
+  await cdp.eval(`(() => { const panel = document.querySelector('#compare-panel'); if (panel) panel.open = true; return true; })()`);
+  await cdp.click('#compare-clear');
+  await sleep(400);
+  const afterClear = await cdp.eval(`({ stored: localStorage.getItem('kartenzeit.cmp.v1'), items: document.querySelectorAll('#compare-list .app-compare__item').length })`);
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'cleared list page' });
+  await sleep(800);
+  const clearedReload = await cdp.eval(`({ stored: localStorage.getItem('kartenzeit.cmp.v1'), items: document.querySelectorAll('#compare-list .app-compare__item').length })`);
+  check(
+    '«Liste leeren» also clears the device-local list (no resurrection on reload)',
+    afterClear.stored === null && afterClear.items === 0 && clearedReload.stored === null && clearedReload.items === 0,
+    `after clear ${JSON.stringify(afterClear)}, after reload ${JSON.stringify(clearedReload)}`,
+  );
+
+  // Map-first shell: the map is the product, so part of it has to be visible on
+  // a plain desktop viewport instead of sitting below a full-height intro block.
+  const firstScreen = await cdp.eval(`(() => {
+    const map = document.querySelector('#map')?.getBoundingClientRect();
+    const hero = document.querySelector('.app-intro')?.getBoundingClientRect();
+    return {
+      vh: window.innerHeight,
+      mapTop: map ? Math.round(map.top + window.scrollY) : -1,
+      mapVisible: map ? Math.round(Math.min(window.innerHeight - map.top, map.height)) : 0,
+      heroHeight: hero ? Math.round(hero.height) : -1,
+      facts: document.querySelectorAll('#intro-facts li').length,
+      jump: Boolean(document.querySelector('.app-intro__more a[href="#map"]')),
+    };
+  })()`);
+  check(
+    'the map is on the first desktop screen (map-first shell)',
+    firstScreen.mapVisible > 200 && firstScreen.facts >= 4 && firstScreen.jump,
+    JSON.stringify(firstScreen),
+  );
+
+  // The cantonal type curve for the page heading: 32 px base, 28 px at the
+  // smallest breakpoint ($fontSizeCurves huge/tiny). Checking the *class* keeps
+  // the shell from losing .zh-heading--1 again (a bare h1 gets 32 px anyway).
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'narrow heading' });
+  await sleep(600);
+  const heading = await cdp.eval(`(() => {
+    const node = document.querySelector('#intro-heading');
+    return { size: getComputedStyle(node).fontSize, classes: node.className, lineClamp: getComputedStyle(document.querySelector('.zh-lead')).webkitLineClamp };
+  })()`);
+  check(
+    'the page heading follows the cantonal type curve at 390 px',
+    heading.size === '28px' && /zh-heading--1/.test(heading.classes),
+    JSON.stringify(heading),
+  );
+  await cdp.send('Emulation.clearDeviceMetricsOverride');
+
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
