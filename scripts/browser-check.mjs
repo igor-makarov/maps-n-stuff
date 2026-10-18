@@ -205,7 +205,7 @@ class CDP {
   }
 
   async pressKey(key, { code, keyCode } = {}) {
-    const map = { ArrowRight: { code: 'ArrowRight', keyCode: 39 }, ArrowLeft: { code: 'ArrowLeft', keyCode: 37 }, Enter: { code: 'Enter', keyCode: 13 }, Escape: { code: 'Escape', keyCode: 27 } };
+    const map = { ArrowRight: { code: 'ArrowRight', keyCode: 39 }, ArrowLeft: { code: 'ArrowLeft', keyCode: 37 }, Enter: { code: 'Enter', keyCode: 13 }, Escape: { code: 'Escape', keyCode: 27 }, Home: { code: 'Home', keyCode: 36 } };
     const info = { code: code ?? map[key]?.code, windowsVirtualKeyCode: keyCode ?? map[key]?.keyCode };
     await this.send('Input.dispatchKeyEvent', { type: 'keyDown', key, ...info });
     await this.send('Input.dispatchKeyEvent', { type: 'keyUp', key, ...info });
@@ -399,6 +399,45 @@ try {
   }
   check('detail shows a IIIF preview image', preview.state === 'loaded', JSON.stringify(preview).slice(0, 200));
   await cdp.screenshot(path.join(OUT_DIR, '02-detail.png')).then(() => report.screenshots.push('02-detail.png'));
+
+  /* --- 3a. IIIF deep zoom (region requests) ---------------------------- */
+  const singleSheet = await cdp.eval(`(() => ({ nav: document.querySelector('#page-nav')?.hidden, label: document.querySelector('#page-label')?.textContent }))()`);
+  check('sheet navigation is hidden for a single-sheet record', singleSheet.nav === true, JSON.stringify(singleSheet));
+
+  const fullSheetSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  await cdp.eval(`document.querySelector('#viewer-zoom-in').click(); document.querySelector('#viewer-zoom-in').click(); true`);
+  await sleep(2500);
+  const zoomed = await cdp.eval(`(() => {
+    const img = document.querySelector('.app-viewer__image');
+    const stage = document.querySelector('#viewer-stage');
+    return {
+      src: img?.src || '',
+      decodeW: img?.naturalWidth || 0,
+      decodeH: img?.naturalHeight || 0,
+      readout: document.querySelector('#viewer-resolution')?.textContent || '',
+      stageW: Math.round(stage?.getBoundingClientRect().width || 0),
+    };
+  })()`);
+  check(
+    'detail viewer asks the image service for the visible region (deep zoom)',
+    /e-rara\.ch\/i3f\/v\d+\/\d+\/\d+,\d+,\d+,\d+\/\d+,\/0\/default\.jpg$/.test(zoomed.src) && zoomed.decodeW >= Math.min(300, zoomed.stageW),
+    JSON.stringify(zoomed).slice(0, 220),
+  );
+  check('viewer reports the real resolution and cut-out', /Aufl\u00f6sung \d+ %/.test(zoomed.readout) && /Ausschnitt/.test(zoomed.readout), zoomed.readout);
+  await cdp.screenshot(path.join(OUT_DIR, '02b-detail-zoom.png')).then(() => report.screenshots.push('02b-detail-zoom.png'));
+
+  await cdp.eval(`document.querySelector('#viewer-stage').focus()`);
+  await cdp.pressKey('ArrowRight');
+  await cdp.pressKey('ArrowRight');
+  await sleep(1800);
+  const pannedSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  check('viewer pans with the arrow keys', pannedSrc !== zoomed.src && /\d+,\d+,\d+,\d+\//.test(pannedSrc), pannedSrc.slice(-60));
+
+  await cdp.pressKey('Home');
+  await sleep(1800);
+  const resetSrc = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+  check('Home returns to the whole sheet', resetSrc === fullSheetSrc && /\/full\//.test(resetSrc), resetSrc.slice(-60));
+
   await cdp.pressKey('Escape');
   const closed = await cdp.eval(`document.querySelector('#detail')?.hidden`);
   check('Escape closes the detail panel', closed === true);
@@ -498,6 +537,27 @@ try {
   await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'reload results' });
   const restored = await cdp.eval(`(() => ({ rows: document.querySelectorAll('#result-list > *').length, to: document.querySelector('#year-to')?.value, sel: document.querySelector('#detail')?.hidden === false }))()`);
   check('a shared URL reproduces the filters', restored.to === '1850' && restored.rows === afterCount, JSON.stringify(restored));
+  check('a shared ?sel= URL reopens the detail panel', restored.sel === true, JSON.stringify(restored));
+
+  /* --- 6b. detail → time filter hand-off ------------------------------- */
+  const periodButton = await cdp.eval(`(() => {
+    const button = [...document.querySelectorAll('#detail button')].find((b) => /Zeitraum/.test(b.textContent));
+    if (!button) return null;
+    button.click();
+    return true;
+  })()`);
+  await sleep(900);
+  const appliedPeriod = await cdp.eval(`(() => ({ from: document.querySelector('#year-from')?.value, to: document.querySelector('#year-to')?.value, panelHidden: document.querySelector('#detail')?.hidden, count: document.querySelectorAll('#result-list > *').length, state: document.querySelector('#results-live')?.textContent || '' }))()`);
+  check(
+    'the detail panel can push its own period into the time filter',
+    periodButton === true &&
+      appliedPeriod.panelHidden === true &&
+      appliedPeriod.from === '1816' &&
+      appliedPeriod.to === '1816' &&
+      appliedPeriod.count >= 1 &&
+      appliedPeriod.state.length > 0,
+    JSON.stringify(appliedPeriod),
+  );
 
   /* --- 7. mobile layout ------------------------------------------------- */
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });

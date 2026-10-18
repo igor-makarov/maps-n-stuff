@@ -89,7 +89,21 @@ test('every UI selectors used by the app modules exists in the shell', () => {
   for (const source of Object.values(modules)) {
     for (const match of source.matchAll(/qs\('([^']+)'/g)) selectors.add(match[1]);
   }
-  const dynamic = new Set(['#detail-preview', '#detail-status', '#page-label', '#page-next', '#page-prev', '#preview-meta']);
+  // Ids the modules render themselves (inside #detail-body) instead of the shell.
+  const dynamic = new Set([
+    '#detail-preview',
+    '#detail-status',
+    '#page-label',
+    '#page-nav',
+    '#page-next',
+    '#page-prev',
+    '#preview-meta',
+    '#viewer-resolution',
+    '#viewer-reset',
+    '#viewer-status',
+    '#viewer-zoom-in',
+    '#viewer-zoom-out',
+  ]);
   for (const selector of selectors) {
     if (dynamic.has(selector)) continue;
     if (selector.startsWith('#')) {
@@ -120,11 +134,16 @@ test('the shell only references entry points that exist', async () => {
     assert.ok(main.includes(optional), `optional module ${optional} is not wired in main.js`);
     assert.ok(optional in modules, `optional module ${optional} is missing`);
   }
+  // The IIIF detail viewer uses the pure helper module (coordination/README.md).
+  assert.ok('iiif.js' in modules, 'public/app/iiif.js must exist');
+  assert.match(modules['detail.js'], /from '\.\/iiif\.js'/, 'detail.js builds image requests through iiif.js');
 });
 
 test('modules only talk to the contracted context (ctx.store/ctx.bus/ctx.data)', () => {
+  // Helper modules are imported by the UI modules and expose no init(ctx).
+  const helpers = new Set(['main.js', 'dom.js', 'store.js', 'records.js', 'iiif.js']);
   for (const [name, source] of Object.entries(modules)) {
-    if (name === 'main.js' || name === 'dom.js' || name === 'store.js' || name === 'records.js') continue;
+    if (helpers.has(name)) continue;
     assert.match(source, /export function init\(ctx\)/, `${name}: modules expose init(ctx)`);
     assert.ok(!/localStorage/.test(source), `${name}: no hidden localStorage state (URL is the source of truth)`);
     assert.ok(!/document\.cookie/.test(source), `${name}: no cookie writes`);
