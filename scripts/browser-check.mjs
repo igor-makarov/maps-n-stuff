@@ -811,7 +811,12 @@ try {
   let afterPinch = beforeTouch;
   let pinchError = '';
   try {
-    afterPinch = await waitForViewerChange(beforeTouch, 'pinch region', 10_000);
+    // A pinch asks the viewer for a zoomed region; the provider then serves a
+    // fresh cut-out (up to ~24 MP on the largest e-rara sheets), which can take
+    // a while. 10 s was too tight once the seed grew (80 records, 2026-10-18);
+    // the viewer keeps the old bitmap until the new region is decoded, so a
+    // short wait fails on a slow provider, not on a broken gesture.
+    afterPinch = await waitForViewerChange(beforeTouch, 'pinch region', 25_000);
   } catch (err) {
     pinchError = err.message;
   }
@@ -847,7 +852,7 @@ try {
   let afterDrag = afterPinch;
   let dragError = '';
   try {
-    afterDrag = await waitForViewerChange(afterPinch, 'drag region', 10_000);
+    afterDrag = await waitForViewerChange(afterPinch, 'drag region', 25_000);
   } catch (err) {
     dragError = err.message;
   }
