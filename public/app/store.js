@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, place, lat, lon, zoom, selected, view, sort, overlay, otime, cmp }
+ *   store.getState()            -> { q, from, to, provider, type, place, lat, lon, zoom, selected, sheet, view, sort, overlay, otime, cmp }
  *   store.update({ from: 1800 }) -> merge, sync URL (replaceState), notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *
@@ -26,6 +26,7 @@ export const STATE_DEFAULTS = Object.freeze({
   lon: 8.5417,
   zoom: 12,
   selected: '', // record id
+  sheet: 1, // 1-based sheet/canvas of the open multi-sheet work (shareable)
   view: 'split', // 'split' | 'map' | 'list'
   sort: 'year-asc',
   overlay: '', // swisstopo layer id of the comparison layer
@@ -47,6 +48,7 @@ export const PARAM = {
   lon: 'lon',
   zoom: 'z',
   selected: 'sel',
+  sheet: 'sh',
   view: 'view',
   sort: 'sort',
   overlay: 'ov',
@@ -56,7 +58,7 @@ export const PARAM = {
 
 const TYPES = {
   string: ['q', 'provider', 'type', 'collection', 'viewport', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
-  number: ['from', 'to', 'lat', 'lon', 'zoom'],
+  number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
 function coerce(key, value) {
@@ -124,6 +126,10 @@ export function sanitise(state) {
   // A collection name comes from the data (never invented) and from the URL, so
   // keep it short and printable; an unknown name simply yields no results.
   out.collection = String(out.collection || '').slice(0, 120);
+  // Which sheet of a multi-sheet work the detail viewer shows. The real canvas
+  // count is only known after the manifest loads, so the hard bound stays wide;
+  // detail.js clamps to the actual count and writes the corrected value back.
+  out.sheet = Math.max(1, Math.min(999, Math.floor(Number(out.sheet) || 1)));
   // The compare list is a hand-editable URL value: keep only ids that match the
   // data contract "<providerId>:<record id>" (lower-case provider, safe value
   // characters) and never more than four of them.

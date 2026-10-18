@@ -22,6 +22,7 @@ import {
   parseMetadata,
   regionRequest,
   serviceId,
+  sheetThumbUrl,
   viewForCanvas,
   zoomPercent,
   zoomView,
@@ -204,6 +205,19 @@ test('regionRequest formats pixel regions and only uses full when told the bound
 
 test('fullImageUrl is a plain sizeByW request', () => {
   assert.equal(fullImageUrl('https://www.e-rara.ch/i3f/v20/1001', 304), 'https://www.e-rara.ch/i3f/v20/1001/full/304,/0/default.jpg');
+});
+
+test('sheetThumbUrl prefers the manifest thumbnail and derives from the image service otherwise', () => {
+  assert.equal(
+    sheetThumbUrl({ thumbnail: 'https://example.org/thumb.jpg', service: 'https://example.org/iiif/1' }),
+    'https://example.org/thumb.jpg',
+  );
+  assert.equal(
+    sheetThumbUrl({ service: 'https://www.e-rara.ch/i3f/v20/6507643/' }, 96),
+    'https://www.e-rara.ch/i3f/v20/6507643/full/96,/0/default.jpg',
+  );
+  assert.equal(sheetThumbUrl({ label: 'ohne Bild' }), null, 'no thumbnail and no service -> null, nothing invented');
+  assert.equal(sheetThumbUrl(null), null);
 });
 
 /* ----------------------------------------------------------------- view box */

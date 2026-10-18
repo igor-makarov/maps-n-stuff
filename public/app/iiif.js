@@ -181,6 +181,23 @@ export function fullImageUrl(service, width = 1000) {
   return `${String(service).replace(/\/+$/, '')}/full/${w},/0/default.jpg`;
 }
 
+/**
+ * Small preview of one sheet for the sheet strip.
+ *
+ * The manifest's own `thumbnail` wins; without one the URL is derived from the
+ * canvas image service with a documented Image API request (`full/<w>,/0/default.jpg`,
+ * the level-2 `sizeByW` feature e-rara advertises). If the canvas has neither,
+ * `null` is returned and the UI falls back to the sheet number alone — nothing
+ * is invented.
+ */
+export function sheetThumbUrl(canvas, width = 96) {
+  if (!canvas) return null;
+  if (canvas.thumbnail) return String(canvas.thumbnail);
+  if (!canvas.service) return null;
+  const w = Math.max(32, Math.min(Math.round(width || 96), 400));
+  return `${String(canvas.service).replace(/\/+$/, '')}/full/${w},/0/default.jpg`;
+}
+
 /* ------------------------------------------------------------------ view box */
 
 /**
