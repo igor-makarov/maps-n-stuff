@@ -49,6 +49,13 @@ npm run dev      # http://127.0.0.1:8787  (static assets + /api/* Worker)
 npm run check    # build validation + node --test + wrangler deploy --dry-run
 ```
 
+Licensing and credits: the application source is MIT ([LICENSE](LICENSE)); fonts,
+design tokens, map data and digitised imagery keep their own licences and
+attribution requirements, all listed with their sources in
+[NOTICE.md](NOTICE.md) and [docs/data-sources.md](docs/data-sources.md).
+`public/robots.txt` allows crawling; there is no `sitemap.xml` because a Workers
+project does not know its production host at build time.
+
 Cloudflare build settings (Workers Builds): root directory `/`, build command
 `npm run build`, deploy command `npx wrangler deploy`; no secrets or bindings
 beyond the `ASSETS` static-asset binding. `public/_headers` adds the security
