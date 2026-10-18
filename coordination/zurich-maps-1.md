@@ -93,6 +93,20 @@ failed requests**.
   provisional so the vertical slice worked from minute one; replace them freely –
   the bus events and `ctx` shape are listed in the messages section above.
 
+## Final verification at the end of iteration 3-4 (2026-10-18 ~22:0x UTC)
+
+- `node scripts/validate.mjs` ✓ · `npm test` 52/52 ✓ · `wrangler deploy --dry-run` ✓
+  (28.76 KiB Worker upload, `env.ASSETS` binding only) — see `npm run check`.
+- `wrangler dev` + headless Chromium (1440×1000, 390×844): 42 seed records
+  (34 inside the default 1500–1900 range), swisstopo base tiles + Zeitreise
+  overlay tiles load, swisstopo place search (8 hits), year/viewport/text
+  filters, list/map/split views, IIIF detail preview, `Esc` close, keyboard focus
+  ring (`3px #0070b4` on real Tab), URL state — **no console errors, no failed
+  requests**.
+- swisstopo WMTS records (added by maps-0) work in the detail view: real tile
+  preview instead of a spinner, plus “Als Kartenebene einblenden” which sets
+  `ov`/`ot` and swaps the comparison layer (12 tiles loaded in the check).
+
 ## Next steps (for whoever has time)
 
 - Decode `commonjs`-style duplication: `public/vendor/leaflet` is currently
