@@ -75,5 +75,15 @@
     "maxEntryId": 183,
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "6-12",
+    "outcome": "running",
+    "runId": "39172574722",
+    "journalId": "6-12",
+    "minEntryId": 7,
+    "maxEntryId": 7,
+    "checkpointAt": "2026-10-18T22:31:30.930Z",
+    "transcript": "checkpoint"
   }
 ]
