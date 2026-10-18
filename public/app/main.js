@@ -107,8 +107,29 @@ function renderIntro() {
   }
 }
 
+/** View switch (shell-owned): list only, map only or both. */
+function initViewSwitch() {
+  const buttons = [...document.querySelectorAll('[data-view]')];
+  if (buttons.length === 0) return;
+
+  const apply = (view) => {
+    document.body.classList.remove('app-view--split', 'app-view--list', 'app-view--map');
+    document.body.classList.add(`app-view--${view}`);
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.view === view));
+  };
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => ctx.store.update({ view: button.dataset.view }));
+  }
+  ctx.store.subscribe((next, changed) => {
+    if (changed.includes('view')) apply(next.view);
+  });
+  apply(ctx.store.getState().view);
+}
+
 async function main() {
   document.documentElement.dataset.app = 'kartenzeit';
+  initViewSwitch();
 
   // Data first: every module can rely on ctx.data being populated.
   try {

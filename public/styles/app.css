@@ -87,11 +87,44 @@
   font-size: var(--zh-font-small);
 }
 
-/* ---- Two-column work area: list side + map ---- */
+/* ---- View switch: list only / map only / split ---- */
 .app-grid {
   display: grid;
   gap: var(--zh-column-gap);
   align-items: start;
+}
+
+.app-view--map .app-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-view--map .app-side {
+  display: none;
+}
+
+.app-view--map .app-map,
+.app-view--map .app-mapwrap {
+  position: static;
+  height: min(78vh, 760px);
+}
+
+.app-view--list .app-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-view--list .app-mapwrap,
+.app-view--list .app-map__skip,
+.app-view--list .app-map__hint {
+  display: none;
+}
+
+.app-view--list .app-result-list {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.zh-viewswitch {
+  display: flex;
+  gap: var(--zh-size-mini);
 }
 
 @media (min-width: 1024px) {

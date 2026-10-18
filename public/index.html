@@ -91,6 +91,14 @@
           <span class="app-toolbar__label" id="result-count">Ergebnisse werden geladen …</span>
         </div>
         <div class="app-toolbar__group">
+          <span class="zh-label" id="view-label">Ansicht</span>
+          <div class="zh-viewswitch" role="group" aria-labelledby="view-label">
+            <button class="zh-chip" type="button" data-view="split" aria-pressed="true">Liste und Karte</button>
+            <button class="zh-chip" type="button" data-view="list" aria-pressed="false">nur Liste</button>
+            <button class="zh-chip" type="button" data-view="map" aria-pressed="false">nur Karte</button>
+          </div>
+        </div>
+        <div class="app-toolbar__group">
           <label class="zh-label" for="sort-select">Sortierung</label>
           <select class="zh-select" id="sort-select">
             <option value="year-asc">Jahr aufsteigend</option>
