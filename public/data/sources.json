@@ -1,0 +1,47 @@
+{
+ "generatedAt": "2026-10-18T21:28:25.608Z",
+ "method": "e-rara OAI-PMH set=zuz (3 pages) + DOI landing pages + IIIF manifests + swisstopo WMTS capabilities",
+ "providers": [
+  {
+   "id": "e-rara",
+   "name": "e-rara – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
+   "operator": "Zentralbibliothek Zürich (ZB) with Swiss university libraries",
+   "homepage": "https://www.e-rara.ch/",
+   "recordUrlPattern": "https://www.e-rara.ch/zuz/doi/10.3931/e-rara-{id}",
+   "api": {
+    "oai": "https://www.e-rara.ch/zuz/oai?verb=ListRecords&metadataPrefix=oai_dc&set=zuz (OAI-PMH 2.0, oai_dc)",
+    "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest (IIIF Presentation API 2.0)",
+    "image": "https://www.e-rara.ch/i3f/v20/{imageId}/{region}/{size}/{rotation}/{quality}.{format} (IIIF Image API 2, level2)",
+    "cors": "access-control-allow-origin: * (verified 2026-10-18)"
+   },
+   "rights": "Per record, from dc:rights (mostly PDM 1.0 = Public Domain Mark) and the item’s own rights statement.",
+   "attribution": "Zentralbibliothek Zürich via e-rara",
+   "retrievalDate": "2026-10-18",
+   "verified": "2026-10-18"
+  },
+  {
+   "id": "swisstopo",
+   "name": "swisstopo – Bundesamt für Landestopografie, geoadmin geoservices",
+   "operator": "Bundesamt für Landestopografie swisstopo",
+   "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+   "recordUrlPattern": "https://map.geo.admin.ch/?layers={layerId}&time={time}",
+   "api": {
+    "wmts": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext} (WMTS 1.0.0)",
+    "capabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+    "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n} (CORS *)"
+   },
+   "rights": "Open Government Data / swisstopo geoservices terms, attribution required.",
+   "attribution": "© swisstopo",
+   "retrievalDate": "2026-10-18",
+   "verified": "2026-10-18"
+  },
+  {
+   "id": "local",
+   "name": "Local fixture provider (tests only)",
+   "operator": "this repository",
+   "rights": "CC0 fixtures used to keep the UI testable when upstreams are unreachable.",
+   "attribution": "repository fixtures",
+   "retrievalDate": "2026-10-18"
+  }
+ ]
+}
