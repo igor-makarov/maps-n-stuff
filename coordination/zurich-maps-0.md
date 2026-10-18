@@ -87,6 +87,46 @@ collections, still every record with an upstream year and a stated bbox.
 - Reproducibility checked explicitly: `npm run harvest:offline` replays the cache
   and rebuilds the **same 80 record ids** (`same record ids: true`).
 
+### Commit `def42db` — documented depicted periods (survey dates)
+
+The detail panel showed “Dargestellter Zeitraum: vom Anbieter nicht angegeben” for
+every e-rara record. The manifests do state it for the Zürich Wildkarte series
+(“… nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein
+gravirt”), so the harvest now fills `depictedYearStart/End` **and** the verbatim
+match in `depictedSource` for **26 of 80 records** (all Wildkarte sheets, printed
+1853).
+
+- Only the anchored survey phrase is accepted. The loose reading
+  “Aufnahmen von XXXX-YYYY” would have written the *engraving* years (1852–1865)
+  into the data — 35 cached manifests contain that wording. Rules: range must not
+  postdate the imprint, only whole pairs, evidence always stored.
+- `scripts/validate.mjs` (the build gate) enforces exactly those invariants, so a
+  future harvest cannot quietly drop the evidence.
+- **One line changed in maps-3's `detail.js`**: “Zeitraum dieses Blattes filtern”
+  preferred the depicted period, which contradicts its own doc comment, the
+  slider label “Zeitraum (Publikationsjahr)” and the harness check that reads the
+  panel's `Publikationsjahr`; with the new data it would have filtered 1843–1851
+  and hidden the very sheet (1853). It now uses the publication range. If you
+  prefer a depicted-period filter instead, it needs the slider semantics to say
+  so — say the word and it is a two-file change.
+
+### Diagnostic that cost me time — stale headless Chromium
+
+Two harness runs in this iteration (54/56, and a probe that claimed the new data
+was missing) were **polluted by leftover `chromium --headless` processes from
+earlier runs**: they keep `--remote-debugging-port=9222/9333` and their own HTTP
+cache, so a new run silently connects to the *old* browser and reads a
+pre-harvest `/data/records.json` (`Cache-Control: max-age=600`). Symptom: the app
+“ignores” a fresh data file while `curl` shows it. Fix: kill leftovers before a
+run (`pkill -9 -f 'remote-debugging-port=9222'` in a *script*, not on a command
+line that contains the pattern) or use a unique debug port. After a clean start:
+**61/61**.
+
+**→ all**: `wrangler dev` also serves a *snapshot* of `public/` taken at startup, so
+`/data/records.json` stays old after a re-harvest until the dev server is
+restarted (`/api/*` reads from disk, which makes the difference look like an app
+bug). Restart the preview after `npm run harvest`.
+
 ### Next (my area)
 
 1. (done) The touch failures were upstream load, not a pointer bug — see above.
@@ -182,6 +222,46 @@ against the current slider range. Also `43/44` → **44/44** after maps-2's
 - **→ all**: `npm run harvest` is safe to re-run; `.cache/fetch/` is git-ignored,
   so a runner without the cache downloads the same ~120 bounded upstream
   responses (≈50 s).
+
+### Commit `def42db` — documented depicted periods (survey dates)
+
+The detail panel showed “Dargestellter Zeitraum: vom Anbieter nicht angegeben” for
+every e-rara record. The manifests do state it for the Zürich Wildkarte series
+(“… nach den in den Jahren 1843-1851 gemachten Aufnahmen von 1852-1865 in Stein
+gravirt”), so the harvest now fills `depictedYearStart/End` **and** the verbatim
+match in `depictedSource` for **26 of 80 records** (all Wildkarte sheets, printed
+1853).
+
+- Only the anchored survey phrase is accepted. The loose reading
+  “Aufnahmen von XXXX-YYYY” would have written the *engraving* years (1852–1865)
+  into the data — 35 cached manifests contain that wording. Rules: range must not
+  postdate the imprint, only whole pairs, evidence always stored.
+- `scripts/validate.mjs` (the build gate) enforces exactly those invariants, so a
+  future harvest cannot quietly drop the evidence.
+- **One line changed in maps-3's `detail.js`**: “Zeitraum dieses Blattes filtern”
+  preferred the depicted period, which contradicts its own doc comment, the
+  slider label “Zeitraum (Publikationsjahr)” and the harness check that reads the
+  panel's `Publikationsjahr`; with the new data it would have filtered 1843–1851
+  and hidden the very sheet (1853). It now uses the publication range. If you
+  prefer a depicted-period filter instead, it needs the slider semantics to say
+  so — say the word and it is a two-file change.
+
+### Diagnostic that cost me time — stale headless Chromium
+
+Two harness runs in this iteration (54/56, and a probe that claimed the new data
+was missing) were **polluted by leftover `chromium --headless` processes from
+earlier runs**: they keep `--remote-debugging-port=9222/9333` and their own HTTP
+cache, so a new run silently connects to the *old* browser and reads a
+pre-harvest `/data/records.json` (`Cache-Control: max-age=600`). Symptom: the app
+“ignores” a fresh data file while `curl` shows it. Fix: kill leftovers before a
+run (`pkill -9 -f 'remote-debugging-port=9222'` in a *script*, not on a command
+line that contains the pattern) or use a unique debug port. After a clean start:
+**61/61**.
+
+**→ all**: `wrangler dev` also serves a *snapshot* of `public/` taken at startup, so
+`/data/records.json` stays old after a re-harvest until the dev server is
+restarted (`/api/*` reads from disk, which makes the difference look like an app
+bug). Restart the preview after `npm run harvest`.
 
 ### Next (my area)
 
