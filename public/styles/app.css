@@ -173,8 +173,19 @@
 
 .app-view--map .app-map,
 .app-view--map .app-mapwrap {
-  position: static;
+  /* The map container must stay positioned: its tiles, extents and markers are
+     absolutely positioned children (see .map-layer in map.js). A `position:
+     static` override made them escape the box — they painted over the intro
+     and produced ~80 px of horizontal page overflow. */
+  position: relative;
+  top: auto;
   height: min(78vh, 760px);
+}
+
+/* In map-only view the map is the page: the intro and its facts would push it
+   below the fold again. The toolbar keeps the way back to the other views. */
+.app-view--map .app-intro {
+  display: none;
 }
 
 .app-view--list .app-grid {
@@ -188,7 +199,10 @@
 }
 
 .app-view--list .app-result-list {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* `minmax(320px, …)` overflows the 320 px cantonal breakpoint (the shell has
+     12 px gutters, so only ~296 px remain). `min(320px, 100%)` keeps the
+     multi-column list without a horizontal scrollbar. */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
 }
 
 .zh-viewswitch {
@@ -392,8 +406,10 @@
   pointer-events: none;
 }
 
+/* Opacity is controlled on the whole overlay layer (map.js `overlay:opacity`);
+   a second factor here made the 20–100 % control behave like 17–85 %. */
 .map-overlay-tile {
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .map-controls {
@@ -410,46 +426,49 @@
   padding: 0;
 }
 
+/* Markers are real buttons with a strong cantonal-blue fill: the earlier white
+   24 px pin blended into the swisstopo base map (which draws its own white
+   junction circles), so the pins were invisible in practice. */
 .map-marker {
   position: absolute;
-  width: var(--zh-size-large);
-  height: var(--zh-size-large);
-  margin: -12px 0 0 -12px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
   padding: 0;
-  border: 2px solid var(--zh-black);
+  border: 2px solid var(--zh-white);
   border-radius: 50%;
-  background: var(--zh-white);
-  color: var(--zh-black);
+  background: var(--zh-blue);
+  color: var(--zh-white);
   font-family: var(--zh-font-black);
-  font-size: var(--zh-font-tiny);
+  font-size: var(--zh-font-small);
   font-weight: 900;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 40%);
+  box-shadow: 0 0 0 1px var(--zh-black), 0 2px 5px rgb(0 0 0 / 45%);
 }
 
 .map-marker:hover {
-  background: var(--zh-black);
+  background: var(--zh-darkblue);
   color: var(--zh-white);
 }
 
 .map-marker.is-selected {
-  background: var(--zh-blue);
-  border-color: var(--zh-black);
-  color: var(--zh-white);
+  background: var(--zh-cyan);
+  color: var(--zh-black);
   z-index: 3;
   /* The 1.25 scale is part of the inline translate3d() in map.js – a transform
      here would be overridden by that inline style. */
-  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-blue);
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-darkblue);
 }
 
 .map-marker.is-preview {
-  border-color: var(--zh-blue);
-  background: var(--zh-blue-soft);
+  background: var(--zh-darkblue);
+  color: var(--zh-white);
   z-index: 4;
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-cyan);
 }
 
 .map-marker:focus-visible {

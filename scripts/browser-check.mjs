@@ -903,6 +903,22 @@ try {
   );
   await cdp.screenshot(path.join(OUT_DIR, '03c-mobile-320.png')).then(() => report.screenshots.push('03c-mobile-320.png'));
 
+  // The multi-column list view must also survive the narrowest breakpoint: its
+  // `minmax(320px, …)` track once forced a 12 px horizontal overflow here.
+  const narrowList = await cdp.eval(`(() => {
+    document.querySelector('[data-view="list"]')?.click();
+    return {
+      view: document.body.className,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      rows: document.querySelectorAll('#result-list > *').length,
+    };
+  })()`);
+  check(
+    '320 px: list-only view does not overflow horizontally',
+    narrowList.view.includes('app-view--list') && narrowList.overflow <= 1 && narrowList.rows > 0,
+    JSON.stringify(narrowList),
+  );
+
   /* --- 8. WCAG 2.2 AA contrast sweep of the visible UI ------------------ */
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 960, deviceScaleFactor: 1, mobile: false });
   await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
@@ -1202,6 +1218,97 @@ try {
     JSON.stringify(heading),
   );
   await cdp.send('Emulation.clearDeviceMetricsOverride');
+
+  /* --- 8g. view switch: map-only / list-only stay inside their boxes ---- */
+  // The map container keeps absolutely positioned tiles, extents and markers as
+  // children. A `position: static` override in map-only view once let them
+  // escape the box: they painted over the intro, added ~80 px of horizontal
+  // page overflow and put clickable markers outside the map.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'view switch page' });
+  await sleep(800);
+  const markerInfo = await cdp.eval(`(() => {
+    const marker = document.querySelector('.map-marker');
+    if (!marker) return null;
+    const style = getComputedStyle(marker);
+    const rect = marker.getBoundingClientRect();
+    return {
+      count: document.querySelectorAll('.map-marker').length,
+      w: Math.round(rect.width),
+      h: Math.round(rect.height),
+      bg: style.backgroundColor,
+      color: style.color,
+      visible: (document.querySelector('#map-visible-count')?.textContent || '').trim(),
+    };
+  })()`);
+  check(
+    'map pins are visible, sized and named in the map status line',
+    Boolean(markerInfo) &&
+      markerInfo.count > 0 &&
+      markerInfo.w >= 24 &&
+      markerInfo.h >= 24 &&
+      markerInfo.bg !== 'rgb(255, 255, 255)' &&
+      /Ausschnitt/.test(markerInfo.visible),
+    JSON.stringify(markerInfo),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '05-map-pins.png')).then(() => report.screenshots.push('05-map-pins.png'));
+
+  const mapOnly = await cdp.eval(`(() => {
+    document.querySelector('[data-view="map"]')?.click();
+    const map = document.querySelector('#map');
+    const rect = map.getBoundingClientRect();
+    const above = document.elementFromPoint(Math.round(rect.x + rect.width / 2), Math.max(0, Math.round(rect.y - 24)));
+    const markers = [...document.querySelectorAll('.map-marker')].map((m) => m.getBoundingClientRect());
+    return {
+      view: document.body.className,
+      intro: getComputedStyle(document.querySelector('.app-intro')).display,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      height: Math.round(rect.height),
+      top: Math.round(rect.y),
+      markers: markers.length,
+      markersInside: markers.filter((b) => {
+        const cx = b.x + b.width / 2;
+        const cy = b.y + b.height / 2;
+        return cx >= rect.x && cx <= rect.right && cy >= rect.y && cy <= rect.bottom;
+      }).length,
+      aboveIsMap: Boolean(above && above.closest && above.closest('#map')),
+    };
+  })()`);
+  check(
+    'map-only view keeps tiles and markers inside the map box',
+    mapOnly.view.includes('app-view--map') &&
+      mapOnly.intro === 'none' &&
+      mapOnly.overflow <= 1 &&
+      mapOnly.height > 300 &&
+      mapOnly.markers > 0 &&
+      mapOnly.markersInside === mapOnly.markers &&
+      mapOnly.aboveIsMap === false,
+    JSON.stringify(mapOnly),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '05-map-only.png')).then(() => report.screenshots.push('05-map-only.png'));
+
+  const listOnly = await cdp.eval(`(() => {
+    document.querySelector('[data-view="list"]')?.click();
+    return {
+      view: document.body.className,
+      mapDisplay: getComputedStyle(document.querySelector('.app-mapwrap')).display,
+      rows: document.querySelectorAll('#result-list > *').length,
+      columns: getComputedStyle(document.querySelector('#result-list')).gridTemplateColumns.split(' ').length,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  })()`);
+  check(
+    'list-only view hides the map and keeps the results readable',
+    listOnly.view.includes('app-view--list') &&
+      listOnly.mapDisplay === 'none' &&
+      listOnly.rows > 0 &&
+      listOnly.columns > 1 &&
+      listOnly.overflow <= 1,
+    JSON.stringify(listOnly),
+  );
+  // Back to the documented default combination for anything that follows.
+  await cdp.eval(`document.querySelector('[data-view="split"]')?.click(); true`);
+  await sleep(400);
 
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

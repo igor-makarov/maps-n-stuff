@@ -1,5 +1,44 @@
 # zurich-maps-2 status
 
+Iteration 7-13 (2026-10-18, ~22:5x–23:4x UTC). Member `zurich-maps-2` (map,
+search, results). Files I own: `public/app/map.js`, `public/app/search.js`,
+`public/app/results.js`.
+
+## Landed on `main` this iteration
+
+| Content | Files |
+| --- | --- |
+| **Map-only view layout bug fixed.** `.app-view--map .app-map { position: static }` (a way to cancel the desktop sticky rule) made the map container non-positioned, so its absolutely positioned tiles/extent/markers escaped the (clipping) box: they painted over the intro, put clickable markers outside the map and produced ~80 px of horizontal page overflow. The container stays `position: relative` now. | `app.css` (maps-1's file, 2 rules + comments) |
+| **Map-only view is now the map.** The intro hero (442 px at 1440) is hidden in `view=map`, so the map starts at y≈299 instead of 765; the toolbar keeps the way back. | `app.css` |
+| **Markers were invisible in practice.** White 24 px pins with a black border blended into the swisstopo base map (which draws its own white junction circles). They are 30 px cantonal-blue pins with a white ring + black outline now; hover dark blue, selected cyan (part of the inline `scale(1.25)` transform as before). | `app.css`, marker geometry unchanged in `map.js` |
+| **`?view=list` overflowed by 12 px at 320 px.** `repeat(auto-fill, minmax(320px, 1fr))` is wider than the ~296 px content box at the narrowest cantonal breakpoint. `minmax(min(320px, 100%), 1fr)`. | `app.css` |
+| **Search fallback crash fixed.** When the swisstopo gazetteer cannot answer, suggestions come from record titles. `localFallback` used `record.geo?.lat ?? null`, and `choose()` then threw `Cannot read properties of null (reading 'toFixed')`: the status stayed stale, the suggestion list never closed, null coordinates reached the store. `fallbackSuggestions()` (exported, pure) now derives the position from `recordCenter()` (published point, else the documented extent) and `choose()` handles point / bbox-only / no-geometry honestly. | `search.js`, new `tests/search.test.mjs` |
+| **Map/badge honesty: “N von M gefilterten Karten in diesem Ausschnitt.”** A live status line under the map says how many filtered records are pins in the current viewport (or that none are, pointing at “Treffer einpassen”). Marker culling now uses the anchor-inside test instead of a ±40 px margin, so no invisible pins are kept/counted. | `map.js`, `index.html` (`#map-visible-count`) |
+| **Comparison-layer opacity control behaves as labelled.** `.map-overlay-tile { opacity: .85 }` multiplied the layer opacity, so 20–100 % acted like 17–85 %. The layer carries the opacity now. | `app.css` |
+| Harness: 4 new checks — map pins sized/coloured and counted in the status line, map-only view keeps every tile/marker inside the map box (plus real `elementFromPoint` probe above it), list-only view hides the map and uses >1 column, 320 px list-only has no overflow. | `scripts/browser-check.mjs` (maps-3's file) |
+| `docs/run.md`: harness count corrected (36 → 56) and the new checks named. | `docs/run.md` |
+
+### Messages
+
+- **→ maps-1**: four small edits in `app.css` (your file) and one line in `index.html`. The map-only fix is the important one; the intro-hiding in `view=map` is a UX decision I made because a 442 px hero above a “map only” view contradicts the label. Revert/reword freely, but keep `.app-map` positioned while its children are absolute.
+- **→ maps-3**: 4 new checks in `browser-check.mjs` (my area) and one new test file `tests/search.test.mjs` (fallback suggestions). The 320 px section now also clicks “nur Liste”; the check asserts ≤ 1 px overflow.
+- **→ maps-0**: no data-layer changes. `records.json` semantics are only used through `recordCenter`/`matchesQuery`.
+- **→ all**: gate stays `npm run check` + `node scripts/browser-check.mjs`; both green here (90 unit tests, 65/65 browser checks, 80-record seed).
+
+### Verified (this runner, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation, **90/90** `node --test`, `wrangler deploy --dry-run` (28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs` → **65/65** on the rebased tree (maps-1's map-first hero, maps-3's `?sh=` sheet strip and device-local list, maps-0's 80-record seed), including the four new view/pin checks and the whole existing suite (deep zoom, touch pinch/drag, compare, multi-sheet navigation, contrast sweep, no console errors, same-origin network).
+- Manual CDP probes: before the fix, `?view=map` had `scrollWidth 1361` at a 1280 viewport and painted tiles from y=540 while the container started at 765; after, `scrollWidth 1280`, `aboveIsMap=false`, marker centers all inside. `?view=list` at 320 px: overflow 12 → 0, track 296 px.
+
+### Next (my area)
+
+- Cluster markers only if the corpus grows well beyond ~200 records (the visible-count line covers the “why is my map empty” case for now).
+- Preview card reading order at 320 px and a screen-reader pass over the histogram remain open from the previous iteration.
+- Split view on a phone: the map is first, the result list below; check the 80-record seed does not make that page excessively long.
+
+---
+
 Iteration 6-1x (2026-10-18, ~22:3x–23:0x UTC). Member `zurich-maps-2` (map, search,
 results). Files I own: `public/app/map.js`, `public/app/search.js`,
 `public/app/results.js`.

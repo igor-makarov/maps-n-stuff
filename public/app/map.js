@@ -180,6 +180,7 @@ export function init(ctx) {
     renderMarkers(originX, originY, w, h, z);
     renderExtent(originX, originY, z);
     updateBadge();
+    updateVisibleCount();
     updateLive();
   }
 
@@ -241,7 +242,10 @@ export function init(ctx) {
       if (!center) return;
       const x = lonToTileX(center.lon, z) * TILE - originX;
       const y = latToTileY(center.lat, z) * TILE - originY;
-      if (x < -40 || y < -40 || x > w + 40 || y > h + 40) return;
+      // Only markers whose anchor is inside the viewport: with the old ±40 px
+      // margin a pin could sit fully outside the (clipping) container and be
+      // invisible while still being kept and counted.
+      if (x < 0 || y < 0 || x > w || y > h) return;
       wanted.add(record.id);
       let marker = markers.get(record.id);
       if (!marker) {
@@ -332,6 +336,20 @@ export function init(ctx) {
 
   function updateLive() {
     live.textContent = `Kartenausschnitt: ${state.lat.toFixed(3)}° N, ${state.lon.toFixed(3)}° O, Zoomstufe ${state.zoom}.`;
+  }
+
+  /** Tell the user how many of the filtered records are pins in this viewport. */
+  function updateVisibleCount() {
+    const host = qs('#map-visible-count');
+    if (!host) return;
+    const visible = markers.size;
+    const total = state.filtered.length;
+    host.textContent =
+      total === 0
+        ? ''
+        : visible === 0
+          ? 'Keine der gefilterten Karten liegen in diesem Ausschnitt – «Treffer einpassen» zeigt sie.'
+          : `${visible} von ${total} gefilterten Karten in diesem Ausschnitt.`;
   }
 
   const push = debounce(() => {
