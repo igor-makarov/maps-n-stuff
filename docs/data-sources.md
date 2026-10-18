@@ -18,10 +18,10 @@ endpoint is called by the application.
 | Provider record (interface) | <https://www.e-rara.ch/> — ZB Zürich interface `zuz` |
 | Primary record URL | `https://www.e-rara.ch/doi/10.3931/e-rara-<id>` (DOI resolves to the title page) |
 | Identifiers used | e-rara title id / DOI suffix (`e-rara-22142031`), IIIF title id, IIIF image id |
-| Metadata endpoint | `https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=<setSpec>` (OAI-PMH 2.0, `oai_dc`; sets used: `zuz`, `landkarten`, `cartesgeneve` — `ListSets` is paginated, 105 sets in 11 pages) |
+| Metadata endpoint | `https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=<setSpec>` (OAI-PMH 2.0, `oai_dc`; sets used: `zuz`, `landkarten`, `cartesgeneve`, `museecarto` — `ListSets` is paginated, 105 sets in 11 pages) |
 | IIIF manifest (Presentation API 2.0) | `https://www.e-rara.ch/i3f/v20/<titleId>/manifest` |
 | IIIF image service (Image API 2, level 2) | `https://www.e-rara.ch/i3f/v20/<imageId>/full/<size>/0/default.jpg` |
-| Holding institution | per record from the manifest `Besitzende Institution` — in the seed: Zentralbibliothek Zürich (20), ETH-Bibliothek Zürich (18), Bibliothèque de Genève (1) |
+| Holding institution | per record from the manifest `Besitzende Institution` — in the seed: Zentralbibliothek Zürich (26), ETH-Bibliothek Zürich (26), Bibliothèque de Genève (1). The registry's `institutions` list is derived from the harvested records, so it cannot drift; a set whose manifests do not name an institution (see `museecarto` below) contributes no record |
 | Rights | per record from `dc:rights` — the seed set is `PDM 1.0` (Public Domain Mark) |
 | Attribution | “Zentralbibliothek Zürich via e-rara” |
 | Related collection context | <https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen> (ZB Zürich, Karten und Panoramen) |
@@ -58,11 +58,31 @@ Field mapping (nothing invented):
 | `viewerUrl` | the library's own deep-zoom viewer: the DOI landing page states the holding corpus in `og:url` (`http://www.e-rara.ch/<corpus>/<id>`); the harvest keeps only the corpus after checking `<id>` against the manifest title id and stores `https://www.e-rara.ch/<corpus>/content/zoom/<id>`. Corpora in the seed: `zuz` 20, `zut` 18, `gep_r` 1. Nothing is constructed when the landing page does not state it |
 
 Selection rule (no hand-picked titles): every map record of an OAI set that is
-not a series volume, oldest first, with a cap per set (ZB Wildkarte 20 sheets,
-`landkarten` 18, `cartesgeneve` 1). A record is kept only when the manifest
+not a series volume, oldest first, with a cap per set (ZB Wildkarte 26 sheets,
+`landkarten` 26, `cartesgeneve` 14). A record is kept only when the manifest
 states a `Kartendaten` bbox and an upstream year; duplicates of the same work are
 dropped by leading title. The per-set numbers (`considered`/`kept`/`rule`) are
 written into `records.json.selection`.
+
+Discovery windows (2026-10-18) — the sets are not map sets, so the harvest reads
+a bounded sample of each and the window sizes are part of the method:
+
+| OAI set | What it holds | Pages read | Candidate window | Kept |
+| --- | --- | --- | --- | --- |
+| `zuz` | the whole ZB Zürich corpus, **54,999 records** | 32 (320 records) | 72 maps | 26 Wildkarte sheets |
+| `landkarten` | “Schweizer Landkarten aus vier Jahrhunderten” | 12 (120) | 50 maps | 26 |
+| `cartesgeneve` | Geneva and surroundings | 6 (60) | 40 maps | 1 (1837 “Geneva”, Bibliothèque de Genève) |
+| `museecarto` | world maps (Mappae mundi and reproductions) | 6 (54) | 20 maps | **0** |
+
+`cartesgeneve` documents a real trap: the window is sliced by *count* after
+sorting by year, so a narrow window silently drops 19th-century sheets behind
+older ones — the 1837 Geneva sheet disappeared at a 14-item window and is only
+back because the window is 40 candidates. `museecarto` is probed on every run and
+contributes **0 records**: no manifest of that set states a `Kartendaten` extent,
+and its works come from several libraries, so `manifestRecord` would also need the
+manifest to name the holding institution (`requireInstitution`) — no institution
+is ever guessed. Both facts are visible in `records.json.selection` and in the
+`museecarto` entry of `sources.json`.
 
 ## 2. swisstopo — Federal Office of Topography geoservices
 
@@ -126,7 +146,8 @@ metadata can appear in the public data or the UI.
 ## Fetching policy (politeness, caching, failure behaviour)
 
 - **Bounded harvest**: `scripts/fetch-records.mjs` requests the documented OAI-PMH
-  pages (22 `zuz` + 10 `landkarten` + 4 `cartesgeneve`, with resumption tokens),
+  pages (32 `zuz` + 12 `landkarten` + 6 `cartesgeneve` + 6 `museecarto`, with
+  resumption tokens),
   one IIIF manifest and one DOI landing page per candidate title, and the WMTS
   capabilities document, with a descriptive `User-Agent`
   (`Kartenzeit/1.0 (Canton-Zurich design study; contact: project maintainers)`).

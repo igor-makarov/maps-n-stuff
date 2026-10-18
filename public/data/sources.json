@@ -8,8 +8,9 @@
       "name": "e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
       "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
       "institutions": [
-        "Zentralbibliothek Zürich",
-        "ETH-Bibliothek Zürich"
+        "Bibliothèque de Genève",
+        "ETH-Bibliothek Zürich",
+        "Zentralbibliothek Zürich"
       ],
       "homepage": "https://www.e-rara.ch/",
       "home": "https://www.e-rara.ch/",
@@ -31,6 +32,12 @@
           "name": "Karten von Genf und seiner Umgebung (e-rara-Set cartesgeneve)",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-90735",
           "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=cartesgeneve"
+        },
+        {
+          "id": "museecarto",
+          "name": "Weltkarten aus dem Musée cartographique (e-rara-Set museecarto)",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
+          "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding institution named by the manifest"
         }
       ],
       "endpoints": {
@@ -115,5 +122,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T22:56:17.781Z"
+  "generatedAt": "2026-10-18T23:04:12.343Z"
 }

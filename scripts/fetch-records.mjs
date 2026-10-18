@@ -696,7 +696,12 @@ async function main() {
         id: 'e-rara',
         name: 'e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken',
         operator: 'Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken',
-        institutions: ['Zentralbibliothek Zürich', 'ETH-Bibliothek Zürich'],
+        // Derived from the harvested records, so the registry cannot drift from the data.
+        institutions: [
+          ...new Set(
+            [...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords].map((r) => r.institution),
+          ),
+        ].sort((a, b) => a.localeCompare(b, 'de')),
         homepage: 'https://www.e-rara.ch/',
         home: 'https://www.e-rara.ch/',
         collections: [
@@ -718,6 +723,16 @@ async function main() {
             // An actual harvested record from this OAI set, not a guessed collection page.
             record: geneveRecords[0]?.recordUrl ?? SOURCE_SETS.cartesgeneve.discovery,
             discovery: SOURCE_SETS.cartesgeneve.discovery,
+          },
+          {
+            id: SOURCE_SETS.museecarto.id,
+            name: SOURCE_SETS.museecarto.name,
+            discovery: SOURCE_SETS.museecarto.discovery,
+            // Honest status: the set is probed on every run and contributes nothing yet.
+            note:
+              `probing ${museCandidates.length} map candidates yields ${museRecords.length} records: ` +
+              'no manifest of this set states a "Kartendaten" extent, and its works come from several ' +
+              'libraries, so a record would also need the holding institution named by the manifest',
           },
         ],
         endpoints: {
