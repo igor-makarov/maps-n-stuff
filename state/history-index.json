@@ -65,12 +65,13 @@
   },
   {
     "id": "6-11",
-    "outcome": "running",
+    "outcome": "interrupted",
     "runId": "39172566750",
     "journalId": "6-11",
     "minEntryId": 7,
     "maxEntryId": 7,
     "checkpointAt": "2026-10-18T22:31:23.787Z",
+    "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
     "transcript": "checkpoint"
   }
 ]
