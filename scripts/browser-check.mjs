@@ -1143,6 +1143,86 @@ try {
       stripSwitch?.label === `Blatt 1 von ${total}` && stripSwitch?.sh === null,
       JSON.stringify(stripSwitch),
     );
+
+    // The strip is one tab stop (roving tabindex): ←/→/Home/End walk the sheets.
+    // Without it a 26-sheet work would add 26 tab stops before the next control.
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'strip keyboard entry', timeout: 25_000 });
+    const stripTabs = await cdp.eval(`(() => {
+      const buttons = [...document.querySelectorAll('#page-strip [data-sheet]')];
+      return { tabbable: buttons.filter((button) => button.tabIndex === 0).map((button) => button.dataset.sheet) };
+    })()`);
+    await cdp.eval(`document.querySelector('#page-strip [data-sheet="0"]')?.focus(); true`);
+    await cdp.pressKey('ArrowRight');
+    let stripArrow = null;
+    try {
+      stripArrow = await cdp.waitFor(
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Blatt 2 von ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null, sh: new URLSearchParams(location.search).get('sh') } : ''; })()`,
+        { label: 'strip arrow key', timeout: 10_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    await cdp.pressKey('Home');
+    let stripHome = null;
+    try {
+      stripHome = await cdp.waitFor(
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Blatt 1 von ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null } : ''; })()`,
+        { label: 'strip Home key', timeout: 10_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'the sheet strip is a single tab stop and ←/→/Home walk the sheets',
+      stripTabs.tabbable.length === 1 && stripTabs.tabbable[0] === '0' && stripArrow?.label === `Blatt 2 von ${total}` && stripArrow.focused === '1' && stripHome?.label === `Blatt 1 von ${total}` && stripHome?.focused === '0',
+      `${JSON.stringify(stripTabs)} -> ${JSON.stringify(stripArrow)} -> ${JSON.stringify(stripHome)}`,
+    );
+
+    // Fullscreen is the real Fullscreen API (not a fake overlay) and Esc must
+    // leave fullscreen without closing the panel: a trapped user is worse off.
+    const fullscreenBefore = await cdp.eval(`(() => { const b = document.querySelector('#viewer-fullscreen'); return b ? { exists: true, pressed: b.getAttribute('aria-pressed'), text: b.textContent } : { exists: false }; })()`);
+    let fullscreenIn = null;
+    let fullscreenOut = null;
+    if (fullscreenBefore.exists) {
+      await cdp.click('#viewer-fullscreen');
+      try {
+        fullscreenIn = await cdp.waitFor(
+          `(() => { const button = document.querySelector('#viewer-fullscreen'); const active = document.fullscreenElement === document.querySelector('#viewer-stage'); return active && button.getAttribute('aria-pressed') === 'true' ? { active, pressed: button.getAttribute('aria-pressed'), text: button.textContent } : ''; })()`,
+          { label: 'fullscreen on', timeout: 8_000 },
+        );
+      } catch {
+        /* reported below */
+      }
+      await cdp.screenshot(path.join(OUT_DIR, '06-fullscreen.png')).then(() => report.screenshots.push('06-fullscreen.png'));
+      await cdp.pressKey('Escape');
+      await sleep(300);
+      // Esc is handled by the browser itself (and must not close the panel). The
+      // control row is not on screen while the stage is fullscreen, so the exit
+      // path is driven through the API the browser also uses — what matters here
+      // is that the panel reacts to `fullscreenchange` and stays usable.
+      const afterEscape = await cdp.eval(`(() => ({ panelOpen: document.querySelector('#detail')?.hidden === false, stillFullscreen: Boolean(document.fullscreenElement) }))()`);
+      if (afterEscape.stillFullscreen) await cdp.eval(`document.exitFullscreen?.(); true`);
+      try {
+        fullscreenOut = await cdp.waitFor(
+          `(() => { const button = document.querySelector('#viewer-fullscreen'); const stage = document.querySelector('#viewer-stage'); return !document.fullscreenElement && button.getAttribute('aria-pressed') === 'false' && !stage.classList.contains('is-fullscreen') ? { active: false, pressed: 'false', text: button.textContent, panelOpen: document.querySelector('#detail')?.hidden === false } : ''; })()`,
+          { label: 'fullscreen off', timeout: 8_000 },
+        );
+      } catch {
+        /* reported below */
+      }
+      fullscreenOut = { ...(fullscreenOut ?? {}), afterEscape };
+    }
+    check(
+      'the sheet can go fullscreen without losing the panel (and comes back cleanly)',
+      fullscreenIn?.active === true &&
+        fullscreenIn.pressed === 'true' &&
+        fullscreenOut?.active === false &&
+        fullscreenOut?.pressed === 'false' &&
+        fullscreenOut?.panelOpen === true &&
+        fullscreenOut?.afterEscape?.panelOpen === true,
+      `${JSON.stringify(fullscreenBefore)} -> ${JSON.stringify(fullscreenIn)} -> ${JSON.stringify(fullscreenOut)}`,
+    );
   }
 
   /* --- 8f. device-local list + map-first shell -------------------------- */
@@ -1464,6 +1544,23 @@ try {
   );
   await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
 
+  /* --- 8i. no placeholder values in the rendered UI --------------------- */
+  // `replaceChildren(null)` renders a literal "null" text node (unlike `el()`),
+  // so the panel with the most conditional links is scanned after a real session.
+  const leaks = await cdp.eval(`(() => {
+    const bad = [];
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+      const text = (node.nodeValue || '').trim();
+      if (text === 'null' || text === 'undefined' || text === 'NaN' || text === 'object Object') {
+        const host = node.parentElement;
+        bad.push((host?.id || host?.className || host?.tagName || '?') + ' = ' + text);
+      }
+    }
+    return bad;
+  })()`);
+  check('no placeholder value (null/undefined/NaN) is rendered in the UI', leaks.length === 0, leaks.slice(0, 6).join(' | '));
+
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
@@ -1477,6 +1574,85 @@ try {
     offOrigin.length === 0,
     offOrigin.length ? offOrigin.slice(0, 4).join(' | ') : `${new Set(apiRequests).size} same-origin API calls`,
   );
+
+  /* --- 9. honest degradation when the image service is unreachable ------ */
+  // Deliberately after the console/failed-request checks: blocking a host logs
+  // net::ERR_BLOCKED_BY_CLIENT and produces failed requests by design, and that
+  // expected noise must not be confused with a defect of the product.
+  const degradable = [...recordIndex.values()].find((record) => record.iiifManifest && record.thumbnail) ?? null;
+  if (degradable) {
+    await cdp.send('Network.setBlockedURLs', { urls: ['*e-rara.ch*', '*/api/fetch*'] });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(degradable.id)}` });
+    await cdp.waitFor(`document.querySelector('#detail')?.hidden === false`, { label: 'degraded detail panel', timeout: 15_000 });
+    await sleep(3500);
+    const degraded = await cdp.eval(`(() => {
+      const fallback = document.querySelector('#detail-preview .app-viewer__fallback');
+      const text = (fallback?.textContent || '').replace(/\\s+/g, ' ').trim();
+      return {
+        fallback: Boolean(fallback),
+        text: text.slice(0, 200),
+        rawLeak: /Failed to fetch|NetworkError|TypeError|is not a function|HTTP \\d{3} \\/|undefined/.test(text),
+        providerLink: fallback?.querySelector('a.zh-button')?.getAttribute('href') || null,
+        thumb: fallback?.querySelector('img')?.getAttribute('src') || null,
+        title: document.querySelector('#detail-title')?.textContent?.slice(0, 60) || '',
+        facts: document.querySelectorAll('.app-detail__facts dt').length,
+        reuseLinks: document.querySelectorAll('#reuse-links > *').length,
+        literalNull: [...document.querySelectorAll('#detail-body *')].filter((node) => node.children.length === 0 && /^(null|undefined)$/.test(node.textContent.trim())).length,
+        panelOpen: document.querySelector('#detail')?.hidden === false,
+      };
+    })()`);
+    check(
+      'an unreachable image service degrades to an honest, readable panel',
+      degraded.fallback === true &&
+        /Vorschau ist nicht (erreichbar|verfügbar)/.test(degraded.text) &&
+        String(degraded.providerLink).startsWith('https://') &&
+        degraded.thumb === degradable.thumbnail &&
+        degraded.title.length > 5 &&
+        degraded.facts >= 8 &&
+        degraded.reuseLinks >= 1 &&
+        degraded.panelOpen === true,
+      JSON.stringify(degraded).slice(0, 320),
+    );
+    check(
+      'the degraded panel shows no raw developer error and no literal null',
+      degraded.rawLeak === false && degraded.literalNull === 0,
+      `rawLeak=${degraded.rawLeak} literalNull=${degraded.literalNull} · ${degraded.text.slice(0, 120)}`,
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '07-degraded.png')).then(() => report.screenshots.push('07-degraded.png'));
+
+    // The place search has its own outage path (it falls back to titles from the
+    // seed); the same rule applies: no English developer string in the UI.
+    await cdp.send('Network.setBlockedURLs', { urls: ['*/api/search/places*'] });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'degraded search page', timeout: 20_000 });
+    // "Zürich" appears in 28 seed titles, so the local fallback really has matches
+    // to offer here ("Rheinau" would only prove the no-match branch).
+    await cdp.typeInto('#place-input', 'Zürich');
+    let searchStatus = '';
+    try {
+      searchStatus = await cdp.waitFor(
+        `(() => { const text = document.querySelector('#place-status')?.textContent || ''; return /nicht erreichbar/.test(text) ? text : ''; })()`,
+        { label: 'search outage status', timeout: 15_000 },
+      );
+    } catch {
+      searchStatus = await cdp.eval(`document.querySelector('#place-status')?.textContent || ''`);
+    }
+    const localSuggestions = await cdp.eval(`document.querySelectorAll('#place-suggestions li').length`);
+    check(
+      'an unreachable place-search service falls back to local titles without raw errors',
+      /nicht erreichbar/.test(searchStatus) && !/Failed to fetch|NetworkError|undefined/.test(searchStatus) && localSuggestions >= 1,
+      `"${String(searchStatus).slice(0, 150)}" · ${localSuggestions} local suggestions`,
+    );
+
+    // …and the app must recover on its own once the upstream answers again.
+    await cdp.send('Network.setBlockedURLs', { urls: [] });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'recovered page', timeout: 20_000 });
+    const recovered = await cdp.eval(`(() => ({ rows: document.querySelectorAll('#result-list > *').length, notices: document.querySelector('#app-notices')?.hidden ?? true }))()`);
+    check('the app loads normally again after the upstream recovers', recovered.rows > 5 && recovered.notices === true, JSON.stringify(recovered));
+  } else {
+    check('an unreachable image service degrades to an honest, readable panel', false, 'no record with manifest + thumbnail in the seed');
+  }
 } catch (err) {
   check('browser check completed without throwing', false, err.message);
 } finally {

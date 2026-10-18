@@ -179,6 +179,20 @@ export function init(ctx) {
 
   const localFallback = (query) => fallbackSuggestions(ctx.data.records, query);
 
+  /**
+   * Netzwerkfehler tragen englische Entwicklertexte ("Failed to fetch"); die
+   * Statuszeile nennt nur, was der Besucher wissen muss. Maps-3 hat die gleiche
+   * Regel für den Bilddienst in `describeUpstreamError` (iiif.js) — hier bewusst
+   * lokal, damit `search.js` keine Abhängigkeit zum Viewer-Modul bekommt.
+   */
+  function errorReason(err) {
+    const message = String(err?.message ?? err ?? '');
+    const http = message.match(/\bHTTP (\d{3})\b/);
+    if (http) return `HTTP ${http[1]}`;
+    if (/failed to fetch|networkerror|network error|load failed|err_/i.test(message)) return 'Netzwerkfehler';
+    return message.slice(0, 80) || 'unbekannter Fehler';
+  }
+
   async function suggest(query) {
     state.controller?.abort();
     state.controller = new AbortController();
@@ -204,8 +218,8 @@ export function init(ctx) {
       setStatus(
         status,
         local.length > 0
-          ? `Ortssuche nicht erreichbar (${err.message}) – Vorschläge aus den Datensätzen.`
-          : `Ortssuche derzeit nicht erreichbar (${err.message}).`,
+          ? `Ortssuche nicht erreichbar (${errorReason(err)}) – Vorschläge aus den Datensätzen.`
+          : `Ortssuche derzeit nicht erreichbar (${errorReason(err)}).`,
       );
     } finally {
       form.setAttribute('aria-busy', 'false');

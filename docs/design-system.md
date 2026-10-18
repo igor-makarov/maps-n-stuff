@@ -80,6 +80,8 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   regions for result counts/search/status, `aria-expanded`/`activedescendant`
   combobox semantics, keyboard-operable map (arrows, `+`/`-`, Home, End) with an
   equivalent result list, focus management and `Esc` in the detail panel,
+  roving tabindex for repeated controls (the year histogram and the sheet strip
+  are one tab stop each; ←/→/Home/End move inside them),
   `prefers-reduced-motion` support, and text contrast ≥ 4.5:1 on the token
   palette (black/grey on white/`#f7f7f7`; blue `#00407c` for links).
 

@@ -14,6 +14,7 @@ import { copyText, el, formatYearRange, qs, setStatus, trapFocus } from './dom.j
 import { recordCenter } from './records.js';
 import {
   boundsForCanvas,
+  describeUpstreamError,
   eRaraViewerUrl,
   fullImageUrl,
   imageRequestUrl,
@@ -87,6 +88,10 @@ export function init(ctx) {
 
   function render(record) {
     const center = recordCenter(record);
+    // A previous viewer (the panel can switch records without closing) keeps a
+    // window-resize and a fullscreen listener; drop it before the DOM is replaced.
+    viewer?.destroy();
+    viewer = null;
     const viewer_ = previewSection(record);
     body.replaceChildren(
       el('div', { class: 'app-detail__bar' }, [
@@ -262,6 +267,18 @@ export function init(ctx) {
       el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-out', 'aria-label': 'Verkleinern', text: '−' }),
       el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-in', 'aria-label': 'Vergrössern', text: '+' }),
       el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'viewer-reset', text: 'Ganzes Blatt' }),
+      // Real fullscreen for the sheet (the Fullscreen API, not a simulated
+      // overlay): the largest possible view of a map without leaving the page.
+      // Only offered when the browser supports it – no inert control.
+      document.fullscreenEnabled
+        ? el('button', {
+            class: 'zh-button zh-button--ghost zh-button--small',
+            type: 'button',
+            id: 'viewer-fullscreen',
+            'aria-pressed': 'false',
+            text: 'Vollbild',
+          })
+        : null,
       el('span', { class: 'app-viewer__readout', id: 'viewer-resolution', text: 'Auflösung –' }),
       // Sheet navigation appears once we know the record has more than one sheet.
       el('span', { class: 'app-viewer__nav', id: 'page-nav', hidden: true }, [
@@ -274,14 +291,20 @@ export function init(ctx) {
     const viewerEl = el('div', { class: 'app-viewer', id: 'detail-preview' }, [
       stage,
       // One button per sheet of a multi-sheet work; filled once the manifest is
-      // parsed, hidden for the (common) single-sheet case.
-      el('div', {
-        class: 'app-viewer__sheets',
-        id: 'page-strip',
-        role: 'group',
-        'aria-label': 'Blätter dieses Kartenwerks',
-        hidden: true,
-      }),
+      // parsed, hidden for the (common) single-sheet case. Roving tabindex: the
+      // strip is one tab stop, ←/→/Home/End walk the sheets (26 keys stops for a
+      // 26-sheet work would be a keyboard trap of its own).
+      el(
+        'div',
+        {
+          class: 'app-viewer__sheets',
+          id: 'page-strip',
+          role: 'group',
+          'aria-label': 'Blätter dieses Kartenwerks',
+          hidden: true,
+          onkeydown: onStripKeyDown,
+        },
+      ),
       controls,
       el('p', { class: 'app-viewer__caption' }, [
         el('span', { id: 'preview-meta', text: 'IIIF-Vorschau wird geladen …' }),
@@ -310,7 +333,44 @@ export function init(ctx) {
     viewerEl.querySelector('#viewer-reset')?.addEventListener('click', () => instance.reset());
     viewerEl.querySelector('#page-prev')?.addEventListener('click', () => gotoPage(page - 1));
     viewerEl.querySelector('#page-next')?.addEventListener('click', () => gotoPage(page + 1));
+    wireFullscreen(viewerEl, stage, instance);
     return viewerEl;
+  }
+
+  /* ------------------------------------------------------------- fullscreen */
+
+  /**
+   * Fullscreen for the viewer stage. The button is only rendered when the
+   * browser advertises `document.fullscreenEnabled`, so the control is never
+   * inert; leaving fullscreen (button or Esc) restores the previous layout, and
+   * the visible IIIF region is re-requested for the new stage size.
+   */
+  function wireFullscreen(viewerEl, stage, instance) {
+    const button = viewerEl.querySelector('#viewer-fullscreen');
+    if (!button) return;
+    const sync = () => {
+      const active = document.fullscreenElement === stage;
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      button.textContent = active ? 'Vollbild beenden' : 'Vollbild';
+      stage.classList.toggle('is-fullscreen', active);
+      instance?.refresh?.();
+    };
+    button.addEventListener('click', () => {
+      if (document.fullscreenElement === stage) document.exitFullscreen?.().catch(() => {});
+      else stage.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => setStatus(statusNode(), 'Vollbild ist in diesem Browser nicht verfügbar.', 'info'));
+    });
+    document.addEventListener('fullscreenchange', sync);
+    // The viewer is destroyed when the panel closes or the work changes; the
+    // document-level listener must go with it (and fullscreen must not survive
+    // a closed panel).
+    if (instance) {
+      const baseDestroy = instance.destroy.bind(instance);
+      instance.destroy = () => {
+        document.removeEventListener('fullscreenchange', sync);
+        if (document.fullscreenElement === stage) document.exitFullscreen?.().catch(() => {});
+        baseDestroy();
+      };
+    }
   }
 
   /** WMTS records have no IIIF manifest – show a real tile and name what it is. */
@@ -342,7 +402,9 @@ export function init(ctx) {
       // Without a manifest the reuse block must not stay on "Weitere Links
       // werden geladen …": fall back to the harvested record values.
       manifest = null;
-      showPreviewFallback(record, `Vorschau konnte nicht geladen werden (${err?.message || err}).`);
+      // `describeUpstreamError` keeps developer strings such as "Failed to fetch"
+      // out of the panel; `title` keeps the raw text for debugging.
+      showPreviewFallback(record, describeUpstreamError(err), String(err?.message ?? err ?? ''));
       updateReuseLinks(record);
     }
   }
@@ -444,6 +506,27 @@ export function init(ctx) {
       ),
     );
     strip.hidden = false;
+    updateSheetStrip(canvases.length);
+  }
+
+  /**
+   * ←/→/Home/End inside the sheet strip. Roving tabindex: exactly one sheet
+   * button is tabbable (the visible one), the arrow keys move both the selection
+   * and the focus — the same pattern as the year histogram.
+   */
+  function onStripKeyDown(event) {
+    const strip = event.currentTarget;
+    const buttons = [...strip.querySelectorAll('[data-sheet]')];
+    if (buttons.length < 2) return;
+    const currentIndex = buttons.findIndex((button) => Number(button.dataset.sheet) === page);
+    const keys = { ArrowRight: currentIndex + 1, ArrowLeft: currentIndex - 1, Home: 0, End: buttons.length - 1 };
+    const wanted = keys[event.key];
+    if (wanted === undefined) return;
+    event.preventDefault();
+    const target = Math.max(0, Math.min(buttons.length - 1, wanted));
+    if (target === currentIndex) return;
+    gotoPage(target);
+    qs(`#page-strip [data-sheet="${target}"]`)?.focus();
   }
 
   /** Mark the visible sheet in the strip without rebuilding it. */
@@ -454,6 +537,8 @@ export function init(ctx) {
     for (const button of strip.querySelectorAll('[data-sheet]')) {
       const active = Number(button.dataset.sheet) === page;
       button.classList.toggle('is-active', active);
+      // Roving tabindex: one tab stop for the whole strip.
+      button.tabIndex = active ? 0 : -1;
       if (active) {
         button.setAttribute('aria-current', 'true');
         button.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
@@ -463,16 +548,16 @@ export function init(ctx) {
     }
   }
 
-  function showPreviewFallback(record, message) {
+  function showPreviewFallback(record, message, rawDetail = '') {
     const frame = qs('#detail-preview');
     if (!frame) return;
     const url = record?.thumbnail ?? null;
     frame.replaceChildren(
       el('div', { class: 'app-viewer__fallback' }, [
-        el('p', { class: 'zh-hint', text: message }),
-        url ? el('img', { src: url, alt: '', decoding: 'async' }) : null,
+        el('p', { class: 'zh-hint', text: message, title: rawDetail || undefined }),
+        url ? el('img', { src: url, alt: '', decoding: 'async', onerror: (event) => (event.currentTarget.hidden = true) }) : null,
         el('a', { class: 'zh-button zh-button--small', href: record?.recordUrl ?? '#', target: '_blank', rel: 'noopener', text: 'Beim Anbieter ansehen ↗' }),
-      ]),
+      ].filter(Boolean)),
     );
   }
 
@@ -553,22 +638,27 @@ export function init(ctx) {
     // Fall back to the harvested `imageService` so the link never depends on a
     // manifest request that may still be in flight (or fail).
     const service = canvas?.service || record?.imageService;
+    // `replaceChildren` turns a `null` argument into a literal "null" text node
+    // (unlike `el()`), so absent links are filtered out first — a failed manifest
+    // request used to print "null" between the citation buttons.
     container.replaceChildren(
-      service
-        ? fullImageLink(service)
-        : el('span', { class: 'zh-hint', text: 'Für dieses Blatt liefert der Anbieter keinen IIIF-Bilddienst.' }),
-      manifest?.seeAlso
-        ? el('a', {
-            class: 'zh-button zh-button--ghost zh-button--small',
-            href: manifest.seeAlso,
-            target: '_blank',
-            rel: 'noopener',
-            text: 'METS/MODS über OAI-PMH ↗',
-          })
-        : null,
-      record?.recordUrl
-        ? el('a', { class: 'zh-button zh-button--ghost zh-button--small', href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'DOI/Datensatz ↗' })
-        : null,
+      ...[
+        service
+          ? fullImageLink(service)
+          : el('span', { class: 'zh-hint', text: 'Für dieses Blatt liefert der Anbieter keinen IIIF-Bilddienst.' }),
+        manifest?.seeAlso
+          ? el('a', {
+              class: 'zh-button zh-button--ghost zh-button--small',
+              href: manifest.seeAlso,
+              target: '_blank',
+              rel: 'noopener',
+              text: 'METS/MODS über OAI-PMH ↗',
+            })
+          : null,
+        record?.recordUrl
+          ? el('a', { class: 'zh-button zh-button--ghost zh-button--small', href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'DOI/Datensatz ↗' })
+          : null,
+      ].filter(Boolean),
     );
   }
 
@@ -627,6 +717,9 @@ export function init(ctx) {
   scrim?.addEventListener('click', close);
   panel.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
+      // While the sheet is fullscreen, Esc belongs to the browser first: it must
+      // leave fullscreen, not close the whole panel.
+      if (document.fullscreenElement) return;
       event.preventDefault();
       close();
       return;
@@ -759,7 +852,10 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     const percent = zoomPercent(view, stageSize().width);
     const whole = view.w >= bounds.w - 1 && view.h >= bounds.h - 1;
     const box = `Ausschnitt ${Math.round(view.w)}×${Math.round(view.h)} von ${bounds.w}×${bounds.h} Bildpunkten`;
-    onZoom?.(whole ? `Ganzes Blatt · Auflösung ${percent} %` : `Auflösung ${percent} % · ${box}`);
+    // "Gesamtansicht" and not "Ganzes Blatt": the button next to the read-out is
+    // called "Ganzes Blatt", and two identical labels next to each other read
+    // like a duplicate control.
+    onZoom?.(whole ? `Gesamtansicht · Auflösung ${percent} %` : `Auflösung ${percent} % · ${box}`);
   }
 
   /* ---------------------------------------------------------------- loading */
@@ -1004,6 +1100,11 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     zoomIn: () => zoom(1.6),
     zoomOut: () => zoom(1 / 1.6),
     reset,
+    /** Re-fit after the stage changed size outside a window resize (fullscreen). */
+    refresh() {
+      layout();
+      scheduleFetch();
+    },
     destroy() {
       destroyed = true;
       clearTimeout(fetchTimer);

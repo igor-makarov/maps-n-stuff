@@ -309,3 +309,31 @@ export function eRaraTitleId(url) {
   const match = typeof url === 'string' ? url.match(/\/i3f\/v\d+\/(\d+)\/manifest/) : null;
   return match ? match[1] : null;
 }
+
+/* ------------------------------------------------------------------- errors */
+
+/**
+ * One sentence a visitor can act on, for a failed upstream request.
+ *
+ * Browser errors are English developer strings (`Failed to fetch`,
+ * `NetworkError when attempting to fetch resource`) and the proxy adds
+ * `HTTP 502` on top; neither belongs in the visible German UI. Our own messages
+ * (from `parseManifest`) are already written for visitors and are passed through
+ * unchanged, so an unusable manifest still says exactly what is wrong with it.
+ *
+ * The raw string stays available for logs — callers must not render it.
+ */
+export function describeUpstreamError(err) {
+  const raw = String(err?.message ?? err ?? '').trim();
+  if (!raw) return 'Die Vorschau ist nicht erreichbar (unbekannter Fehler).';
+  const status = raw.match(/\bHTTP (\d{3})\b/);
+  if (/failed to fetch|networkerror|network error|load failed|err_/i.test(raw)) {
+    return 'Die Vorschau ist nicht erreichbar: Die Verbindung zum Bilddienst ist fehlgeschlagen.';
+  }
+  if (status) {
+    return `Die Vorschau ist nicht erreichbar: Der Bilddienst antwortet mit HTTP ${status[1]}.`;
+  }
+  // A message we wrote ourselves (manifest parsing): keep it, it is precise.
+  if (/[äöüß]|Manifest|Bildseiten/i.test(raw)) return `Die Vorschau ist nicht verfügbar: ${raw}`;
+  return 'Die Vorschau ist nicht erreichbar: Der Bilddienst hat unerwartet geantwortet.';
+}

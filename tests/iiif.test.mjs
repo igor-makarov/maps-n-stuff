@@ -12,6 +12,7 @@ import {
   MAX_OUTPUT_WIDTH,
   boundsForCanvas,
   clampView,
+  describeUpstreamError,
   eRaraTitleId,
   eRaraViewerUrl,
   fullImageUrl,
@@ -312,4 +313,28 @@ test('zoomView can reshape the region to the stage aspect (cover instead of bars
   assert.equal(wide.w, bounds.w);
   assert.ok(wide.h <= bounds.h);
   assert.ok(Math.abs(wide.w / wide.h - 8) < 0.001);
+});
+
+test('describeUpstreamError turns developer strings into an actionable sentence', () => {
+  // Browser-level network failures never reach the visible UI as English text.
+  const offline = describeUpstreamError(new TypeError('Failed to fetch / Failed to fetch'));
+  assert.match(offline, /nicht erreichbar/);
+  assert.match(offline, /Verbindung/);
+  assert.doesNotMatch(offline, /Failed to fetch|TypeError/);
+
+  // A proxy HTTP status is reported with its number (that is useful, not raw).
+  const proxy = describeUpstreamError(new Error('Proxy HTTP 502 / HTTP 502'));
+  assert.match(proxy, /HTTP 502/);
+  assert.doesNotMatch(proxy, /Proxy/);
+
+  // Our own manifest messages are German and precise — they are passed through.
+  const manifest = describeUpstreamError(new Error('IIIF-Manifest ohne Bildseiten (weder items noch sequences).'));
+  assert.match(manifest, /ohne Bildseiten/);
+
+  // Unknown upstream text is not echoed (it may be English developer prose).
+  const unknown = describeUpstreamError(new Error('something odd happened in the proxy layer'));
+  assert.doesNotMatch(unknown, /something odd/);
+  assert.match(unknown, /unerwartet/);
+
+  assert.match(describeUpstreamError(null), /unbekannter Fehler/);
 });

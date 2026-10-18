@@ -206,6 +206,32 @@
   max-width: 100%;
 }
 
+/* -------------------------------------------------------------- fullscreen */
+
+/* The whole screen belongs to the sheet: neutral dark surround, the stage keeps
+   its own centred layout (the viewer recomputes it on `fullscreenchange`). */
+.app-viewer__stage:fullscreen,
+.app-viewer__stage.is-fullscreen {
+  height: 100vh;
+  width: 100vw;
+  background: var(--zh-black, #000);
+  border: 0;
+  border-radius: 0;
+}
+
+/* A visible way out inside fullscreen: the control row is not on screen there. */
+.app-viewer__stage:fullscreen::after {
+  content: 'Vollbild: Esc beendet die Ansicht';
+  position: absolute;
+  right: var(--zh-size-regular, 16px);
+  bottom: var(--zh-size-regular, 16px);
+  padding: 2px var(--zh-size-tiny, 8px);
+  background: rgb(255 255 255 / 88%);
+  color: var(--zh-black, #000);
+  font-size: var(--zh-font-tiny, 0.8125rem);
+  pointer-events: none;
+}
+
 @media (max-width: 480px) {
   .app-viewer__stage {
     height: clamp(200px, 38vh, 380px);
