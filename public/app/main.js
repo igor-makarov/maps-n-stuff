@@ -4,7 +4,7 @@
  */
 
 import { createBus, createStore } from './store.js';
-import { el, qs, formatYearRange } from './dom.js';
+import { el, qs, formatYearRange, setStatus, copyText } from './dom.js';
 import { loadOverlays, loadRecords, loadSources, yearBounds } from './records.js';
 
 const bus = createBus();
@@ -78,6 +78,27 @@ function reportModuleProblems() {
         'Die übrigen Funktionen laufen weiter. Bitte die Seite neu laden; bleibt es dabei, ist ein Fehler im Client gemeldet.',
     }),
   );
+}
+
+/**
+ * “Suchlink kopieren”: the whole filter/selection state is already in the URL
+ * (see store.js), so sharing a search only needs a way to copy it — useful on a
+ * phone, where selecting the address bar by hand is painful.
+ */
+function wirePermalinkCopy() {
+  const button = qs('#permalink-copy');
+  const status = qs('#permalink-status');
+  if (!button) return;
+  button.addEventListener('click', async () => {
+    const ok = await copyText(window.location.href);
+    setStatus(
+      status,
+      ok
+        ? 'Link zu dieser Ansicht kopiert — Filter, Kartenausschnitt und Auswahl sind darin enthalten.'
+        : 'Kopieren nicht möglich. Bitte die Adresse aus der Adresszeile übernehmen — sie enthält denselben Zustand.',
+      ok ? 'success' : 'warn',
+    );
+  });
 }
 
 function renderIntro() {
@@ -196,6 +217,7 @@ async function main() {
   }
 
   renderIntro();
+  wirePermalinkCopy();
   await initModules();
   reportModuleProblems();
 

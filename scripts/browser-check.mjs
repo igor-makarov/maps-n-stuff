@@ -1184,11 +1184,36 @@ try {
     `after clear ${JSON.stringify(afterClear)}, after reload ${JSON.stringify(clearedReload)}`,
   );
 
+  // Sharing a search: the state is already in the URL, the filter panel turns it
+  // into a copied link (and says so, whether the clipboard API or the fallback
+  // path did the work).
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1788&to=1850` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'share-link page' });
+  await cdp.eval(`(() => { const panel = document.querySelector('.app-filters'); if (panel) panel.open = true; return true; })()`);
+  await cdp.click('#permalink-copy');
+  let shareStatus = null;
+  try {
+    shareStatus = await cdp.waitFor(
+      `(() => { const text = document.querySelector('#permalink-status')?.textContent || ''; return /kopiert|Kopieren nicht möglich/.test(text) ? { text, url: location.href } : ''; })()`,
+      { label: 'share status', timeout: 10_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    '“Suchlink kopieren” reports the copied search state',
+    Boolean(shareStatus?.url.includes('from=1788') && shareStatus?.url.includes('to=1850')),
+    shareStatus ? `${shareStatus.text.slice(0, 60)} · ${shareStatus.url.split('?')[1]}` : 'no status message',
+  );
+
   // Map-first shell: the map is the product, so part of it has to be visible on
   // a plain desktop/tablet viewport instead of sitting below a full-height intro
   // block. 840 px is the breakpoint where the compact intro band starts.
   const measureFirstScreen = () =>
     cdp.eval(`(() => {
+      // Measure the untouched first screen: earlier checks scrolled the page and
+      // the map column is sticky, which would report the sticky offset instead.
+      window.scrollTo({ top: 0, behavior: 'instant' });
       const map = document.querySelector('#map')?.getBoundingClientRect();
       const hero = document.querySelector('.app-intro')?.getBoundingClientRect();
       return {

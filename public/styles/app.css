@@ -1126,3 +1126,15 @@ body.app-compare--open {
   font-size: var(--zh-font-small);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- filter panel footer (shell: maps-1) ---------- */
+.app-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+  margin-bottom: var(--zh-size-tiny);
+}
+
+.app-filters__actions .zh-button {
+  flex: 1 1 auto;
+}
