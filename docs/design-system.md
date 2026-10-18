@@ -27,6 +27,9 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
 | soft colour variations (`$colorBlueSoft`, …) | `#edf5fa`, `#e0e8ee`, `#e8f3f2`, `#ece2f1`, `#ebf6eb`, `#f6e3ea` | `--zh-*-soft` |
 | `$sizeFontRegular` base + `$sizeFont*` scale | 16 px base, 10/12/14/16/18/20/24/28/32/40/48/56/72 px | `--zh-font-*` |
 | `$sizeFontHuge` curves (`$fontSizeCurves`) | h1 32→40→48 px across breakpoints | `.zh-heading--1` media queries |
+| `$normalButtonSize` (`$sizeBiggerBig + $sizeTiny`) | 48 px | `--zh-control-height` (buttons, header search) |
+| `$sizeBig` | 32 px | `--zh-control-height-small`, 32 px stage of controls |
+| `form_input.scss` scales | 72 / 60 / 48 px | header search 48 px, sidebar 32 px (documented app step) |
 | `$sizeMini … $sizeGiant` | 4/8/12/16/20/24/28/32/40/48/56/80 px | `--zh-size-*` |
 | `$sizeGlobalMaxWidth` / `$sizeWidthContent` / `$sizeWidthTextContent` | 1440 / 1168 / 768 px | `--zh-max-width`, `--zh-content-width`, `--zh-text-width` |
 | `$sizeBreakpoint*` | 0/320/400/600/840/1024/1280 px | our media queries use 600/840/1024/1280 |
@@ -42,9 +45,10 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   `src/assets/fonts/`. Headings use `letter-spacing: -0.02em`, h1
   `line-height: 1` from 840 px (`$sizeLineHeightNarrower`).
 - **Buttons** (`atm-button`): black fill, white text, `border-radius: 1px`,
-  fixed 40 px height (`$sizeBiggerBig + $sizeTiny`), InterBlack label, hover
-  `#333`, disabled `#949494`, plus the official `--small` (32 px) variant. Our
-  `--ghost`/`--secondary` variants keep the same geometry.
+  48 px height (`$normalButtonSize: $sizeBiggerBig + $sizeTiny` = 40 + 8), 48 px
+  min-width, InterBlack label, hover `#333`, disabled `#949494`, plus the
+  official `--small` (32 px, `$sizeBig`) variant. Our `--ghost`/`--secondary`
+  variants keep the same geometry; icon buttons are square (`--zh-button--icon`).
 - **Tags** (`atm-tag`): 12 px text, 2 px border `#ccc`, 5 px radius, 4×8 px
   padding — used for provenance/IIIF/“Kartenausschnitt bekannt” labels.
 - **Heading steps 4–6**: `src/atoms/headings/headings.scss` gives `h4`, `h5`
@@ -60,9 +64,15 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   `atm-heading--bordered`; content panels use a 4 px colour bar on the left
   (`--zh-size-mini`, `$sizeMini`) and the 4 px spacing rhythm, mirroring the
   canton's chapter-number indentation (`$chapterNumberMinWidth: 36px`).
-- **Form controls**: 2 px black borders, 40 px control height, labels in
-  InterBlack at 14 px (`form_input.scss`), range inputs using the cantonal blue
-  as `accent-color`.
+- **Form controls**: 2 px black borders, official input scales 72 / 60 / 48 px
+  (`form_input.scss`: `$targetInputHeight` 72, `$targetMediumInputHeight` 60,
+  `$targetSmallInputHeight` 48), labels in InterBlack at 14 px, 2 px input
+  radius. This app is data-dense: the header search uses the official **small**
+  step (48 px), the sidebar/toolbar fields use the app's own 32 px step
+  (`$sizeBig`, the same value as `atm-button--small`) so the list stays visible,
+  and range inputs use the cantonal blue as `accent-color`. The input border is
+  black instead of the upstream `#949494` default because a #949494 boundary on
+  white is only 2.9:1 — below the 3:1 that SC 1.4.11 asks for.
 - **Focus**: 3 px `#0070b4` outline with 2 px offset on every interactive
   element via `:focus-visible`; the canton's “flying focus” concept is
   referenced but a plain, high-contrast ring is used for predictability.
@@ -86,6 +96,25 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   favicon.svg` and the header mark are our own simplified shield in the
   cantonal blue/white, with the “no government affiliation” note in the header
   bar and footer.
+
+## Verification against the upstream files
+
+On 2026-10-18 the token file and the component geometry were re-read from the
+upstream repository (commit
+[`552ceb6`](https://github.com/Kanton-Zurich/frontend-designsystem/commit/552ceb670d0cef0ba1b4dd6cf567ebd0edb98915),
+`src/assets/css/globals/_variables.scss`, `src/atoms/button/button.scss`,
+`src/atoms/form_input/form_input.scss`) and compared with this app:
+
+- every hex colour used anywhere in `public/styles/*.css` is one of the official
+  palette values (`#0070b4`, `#00407c`, `#00797b`, `#009ee0`, `#b01657`,
+  `#d40053`, `#7f3da7`, `#1a7f1f`, `#e2001a`, the black scale and the soft
+  variations);
+- the font, spacing, line-height, grid, transition and z-index tokens match the
+  upstream values 1:1;
+- **correction from that check**: `$normalButtonSize` is `$sizeBiggerBig +
+  $sizeTiny` = **48 px**, not 40 px. Buttons/inputs had been built at 40 px and
+  the docs repeated the arithmetic error; the control height is now the official
+  48 px (`--zh-control-height`) and the 32 px variants use `$sizeBig`.
 
 ## Where the implementation lives
 

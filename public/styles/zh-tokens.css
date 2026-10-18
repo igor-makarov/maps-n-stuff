@@ -95,6 +95,7 @@
   --zh-line-narrower: 1; /* $sizeLineHeightNarrower */
   --zh-line-narrow: 1.2; /* $sizeLineHeightNarrow */
   --zh-line-medium: 1.3; /* $sizeLineHeightMedium */
+  --zh-line-subbase: 1.45; /* $sizeLineHeightSubBase */
   --zh-line-bigger: 1.4; /* $sizeLineHeightBigger */
   --zh-line-base: 1.5; /* $sizeLineHeightBase */
   --zh-line-super: 1.8; /* $sizeLineHeightSuper */
@@ -119,6 +120,16 @@
   --zh-text-width: 768px; /* $sizeWidthTextContent */
   --zh-column-gap: 12px; /* columnGap curve, tiny */
   --zh-wrapper-gap: 12px;
+
+  /* Controls: `$normalButtonSize: $sizeBiggerBig + $sizeTiny` = 40 + 8 = 48 px
+     is the height of the cantonal `.atm-button`; the official input scale is
+     72 / 60 / 48 px, so 48 px is also its smallest step. The app is
+     data-dense, so it uses the 48 px step for all its controls instead of the
+     72 px default, and `$sizeBig` (32 px) for the official `.atm-button--small`
+     variant. */
+  --zh-control-height: 48px;
+  --zh-control-height-small: 32px;
+  --zh-radius-input: 2px; /* form_input.scss */
 
   /* Characteristic indentation of the cantonal design: content and headings sit
      on a 4px rhythm rule, section headings carry a 3px top border and a

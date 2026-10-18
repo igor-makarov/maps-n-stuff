@@ -11,8 +11,10 @@
   align-items: center;
   justify-content: center;
   gap: var(--zh-size-small-regular);
-  min-height: var(--zh-size-bigger-big);
-  min-width: var(--zh-size-bigger-big);
+  /* Height/min-width = `$normalButtonSize` ($sizeBiggerBig + $sizeTiny) of the
+     cantonal `.atm-button`; the small variant uses `$sizeBig`. */
+  min-height: var(--zh-control-height);
+  min-width: var(--zh-control-height);
   padding: 1px var(--zh-size-large) 0;
   border: none;
   border-radius: var(--zh-radius);
@@ -39,7 +41,8 @@
 }
 
 .zh-button--small {
-  min-height: var(--zh-size-big);
+  min-height: var(--zh-control-height-small);
+  min-width: var(--zh-control-height-small);
   padding: 0 var(--zh-size-regular);
   font-size: var(--zh-font-small);
 }
@@ -65,7 +68,7 @@
 
 .zh-button--icon {
   padding: 0;
-  width: var(--zh-size-bigger-big);
+  width: var(--zh-control-height);
 }
 
 .zh-button__icon {
@@ -166,10 +169,13 @@
 .zh-input,
 .zh-select {
   width: 100%;
-  min-height: var(--zh-size-bigger-big);
+  min-height: var(--zh-control-height);
   padding: var(--zh-size-tiny) var(--zh-size-small-regular);
+  /* 2 px black instead of the upstream #949494 default: the cantonal system
+     targets WCAG 2.2 AA, and a #949494 border on white is only 2.9:1, below
+     the 3:1 of SC 1.4.11 for control boundaries. */
   border: 2px solid var(--zh-black);
-  border-radius: var(--zh-radius);
+  border-radius: var(--zh-radius-input);
   background: var(--zh-white);
   color: var(--zh-black);
   font-family: var(--zh-font-base);
@@ -177,7 +183,7 @@
 }
 
 .zh-input--small {
-  min-height: var(--zh-size-big);
+  min-height: var(--zh-control-height-small);
   font-size: var(--zh-font-small);
 }
 

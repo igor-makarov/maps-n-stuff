@@ -142,10 +142,14 @@
   margin: 0;
 }
 
-.app-toolbar .zh-select {
-  width: auto;
+.app-toolbar .zh-select,
+.app-filters .zh-select {
   min-height: var(--zh-size-big);
   font-size: var(--zh-font-small);
+}
+
+.app-toolbar .zh-select {
+  width: auto;
 }
 
 /* ---- View switch: list only / map only / split ---- */
@@ -433,7 +437,7 @@
 }
 
 .map-controls .zh-button {
-  width: var(--zh-size-bigger-big);
+  width: var(--zh-control-height);
   padding: 0;
 }
 
