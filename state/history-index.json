@@ -51,8 +51,8 @@
     "runId": "39168682285",
     "journalId": "3-5",
     "minEntryId": 7,
-    "maxEntryId": 151,
-    "checkpointAt": "2026-10-18T21:43:12.520Z",
+    "maxEntryId": 365,
+    "checkpointAt": "2026-10-18T21:48:22.126Z",
     "transcript": "checkpoint"
   }
 ]
