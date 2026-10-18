@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "1-1",
+    "outcome": "running",
+    "runId": "39167327848",
+    "journalId": "1-1",
+    "minEntryId": 7,
+    "maxEntryId": 7,
+    "checkpointAt": "2026-10-18T21:19:59.863Z",
+    "transcript": "checkpoint"
+  }
+]
