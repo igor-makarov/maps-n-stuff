@@ -326,6 +326,9 @@ export function init(ctx) {
   render();
   updateAddButton();
   if (pinnedIds().length >= 2) {
+    // A shared comparison link should show the list it carries instead of
+    // hiding it behind a closed panel.
+    panel.open = true;
     setStatus(status, `${pinnedIds().length} gemerkte Datensätze aus dem Link geladen – «Vergleichen» öffnet die Gegenüberstellung.`, 'info');
   }
 
