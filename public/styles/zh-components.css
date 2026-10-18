@@ -354,6 +354,11 @@ input[type='range'].zh-input {
   display: grid;
   gap: var(--zh-size-regular);
   padding-block: var(--zh-size-large);
+  /* Single column below 840 px: minmax(0, 1fr) lets the column shrink to the
+     viewport. Without it the implicit auto track took the search input's
+     intrinsic width (UA size=20 ≈ 247 px) and the header overflowed 320 px
+     phones by ~37 px. */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 840px) {

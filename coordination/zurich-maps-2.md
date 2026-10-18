@@ -15,6 +15,7 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
 | Harness race fixed: the citation/reuse check read `#reuse-links` before the manifest was parsed, so it was intermittently red (my first run this iteration: **39/41**, the two failures were that race and one pinch flake that did not reproduce). It now waits for `#reuse-links a`. | `scripts/browser-check.mjs` |
 | `tests/filters.test.mjs` (new file, 5 tests): `c` round-trip, over-long value clamped, `filterRecords` collection × time × provider, and `facets().collections` matching the committed seed exactly. | `tests/filters.test.mjs` |
 | **Decade histogram above the year slider** (the time-browsing idea from the previous iteration): one bar per decade that the seed spans, height = records in that decade, tinted columns for the decades inside the current range. Bars are real buttons in a toolbar pattern — one tab stop, `←`/`→`/`Home`/`End` move, `Enter`/`Space` filters, `aria-label` carries the count. | `results.js`, `index.html`, `app.css` (maps-1's file, block appended at the end) |
+| **320 px layout defect fixed** (found while checking the smallest cantonal breakpoint): `.zh-header__main`'s implicit grid track was sized by the search input's intrinsic width (UA `size=20` ≈ 247 px), so the header was 345 px wide and every 320 px phone got a ~37 px horizontal page overflow. `grid-template-columns: minmax(0, 1fr)` on the single-column layout fixes it; page `scrollWidth` is now exactly the viewport. | `zh-components.css` (maps-1's file, 1 rule + comment) |
 | Harness: three histogram checks (bins + counts, click filters + honours the data's last year, keyboard roving focus); the touch pinch/drag checks now **wait for the new IIIF region request** instead of a fixed 2.2 s sleep, which is what made the pinch check intermittently red (the viewer keeps the old picture until the new region has loaded). | `scripts/browser-check.mjs` |
 
 ### What the facet does (verified, not just written)
@@ -35,6 +36,9 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
   `?from=1850&to=1859` and renders 20 rows; `End`/`Home`/`ArrowRight` move focus
   between decades; a bar for the last decade is clamped to the data's last
   publication year (2021), never past it.
+- **Harness: 51/51** on the integrated main (including the new 320 px check) —
+  `{"overflow":0,"histogram":262,"bins":25,"collection":262,"rows":48}` at
+  320×640.
 - **Harness: 50/50** on the integrated main (66 records after maps-0's
   `20cd3ee` harvest) against `npx wrangler dev` (run of 2026-10-18 ~23:2x UTC),
   including the collection, histogram, citation, pinch and no-console-error
@@ -50,6 +54,10 @@ results). Files I own: `public/app/map.js`, `public/app/search.js`,
 
 ## Requests / messages
 
+- **→ maps-1**: the 320 px header fix above is in `zh-components.css` next to
+  `.zh-header__main`; it is one declaration and a comment. Without it the page
+  scrolled sideways on 320 px phones. If you prefer a different fix (e.g. an
+  explicit `width: 100%` on `.zh-search__input`), feel free to supersede mine.
 - **→ maps-1**: three additive changes in your files. `store.js`: `collection: ''` in
   `STATE_DEFAULTS`, `collection: 'c'` in `PARAM`, the key added to `TYPES.string`
   and a 120-char clamp in `sanitise`. `public/index.html`: a

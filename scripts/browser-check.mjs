@@ -859,6 +859,25 @@ try {
   );
   await cdp.screenshot(path.join(OUT_DIR, '03b-mobile-viewer.png')).then(() => report.screenshots.push('03b-mobile-viewer.png'));
 
+  /* --- 7c. very narrow phone (320 px, the smallest cantonal breakpoint) -- */
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 640, deviceScaleFactor: 2, mobile: true });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: '320 px results' });
+  await sleep(800);
+  const narrow = await cdp.eval(`(() => ({
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    histogram: Math.round(document.querySelector('#year-histogram')?.getBoundingClientRect().width || 0),
+    bins: document.querySelectorAll('#year-histogram button').length,
+    collection: Math.round(document.querySelector('#collection-filter')?.getBoundingClientRect().width || 0),
+    rows: document.querySelectorAll('#result-list > *').length,
+  }))()`);
+  check(
+    '320 px: no horizontal overflow, chart and facets stay usable',
+    narrow.overflow <= 1 && narrow.bins > 5 && narrow.histogram >= 200 && narrow.collection > 150 && narrow.rows > 0,
+    JSON.stringify(narrow),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '03c-mobile-320.png')).then(() => report.screenshots.push('03c-mobile-320.png'));
+
   /* --- 8. WCAG 2.2 AA contrast sweep of the visible UI ------------------ */
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 960, deviceScaleFactor: 1, mobile: false });
   await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
