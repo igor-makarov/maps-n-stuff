@@ -5,7 +5,7 @@
  */
 
 import { debounce, el, qs, setStatus } from './dom.js';
-import { matchesQuery } from './records.js';
+import { matchesQuery, recordCenter } from './records.js';
 
 const MIN_CHARS = 2;
 const QUICK = [
@@ -14,6 +14,27 @@ const QUICK = [
   { label: 'Basel (BS)', lat: 47.5596, lon: 7.5886, zoom: 12 },
   { label: 'Genf (GE)', lat: 46.2044, lon: 6.1432, zoom: 12 },
 ];
+
+/**
+ * Record-title suggestions used when the swisstopo gazetteer cannot answer
+ * (Worker/upstream outage). Pure so it is unit-testable; the coordinates come
+ * from `recordCenter`, which falls back to the documented extent — a missing
+ * `geo` point must never produce a null map position.
+ */
+export function fallbackSuggestions(records, query, limit = 6) {
+  const hits = (records ?? []).filter((record) => matchesQuery(record, query)).slice(0, limit);
+  return hits.map((record) => {
+    const center = recordCenter(record);
+    return {
+      label: record.title.length > 80 ? `${record.title.slice(0, 77)}…` : record.title,
+      origin: 'Datensatz',
+      lat: center?.lat ?? null,
+      lon: center?.lon ?? null,
+      bbox: record.extent ?? null,
+      recordId: record.id,
+    };
+  });
+}
 
 export function init(ctx) {
   const form = qs('#place-search');
@@ -113,16 +134,34 @@ export function init(ctx) {
 
   function choose(place, { zoom } = {}) {
     const targetZoom = zoom ?? zoomForBbox(place.bbox) ?? 12;
+    const hasPoint = Number.isFinite(place.lat) && Number.isFinite(place.lon);
     input.value = place.label;
-    ctx.store.update({ place: place.label, lat: place.lat, lon: place.lon, zoom: targetZoom });
-    ctx.bus.emit('place:selected', { ...place, zoom: targetZoom, source: state.source });
+    if (hasPoint) {
+      ctx.store.update({ place: place.label, lat: place.lat, lon: place.lon, zoom: targetZoom });
+      ctx.bus.emit('place:selected', { ...place, zoom: targetZoom, source: state.source });
+    } else if (place.bbox) {
+      // Fallback suggestions come from records; a record without a published
+      // point still has a documented extent, so fit that instead of writing a
+      // null coordinate into the map state (which used to throw here).
+      ctx.store.update({ place: place.label });
+      ctx.bus.emit('view:fit', { bounds: place.bbox });
+    } else {
+      ctx.store.update({ place: place.label });
+    }
     // A "Datensatz" suggestion is a record, not a gazetteer place: open it too.
     const record = place.recordId ? ctx.data.recordIndex?.get(place.recordId) : null;
     if (record) {
       ctx.store.update({ selected: record.id });
       ctx.bus.emit('record:selected', { record, source: 'search' });
     }
-    setStatus(status, `Kartenausschnitt auf „${place.label}“ gesetzt (${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}).`);
+    setStatus(
+      status,
+      hasPoint
+        ? `Kartenausschnitt auf „${place.label}“ gesetzt (${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}).`
+        : place.bbox
+          ? `Kartenausschnitt auf „${place.label}“ eingepasst.`
+          : `„${place.label}“ ausgewählt.`,
+    );
     close();
   }
 
@@ -138,18 +177,7 @@ export function init(ctx) {
     return 15;
   }
 
-  function localFallback(query) {
-    const records = ctx.data.records.filter((record) => matchesQuery(record, query)).slice(0, 6);
-    if (records.length === 0) return [];
-    return records.map((record) => ({
-      label: record.title.length > 80 ? `${record.title.slice(0, 77)}…` : record.title,
-      origin: 'Datensatz',
-      lat: record.geo?.lat ?? null,
-      lon: record.geo?.lon ?? null,
-      bbox: record.extent ?? null,
-      recordId: record.id,
-    }));
-  }
+  const localFallback = (query) => fallbackSuggestions(ctx.data.records, query);
 
   async function suggest(query) {
     state.controller?.abort();
