@@ -281,7 +281,11 @@ export function init(ctx) {
       el('p', { class: 'app-viewer__caption' }, [
         el('span', { id: 'preview-meta', text: 'IIIF-Vorschau wird geladen …' }),
       ]),
-      el('p', { class: 'app-viewer__hint', text: 'Zoomen: + / −, Doppelklick oder Ctrl/⌘ + Mausrad · Verschieben: ziehen oder Pfeiltasten (mit Shift grössere Schritte) · Home zeigt das ganze Blatt.' }),
+      el('p', {
+        class: 'app-viewer__hint',
+        // Multi-sheet works name the keyboard route explicitly (and the strip).
+        text: `Zoomen: + / −, Doppelklick oder Ctrl/⌘ + Mausrad · Verschieben: ziehen oder Pfeiltasten (mit Shift grössere Schritte) · Home zeigt das ganze Blatt.${(record.canvasCount ?? 0) > 1 ? ' Blatt wechseln: Alt + ←/→ oder die Blätterleiste unter dem Bild.' : ''}`,
+      }),
       live,
     ]);
     viewerEl.__viewer = createViewer(stage, {

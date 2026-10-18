@@ -1053,6 +1053,7 @@ try {
       navHidden: document.querySelector('#page-nav')?.hidden,
       prevDisabled: document.querySelector('#page-prev')?.disabled,
       src: document.querySelector('.app-viewer__image')?.src || '',
+      hint: /Blatt wechseln: Alt/.test(document.querySelector('.app-viewer__hint')?.textContent || ''),
     }))()`);
     await cdp.click('#page-next');
     let sheetTwoSrc = sheetOne.src;
@@ -1074,6 +1075,7 @@ try {
     check(
       'a real multi-sheet work offers working sheet navigation',
       sheetOne.navHidden === false &&
+        sheetOne.hint === true &&
         sheetOne.label === `Blatt 1 von ${expectedTotal}` &&
         sheetOne.prevDisabled === true &&
         sheetTwo.label === `Blatt 2 von ${expectedTotal}` &&
