@@ -22,6 +22,8 @@ export function init(ctx) {
   const clearButton = qs('#compare-clear');
   const countNode = qs('#compare-count');
   const status = qs('#compare-status');
+  const toolbarButton = qs('#compare-open');
+  const toolbarCount = qs('#compare-open-count');
   const view = qs('#compare-view');
   const viewBody = qs('#compare-view-body');
   const viewTitle = qs('#compare-view-title');
@@ -113,6 +115,8 @@ export function init(ctx) {
       );
     }
 
+    syncToolbar();
+
     if (unknown.length > 0) {
       setStatus(status, `${unknown.length} gemerkte(r) Datensatz/Datensätze ist nicht mehr im Bestand und wurde rot markiert.`, 'warn');
     }
@@ -189,6 +193,15 @@ export function init(ctx) {
     if (known.length < 2) {
       viewBody.append(el('p', { class: 'zh-state zh-hint', text: 'Für einen Vergleich mindestens zwei Datensätze merken.' }));
     }
+  }
+
+  /** Toolbar entry point: only useful (and only shown) with two plus records. */
+  function syncToolbar() {
+    if (!toolbarButton) return;
+    const known = pinnedRecords().filter((entry) => entry.record).length;
+    toolbarButton.hidden = known < 2;
+    if (toolbarCount) toolbarCount.textContent = known >= 2 ? ` (${known})` : '';
+    toolbarButton.setAttribute('aria-label', known >= 2 ? `Vergleich von ${known} Datensätzen öffnen` : 'Vergleich öffnen');
   }
 
   function openCompare(index = 0) {
@@ -279,6 +292,7 @@ export function init(ctx) {
   /* ----------------------------------------------------------------- wiring */
 
   addButton?.addEventListener('click', addSelected);
+  toolbarButton?.addEventListener('click', () => openCompare(0));
   clearButton?.addEventListener('click', clearAll);
   qs('#compare-view-close', view)?.addEventListener('click', closeCompare);
   qs('#compare-view-copy', view)?.addEventListener('click', async () => {
@@ -325,6 +339,7 @@ export function init(ctx) {
 
   render();
   updateAddButton();
+  syncToolbar();
   if (pinnedIds().length >= 2) {
     // A shared comparison link should show the list it carries instead of
     // hiding it behind a closed panel.

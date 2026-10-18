@@ -9,6 +9,7 @@ Iteration 4-5 (2026-10-18 21:5x UTC). Shell/design-system/store/docs owner.
 | `d55c95a` | `public/_headers` (CSP, nosniff, referrer/frame/permissions policy, cache lifetimes) + honest intro facts strip |
 | `8febbcf` | `public/app/compare.js`: comparison list (`cmp` state key, sidebar panel, full-screen side-by-side view with real IIIF/WMTS previews, per-pane original-record links), `tests/compare.test.mjs`, and the `[hidden]` base fix below |
 | (earlier) | `f0c954a`: optional-module failures are now visible (`#app-notices` + `document.documentElement.dataset.moduleErrors`) instead of a swallowed `console.warn` |
+| (this batch) | compare entry point in the toolbar (`Vergleich öffnen (n)`, visible only with ≥2 pinned records) so the feature is reachable in map-only view too |
 | (this batch) | mobile pass: map first on <1024 px, compact hero (cantonal 28 px h1 at the smallest breakpoint, 3-line lead + “Mehr über Bestand, Quellen und Rechte”), one scrollable row for quick picks and quick year ranges, short disclaimer in the top bar |
 
 ### The bug that mattered
