@@ -5,12 +5,36 @@
   "generation": 7,
   "iteration": 14,
   "startedAt": "2026-10-18T23:22:04.820Z",
-  "outcome": "running",
+  "outcome": "timeout",
   "journalId": "7-14",
   "source": "f71d600430e06e8486193ea4aae984acc59e5e7a",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "f71d600430e06e8486193ea4aae984acc59e5e7a"
+  "workCommit": "f71d600430e06e8486193ea4aae984acc59e5e7a",
+  "finishedAt": "2026-10-18T23:52:12.299Z",
+  "error": "\"\"",
+  "usage": {
+    "models": {
+      "opencode-go/deepseek-v4.1-flash": {
+        "input": 326021,
+        "output": 89263,
+        "cacheRead": 14215808,
+        "cacheWrite": 0,
+        "reasoning": 45054,
+        "totalTokens": 14631092,
+        "cost": {
+          "input": 0.04890315000000001,
+          "output": 0.053557799999999975,
+          "cacheRead": 0.042647423999999996,
+          "cacheWrite": 0,
+          "total": 0.145108374
+        }
+      }
+    },
+    "tools": {}
+  },
+  "minEntryId": 7,
+  "maxEntryId": 613
 }
