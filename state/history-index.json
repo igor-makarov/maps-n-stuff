@@ -53,5 +53,14 @@
     "maxEntryId": 817,
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "4-6",
+    "outcome": "interrupted",
+    "runId": "39172101929",
+    "journalId": "4-6",
+    "error": "Actions run ended before final publication (cancelled); recovered from latest committed checkpoint.",
+    "recovery": "diagnostics/recovery/39172101929-1.json",
+    "transcript": "unavailable"
   }
 ]
