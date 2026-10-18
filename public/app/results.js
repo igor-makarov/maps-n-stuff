@@ -395,7 +395,20 @@ export function init(ctx) {
     buttons[next]?.scrollIntoView({ block: 'nearest' });
   });
 
-  ctx.bus.on('records:loaded', () => apply());
+  // The time slider can only express years that exist in the data: clamp a state
+  // that came from the defaults or from a hand-written URL before rendering it.
+  function clampYearsToData() {
+    const state = ctx.store.getState();
+    const patch = {};
+    if (state.from < years.min) patch.from = years.min;
+    if (state.to > years.max) patch.to = years.max;
+    if (Object.keys(patch).length > 0) ctx.store.update(patch);
+  }
+
+  ctx.bus.on('records:loaded', () => {
+    clampYearsToData();
+    apply();
+  });
   ctx.bus.on('map:moved', ({ bounds }) => {
     viewBounds = bounds;
     if (ctx.store.getState().viewport === '1') apply();
@@ -414,6 +427,9 @@ export function init(ctx) {
   });
 
   setYearBounds();
+  // main.js loads the data *before* it initialises the modules, so the
+  // "records:loaded" event has already fired by now - clamp + apply explicitly.
+  clampYearsToData();
   apply();
 
   return { apply, get filtered() { return lastFiltered; } };
