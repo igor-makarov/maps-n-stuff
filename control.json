@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "stateStorage": "control",
+  "id": "zurich-maps-0",
+  "branch": "zurich-maps-0",
+  "defaultBranch": "main",
+  "supervisor": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
+  "status": "running",
+  "generation": 1,
+  "next": 1,
+  "engine": {
+    "repository": "igor-makarov/shurik",
+    "ref": "v2"
+  },
+  "workflow": "shurik.yml",
+  "layoutVersion": 1,
+  "prompt": "PROMPT.md",
+  "swarm": {
+    "id": "zurich-maps",
+    "index": 0,
+    "agents": 4
+  },
+  "checkpointSeconds": 300,
+  "checkpointPaths": [],
+  "owner": null,
+  "deadline": null,
+  "seconds": 1800,
+  "waitSeconds": 0,
+  "nextRunAt": null,
+  "provider": "opencode-go",
+  "model": "deepseek-v4.1-flash",
+  "reasoning": "max",
+  "createPr": false,
+  "source": "4a615f52fead82740f571a042987df3094a67007",
+  "sourceRef": null,
+  "createdAt": "2026-10-18T21:19:14.585Z",
+  "lastDispatchAt": null,
+  "checkpoint": {
+    "workCommit": "4a615f52fead82740f571a042987df3094a67007",
+    "generation": 1,
+    "sequence": "initialize",
+    "runId": null,
+    "at": "2026-10-18T21:19:14.620Z"
+  }
+}
