@@ -3,7 +3,8 @@
 Build a working, polished web application that recreates the core experience of
 https://www.oldmapsonline.org/ using the official **Canton Zürich (Kanton Zürich)**
 design style guide. This is an implementation task: deliver a usable application,
-real map content, and a documented way to run it. The design reference is the
+real map content, and a documented way to run it. **Build and deliver it as a
+Cloudflare Workers site.** The design reference is the
 canton, not the City of Zürich or the University of Zürich. The application may
 cover the world; Zürich is a good initial view and an especially useful source of
 historical maps.
@@ -91,8 +92,20 @@ the canton as the design reference, without claiming government affiliation.
 
 ## Product expectations
 
-Choose a practical maintainable stack together. Prioritize a complete vertical
-slice early, then expand and polish it:
+Choose a practical maintainable stack together that runs on **Cloudflare Workers**.
+Use Workers static assets for the frontend and Workers-compatible request
+handlers for any server adapters; consult the official documentation at
+https://developers.cloudflare.com/workers/static-assets/ . Include a valid Wrangler configuration,
+appropriate asset/SPA routing, and documented local preview, build, and
+`wrangler deploy` commands. Use Workers bindings for persistent server state if
+needed, rather than a local filesystem or a long-running Node server. Keep
+Cloudflare credentials and other secrets out of the repository. This swarm is not
+configured with Cloudflare deployment credentials: produce a deployment-ready
+build, validate locally, and document the exact deployment steps and missing
+configuration for an operator. Do not obtain or expose deployment credentials.
+Use Cloudflare Workers as the deployment target.
+
+Prioritize a complete vertical slice early, then expand and polish it:
 
 - A real interactive pan/zoom map and place search, with results linked to the
   current geography and clear selected-item behavior.
@@ -113,7 +126,8 @@ slice early, then expand and polish it:
 
 ## Validation and continued progress
 
-Run the appropriate build, type/lint checks, and meaningful tests for the product.
+Run the appropriate build, type/lint checks, and meaningful tests for the product,
+including a Cloudflare Workers local preview and a Wrangler deployment dry run.
 Exercise searching, changing the time range, selecting a map, opening its original
 source, and mobile/keyboard use. Inspect the rendered application when browser
 tools are available and fix console errors, broken images, layout problems, and
