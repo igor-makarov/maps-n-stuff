@@ -1,5 +1,133 @@
 # zurich-maps-0 status
 
+## Iteration 7-16 (2026-10-19, ~00:3x–00:5x UTC) — the world view gets real records
+
+Written up late: this iteration timed out before I recorded it. Its commits are
+`8055e95` (data) and the seed they produced; nothing else of that session
+survived, so the documentation caught up in 7-17 (below).
+
+### A fourth SRU set: “Übersichtskarten von Europa und der Welt” (21 new records)
+
+Every committed record sat inside the Swiss box, so searching or panning outside
+Switzerland found nothing. Six more CQL questions the e-rara catalogue answers
+became set `e-rara:sru-world-overview`:
+
+```
+dc.subject=Europa  and dc.title=Karte   30 hits
+dc.title=Erdkarte / dc.title=Weltkarte  (world maps)
+dc.subject=Afrika / Amerika / Asien and dc.title=Karte
+```
+
+Same gates as the Zürich SRU sets (map genre, stated year, stated MODS
+`<coordinates>`, `GetRecord` + IIIF manifest with a stated holding institution and
+`Kartendaten` extent, one entry per title and year, ≤ 3 per publication decade)
+plus **two mirrored rules**: the centre of the record's own stated extent must lie
+**outside** the canton window (the Zürich sets require inside, so the sets stay
+disjoint) and the extent must span **≥ 5°** of latitude or longitude — that is
+what separates an overview map from a local sheet. 39 candidates with a stated
+extent → 21 kept, 1787–1915, held by ZB Zürich, ETH-Bibliothek and
+Universitätsbibliothek Bern. A per-query quota was probed and rejected (only the
+Europe query answers many extents, so a quota would have shrunk the set without
+adding a continent); the rule is stored verbatim in
+`records.json.selection['e-rara:sru-world-overview']`.
+
+Seed: 119 → **140 records** (113 e-rara + 27 swisstopo), e-rara span 1696–1919,
+seed span 1696–2021.
+
+### Verified on this runner (re-checked in 7-17, not trusted from the commit message)
+
+- `npm run harvest:offline` reproduced all three data files byte for byte
+  (the claim in `8055e95`); `npm test` and `npm run check` green.
+- `tests/point.test.mjs` was moved from Berlin to a point no record claims
+  (Berlin is now covered by a Europe-wide sheet) — the honest-empty assertion had
+  to move, it was not weakened.
+- **Correction to the commit message:** it says “10 → 11 collection facets”. The
+  committed seed has **10 distinct `collection` values** (the world set adds
+  `Übersichtskarten von Europa und der Welt`, the universe of sets did not grow by
+  two). Verified with `node -e` over `public/data/records.json` and with
+  `facets()` in 7-17.
+
+## Iteration 7-17 (2026-10-19, ~00:5x–01:2x UTC) — the numbers the UI shows, the docs now state
+
+Everything below is measured on the integrated tree (`6884bdd` + my commits), not
+copied from a previous note.
+
+### 1. Documentation was one harvest behind (119 vs 140 records)
+
+The UI said “140 von 140 Datensätzen”, `docs/run.md`, `README.md`,
+`docs/data-sources.md` and the shared board still said 119/92/513. Corrected with
+the numbers read out of the committed data:
+
+| Claim | Was | Now (measured) |
+| --- | --- | --- |
+| seed size | 119 | **140** (113 e-rara + 27 swisstopo) |
+| institutions | ZB 51, ETH 35, Bern 5, Genf 1, swisstopo 27 | ZB 53, ETH 51, Bern 8, Genf 1, swisstopo 27 |
+| e-rara corpora | `zuz` 51, `zut` 35, `bes_1` 5, `gep_r` 1 | `zuz` 53, `zut` 51, `bes_1` 8, `gep_r` 1 |
+| shelfmarks | 92 | **113 of 140** (all e-rara records) |
+| `viewerUrl` / `iiifManifest` | 92 | 113 |
+| `depictedYearStart` | 27 | 27 of 140 |
+| records with a stated extent | 92 (e-rara) | **140** (all records have one) |
+| collection facets | 10 | **10** |
+| endpoint check | 513/513 (119 records) | **618/618 (140 records)** |
+
+`docs/data-sources.md` also gained the missing section for the world set (queries,
+mirrored gates, 39 → 21 candidates, skipped when the gazetteer is down) and a row
+in the discovery-window table.
+
+### 2. `npm run verify:endpoints` re-run on the 140-record seed: 618 URLs, 0 failures
+
+Full report `/tmp/endpoints-140.json` (runner-local). Per kind: record 140/140,
+thumbnail 140/140, viewer 113/113, manifest 113/113, image-service 112/112. This
+replaces the 513-URL figure everywhere it was quoted.
+
+### 3. Integration check of `main` (123 checks, green)
+
+`npm ci && npm run check` → 132 unit tests, `wrangler deploy --dry-run` (30 asset
+files, 28.76 KiB Worker, `env.ASSETS` only). `npx wrangler dev` +
+`node scripts/browser-check.mjs` → **123/123**, no console errors, no failed
+requests, CSP intact (10 same-origin API calls). So the world records did not
+break the point filter, the footprints or the harness assertions that were written
+against the 119-record seed.
+
+### 4. Small fix in a teammate's file, flagged (mobile facts strip)
+
+`public/styles/app.css` (owner maps-1): at ≤ 400 px the intro facts strip
+(`#intro-facts`) was `flex-wrap: nowrap; overflow-x: auto`, so “IIIF-Bildservice
+113” was clipped mid-word on a 390 px phone and “Anbieter 2” on a 320 px one, with
+no visible scroll affordance. It now wraps into two columns (see the commit
+message for the exact rule); the four figures stay compact and readable at 390 px
+and 320 px.
+
+### Messages
+
+- **→ maps-1:** two small edits in your files, both listed above and in the commit
+  messages — `app.css` (facts strip on ≤ 400 px) and the number refresh in
+  `README.md`/`docs/run.md`. Revert or reword freely. The shared board row for
+  `zurich-maps-0` in `coordination/README.md` is updated with the real counts; the
+  “Integration gate as of iteration 7-15 (119-record seed)” line is yours and still
+  says 119 — please refresh it when you next integrate.
+- **→ maps-2:** the world records are the first ones whose extents are *big* (whole
+  continents, ≥ 5° span) next to the city sheets; the footprints layer and the
+  clustering both coped in the harness run. A search for “Europa”/“Erdkarte” now
+  returns real rows.
+- **→ maps-3:** `scripts/browser-check.mjs` reported 123/123 on the 140-record
+  seed without a change; the counts in `docs/run.md`’s row for the harness (123)
+  are current.
+- **→ all:** the seed is **140 records / 10 collections**; any copy or check that
+  hardcodes 119/98/109/80/90 is stale.
+
+### Next (my area)
+
+1. The Winterthur `dc.title=Karte` keyword hits (39) still collect no records; the
+   canton window admits Winterthur.
+2. `records.json` still has no `depictedYear*` for the 1919 “Stadtplan von
+   Winterthur vom Jahre 1755” (title names the depicted year, catalogue says 1919)
+   — a title-anchored rule would fill exactly one record, so it stays noted.
+3. A cold `npm run harvest` was not possible in this runner’s budget (no
+   `.cache/fetch/` in a fresh clone); the next iteration should run
+   `npm run harvest` once and confirm `harvest:offline` reproduces the committed
+   bytes with the world set included.
+
 ## Iteration 7-15 (2026-10-19, ~00:0x–00:4x UTC) — Zürich and its surroundings, 109 records
 
 Same paths (`scripts/fetch-records.mjs`, `scripts/verify-endpoints.mjs`, `public/data/**`,
