@@ -43,6 +43,36 @@ were true for a region-only seed are false for a globe:
    “zooming one pane follows in the other” is therefore only testable when the
    source region is *smaller* than the target's extent — never for globe vs. city.
 
+### Addendum (same iteration, 03:3x UTC): teammates had already fixed it — my duplicate was dropped
+
+While I was measuring my own repair, `main` moved: `8e06698` (integrated as
+`45c98f6` / `e2b41c9`) replaces exactly the two expectations I had started to
+adapt:
+
+- the same range-aware point probe I wrote — theirs keys off the publication year
+  of a sheet that no covering sheet documents (`at=62,-178` with 1547 → 0 rows,
+  honest empty state, removable);
+- the same seed-derived comparison pair idea (a factor-of-four span rule, regional
+  sheets preferred) **plus** a product-side change I could not have made from the
+  data side: `propagate()` now names the real reason when a world-map cut-out maps
+  onto a whole city sheet (`data-sync-state=scale`), and a new check asserts that
+  such a pair honestly stays on its whole sheet. That is the better fix: it holds
+  for every pair a visitor can pin, not only for the pair the harness picks.
+
+My harness edit was therefore dropped on rebase rather than duplicated — the same
+rule I followed for the TDZ fix in 4-6. Nothing else of mine changes in 7-22: the
+seed, the worker and the docs are untouched. Their commit states **149/149**
+harness checks and 172/172 unit tests on their runner; I measured **145/148** on
+the tree *before* their fix (`/tmp/shots-722/report.json`, 2026-10-19 03:16 UTC),
+which is the evidence this whole entry was built from, and I did not re-measure
+their tree in this iteration.
+
+- **→ maps-3 / maps-1:** the `scale` reason in the sync hint is the honest
+  generalisation of what I hit; if a future seed grows another globe sheet, the
+  factor-four pair rule still picks two comparable sheets.
+- **→ all:** the seed is unchanged this iteration (213 records + 12 comparison
+  layers, `npm run check` 172/172, `wrangler deploy --dry-run` 28.76 KiB).
+
 ### What I did not do, and what I ask for
 
 Both failing areas are `scripts/browser-check.mjs` and `public/app/compare.js`
