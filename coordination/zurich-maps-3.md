@@ -19,7 +19,7 @@ catalogue documents — a zoom in one sheet follows in the others.**
 | comparison panes are interactive | `compare.js` (maps-1's file, flagged) | A record with `iiifManifest` gets a focusable `[data-compare-stage]` with the exported viewer (real region requests, keyboard pan/zoom, drag); a record without a manifest keeps the raster tile preview. A failed manifest shows the thumbnail plus the plain-German `describeUpstreamError` sentence, never an empty box. |
 | coupling switch `#compare-sync` + live hint `#compare-sync-hint` | `compare.js`, `detail.css` (additive) | `aria-pressed` chip, hidden unless at least two mounted panes document an extent; the hint names the basis literally (“gekoppelt über die im Katalog belegte Ausdehnung der Blätter, nicht über eine Georeferenzierung”) and says when coupling is off or impossible. Panes with 3–4 pinned records are all coupled; a pane without an extent stays independent. |
 | viewers are mounted only after the comparison is visible, and destroyed on close/rebuild | `compare.js` | The stage measures itself when the manifest arrives; mounting while `hidden` would request a 64-px region. `destroyViewers()` (+ a rebuild token) prevents a slow manifest from mounting into a closed view and removes the `resize`/fullscreen listeners. |
-| harness section **8c** rewritten + **8c2** (3 checks) | `browser-check.mjs` | 8c now reads both pane kinds (viewer stage or static tile) and asserts real IIIF request URLs; 8c2: a real viewer per pane + the switch state, two `+` presses in pane 1 pull pane 2 to a region (`Ausschnitt …`, screenshot `11-compare-coupled.png`), and the switch decouples again (pane 2 unmoved after a further zoom). |
+| harness section **8c** rewritten + **8c2** (4 checks, incl. 390 px) | `browser-check.mjs` | 8c now reads both pane kinds (viewer stage or static tile) and asserts real IIIF request URLs; 8c2: a real viewer per pane + the switch state, two `+` presses in pane 1 pull pane 2 to a region (`Ausschnitt …`, screenshot `11-compare-coupled.png`), and the switch decouples again (pane 2 unmoved after a further zoom). |
 | harness comment renumbering | `browser-check.mjs` | maps-2 added a *second* section numbered “8p” (Grundkarte) while the pre-existing 8p is the georeferenced-layer toggle; the later one is now **8q**. Pure comment, no check changed. |
 
 ### Verified on this runner
@@ -27,11 +27,12 @@ catalogue documents — a zoom in one sheet follows in the others.**
 - `npm run check` ✓ — validation, **136/136** `node --test` (my 4 new IIIF cases + 2 new
   site-contract assertions for `upstream.js`, on top of maps-2's 4 map cases), `wrangler deploy --dry-run` (31 asset
   files, 28.76 KiB Worker).
-- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **126/126** on the
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **127/127** on the
   integrated tree (maps-2's Grundkarte 8q, maps-0's 140 records), including the new
   8c2 checks: `pane 1 8602403/full/432 -> 781,1919,1243 · pane 2 8751737/full/524 ->
   350,4384,2339 (Ausschnitt 4384×2339 von 11223×9039)`, then decoupled: `pane 2
-  stayed on 350,4384,2339`.
+  stayed on 350,4384,2339`; and at 390 px the panes stack (366 px wide, 304 px
+  stages) with no overflow and the switch on screen (`11b-compare-mobile.png`).
 - Independent CDP probe (`?cmp=e-rara:8602401,e-rara:8751735`): both panes request the
   whole sheet first, two `+` presses give pane 1 `1497,1837,1919,1131` and pane 2
   `3420,3456,4384,2127`; readouts `Auflösung 34 %` / `15 %`; toggle off → a further

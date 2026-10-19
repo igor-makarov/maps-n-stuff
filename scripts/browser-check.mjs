@@ -1346,6 +1346,37 @@ try {
     `${JSON.stringify(uncoupledUi)} · pane 2 stayed on ${decoupled.pane2.slice(-32)}`,
   );
 
+  // 390 px: the comparison stacks, stays inside the page and keeps the switch
+  // reachable (the panes are real viewers now, so their height matters).
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await sleep(800);
+  const mobileCompare = await cdp.eval(`(() => {
+    const body = document.querySelector('#compare-view-body');
+    const panes = [...document.querySelectorAll('#compare-view-body .app-compare__pane')].map((pane) => pane.getBoundingClientRect());
+    const button = document.querySelector('#compare-sync')?.getBoundingClientRect();
+    return {
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      bodyOverflow: body ? body.scrollWidth - body.clientWidth : 0,
+      stacked: panes.length === 2 && panes[1].top > panes[0].bottom - 1,
+      stageHeights: [...document.querySelectorAll('[data-compare-stage]')].map((stage) => Math.round(stage.getBoundingClientRect().height)),
+      switchVisible: Boolean(button && button.width > 40 && button.height > 20),
+      switchLabel: document.querySelector('#compare-sync')?.textContent || '',
+    };
+  })()`);
+  check(
+    '390 px: the comparison stacks and keeps the coupling switch reachable',
+    mobileCompare.overflow <= 1 &&
+      mobileCompare.bodyOverflow <= 1 &&
+      mobileCompare.stacked &&
+      mobileCompare.stageHeights.length === 2 &&
+      mobileCompare.stageHeights.every((height) => height >= 180) &&
+      mobileCompare.switchVisible,
+    JSON.stringify(mobileCompare),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '11b-compare-mobile.png')).then(() => report.screenshots.push('11b-compare-mobile.png'));
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(500);
+
   await cdp.pressKey('Escape');
   await sleep(500);
   const compareClosed = await cdp.eval(`document.querySelector('#compare-view')?.hidden === true`);
