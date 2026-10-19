@@ -25,7 +25,7 @@ endpoint is called by the application.
 | Discovery endpoint (SRU) | `https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=<cql>&startRecord=<n>&maximumRecords=100&recordSchema=mods` (standard SRU 1.2 with CQL; the search indexes that answer are `dc.title`, `dc.subject` and `dc.creator` — `dc.type`, `dc.genre`, `dc.format` and `dc.coverage` always answer 0 records). MODS records state the IIIF id and holding corpus verbatim (`<vl:id>`, `<vl:prefix>`) plus a `<coordinates>` statement; a hit is confirmed with `oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:www.e-rara.ch:<titleId>` before it becomes a record |
 | IIIF manifest (Presentation API 2.0) | `https://www.e-rara.ch/i3f/v20/<titleId>/manifest` |
 | IIIF image service (Image API 2, level 2) | `https://www.e-rara.ch/i3f/v20/<imageId>/full/<size>/0/default.jpg` |
-| Holding institution | per record from the manifest `Besitzende Institution` — in the seed (199 records): Zentralbibliothek Zürich (92), ETH-Bibliothek Zürich (71), swisstopo (27 overlays), Universitätsbibliothek Bern (8), Bibliothèque de Genève (1). The registry's `institutions` list is derived from the harvested records, so it cannot drift; a set whose manifests do not name an institution (see `museecarto` below) contributes no record. When a manifest omits the field, the library is taken from the **corpus the catalogue itself states** (`<vl:prefix>` of an SRU hit, the `setSpec` of an OAI set, or the `og:url` of the DOI landing page — `zuz`, `zut`, `bes_1`, `gep_r`); a corpus the harvest cannot name produces no record, and the drop is listed in `records.json.skipped` (no library is ever defaulted) |
+| Holding institution | per record from the manifest `Besitzende Institution` — in the seed (213 records): Zentralbibliothek Zürich (92), ETH-Bibliothek Zürich (79), swisstopo (27 overlays), Universitätsbibliothek Bern (13), Universitätsbibliothek Basel (1), Bibliothèque de Genève (1). The registry's `institutions` list is derived from the harvested records, so it cannot drift; a set whose manifests do not name an institution (see `museecarto` below) contributes no record. When a manifest omits the field, the library is taken from the **corpus the catalogue itself states** (`<vl:prefix>` of an SRU hit, the `setSpec` of an OAI set, or the `og:url` of the DOI landing page — `zuz`, `zut`, `bes_1`, `gep_r`); a corpus the harvest cannot name produces no record, and the drop is listed in `records.json.skipped` (no library is ever defaulted) |
 | Rights | per record from `dc:rights` — the seed set is `PDM 1.0` (Public Domain Mark) |
 | Attribution | “Zentralbibliothek Zürich via e-rara” |
 | Related collection context | <https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen> (ZB Zürich, Karten und Panoramen) |
@@ -49,9 +49,9 @@ Field mapping (nothing invented):
 | `title` | IIIF manifest `label` (verbatim); falls back to `dc:title` |
 | `creators` | `oai_dc` `dc:creator` (verbatim, may be empty) |
 | `yearStart`/`yearEnd` | publication year from `dc:date`, else parsed from the manifest `Impressum` |
-| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year). The harvest accepts exactly one anchored phrase from the e-rara manifest — “in den Jahren 1843-1851 gemachten Aufnahmen” — and stores the verbatim match in `depictedSource`; 27 of the 199 records (all Zürich Wildkarte sheets and the 1852 canton map, printed 1853) carry it. A bare “Aufnahmen von 1852-1865” is *rejected*: on those sheets that range is the engraving, not the survey, and 35 cached manifests contain exactly that trap. Records whose *title* names a different map year (e.g. “Stadtplan von Winterthur vom Jahre 1755”, published 1919) keep the publication year as `yearStart` and `depictedYearStart: null`; the title is shown verbatim, so the difference is visible instead of guessed |
+| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year). The harvest accepts exactly one anchored phrase from the e-rara manifest — “in den Jahren 1843-1851 gemachten Aufnahmen” — and stores the verbatim match in `depictedSource`; 27 of the 213 records (all Zürich Wildkarte sheets and the 1852 canton map, printed 1853) carry it. A bare “Aufnahmen von 1852-1865” is *rejected*: on those sheets that range is the engraving, not the survey, and 35 cached manifests contain exactly that trap. Records whose *title* names a different map year (e.g. “Stadtplan von Winterthur vom Jahre 1755”, published 1919) keep the publication year as `yearStart` and `depictedYearStart: null`; the title is shown verbatim, so the difference is visible instead of guessed |
 | `institution` | manifest `Besitzende Institution` (first institution before the comma) |
-| `shelfmark` | the part of the manifest `Besitzende Institution` after the comma, verbatim (`Zentralbibliothek Zürich, 4 Lb 06: 9` → `4 Lb 06: 9`); all 172 of the 199 records that come from e-rara state one (swisstopo states no signature), the others show “nicht angegeben” in the detail view |
+| `shelfmark` | the part of the manifest `Besitzende Institution` after the comma, verbatim (`Zentralbibliothek Zürich, 4 Lb 06: 9` → `4 Lb 06: 9`); all 186 of the 213 records that come from e-rara state one (swisstopo states no signature), the others show “nicht angegeben” in the detail view |
 | `recordUrl` | the DOI landing page (`https://www.e-rara.ch/doi/10.3931/e-rara-<id>`) |
 | `thumbnail` | IIIF thumbnail from the manifest (`…/full/304/0/default.jpg`) |
 | `imageService` | IIIF Image API 2 service id of the first canvas |
@@ -229,6 +229,38 @@ rounds are what keep the country spread. The 5°-span gate, the outside-canton
 window, the one-entry-per-title-and-year rule and the three-per-decade cap are
 unchanged. Harvest output: 187 hits → 120 candidates → 37 pass the area gate →
 21 kept; the seed stays 199 records.
+
+### Every stated hemisphere is respected — the world set becomes global (7-21)
+
+`parseBbox` read the second longitude and latitude of the catalogue's
+`Kartendaten` statement as if they were always E/N. Two consequences, measured
+against the 199-record seed before the fix (27 of the 376 cached statements
+change):
+
+- six committed records had an **invented** extent: the 1787 “Neue Karte von
+  Europa” and five more Europe maps were placed at 25 °E–60 °E although the
+  catalogue states `W 25°00'-E 60°00'`;
+- every map reaching into the western or southern hemisphere was **dropped**,
+  because no second `N` existed to read — every Südamerika, Africa and
+  Central-America sheet, and the whole-globe sheets (`W 180°-E 180°/N 90°-S 90°`).
+
+The parser now reads the hemisphere letter of each of the four stated corners
+(arc-seconds are stated upstream but are not carried into the extent — the minute
+is the map view's resolution), keeps a genuine whole-globe pair, and returns no
+extent for a date-line crossing (`E 155°-W 165°`, the 1781 Russian discoveries
+map), which a west/east box cannot express. **An extent is never guessed.**
+
+Result (7-21 harvest): the seed grows 199 → **213 records** (+14, nothing removed;
+186 e-rara + 27 swisstopo, span 1546–2021, e-rara 1546–1920). The world set's
+questions grow **12 → 20** (the eight non-European keywords Südamerika, Palästina,
+Türkei, Indien, Nordamerika, Russland, Syrien, Japan — all probed, the numbers are
+in the set's comment): 133 candidates, **35 kept, 1546–1914**, now a genuine world
+spread — whole-globe sheets (1546, 1700, 1835, 1893), North and Central America
+(1763, 1796), South America (1890 Süd-Amerika, 1898 Argentina–Chile), Africa
+(1884/1885/1889), India (1853), Japan (1903) and Kleinasien (1910). Four sheets
+now carry a whole-globe extent, which is why the app's point filter no longer has
+an “outside every footprint” point on earth, and why a globe sheet is not coupled
+to a city plan by the comparison view (see `docs/run.md`).
 
 ### One plan, two issues — a deliberate near-duplicate (7-20)
 

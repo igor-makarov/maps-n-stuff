@@ -1119,6 +1119,21 @@
   gap: var(--zh-size-mini);
 }
 
+/* A pane that cannot follow the coupled cut-out says so instead of silently
+   keeping its whole sheet (compare.js: the sheet does not cover the area).
+   Bordeaux is the canton's warning colour; the 4 px left bar is the same
+   indentation the panels use. */
+.app-compare__coverage {
+  border-left: var(--zh-size-mini) solid var(--zh-bordeaux);
+  padding-left: var(--zh-size-small-regular);
+  color: var(--zh-color-text);
+}
+
+.app-compare__pane[data-coverage='outside'] .app-compare__paneimage--viewer,
+.app-compare__pane[data-coverage='partial'] .app-compare__paneimage--viewer {
+  border-color: var(--zh-bordeaux);
+}
+
 .app-compare__pane figcaption h3,
 .app-compare__pane figcaption p {
   margin: 0;

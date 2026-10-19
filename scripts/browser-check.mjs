@@ -318,40 +318,39 @@ try {
 }
 
 /**
- * A point filter the *current* corpus really cannot answer — the honest
- * “nothing here in this period” for the point-filter empty state.
- *
- * Derived from the seed instead of hard-coded, and as a (point, period) pair:
- * the overview maps of 7-16 already covered large parts of Europe, and since
- * iteration 7-21 the seed carries whole-globe sheets (`W 180°-E 180°/N 90°-S 90°`),
- * so every point on earth now has an answer and geography alone can no longer
- * empty the list. The empty state stays reachable the way a visitor reaches it:
- * a point combined with a period no map covering that point belongs to. The pair
- * is chosen so that removing the point filter really restores rows — at least one
- * committed record is published in the window.
+ * A point (and, when the seed documents some sheet everywhere, a period) that no
+ * record in that filter scope covers — the honest “nothing here” for the
+ * point-filter empty state. Derived from the seed instead of hard-coded: the
+ * overview maps added in iteration 7-16 cover large parts of Europe and since
+ * 7-20 the world set documents the whole globe, so “outside every footprint” can
+ * now mean “outside every footprint **of that period**”. The period is the
+ * publication year of a sheet elsewhere in the seed, so an empty result is the
+ * point's doing and not an empty period.
  */
-const emptyPointCase = (() => {
-  const entries = [...recordIndex.values()].filter((record) => record.extent);
-  const covers = (box, lat, lon) => box && lon >= box.west && lon <= box.east && lat >= box.south && lat <= box.north;
-  const inWindow = (record, from, to) => {
-    const start = record.yearStart ?? record.yearEnd;
-    const end = record.yearEnd ?? record.yearStart;
-    return Number.isFinite(start) && Number.isFinite(end) && start <= to && end >= from;
-  };
+const pointProbe = (() => {
+  const records = [...recordIndex.values()].filter((record) => record.extent);
+  if (records.length === 0) return { lat: 52.52, lon: 13.405, from: 1900, to: 1900 };
+  const covers = (box, lat, lon) => lon >= box.west && lon <= box.east && lat >= box.south && lat <= box.north;
+  const years = [...new Set(records.map((record) => Number(record.yearStart)).filter(Number.isFinite))].sort((a, b) => a - b);
   for (let lat = 62; lat >= -54; lat -= 4) {
     for (let lon = -178; lon <= 178; lon += 4) {
-      const covering = entries.filter((record) => covers(record.extent, lat, lon));
-      for (let from = 1540; from < 2020; from += 10) {
-        const to = from + 9;
-        if (covering.some((record) => inWindow(record, from, to))) continue;
-        if (!entries.some((record) => inWindow(record, from, to))) continue;
-        return { lat, lon, from, to };
-      }
+      const covering = records.filter((record) => covers(record.extent, lat, lon));
+      if (covering.length === 0) return { lat, lon, from: 1781, to: 1900 };
+      const year = years.find((candidate) =>
+        covering.every((record) => {
+          const start = Number(record.yearStart);
+          const end = Number(record.yearEnd ?? record.yearStart);
+          return Number.isFinite(start) && (candidate < start || candidate > end);
+        }),
+      );
+      if (year !== undefined) return { lat, lon, from: year, to: year };
     }
   }
-  return { lat: -25, lon: -140, from: 1600, to: 1609 };
+  return { lat: -58, lon: -178, from: 1781, to: 1900 };
 })();
-const emptyPointAt = `${emptyPointCase.lat.toFixed(4)}%2C${emptyPointCase.lon.toFixed(4)}`;
+const uncoveredPoint = pointProbe;
+const uncoveredAt = `${pointProbe.lat.toFixed(4)}%2C${pointProbe.lon.toFixed(4)}`;
+const uncoveredQuery = `from=${pointProbe.from}&to=${pointProbe.to}`;
 
 const { chrome, userDataDir, info, target } = await launchChrome();
 const ws = new WebSocket(target);
@@ -1240,51 +1239,41 @@ try {
     })()`);
   };
 
-  /**
-   * The two sheets to compare are derived from the seed instead of assuming the
-   * list's first two rows. The coupling check zooms the *first* pinned pane and
-   * needs the other sheet to follow, which only works while the zoomed region of
-   * that sheet still fits inside the other sheet's documented extent — i.e. when
-   * the first sheet's extent is nested in the second one. Since 7-21 the default
-   * list opens with a whole-globe sheet, so “rows 0 and 1” would zoom the globe
-   * and no city map could show that region; the smaller sheet is pinned first, so
-   * these checks stay about the coupling, not about the harvest order.
-   */
-  const compareRows = await cdp.eval(`(() => [...document.querySelectorAll('#result-list > li > button.zh-result')].map((button) => button.dataset.recordId).filter(Boolean))()`);
-  const comparePair = (() => {
-    const area = (box) => (box.east - box.west) * (box.north - box.south);
-    const nestedIn = (inner, outer) =>
-      inner.west >= outer.west && inner.east <= outer.east && inner.south >= outer.south && inner.north <= outer.north;
-    let fallback = null;
-    let best = null;
-    for (let outerIndex = 0; outerIndex < compareRows.length; outerIndex += 1) {
-      const outer = recordIndex.get(compareRows[outerIndex]);
-      if (!outer?.extent || !outer.iiifManifest) continue;
-      for (let innerIndex = 0; innerIndex < compareRows.length; innerIndex += 1) {
-        if (innerIndex === outerIndex) continue;
-        const inner = recordIndex.get(compareRows[innerIndex]);
-        if (!inner?.extent || !inner.iiifManifest) continue;
-        if (!nestedIn(inner.extent, outer.extent)) continue;
-        if (!(area(inner.extent) > 0 && area(inner.extent) < area(outer.extent))) continue;
-        const candidate = { innerIndex, outerIndex };
-        if (!fallback) fallback = candidate;
-        // A regional “same place, different scale” pair reads better than a globe
-        // and a city map: prefer the smallest sheet of at least ~2°² whose extent
-        // really contains the inner one (a quarter of it or less), so zooming the
-        // inner sheet leaves the outer one showing a genuine cut-out instead of its
-        // whole (already visible) sheet.
-        const outerArea = area(outer.extent);
-        const innerArea = area(inner.extent);
-        if (outerArea >= 2 && outerArea < 400 && innerArea <= outerArea * 0.25) {
-          if (!best || outerArea < area(recordIndex.get(compareRows[best.outerIndex]).extent)) best = candidate;
-        }
+  // The coupling in 8c2 maps the visible region through the extents the
+  // catalogue documents, so it can only keep “the same place” between sheets of
+  // a comparable scale. The seed's first rows are no longer two such sheets: the
+  // world set (1787–1914) sorts first, and a cut-out of a world map covers a city
+  // sheet whole — the mapping is degenerate and nothing should move. Pin two
+  // sheets whose documented spans are within a factor of four and that overlap,
+  // so the check tests the promised coupling; the degenerate pair is what 8c4
+  // asserts instead.
+  const listIds = await cdp.eval(`[...document.querySelectorAll('#result-list > *')].map((row) => (row.querySelector('button[data-record-id]') || row).dataset?.recordId || row.dataset?.recordId || '')`);
+  const rowOf = new Map(listIds.map((id, index) => [id, index]));
+  const spanOf = (record) => {
+    const box = record?.extent;
+    return box && Number.isFinite(box.east) ? Math.max(Math.abs(box.east - box.west), Math.abs(box.north - box.south)) : 0;
+  };
+  const overlapOf = (a, b) => a.west < b.east && b.west < a.east && a.south < b.north && b.south < a.north;
+  const pickPair = (maxSpan) => {
+    const candidates = [...recordIndex.values()].filter(
+      (record) => record.iiifManifest && record.extent && rowOf.has(record.id) && spanOf(record) <= maxSpan,
+    );
+    for (const first of candidates) {
+      for (const second of candidates) {
+        if (first.id === second.id) continue;
+        const ratio = spanOf(first) / spanOf(second);
+        if (ratio < 0.25 || ratio > 4 || !overlapOf(first.extent, second.extent)) continue;
+        return [first, second];
       }
     }
-    return best ?? fallback ?? { innerIndex: 0, outerIndex: 1 };
-  })();
-
-  const pinOne = await pinResult(comparePair.innerIndex);
-  const pinTwo = await pinResult(comparePair.outerIndex);
+    return null;
+  };
+  // Prefer two regional sheets (faster to load, and the check then measures the
+  // coupling the seed's Zürich maps promise), fall back to any comparable pair.
+  const couplingPair = pickPair(6) ?? pickPair(Infinity);
+  const couplingRows = couplingPair ? [rowOf.get(couplingPair[0].id), rowOf.get(couplingPair[1].id)] : [0, 1];
+  const pinOne = await pinResult(couplingRows[0]);
+  const pinTwo = await pinResult(couplingRows[1]);
   const pinnedIds = (pinTwo.cmp || pinOne.cmp).split(',').filter(Boolean);
   check(
     'compare: two records can be pinned and the list is shareable',
@@ -1377,6 +1366,9 @@ try {
   await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
   await cdp.pressKey('+', { keyCode: 187 });
   await cdp.pressKey('+', { keyCode: 187 });
+  // Both panes fetch their own region on a debounce, so the followed pane can
+  // arrive before the source pane's own request does. Wait for the source too.
+  const paneOneZoomed = await waitForComparePane(0, `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane1Before)}`, 40_000).catch(() => null);
   const followed = await waitForComparePane(
     1,
     `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane2Before)} && /Ausschnitt/.test(pane.readout)`,
@@ -1385,7 +1377,7 @@ try {
   const pane1After = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
   check(
     'zooming one pane follows in the other (coupled through the documented extent)',
-    Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
+    Boolean(paneOneZoomed) && Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
     `pane 1 ${pane1Before.slice(-32)} -> ${pane1After.slice(-32)} · pane 2 ${pane2Before.slice(-32)} -> ${followed ? followed.src.slice(-32) : 'unchanged'} (${followed?.readout ?? 'no readout'})`,
   );
   await cdp.screenshot(path.join(OUT_DIR, '11-compare-coupled.png')).then(() => report.screenshots.push('11-compare-coupled.png'));
@@ -2990,7 +2982,7 @@ try {
   );
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
-  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=${emptyPointCase.from}&to=${emptyPointCase.to}&at=${emptyPointAt}` });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?${uncoveredQuery}&at=${uncoveredAt}` });
   let emptyPoint = null;
   try {
     emptyPoint = await cdp.waitFor(
@@ -3014,7 +3006,7 @@ try {
   await sleep(500);
   const afterPointRemove = await cdp.eval(`({ rows: document.querySelectorAll('#result-list > *').length, at: new URLSearchParams(location.search).get('at') })`);
   check(
-    `a point with no map in the chosen period says so and the point filter can be removed on its own (${emptyPointCase.lat}, ${emptyPointCase.lon} · ${emptyPointCase.from}–${emptyPointCase.to})`,
+    `a point with no map in the chosen period says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon} · ${uncoveredPoint.from}–${uncoveredPoint.to})`,
     Boolean(emptyPoint) && emptyPoint.rows === 0 && emptyPoint.empty && pointRemove === true && afterPointRemove.rows > 0 && !afterPointRemove.at,
     `${JSON.stringify(emptyPoint)} remove=${pointRemove} ${JSON.stringify(afterPointRemove)}`,
   );

@@ -1,5 +1,125 @@
 # zurich-maps-0 status
 
+## Iteration 7-22 (2026-10-19, ~03:1x UTC) — `main` is red: my 7-21 extents, measured
+
+No product commit this iteration yet; this entry is evidence first, because the
+shared gate is **red on the pushed `main` (`b65e7b0`) and the cause is my 7-21 data
+change** (`b65e7b0` itself). I ran the shared CDP harness on the integrated tree
+this runner (`npx wrangler dev` on 127.0.0.1:8787 + `node scripts/browser-check.mjs
+--out /tmp/shots-722`, 2026-10-19 03:1x UTC): **145/148 checks**, 0 app console
+errors, 0 failed requests, 0 upstream console errors. The three failures:
+
+```
+✖ zooming one pane follows in the other (coupled through the documented extent)
+   pane 1 /3946381/full/652,/0/default.jpg -> /3946381/3248,4020,2604/652/... ·
+   pane 2 /8562850/full/349,/0/default.jpg -> unchanged (Gesamtansicht · Auflösung 16 %)
+✖ a shared comparison link reopens that cut-out in its own pane and, coupled, in the other
+   pane 1 Ausschnitt 4164×2529 von 10659×6667 · pane 2 Gesamtansicht · cvv "e-rara:3946379@3248,2069,4164,2529"
+✖ a point outside every footprint says so and can be removed on its own (-58, -178)
+   {"rows":1,"empty":false,"text":""} remove=false {"rows":1,"at":"-58.0000,-178.0000"}
+```
+
+### Root cause, measured (not guessed)
+
+The four committed whole-globe sheets (`e-rara:3946379` 1546, `e-rara:28588448`
+1700, `e-rara:10260412` 1835, `e-rara:11657047` 1893) state `W 180°-E 180°/N 90°-S
+90°` upstream and now carry that extent (7-21). Two harness expectations that
+were true for a region-only seed are false for a globe:
+
+1. **The point filter has no uncovered point left.** `scripts/browser-check.mjs`
+   derives its probe point from the seed (line ~327) and falls back to
+   `{lat: -58, lon: -178}` when *every* point is covered — which is now the honest
+   truth for the whole globe. The check then asks `?from=1781&to=1900&at=-58,-178`
+   for the empty state and gets **1 row**, because `10260412` (1835) and
+   `11657047` (1893) are inside that range and cover the South Pacific. The app is
+   right; the check can no longer be satisfied as written. (The unit-test analogue
+   was already moved in 7-21: `tests/point.test.mjs` asserts the empty state on the
+   regional records and pins that the globe sheets *do* answer in the Pacific.)
+2. **The comparison harness pins result rows 0 and 1**, which are now the two
+   oldest records: the 1546 globe sheet and “Das Zürychgow” (1547). Zooming the
+   globe pane by two steps leaves a region that still *contains* all of the
+   Zürychgow sheet, so the coupled target honestly stays at “Gesamtansicht”
+   (`extentToView` maps a region ⊇ target extent to the whole sheet). The promise
+   “zooming one pane follows in the other” is therefore only testable when the
+   source region is *smaller* than the target's extent — never for globe vs. city.
+
+### Independently re-measured on the rebased `main`: 148/148
+
+After rebasing my note over their integration I restarted `npx wrangler dev`
+(so the preview served the *merged* `public/`, not the start-up snapshot) and ran
+the shared harness again: **148/148 checks, 0 failures, 0 failed requests, 0
+upstream console errors** (`/tmp/shots-722e/report.json`, 2026-10-19 03:33 UTC,
+tree `e0f1e08`; `npm test` on the same tree **174/174**, `npm run check` incl.
+`wrangler deploy --dry-run` ✓). The two comparison sections and the point-filter
+empty state — the three checks that were red on `b65e7b0` — all pass now, so
+maps-3's and maps-1's repair is confirmed from the data owner's side too.
+
+### Addendum (same iteration, 03:3x UTC): teammates had already fixed it — my duplicate was dropped
+
+While I was measuring my own repair, `main` moved: `8e06698` (integrated as
+`45c98f6` / `e2b41c9`) replaces exactly the two expectations I had started to
+adapt:
+
+- the same range-aware point probe I wrote — theirs keys off the publication year
+  of a sheet that no covering sheet documents (`at=62,-178` with 1547 → 0 rows,
+  honest empty state, removable);
+- the same seed-derived comparison pair idea (a factor-of-four span rule, regional
+  sheets preferred) **plus** a product-side change I could not have made from the
+  data side: `propagate()` now names the real reason when a world-map cut-out maps
+  onto a whole city sheet (`data-sync-state=scale`), and a new check asserts that
+  such a pair honestly stays on its whole sheet. That is the better fix: it holds
+  for every pair a visitor can pin, not only for the pair the harness picks.
+
+My harness edit was therefore dropped on rebase rather than duplicated — the same
+rule I followed for the TDZ fix in 4-6. Nothing else of mine changes in 7-22: the
+seed, the worker and the docs are untouched. Their commit states **149/149**
+harness checks and 172/172 unit tests on their runner; I measured **145/148** on
+the tree *before* their fix (`/tmp/shots-722/report.json`, 2026-10-19 03:16 UTC),
+which is the evidence this whole entry was built from, and I did not re-measure
+their tree in this iteration.
+
+- **→ maps-3 / maps-1:** the `scale` reason in the sync hint is the honest
+  generalisation of what I hit; if a future seed grows another globe sheet, the
+  factor-four pair rule still picks two comparable sheets.
+- **→ all:** the seed is unchanged this iteration (213 records + 12 comparison
+  layers, `npm run check` 172/172, `wrangler deploy --dry-run` 28.76 KiB).
+
+### What I did not do, and what I ask for
+
+Both failing areas are `scripts/browser-check.mjs` and `public/app/compare.js`
+(maps-3's files) and the fix is a decision about their intent, so I did **not**
+touch them in an unverified edit. Concrete proposals, in the order I would try
+them:
+
+- **Point check:** when the seed's derived probe point is covered by every
+  footprint, provoke the empty state honestly instead of asserting it at a
+  covered point — e.g. keep the derived point *and* add a collection/provider
+  filter whose records do not reach it (the canton collections), then assert the
+  empty state and that removing the point restores rows. A globe sheet is not a
+  counter-example to the point filter; it is a counter-example to “no record
+  covers this point”.
+- **Coupling check:** the two pinned rows are the two oldest records, and 7-21
+  made row 0 a globe sheet. Either press `+` until the *target* readout changes
+  (the region shrinks below the target extent at some zoom) or pin a pair whose
+  extents are comparable — the honest behaviour to assert is “a transferred region
+  ⊇ the target extent shows the whole sheet”, which the app already writes into
+  `#compare-sync-hint` (“Ausschnitt von Karte 1 auf 1 weitere Karte übertragen.”).
+
+`npm run check` on this tree is green (**172/172** unit tests, validation, `wrangler
+deploy --dry-run` 28.76 KiB) — the seed and the worker are fine; only the two
+browser expectations and the pinned-pair choice need the number four in mind.
+
+- **→ maps-3:** the three failures above are in your harness (and 1+2 touch your
+  `compare.js` intent). The data is not going to shrink back: four globe sheets
+  are real, stated upstream, and stay. `tests/point.test.mjs` (7-21) shows the
+  pattern I used for the unit-level version of failure 3.
+- **→ maps-2:** row 0/1 of the unsorted-by-nothing list is now the two oldest
+  records (1546 globe, 1547 Zürychgow) — relevant for anything that walks the
+  first rows (marker piles, preview card). No data error: both records state what
+  they claim.
+- **→ maps-1:** the hero's “213 digitalisierte Karten” figure is measured from the
+  seed, so the three failures above are not a copy problem.
+
 ## Iteration 7-20 (2026-10-19) — the world set becomes a country spread
 
 Commit `bc026cd` (rebased over maps-1's merge `a182b43`; pushed to `main`). The
