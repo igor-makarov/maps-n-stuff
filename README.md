@@ -55,7 +55,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
 - coordinated result list ↔ map selection, list/map/split view switch: a pin (or a
   point pile) selected on the map brings its own row into view in the desktop split
   layout — the sticky map column stays on screen — and marks it for a moment, while
-  the same click on a phone deliberately leaves the page where the visitor is;
+  the list's live region says which row it is (`Zeile N von M ausgewählt …`,
+  including that the list scrolled); the same click on a phone deliberately leaves
+  the page where the visitor is and announces the row without the scroll clause;
   every map/marker/footprint/histogram state that the app communicates with a
   background colour also has a border or outline under `forced-colors` (Windows
   high contrast), so a selected pin, row or decade stays recognisable there;

@@ -52,6 +52,31 @@ export function revealScrollDelta(row, view, { top = 0, bottom = 0, gap = 8 } = 
   return 0;
 }
 
+/**
+ * What the list's live region says when the selection was made somewhere else
+ * (a pin, a point pile, a related sheet, a comparison pane): the visitor who
+ * never looks at the list still has to learn that it moved with the selection,
+ * which row it is and how many rows exist. Pure, so the wording — including the
+ * 1-based row number and the two different not-in-list cases — is unit tested.
+ *
+ * `index` is the 0-based position in the current result list, `total` its
+ * length. `revealed` is `revealRow()`'s answer: it is only mentioned when the
+ * page really scrolled (below 1024 px it deliberately does not).
+ */
+export function selectionAnnouncement({ index = -1, total = 0, title = '', revealed = false } = {}) {
+  const name = String(title ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const count = `${Number.isInteger(total) && total > 0 ? total : 0} Treffer`;
+  if (Number.isInteger(index) && index >= 0 && index < total) {
+    return `${count}. Zeile ${index + 1} von ${total} ausgewählt${name ? `: ${name}` : ''}.${
+      revealed ? ' Die Liste ist zu dieser Zeile gescrollt.' : ''
+    }`;
+  }
+  if (!name) return '';
+  return `${count}. Ausgewählt: ${name}. Der Datensatz steht nicht in der aktuellen Trefferliste.`;
+}
+
 export function init(ctx) {
   const listEl = qs('#result-list');
   const stateEl = qs('#results-state');
@@ -651,9 +676,14 @@ export function init(ctx) {
   });
 
   ctx.bus.on('record:selected', ({ record, source }) => {
-    // Came from the map (pin or point pile) or from a related sheet: mirror the
-    // selection in the list, which is its accessible twin.
-    if (source !== 'list') revealRow(record?.id);
+    // Came from the map (pin or point pile), a related sheet or a comparison
+    // pane: mirror the selection in the list, which is its accessible twin.
+    if (source === 'list' || !record?.id) return;
+    const index = items.findIndex((item) => item.id === record.id);
+    const revealed = revealRow(record.id);
+    // The list is visually silent for a visitor who cannot see the scroll:
+    // `#results-live` is the `role="status"` line that says the same thing.
+    if (liveEl) liveEl.textContent = selectionAnnouncement({ index, total: items.length, title: record.title, revealed });
   });
 
   // The time slider can only express years that exist in the data: clamp a state

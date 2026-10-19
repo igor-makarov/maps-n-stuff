@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { REVEAL_HIGHLIGHT_MS, revealScrollDelta } from '../public/app/results.js';
+import { REVEAL_HIGHLIGHT_MS, revealScrollDelta, selectionAnnouncement } from '../public/app/results.js';
 
 const view = { height: 900 };
 /** A row of the real list height (`.zh-result` is ~112 px tall). */
@@ -59,4 +59,42 @@ test('revealScrollDelta is defensive about missing rectangles and stays integral
 
 test('the reveal mark is long enough to be seen but not permanent', () => {
   assert.ok(REVEAL_HIGHLIGHT_MS >= 1000 && REVEAL_HIGHLIGHT_MS <= 6000, String(REVEAL_HIGHLIGHT_MS));
+});
+
+test('selectionAnnouncement names the 1-based row a map selection moved the list to', () => {
+  assert.equal(
+    selectionAnnouncement({ index: 11, total: 167, title: 'Zürich 1850', revealed: true }),
+    '167 Treffer. Zeile 12 von 167 ausgewählt: Zürich 1850. Die Liste ist zu dieser Zeile gescrollt.',
+  );
+  assert.equal(
+    selectionAnnouncement({ index: 0, total: 1, title: 'Plan', revealed: false }),
+    '1 Treffer. Zeile 1 von 1 ausgewählt: Plan.',
+  );
+});
+
+test('selectionAnnouncement is honest when the record is not in the current list', () => {
+  assert.equal(
+    selectionAnnouncement({ index: -1, total: 42, title: 'Basel 1900' }),
+    '42 Treffer. Ausgewählt: Basel 1900. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+  );
+  assert.equal(
+    selectionAnnouncement({ index: 0, total: 0, title: 'Plan' }),
+    '0 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+    'an empty list cannot have row 1',
+  );
+  assert.equal(
+    selectionAnnouncement({ index: 3, total: 3, title: 'Plan' }),
+    '3 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+    'an out-of-range index is not a row',
+  );
+  assert.equal(selectionAnnouncement({ index: -1, total: 5, title: '' }), '', 'nothing to announce without a title');
+  assert.equal(selectionAnnouncement(), '');
+  assert.equal(selectionAnnouncement({ index: 1.5, total: 5, title: 'Plan' }), '5 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.');
+});
+
+test('selectionAnnouncement folds a multi-line title into one sentence', () => {
+  assert.equal(
+    selectionAnnouncement({ index: 1, total: 2, title: '  Karte\n  von   Zürich ', revealed: false }),
+    '2 Treffer. Zeile 2 von 2 ausgewählt: Karte von Zürich.',
+  );
 });
