@@ -1,0 +1,382 @@
+/**
+ * Historical borders view (public/app/history.js).
+ *
+ * The view is added by its own module, so this stylesheet is loaded on demand.
+ * It uses the shared canton-derived tokens (typography, spacing, restrained
+ * colour) but presents an independent atlas, not a government site.
+ */
+
+/* --- the Maps / Borders switch and the mode hiding ------------------ */
+
+.app-modebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0 16px;
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.app-modebar__link {
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-modebar__link:hover {
+  color: var(--zh-color-accent-dark);
+}
+
+.app-modebar__link[aria-current='page'] {
+  border-bottom-color: var(--zh-color-accent);
+  color: var(--zh-color-text);
+}
+
+/* In the History view only the switch and the borders view belong to `main`. */
+body.app-mode-history #main > *:not(.app-modebar):not(#history-view) {
+  display: none;
+}
+
+/* --- the view ------------------------------------------------------- */
+
+.hz [hidden],
+#history-view[hidden] {
+  display: none !important;
+}
+
+#history-view {
+  padding-bottom: 48px;
+}
+
+.hz__head {
+  max-width: 768px;
+}
+
+.hz__lead {
+  margin: 8px 0 4px;
+  color: var(--zh-color-text-soft);
+}
+
+.hz__status {
+  margin: 0 0 12px;
+  font-size: var(--zh-font-small);
+  color: var(--zh-color-text-soft);
+}
+
+.hz__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .hz__body:has(.hz__panel:not([hidden])) {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+.hz__mapwrap {
+  position: relative;
+  min-height: 420px;
+  border: 1px solid var(--zh-color-border);
+  background: #f4f6f8;
+}
+
+.hz__canvas {
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+.hz__canvas:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: 2px;
+}
+
+.hz__canvas:active {
+  cursor: grabbing;
+}
+
+.hz__controls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid var(--zh-color-border);
+  box-shadow: var(--zh-shadow-card);
+}
+
+.hz__toggle {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 6px;
+  font-size: var(--zh-font-small);
+}
+
+.hz__hover {
+  position: absolute;
+  margin: 0;
+  padding: 2px 8px;
+  background: rgb(0 0 0 / 82%);
+  color: #fff;
+  font-size: var(--zh-font-tiny);
+  pointer-events: none;
+}
+
+.hz__legend {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  max-width: 320px;
+  margin: 0;
+  padding: 6px 10px;
+  list-style: none;
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid var(--zh-color-border);
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+.hz__legend-item {
+  padding-left: 26px;
+  background-repeat: no-repeat;
+  background-position: 0 50%;
+  background-size: 20px 2px;
+}
+
+.hz__legend-item--solid {
+  background-image: linear-gradient(var(--zh-color-text), var(--zh-color-text));
+}
+
+.hz__legend-item--dashed {
+  background-image: repeating-linear-gradient(90deg, var(--zh-color-text) 0 4px, transparent 4px 8px);
+}
+
+.hz__hint {
+  margin: 8px 0 0;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+.hz__loading,
+.hz__error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 10px 16px;
+  background: var(--zh-color-surface);
+  border: 1px solid var(--zh-color-border);
+  box-shadow: var(--zh-shadow-card);
+  font-size: var(--zh-font-small);
+}
+
+.hz__error {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 480px;
+  border-color: var(--zh-color-danger);
+}
+
+/* --- timeline ------------------------------------------------------- */
+
+.hz__timeline {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--zh-color-surface);
+  border: 1px solid var(--zh-color-border);
+}
+
+.hz__timeline-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hz__timeline-row--form {
+  margin-top: 8px;
+  justify-content: space-between;
+}
+
+.hz__range {
+  width: 100%;
+  margin: 10px 0 4px;
+  accent-color: var(--zh-color-accent);
+}
+
+.hz__range:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: 4px;
+}
+
+.hz__yearform {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hz__year {
+  width: 9.5rem;
+}
+
+.hz__yearlabel {
+  font-weight: 600;
+}
+
+.hz__yearhint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+.hz__note {
+  margin: 0;
+  flex: 1 1 260px;
+  font-size: var(--zh-font-small);
+  color: var(--zh-color-text-soft);
+}
+
+/* --- details panel -------------------------------------------------- */
+
+.hz__panel {
+  padding: 12px;
+  background: var(--zh-color-surface);
+  border: 1px solid var(--zh-color-border);
+  box-shadow: var(--zh-shadow-card);
+}
+
+.hz__panel-head {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.hz__panel-head h3 {
+  margin: 0;
+}
+
+.hz__facts {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 12px 0;
+  font-size: var(--zh-font-small);
+}
+
+.hz__facts dt {
+  color: var(--zh-color-text-soft);
+}
+
+.hz__facts dd {
+  margin: 0;
+}
+
+.hz__source-line {
+  margin: 0;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+.hz__source {
+  margin: 16px 0 0;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+/* --- polity search -------------------------------------------------- */
+
+.hz__search {
+  margin-top: 16px;
+}
+
+.hz__search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hz__search-row input {
+  flex: 1 1 260px;
+}
+
+.hz__polity {
+  flex: 1 1 220px;
+}
+
+.hz__search-results {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hz__search-hit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--zh-color-border);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hz__search-hit:hover {
+  background: var(--zh-color-bg);
+}
+
+.hz__search-hit:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: -3px;
+}
+
+.hz__search-name {
+  font-weight: 600;
+}
+
+.hz__search-years,
+.hz__search-empty {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+/* --- small screens -------------------------------------------------- */
+
+@media (max-width: 599px) {
+  .hz__mapwrap {
+    min-height: 320px;
+  }
+
+  .hz__legend {
+    display: none;
+  }
+
+  .hz__controls {
+    position: static;
+    margin: 8px;
+    box-shadow: none;
+  }
+
+  .hz__hint {
+    padding: 0 8px 8px;
+  }
+}

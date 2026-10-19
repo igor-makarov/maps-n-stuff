@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp, cvv, csync }
+ *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp, cvv, csync, year, hv }
  *   store.update({ from: 1800 }) -> merge, sync URL, notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *   store.applyUrl()             -> re-read the URL (used by popstate)
@@ -37,19 +37,21 @@ export const STATE_DEFAULTS = Object.freeze({
   extents: '', // '1' = draw the documented footprints of the filtered records on the map
   at: '', // "lat,lon" point filter: only records whose documented extent covers this point
   place: '', // selected place label
-  lat: 47.3769, // Zürich as the initial view (documented default, not a search result)
-  lon: 8.5417,
-  zoom: 12,
+  lat: 20, // world view: the atlas opens worldwide, not in one canton
+  lon: 0,
+  zoom: 2,
   selected: '', // record id
   sheet: 1, // 1-based sheet/canvas of the open multi-sheet work (shareable)
   vv: '', // "x,y,w,h" visible region of that sheet in image pixels (shareable; '' = whole sheet)
-  view: 'split', // 'split' | 'map' | 'list'
+  view: 'split', // 'split' | 'map' | 'list' | 'history' (the historical-borders view)
   sort: 'year-asc',
   overlay: '', // swisstopo layer id of the comparison layer
   otime: '', // time value for that layer (YYYYMMDD where the layer is a Zeitreise layer)
   cmp: '', // comma-separated record ids pinned in the comparison list (max 4)
   cvv: '', // cut-outs of the comparison panes: "id@x,y,w,h" pairs, ";"-separated (shareable)
   csync: '1', // '1' = the comparison panes' cut-outs are coupled (the default), '0' = each pane moves alone
+  year: 1900, // the History view's selected year (negative = BCE)
+  hv: '', // History view's own map window "lat,lon,zoom" ('' = the world view); kept apart from the archive map's window
 });
 
 /** URL parameter names kept short for shareable links. */
@@ -78,6 +80,8 @@ export const PARAM = {
   cmp: 'cmp',
   cvv: 'cvv',
   csync: 'csync',
+  year: 'year',
+  hv: 'hv',
 };
 
 /**
@@ -91,8 +95,8 @@ const VIEW_REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
 const MAX_COMPARE_VIEWS = 4;
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv', 'cvv', 'csync'],
-  number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
+  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv', 'cvv', 'csync', 'hv'],
+  number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet', 'year'],
 };
 
 /**
@@ -213,7 +217,7 @@ export function sanitise(state) {
   const to = Number.isFinite(Number(out.to)) ? Number(out.to) : STATE_DEFAULTS.to;
   out.from = Math.min(from, to);
   out.to = Math.max(from, to);
-  if (!['split', 'map', 'list'].includes(out.view)) out.view = STATE_DEFAULTS.view;
+  if (!['split', 'map', 'list', 'history'].includes(out.view)) out.view = STATE_DEFAULTS.view;
   if (!['year-asc', 'year-desc', 'title'].includes(out.sort)) out.sort = STATE_DEFAULTS.sort;
   out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
   out.extents = out.extents === '1' || out.extents === 'true' ? '1' : '';
@@ -261,6 +265,11 @@ export function sanitise(state) {
   // default and stays out of the URL; only the visitor's decision to uncouple is
   // shareable (`?csync=0`), so a comparison link reproduces the view it names.
   out.csync = out.csync === '0' || out.csync === 'false' ? '0' : '1';
+  // The History view's year and its own map window. The dataset reaches from
+  // 123000 BCE to 2010 CE, so the bound is wide but finite; the view snaps to
+  // the nearest published snapshot and says which one it draws.
+  out.year = Math.max(-130000, Math.min(2200, Math.round(Number(out.year) || STATE_DEFAULTS.year)));
+  out.hv = /^-?\d{1,3}(?:\.\d{1,4})?,-?\d{1,3}(?:\.\d{1,4})?,\d{1,2}(?:\.\d{1,2})?$/.test(String(out.hv ?? '')) ? String(out.hv) : '';
   return out;
 }
 
