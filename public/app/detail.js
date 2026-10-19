@@ -12,8 +12,10 @@
 
 import { copyText, el, formatYearRange, qs, setStatus, trapFocus } from './dom.js';
 import { recordCenter } from './records.js';
+import { fetchUpstreamJson } from './upstream.js';
 import {
   boundsForCanvas,
+  clampView,
   describeUpstreamError,
   eRaraViewerUrl,
   formatViewParam,
@@ -482,28 +484,11 @@ export function init(ctx) {
   }
 
   /**
-   * JSON from an allowlisted upstream (IIIF manifest, image info).
-   *
-   * The site ships a strict `connect-src 'self'` CSP (public/_headers), so the
-   * same-origin Worker proxy is the *primary* path — it is also edge-cached
-   * (1 h). The direct call stays as a fallback for a deployment without the
-   * Worker (e.g. plain static hosting) — e-rara sends `access-control-allow-origin: *`.
+   * JSON from an allowlisted upstream (IIIF manifest, image info). The ladder
+   * (same-origin proxy first, direct call as fallback) lives in `upstream.js` so
+   * the comparison view can use exactly the same path.
    */
-  async function fetchJson(url) {
-    try {
-      const res = await fetch(`/api/fetch?url=${encodeURIComponent(url)}&accept=application/json`);
-      if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-      return await res.json();
-    } catch (proxyError) {
-      try {
-        const res = await fetch(url, { headers: { accept: 'application/json' } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } catch (directError) {
-        throw new Error(`${proxyError.message} / ${directError.message}`);
-      }
-    }
-  }
+  const fetchJson = fetchUpstreamJson;
 
   /* --------------------------------------------------------------- viewer */
 
@@ -982,8 +967,11 @@ export function init(ctx) {
  * the image service (`regionByPx` + `sizeByW`), keeps the sheet inside the view
  * box and gives immediate feedback by transforming the current bitmap while the
  * next region is loading.
+ *
+ * Exported because the comparison view mounts the same viewer for its panes
+ * (one factory, one set of IIIF-request rules); it owns nothing but its `stage`.
  */
-function createViewer(stage, { record, live, loadJson, meta, onZoom, onError, onViewChange } = {}) {
+export function createViewer(stage, { record, live, loadJson, meta, onZoom, onError, onViewChange } = {}) {
   const img = el('img', { class: 'app-viewer__image', alt: '', decoding: 'async' });
   const spinner = stage.querySelector('.zh-spinner') ?? el('span', { class: 'zh-spinner' });
   stage.replaceChildren(spinner, img);
@@ -1369,6 +1357,26 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError, on
     zoomIn: () => zoom(1.6),
     zoomOut: () => zoom(1 / 1.6),
     reset,
+    /** The current region and the sheet bounds it lives in (`null` before a canvas is set). */
+    getView: () => (view && bounds ? { view: { ...view }, bounds: { ...bounds } } : null),
+    /**
+     * Apply a view that came from outside (the coupled comparison view). The
+     * region is clamped to this sheet, the bitmap follows immediately and the
+     * next region is fetched — but nothing is *reported* back, so two coupled
+     * viewers cannot ping-pong each other's state.
+     */
+    setView(next) {
+      if (!bounds || !view || !next) return false;
+      const target = clampView(next, bounds);
+      const same =
+        Math.abs(target.x - view.x) < 1 && Math.abs(target.y - view.y) < 1 && Math.abs(target.w - view.w) < 1 && Math.abs(target.h - view.h) < 1;
+      if (same) return true;
+      view = target;
+      applyTransform();
+      updateReadout();
+      scheduleFetch();
+      return true;
+    },
     /** The current region as the shareable `vv` value (`''` = whole sheet). */
     getViewParam: () => (bounds ? formatViewParam(view, bounds) : null),
     /**

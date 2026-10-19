@@ -27,7 +27,9 @@ import {
   serviceId,
   sheetOptionLabel,
   sheetThumbUrl,
+  extentToView,
   viewForCanvas,
+  viewToExtent,
   zoomPercent,
   zoomView,
 } from '../public/app/iiif.js';
@@ -398,4 +400,57 @@ test('describeUpstreamError turns developer strings into an actionable sentence'
   assert.match(unknown, /unerwartet/);
 
   assert.match(describeUpstreamError(null), /unbekannter Fehler/);
+});
+
+/* ------------------------------------------------ coupling by documented extent */
+
+/** A labelled fixture extent: Zürich city plans state roughly this box. */
+const CITY_EXTENT = { west: 8.5, east: 8.55, north: 47.38, south: 47.35 };
+
+test('viewToExtent maps the sheet linearly onto the documented extent', () => {
+  const bounds = boundsForCanvas(1000, 500);
+  // Whole sheet -> whole extent.
+  assert.deepEqual(viewToExtent({ x: 0, y: 0, w: 1000, h: 500 }, bounds, CITY_EXTENT), CITY_EXTENT);
+  // Right half of the sheet -> eastern half of the box; y grows southwards.
+  const right = viewToExtent({ x: 500, y: 0, w: 500, h: 500 }, bounds, CITY_EXTENT);
+  assert.equal(right.west, 8.525);
+  assert.equal(right.east, 8.55);
+  assert.equal(right.north, 47.38);
+  // Bottom-left quarter -> south-west corner (north of the box is smaller).
+  const corner = viewToExtent({ x: 0, y: 250, w: 500, h: 250 }, bounds, CITY_EXTENT);
+  assert.equal(corner.west, 8.5);
+  assert.equal(corner.east, 8.525);
+  assert.equal(corner.north, 47.365);
+  assert.equal(corner.south, 47.35);
+});
+
+test('extentToView is the inverse of viewToExtent', () => {
+  const bounds = boundsForCanvas(3808, 5613);
+  const view = { x: 1160, y: 2395, w: 1487, h: 824 };
+  const geo = viewToExtent(view, bounds, CITY_EXTENT);
+  const back = extentToView(geo, bounds, CITY_EXTENT);
+  assert.ok(Math.abs(back.x - view.x) < 0.001 && Math.abs(back.y - view.y) < 0.001, 'position round-trips');
+  assert.ok(Math.abs(back.w - view.w) < 0.001 && Math.abs(back.h - view.h) < 0.001, 'size round-trips');
+});
+
+test('extentToView clamps a box that reaches beyond the sheet instead of inventing one', () => {
+  const bounds = boundsForCanvas(1000, 500);
+  const wider = extentToView({ west: 8.0, east: 9.0, north: 48, south: 47 }, bounds, CITY_EXTENT);
+  assert.deepEqual(wider, { x: 0, y: 0, w: 1000, h: 500 });
+  // A tiny box still yields the deepest zoom the viewer allows (MIN_REGION_FRACTION).
+  const tiny = extentToView({ west: 8.5001, east: 8.5002, north: 47.3502, south: 47.3501 }, bounds, CITY_EXTENT);
+  assert.equal(tiny.w, 40);
+  assert.equal(tiny.h, 20);
+});
+
+test('the coupling helpers refuse unusable input instead of guessing coordinates', () => {
+  const bounds = boundsForCanvas(1000, 500);
+  for (const bad of [null, undefined, {}, { west: 8.5, east: 8.5, north: 47.4, south: 47.3 }, { west: 9, east: 8, north: 47.4, south: 47.3 }, { west: 8.5, east: 8.6, north: 47.3, south: 47.4 }, { west: NaN, east: 8.6, north: 47.4, south: 47.3 }, { west: -200, east: 8.6, north: 47.4, south: 47.3 }]) {
+    assert.equal(viewToExtent({ x: 0, y: 0, w: 100, h: 100 }, bounds, bad), null, `extent ${JSON.stringify(bad)}`);
+    assert.equal(extentToView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, bounds, bad), null);
+  }
+  assert.equal(viewToExtent({ x: 0, y: 0, w: 0, h: 100 }, bounds, CITY_EXTENT), null);
+  assert.equal(viewToExtent({ x: 0, y: Number.NaN, w: 100, h: 100 }, bounds, CITY_EXTENT), null);
+  assert.equal(viewToExtent({ x: 0, y: 0, w: 100, h: 100 }, { x: 0, y: 0, w: 0, h: 0 }, CITY_EXTENT), null);
+  assert.equal(extentToView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, null, CITY_EXTENT), null);
 });

@@ -353,6 +353,72 @@ export function parseViewParam(value, bounds) {
   return clampView({ x, y, w, h }, bounds);
 }
 
+/* ------------------------------------------- coupling by documented extent */
+
+/** Accepts a box in the same shape as a record's `extent`; `null` when unusable. */
+function usableBox(box) {
+  if (!box) return null;
+  const west = Number(box.west);
+  const south = Number(box.south);
+  const east = Number(box.east);
+  const north = Number(box.north);
+  if (![west, south, east, north].every((value) => Number.isFinite(value))) return null;
+  if (east <= west || north <= south) return null;
+  if (west < -180 || east > 180 || south < -90 || north > 90) return null;
+  return { west, south, east, north };
+}
+
+function usableSheet(bounds) {
+  return Boolean(bounds && bounds.w > 0 && bounds.h > 0);
+}
+
+function usableView(view) {
+  return Boolean(view && [view.x, view.y, view.w, view.h].every((value) => Number.isFinite(value)) && view.w > 0 && view.h > 0);
+}
+
+/**
+ * Geographic box of the region that is currently visible in the viewer.
+ *
+ * The sheet is mapped linearly onto the record's **documented** `extent` — the
+ * same coarse assumption the map view makes when it draws the footprint of a
+ * record. The maps in the seed are not georeferenced, so this is a coupling aid
+ * for placing two sheets next to each other, not a georeference; the comparison
+ * view says so. Returns `null` for anything unusable instead of guessing.
+ */
+export function viewToExtent(view, bounds, extent) {
+  const box = usableBox(extent);
+  if (!box || !usableSheet(bounds) || !usableView(view)) return null;
+  const fx = (view.x - bounds.x) / bounds.w;
+  const fy = (view.y - bounds.y) / bounds.h;
+  const fw = view.w / bounds.w;
+  const fh = view.h / bounds.h;
+  const west = box.west + (box.east - box.west) * fx;
+  const north = box.north - (box.north - box.south) * fy;
+  return {
+    west,
+    east: west + (box.east - box.west) * fw,
+    north,
+    south: north - (box.north - box.south) * fh,
+  };
+}
+
+/**
+ * The region of a sheet that shows a geographic box — the inverse of
+ * `viewToExtent`. The result is clamped to the sheet and to the deepest zoom
+ * (`MIN_REGION_FRACTION`), so a box that reaches beyond the sheet still yields a
+ * view the viewer can show instead of a letterbox inside the image.
+ */
+export function extentToView(part, bounds, extent) {
+  const box = usableBox(extent);
+  const target = usableBox(part);
+  if (!box || !target || !usableSheet(bounds)) return null;
+  const x = bounds.x + ((target.west - box.west) / (box.east - box.west)) * bounds.w;
+  const y = bounds.y + ((box.north - target.north) / (box.north - box.south)) * bounds.h;
+  const w = ((target.east - target.west) / (box.east - box.west)) * bounds.w;
+  const h = ((target.north - target.south) / (box.north - box.south)) * bounds.h;
+  return clampView({ x, y, w, h }, bounds);
+}
+
 /* ----------------------------------------------------------------- metadata */
 
 /**

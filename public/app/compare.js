@@ -6,11 +6,21 @@
  * lays two of them out side by side with their real IIIF/WMTS previews, titles,
  * dates, holding institutions and links back to the original records.
  *
+ * Since iteration 7-16 (zurich-maps-3) the panes of records with a IIIF manifest
+ * are *interactive*: the same viewer factory as the detail panel requests real
+ * region cut-outs, and a toggle couples the panes through the extent each record
+ * documents in the catalogue (see `viewToExtent`/`extentToView` in iiif.js) so a
+ * zoom in one sheet follows in the others. Records without a manifest keep the
+ * static raster tile preview.
+ *
  * It never writes into another module's DOM: the panel markup lives in
  * public/index.html and the previews are built from the record itself.
  */
 
 import { el, qs, setStatus, trapFocus, copyText } from './dom.js';
+import { createViewer } from './detail.js';
+import { fetchUpstreamJson } from './upstream.js';
+import { describeUpstreamError, extentToView, parseManifest, viewToExtent } from './iiif.js';
 
 const MAX_PINNED = 4;
 const COMPARE_WIDTH = 1200; // IIIF Image API width for a readable comparison
@@ -63,6 +73,12 @@ export function init(ctx) {
   let lastFocused = null;
   let open = false;
   let viewRecords = []; // order shown in the comparison view (clicked record first)
+  /** Mounted comparison viewers: `{ index, record, viewer, stage }`. */
+  let panes = [];
+  /** Bumped on every rebuild/close so a slow manifest cannot mount into a stale view. */
+  let viewToken = 0;
+  let coupled = true;
+  let lastActivePane = 0;
 
   const recordOf = (id) => ctx.data.recordIndex?.get(id) ?? null;
   const pinnedIds = () => {
@@ -194,15 +210,24 @@ export function init(ctx) {
     if (viewTitle) {
       viewTitle.textContent = `Vergleich: ${known.map((record) => shortTitle(record)).join(' ↔ ')}`;
     }
+    destroyViewers();
     viewBody.replaceChildren(
+      ...(known.length >= 2 ? [couplingControls()] : []),
       ...known.map((record, index) =>
         el('figure', { class: 'app-compare__pane' }, [
-          el('div', { class: 'app-compare__paneimage' }, [thumb(record, 'app-compare__image', true)]),
+          paneImage(record, index),
           el('figcaption', {}, [
             el('p', { class: 'app-compare__paneindex zh-hint', text: `Karte ${index + 1} von ${known.length}` }),
             el('h3', { class: 'zh-heading zh-heading--5', text: record.title }),
             el('p', { class: 'zh-hint', text: `${yearText(record)} · ${record.creatorText || (record.creators ?? []).join(', ') || 'Urheber unbekannt'}` }),
             el('p', { class: 'zh-hint', text: `${record.institution || record.providerId} · ${record.rights || 'Rechte nicht angegeben'}` }),
+            el('p', { class: 'app-compare__readout zh-hint', 'data-compare-readout': '', text: viewerCapable(record) ? 'Ausschnitt wird geladen …' : '' }),
+            viewerCapable(record)
+              ? el('p', {
+                  class: 'app-compare__viewhint zh-hint',
+                  text: 'Echter IIIF-Ausschnitt: zoomen mit +/−, Doppelklick oder Ctrl/⌘ + Mausrad, verschieben mit den Pfeiltasten oder per Zug.',
+                })
+              : null,
             el('p', { class: 'app-compare__paneactions' }, [
               el('a', { class: 'zh-button zh-button--small', href: record.recordUrl, rel: 'noopener', text: 'Originaldatensatz öffnen ↗' }),
               el('button', {
@@ -223,6 +248,193 @@ export function init(ctx) {
     if (known.length < 2) {
       viewBody.append(el('p', { class: 'zh-state zh-hint', text: 'Für einen Vergleich mindestens zwei Datensätze merken.' }));
     }
+    // Real viewers for the panes with a manifest; they need the visible layout.
+    void mountViewers(known, viewBody);
+  }
+
+  /* ------------------------------------------------------- coupled viewers */
+
+  /** Records with a IIIF manifest get an interactive pane instead of the tile. */
+  function viewerCapable(record) {
+    return Boolean(record?.iiifManifest);
+  }
+
+  /** The coupling switch; only rendered for a real comparison (two or more panes). */
+  function couplingControls() {
+    return el('div', { class: 'app-compare__sync' }, [
+      el('button', {
+        class: 'zh-chip',
+        type: 'button',
+        id: 'compare-sync',
+        'aria-pressed': 'true',
+        onclick: (event) => toggleCoupling(event.currentTarget),
+        text: 'Ausschnitte gekoppelt',
+      }),
+      el('p', { class: 'zh-hint', id: 'compare-sync-hint', role: 'status', 'aria-live': 'polite', text: '' }),
+    ]);
+  }
+
+  function paneImage(record, index) {
+    if (!viewerCapable(record)) return el('div', { class: 'app-compare__paneimage' }, [thumb(record, 'app-compare__image', true)]);
+    return el('div', { class: 'app-compare__paneimage app-compare__paneimage--viewer' }, [
+      el(
+        'div',
+        {
+          class: 'app-viewer__stage app-viewer__stage--compare',
+          'data-compare-stage': String(index),
+          tabindex: '0',
+          role: 'group',
+          'aria-roledescription': 'Kartenausschnitt mit Zoom',
+          'aria-label': `Karte ${index + 1}: ${record.title}. Zoomen mit Plus und Minus, verschieben mit den Pfeiltasten.`,
+        },
+        [el('span', { class: 'zh-spinner', role: 'presentation' })],
+      ),
+    ]);
+  }
+
+  /**
+   * Mount one viewer per pane that has a manifest and load its first canvas.
+   * A manifest that cannot be loaded falls back to the documented thumbnail with
+   * a plain German sentence (`describeUpstreamError`) instead of an empty box.
+   */
+  async function mountViewers(records, container) {
+    const token = ++viewToken;
+    panes = [];
+    updateSyncUi();
+    for (const [index, record] of records.entries()) {
+      const stage = container.querySelector(`[data-compare-stage="${index}"]`);
+      if (!stage) continue;
+      try {
+        const manifest = parseManifest(await fetchUpstreamJson(record.iiifManifest));
+        if (token !== viewToken || !open) return;
+        const canvas = manifest.canvases[0];
+        const instance = createViewer(stage, {
+          record,
+          loadJson: fetchUpstreamJson,
+          onZoom: (text) => setReadout(stage, text),
+          onError: (message) => showPaneFallback(stage, record, message),
+          // A view change is the coupling trigger; the value itself is not shared
+          // through the URL (the comparison view is not the detail panel).
+          onViewChange: () => propagate(index),
+        });
+        instance.setCanvas(canvas, { label: canvas.label });
+        panes.push({ index, record, viewer: instance, stage });
+      } catch (err) {
+        if (token !== viewToken) return;
+        showPaneFallback(stage, record, describeUpstreamError(err));
+      }
+    }
+    if (token !== viewToken) return;
+    updateSyncUi();
+    if (coupled && panes.length > 1) {
+      // Whole sheets on both sides are already "the same place" (the documented
+      // extent), so nothing has to be applied here — but the toggle must state
+      // honestly whether coupling is possible at all.
+      updateSyncHint();
+    }
+  }
+
+  function setReadout(stage, text) {
+    const readout = stage.closest('figure')?.querySelector('[data-compare-readout]');
+    if (readout) readout.textContent = text;
+  }
+
+  /** Replace a failed viewer stage with the record's documented thumbnail. */
+  function showPaneFallback(stage, record, message) {
+    const wrap = stage.parentElement;
+    if (!wrap) return;
+    const pane = panes.find((entry) => entry.stage === stage);
+    if (pane) pane.failed = true;
+    wrap.replaceChildren(
+      el('div', { class: 'app-compare__box' }, [
+        el('span', { class: 'app-compare__image app-compare__placeholder', text: message }),
+        thumb(record, 'app-compare__image', false),
+      ]),
+    );
+    updateSyncUi();
+  }
+
+  function destroyViewers() {
+    viewToken += 1;
+    for (const pane of panes) {
+      try {
+        pane.viewer?.destroy();
+      } catch {
+        /* a broken viewer must not block closing the comparison */
+      }
+    }
+    panes = [];
+  }
+
+  /**
+   * A zoom/pan in one pane follows in every other pane that documents an extent:
+   * the visible region becomes a geographic box,
+   * which is mapped back onto the other sheets’ pixels. Two viewers never report
+   * their own `setView` back, so this cannot loop.
+   */
+  function propagate(sourceIndex) {
+    lastActivePane = sourceIndex;
+    const source = panes.find((pane) => pane.index === sourceIndex);
+    const geometry = source?.viewer.getView();
+    if (!source || !geometry) return;
+    const geo = viewToExtent(geometry.view, geometry.bounds, source.record.extent);
+    if (!geo) return;
+    if (!coupled) {
+      updateSyncHint(`Ausschnitt in Karte ${sourceIndex + 1} geändert – die Kopplung ist aus.`);
+      return;
+    }
+    let applied = 0;
+    for (const pane of panes) {
+      if (pane === source || pane.failed) continue;
+      const target = pane.viewer.getView();
+      if (!target) continue;
+      const view = extentToView(geo, target.bounds, pane.record.extent);
+      if (view && pane.viewer.setView(view)) applied += 1;
+    }
+    if (applied > 0) {
+      updateSyncHint(`Ausschnitt von Karte ${sourceIndex + 1} auf ${applied} weitere Karte${applied === 1 ? '' : 'n'} übertragen.`);
+    } else if (panes.length > 1) {
+      updateSyncHint(`Karte ${sourceIndex + 1} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`);
+    }
+  }
+
+  function updateSyncUi() {
+    const button = qs('#compare-sync');
+    if (button) {
+      const possible = panes.filter((pane) => !pane.failed && pane.record.extent).length >= 2;
+      button.hidden = !possible;
+      button.setAttribute('aria-pressed', coupled ? 'true' : 'false');
+      button.textContent = coupled ? 'Ausschnitte gekoppelt' : 'Ausschnitte koppeln';
+      button.setAttribute('aria-label', coupled ? 'Kartenausschnitte entkoppeln' : 'Kartenausschnitte anhand der belegten Ausdehnung koppeln');
+    }
+    updateSyncHint();
+  }
+
+  function updateSyncHint(text) {
+    const hint = qs('#compare-sync-hint');
+    if (!hint) return;
+    if (text) {
+      hint.textContent = text;
+      return;
+    }
+    const linked = panes.filter((pane) => !pane.failed && pane.record.extent).length;
+    if (panes.length > 1 && linked >= 2) {
+      hint.textContent = coupled
+        ? 'Zoomen und verschieben in einer Karte folgt in der anderen – gekoppelt über die im Katalog belegte Ausdehnung der Blätter, nicht über eine Georeferenzierung.'
+        : 'Die Kopplung ist aus: jede Karte wird für sich bewegt.';
+    } else if (panes.length > 1) {
+      hint.textContent = 'Für die Kopplung fehlt mindestens einer Karte die belegte Ausdehnung – die Ausschnitte bleiben unabhängig.';
+    } else {
+      hint.textContent = 'Datensätze öffnen einen echten IIIF-Ausschnitt; mit «Ausschnitte koppeln» folgen sich zwei Karten am selben Ort.';
+    }
+  }
+
+  function toggleCoupling(button) {
+    coupled = !coupled;
+    button.setAttribute('aria-pressed', coupled ? 'true' : 'false');
+    updateSyncUi();
+    if (coupled) propagate(lastActivePane);
+    setStatus(status, coupled ? 'Kartenausschnitte sind gekoppelt.' : 'Kartenausschnitte sind entkoppelt.', 'info');
   }
 
   /** Toolbar entry point: only useful (and only shown) with two plus records. */
@@ -243,18 +455,21 @@ export function init(ctx) {
     // Show the clicked record first; the pinned list itself keeps its order.
     const lead = Math.min(Math.max(index, 0), known.length - 1);
     viewRecords = [known[lead].record, ...known.filter((_, i) => i !== lead).map((entry) => entry.record)];
-    renderView();
     lastFocused = document.activeElement;
     open = true;
     view.hidden = false;
     if (scrim) scrim.hidden = false;
     document.body.classList.add('app-compare--open');
+    // Only now has the comparison a real layout: the viewer stages measure their
+    // size when the manifest arrives, so they must not be mounted while hidden.
+    renderView();
     qs('#compare-view-close', view)?.focus();
   }
 
   function closeCompare() {
     if (!open) return;
     open = false;
+    destroyViewers();
     view.hidden = true;
     const detailOpen = qs('#detail')?.hidden === false;
     if (scrim && !detailOpen) scrim.hidden = true;

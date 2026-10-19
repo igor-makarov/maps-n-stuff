@@ -91,6 +91,8 @@ test('every UI selectors used by the app modules exists in the shell', () => {
   }
   // Ids the modules render themselves (inside #detail-body) instead of the shell.
   const dynamic = new Set([
+    '#compare-sync',
+    '#compare-sync-hint',
     '#detail-preview',
     '#detail-pin',
     '#detail-overlay',
@@ -143,11 +145,14 @@ test('the shell only references entry points that exist', async () => {
   // The IIIF detail viewer uses the pure helper module (coordination/README.md).
   assert.ok('iiif.js' in modules, 'public/app/iiif.js must exist');
   assert.match(modules['detail.js'], /from '\.\/iiif\.js'/, 'detail.js builds image requests through iiif.js');
+  // Every upstream JSON request goes through the one documented ladder.
+  assert.ok('upstream.js' in modules, 'public/app/upstream.js must exist');
+  assert.match(modules['detail.js'], /from '\.\/upstream\.js'/, 'detail.js loads manifests through upstream.js');
 });
 
 test('modules only talk to the contracted context (ctx.store/ctx.bus/ctx.data)', () => {
   // Helper modules are imported by the UI modules and expose no init(ctx).
-  const helpers = new Set(['main.js', 'dom.js', 'store.js', 'records.js', 'iiif.js']);
+  const helpers = new Set(['main.js', 'dom.js', 'store.js', 'records.js', 'iiif.js', 'upstream.js']);
   for (const [name, source] of Object.entries(modules)) {
     if (helpers.has(name)) continue;
     assert.match(source, /export function init\(ctx\)/, `${name}: modules expose init(ctx)`);

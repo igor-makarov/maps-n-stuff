@@ -641,6 +641,36 @@ try {
     return last;
   };
 
+  /**
+   * Wait until comparison pane `index` settles into a state matching `predicate`.
+   * Reads the pane's real `<img>`, no matter whether it is an interactive viewer
+   * stage or the static tile fallback of a record without a manifest.
+   */
+  const waitForComparePane = async (index, predicate, timeout = 30_000) => {
+    const deadline = Date.now() + timeout;
+    let last = { src: '', decoded: false, state: '', readout: '', decodeW: 0, decodeH: 0, stageW: 0, viewer: false };
+    while (Date.now() < deadline) {
+      last = await cdp.eval(`(() => {
+        const pane = document.querySelectorAll('#compare-view-body .app-compare__pane')[${index}];
+        const stage = pane?.querySelector('[data-compare-stage]');
+        const img = pane?.querySelector('img');
+        return {
+          src: img?.src || '',
+          decoded: Boolean(img && img.complete && img.naturalWidth > 0),
+          state: stage?.dataset.state || '',
+          readout: pane?.querySelector('[data-compare-readout]')?.textContent || '',
+          decodeW: img?.naturalWidth || 0,
+          decodeH: img?.naturalHeight || 0,
+          stageW: Math.round(stage?.getBoundingClientRect().width || 0),
+          viewer: Boolean(stage),
+        };
+      })()`);
+      if (await cdp.eval(`(${predicate})(${JSON.stringify(last)})`)) return last;
+      await sleep(200);
+    }
+    return last;
+  };
+
   /* --- 3a. IIIF deep zoom (region requests) ---------------------------- */
   const singleSheet = await cdp.eval(`(() => { const nav = document.querySelector('#page-nav'); return { nav: nav?.hidden, display: nav ? getComputedStyle(nav).display : null, label: document.querySelector('#page-label')?.textContent }; })()`);
   check('sheet navigation is hidden for a single-sheet record', singleSheet.nav === true && singleSheet.display === 'none', JSON.stringify(singleSheet));
@@ -1090,19 +1120,35 @@ try {
   await cdp.click('#compare-open');
   await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view', timeout: 10_000 });
   try {
+    // Each pane is ready when its own image has decoded: an interactive IIIF
+    // pane reports `data-state="ready"` once the requested region arrived, a
+    // record without a manifest is ready when its raster tile decoded.
     await cdp.waitFor(
-      `(() => { const images = [...document.querySelectorAll('#compare-view-body .app-compare__image')]; return images.length >= 2 && images.every((img) => img.complete && img.naturalWidth > 0); })()`,
-      { label: 'compare images', timeout: 30_000 },
+      `(() => {
+        const panes = [...document.querySelectorAll('#compare-view-body .app-compare__pane')];
+        if (panes.length < 2) return false;
+        return panes.every((pane) => {
+          const stage = pane.querySelector('[data-compare-stage]');
+          const img = pane.querySelector('img');
+          if (stage) return stage.dataset.state === 'ready' && img && img.complete && img.naturalWidth > 0;
+          return img && img.complete && img.naturalWidth > 0;
+        });
+      })()`,
+      { label: 'compare panes ready', timeout: 60_000 },
     );
   } catch {
-    /* the assertion below reports the images that did (not) load */
+    /* the assertions below report the panes that did (not) load */
   }
   const panes = await cdp.eval(`(() => [...document.querySelectorAll('#compare-view-body .app-compare__pane')].map((pane) => {
+    const stage = pane.querySelector('[data-compare-stage]');
     const img = pane.querySelector('img');
     return {
       title: pane.querySelector('h3')?.textContent || '',
       caption: (pane.querySelector('figcaption')?.textContent || '').replace(/\\s+/g, ' ').trim(),
+      viewer: Boolean(stage),
+      state: stage?.dataset.state ?? null,
       img: img ? { src: img.src, w: img.naturalWidth, h: img.naturalHeight } : null,
+      readout: pane.querySelector('[data-compare-readout]')?.textContent || '',
       link: pane.querySelector('a[href]')?.href || '',
     };
   }))()`);
@@ -1112,7 +1158,9 @@ try {
       const record = paneRecords[index];
       if (!record) return `${index}: no seed record`;
       if (pane.title !== record.title) return `${index}: title "${pane.title}" != "${record.title}"`;
-      if (!pane.img || pane.img.w < 1000 || pane.img.h < 300) return `${index}: image ${pane.img ? `${pane.img.w}×${pane.img.h}` : 'missing'}`;
+      const minWidth = pane.viewer ? 200 : 1000;
+      if (!pane.img || pane.img.w < minWidth || pane.img.h < 200) return `${index}: image ${pane.img ? `${pane.img.w}×${pane.img.h}` : 'missing'}`;
+      if (pane.viewer && !/\/i3f\/v\d+\/\d+\//.test(pane.img.src)) return `${index}: viewer image is not a IIIF request (${pane.img.src.slice(0, 60)})`;
       if (!/^https?:\/\//.test(pane.link)) return `${index}: no source link`;
       if (record.institution && !pane.caption.includes(record.institution)) return `${index}: caption misses ${record.institution}`;
       return null;
@@ -1123,7 +1171,59 @@ try {
     panes.length === 2 && paneProblems.length === 0,
     paneProblems.length
       ? paneProblems.join(' | ')
-      : panes.map((pane) => `${pane.title.slice(0, 24)}:${pane.img.w}×${pane.img.h}`).join(' | '),
+      : panes.map((pane) => `${pane.title.slice(0, 24)}:${pane.viewer ? 'viewer ' : ''}${pane.img.w}×${pane.img.h}`).join(' | '),
+  );
+
+  /* --- 8c2. the comparison panes are coupled viewers -------------------- */
+  const coupledUi = await cdp.eval(`(() => {
+    const button = document.querySelector('#compare-sync');
+    return {
+      stages: document.querySelectorAll('#compare-view-body [data-compare-stage]').length,
+      pressed: button?.getAttribute('aria-pressed') ?? null,
+      hidden: button?.hidden ?? null,
+      text: button?.textContent ?? '',
+      label: button?.getAttribute('aria-label') ?? '',
+      hint: document.querySelector('#compare-sync-hint')?.textContent ?? '',
+      readouts: [...document.querySelectorAll('[data-compare-readout]')].map((node) => node.textContent),
+    };
+  })()`);
+  check(
+    'the comparison mounts a real IIIF viewer per pane and offers the coupling switch',
+    coupledUi.stages === 2 && coupledUi.pressed === 'true' && coupledUi.hidden === false && /gekoppelt/.test(coupledUi.text) && /entkoppeln/.test(coupledUi.label) && coupledUi.readouts.every((text) => text.length > 0),
+    JSON.stringify(coupledUi).slice(0, 260),
+  );
+
+  const pane1Before = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
+  const pane2Before = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[1]?.src || ''`);
+  await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+  await cdp.pressKey('+', { keyCode: 187 });
+  await cdp.pressKey('+', { keyCode: 187 });
+  const followed = await waitForComparePane(
+    1,
+    `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane2Before)} && /Ausschnitt/.test(pane.readout)`,
+    40_000,
+  ).catch(() => null);
+  const pane1After = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
+  check(
+    'zooming one pane follows in the other (coupled through the documented extent)',
+    Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
+    `pane 1 ${pane1Before.slice(-32)} -> ${pane1After.slice(-32)} · pane 2 ${pane2Before.slice(-32)} -> ${followed ? followed.src.slice(-32) : 'unchanged'} (${followed?.readout ?? 'no readout'})`,
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '11-compare-coupled.png')).then(() => report.screenshots.push('11-compare-coupled.png'));
+
+  await cdp.click('#compare-sync');
+  await sleep(300);
+  const uncoupledUi = await cdp.eval(`({ pressed: document.querySelector('#compare-sync')?.getAttribute('aria-pressed'), text: document.querySelector('#compare-sync')?.textContent, hint: document.querySelector('#compare-sync-hint')?.textContent })`);
+  const pane1Decoupled = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
+  await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+  await cdp.pressKey('+', { keyCode: 187 });
+  const decoupledWait = await waitForComparePane(0, `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane1Decoupled)}`, 40_000).catch(() => null);
+  await sleep(1500); // give a wrong coupling the same time to arrive in pane 2
+  const decoupled = await cdp.eval(`({ pane2: document.querySelectorAll('#compare-view-body .app-viewer__image')[1]?.src || '', pane2Readout: document.querySelector('[data-compare-readout]')?.textContent || '' })`);
+  check(
+    'the coupling switch decouples the panes again',
+    uncoupledUi.pressed === 'false' && /koppeln/.test(uncoupledUi.text) && Boolean(decoupledWait) && decoupled.pane2 === followed?.src,
+    `${JSON.stringify(uncoupledUi)} · pane 2 stayed on ${decoupled.pane2.slice(-32)}`,
   );
 
   await cdp.pressKey('Escape');
@@ -2640,7 +2740,7 @@ try {
     `"${String(keywordEmpty).slice(0, 120)}"`,
   );
 
-  /* --- 8p. Grundkarte (base map): farbig / grau / Luftbild -------------- */
+  /* --- 8q. Grundkarte (base map): farbig / grau / Luftbild -------------- */
   // The map offers the three documented swisstopo WMTS base layers. The chips
   // are built by map.js from BASE_LAYERS, so this section checks the real
   // tiles, the attribution, the shared URL state and the keyboard route.

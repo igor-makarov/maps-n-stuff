@@ -283,3 +283,50 @@
     margin-left: 0;
   }
 }
+
+/* ------------------------------------------- comparison view (compare.js) */
+
+/*
+ * The comparison pane of a record with a IIIF manifest hosts the same viewer as
+ * the detail panel. Only the frame is restyled: the stage keeps the viewer's
+ * background, focus ring and spinner rules from above.
+ */
+.app-compare__paneimage--viewer {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-viewer__stage--compare {
+  width: 100%;
+  height: clamp(260px, 44vh, 520px);
+}
+
+.app-compare__sync {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+.app-compare__sync .zh-hint {
+  margin: 0;
+  flex: 1 1 260px;
+}
+
+.app-compare__readout:empty {
+  display: none;
+}
+
+@media (min-width: 840px) {
+  /* The coupling switch spans the two comparison columns. */
+  .app-compare__sync {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-viewer__stage--compare {
+    height: clamp(200px, 36vh, 360px);
+  }
+}
