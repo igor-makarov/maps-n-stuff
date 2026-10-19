@@ -44,12 +44,17 @@ What survives from this iteration and is on `main`:
 - `npm run check` ✓ **174/174** tests after the merge (maps-1's 2 new iiif cases),
   `wrangler deploy --dry-run` ✓ (31 asset files, 28.76 KiB Worker).
 
-**Honest status of the harness numbers:** `149/149` is the measurement of this
-member's own run (all checks green on the integrated tree *before* `6832fc5`); the
-148 checks that remain are the ones that run was green on, but the coupling
-sections (8c/8c2/8c3) were measured against the previous `compare.js` and need the
-re-run against maps-1's `coupledView()` — that run is the first thing to do next
-iteration (`node scripts/browser-check.mjs`, then update `docs/run.md`'s count).
+**Re-measured after the merge, on the integrated tree (maps-1's `coupledView()` +
+these two repairs), 2026-10-19 03:32 UTC:** `node scripts/browser-check.mjs
+--url http://127.0.0.1:8787` → **148/148** (report in `/tmp/shots-722f/report.json`),
+including the coupling sections against the new `compare.js` (`e-rara:8562848` +
+`e-rara:8602092`, both panes to a real region; the `cvv` write-back and the shared
+cut-out link unchanged), and the point check
+`?at=62.0000,-178.0000&from=1547&to=1547` → 0 rows with the removable empty state.
+A fresh clone of the pushed `main` (`e2b41c9`) also passes `npm ci` + `npm run check`
+(174 tests, validation, `wrangler deploy --dry-run`) on this runner.
+Next iteration: assert maps-1's pane-level note (`[data-compare-coverage="outside"]`)
+for the degenerate world/city pair in the harness, then that count is 149.
 
 ### Verified on this runner (2026-10-19, `wrangler dev` on 127.0.0.1:8787)
 
