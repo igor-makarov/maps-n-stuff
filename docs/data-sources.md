@@ -4,11 +4,14 @@ Machine-readable registry: [`public/data/sources.json`](../public/data/sources.j
 (providers, endpoints actually used, rights, attribution, retrieval date) and
 [`public/data/overlays.json`](../public/data/overlays.json) (georeferenced map
 layers). Refresh script: [`scripts/fetch-records.mjs`](../scripts/fetch-records.mjs)
-(`npm run harvest`, `npm run harvest:offline`; the offline rebuild reproduces the
-committed `public/data/**` byte for byte apart from `generatedAt` — re-checked
-2026-10-19 on a cold cache, again with the warm one, and after the 7-19 widening
-of the `landkarten` window).
-All checks below were run on **2026-10-18** (UTC) from this repository.
+(`npm run harvest`, `npm run harvest:offline`; both reproduce the committed
+`public/data/**` byte for byte apart from `generatedAt` — most recently re-checked
+from a **cold** cache on 2026-10-19 with the 213-record seed: the runner had no
+`.cache/fetch/` at all, the harvest cached 1153 upstream responses (19 MB), and
+`git diff` after both the cold run and the offline replay was one `generatedAt`
+line per file).
+The metadata checks below were run on **2026-10-18**; the endpoint check was
+re-run on the 213-record seed on **2026-10-19** (both UTC) from this repository.
 
 OldMapsOnline was used only for *UX research* (information architecture: search →
 time filter → result list → map → detail → original collection). No aggregator
@@ -452,26 +455,26 @@ image service, WMTS preview tile), probes each one once with a descriptive
 and exits non-zero when anything stops answering 200 (`--json <file>` writes the
 full report, `--offline` only lists the URLs, `--limit n` probes a prefix).
 
-Last full run — **2026-10-19, 756 distinct URLs, 0 failures** on the 169-record
-seed (`--concurrency 2 --retries 3`):
+Last full run — **2026-10-19, 984 distinct URLs, 0 failures** on the 213-record
+seed (default `--concurrency 4 --retries 2`; **no URL needed a retry**):
 
 | Kind | Result |
 | --- | --- |
-| original record (DOI landing page / `map.geo.admin.ch` viewer) | 169/169 |
-| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 169/169 |
-| library viewer (`…/content/zoom/<id>`) | 135/135 |
-| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 142/142 |
-| IIIF image service (`…/info.json`) | 141/141 |
+| original record (DOI landing page / `map.geo.admin.ch` viewer) | 213/213 |
+| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 213/213 |
+| library viewer (`…/content/zoom/<id>`) | 186/186 |
+| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 186/186 |
+| IIIF image service (`…/info.json`) | 186/186 |
 
-**Transient 5xx are retried, because e-rara's DOI landing pages throttle.** The
-same 169-record seed at `--concurrency 4` reported 21 failures, every one of them
-a `record` URL answering **500**; three consecutive hand probes of one of them
-answered 200, 200, 500, so they are load artefacts, not dead links. The script
-now retries an answer of `429`, `5xx` or a timeout a bounded number of times
-(`--retries n`, default 2, with a 600 ms · n backoff) and prints how many URLs
-needed the retry; the clean run above needed **23** retries, all of which answered
-200 on the second attempt. A future full check should keep the request rate low
-(`--concurrency 2`) rather than read a 500 as a dead link.
+The earlier run on the 169-record seed (756 URLs) needed 23 retries at
+`--concurrency 2`, so **transient 5xx are still retried: e-rara's DOI landing
+pages throttle.** On the same seed at `--concurrency 4` 21 `record` URLs answered
+**500** once; three consecutive hand probes of one of them answered 200, 200,
+500, so those are load artefacts, not dead links. The script retries `429`, `5xx`
+or a timeout a bounded number of times (`--retries n`, default 2, with a
+600 ms · n backoff) and prints how many URLs needed the retry. A future full
+check should keep the request rate modest (`--concurrency 2`) rather than read a
+500 as a dead link.
 
 The script is deliberately *not* part of `npm run check`: the gate stays offline,
 hermetic and fast, and this check needs the network.
