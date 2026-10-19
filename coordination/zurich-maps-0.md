@@ -1,5 +1,93 @@
 # zurich-maps-0 status
 
+## Iteration 7-18 (2026-10-19, ~01:15–02:0x UTC) — the Zürich plan set keeps every gate-passing candidate
+
+Commit `d29b649` (rebased over maps-2's `242ccb4`; pushed to `main`). Seed
+**140 → 169 records** (142 e-rara + 27 swisstopo); the home view's Zürich window
+gains **+29** real plans.
+
+### What changed in `scripts/fetch-records.mjs` (set `e-rara:sru-zurich-plans`)
+
+The two plan queries (`dc.title=Plan and dc.subject=Zürich`,
+`dc.title=Karte and dc.subject=Zürich`) answer 92 candidates that state a year and
+MODS `<coordinates>`. The set pooled only the 44 oldest (`candidateCap`) and kept
+18 (`recordCap`). Now **all 92 are pooled** (`candidateCap` 100) and the cap is 48:
+**47 pass the gates**. The 45 dropped candidates are duplicate editions of a title
+already kept for the same year, series volumes without a stated `Kartendaten`
+extent, or records without a map year — the comment and `records.json.selection`
+state that verbatim. The kept 47 span 1754–1920: the 1754 Zürichsee plan, the
+1768–1793 militia exercise plans, the 1804/1852/1866/1867/1880 Breitinger plans,
+Oberstrass 1869, the 1871 proposals for the Sihl/rail junction, the 1883
+Landesausstellung plan, Uetliberg/Käpfnach/Adlisberg, the 1912 Winterthur district
+and the 1920 groundwater maps.
+
+### Measured this iteration (this runner, not copied from a commit message)
+
+- Cold `npm run harvest` (no `.cache/fetch/`): **86 s**, wrote all three files;
+  console: “SRU kept 47 Zürich plans of 92 candidates … 169 records, 12 comparison
+  layers”. A repeat harvest (warm cache) reproduced the same output in 84 s.
+- `npm run build` ✓ (169 records, 2 providers, 12 overlays, 27 with a documented
+  depicted period); `npm test` **142/142**; `wrangler deploy --dry-run` ✓.
+- Measured seed facts the docs now state: institutions ETH-Bibliothek 68,
+  Zentralbibliothek Zürich 65, swisstopo 27, Bern 8, Genf 1; corpora `zut` 65,
+  `zuz` 61, `bes_1` 8, `gep_r` 1 (135 of 142 e-rara records have a viewer URL);
+  142 shelfmarks; 142 manifests; 169 extents; 27 depicted periods; span 1696–2021.
+- `npm run verify:endpoints`: **756 distinct URLs** on the 169-record seed. The
+  first run reported 21 failures — all e-rara DOI landing pages answering an
+  intermittent **500**; three consecutive hand probes of one of them answered
+  200, 200, 500, so they are rate/load artefacts, not dead links. The script now
+  retries transient `429/5xx/timeout` a bounded number of times
+  (`--retries`, default 2, 600 ms · n backoff) and prints how many URLs needed a
+  retry. Re-run with `--concurrency 2 --retries 3`: result recorded in
+  `docs/data-sources.md`. **Not reproduced yet with 169 records: a 100 % clean
+  run** — the e-rara DOI endpoint throttles at the probe's rate; whoever runs the
+  next full check should keep concurrency low and treat a retried 200 as pass.
+
+### Probes that ended in “keep the seed as it is” (documented, nothing shipped)
+
+- **The region (11) and city-plan (10) SRU sets are pool-limited, not cap-limited.**
+  Setting their `perDecade` rule from 3 to 9 leaves both counts exactly unchanged
+  (probe run), so their caps stay at 16/14 and their rules are untouched.
+- **The world set stays at 21 records.** Pooling all 39 candidates and raising the
+  per-decade rule from 3 to 9 adds **two** sheets of decades the set already
+  covers (21 → 23, 171 records); not worth a rule change and a re-verification.
+- **Swiss cities outside Zürich answer too little** for a fifth set. SRU probes
+  (2026-10-19): `dc.title=Plan and dc.subject=Basel` 42 hits (mostly books whose
+  title contains “plane”; two real Basel plans with year + coordinates),
+  `…=Bern` 28 hits (3 usable), `…=Luzern` 3 hits (1 map, no coordinates),
+  `…=Genf`/`Genève` 20/31 hits (a handful, most without `<coordinates>`). A set
+  would add ~5 records and a misleading title, so it was not implemented; the
+  note lives here instead of in the code.
+- **The cantonal geoportal is not usable without credentials.**
+  `https://wms.zh.ch/OGDZHWMS?SERVICE=WMS&REQUEST=GetCapabilities` → **401
+  “HTTP Basic: Access denied.”** on 2026-10-19 (`maps.zh.ch/wms` → 503,
+  `webgis.zh.ch` → no answer); GIS-ZH OGD services are token-based, and the swarm
+  must not hold or ship such a token. The canton's historical mapwork is already
+  covered through swisstopo's `ch.swisstopo.zeitreihen`/`hiks-*` WMTS layers,
+  which are the *same* official raster series with OGD terms — no coverage is
+  lost.
+- **LoC would need invented coordinates.** The Library of Congress JSON API
+  (`https://www.loc.gov/maps/?q=…&fo=json`, CORS `*`) and its IIIF manifests are
+  documented and rich, but the item JSON states **no** coordinates for the maps
+  probed (e.g. `2005625055`, `2013593105`, `2006629175`): a record could not be
+  placed on the map without guessing, so no LoC set was added.
+
+### Messages
+
+- **→ maps-1:** `docs/run.md`'s endpoint row and the harness/record counts in
+  `README.md` are refreshed to the 169-record seed; the Worker/config/CSP are
+  untouched. Nothing in your shell files changed this iteration.
+- **→ maps-2:** the seed grew by 29 Zürich-area records (many with city-centre
+  extents), so the marker pile around Zürich is denser than when your clustering
+  work landed — `242ccb4` rebased cleanly on top of mine and the harness was
+  re-run against the integrated tree.
+- **→ maps-3:** the harness was run on the 169-record seed; counts/ids in
+  `browser-check.mjs` derive from the seed, so it stayed green (result below).
+  A new record in the seed does **not** add `depictedYear*` (still 27).
+- **→ all:** the seed is now **169 records / 10 collections / 2 providers**; any
+  copy or check that says 140/119/113 is stale. The Zürich SRU plan set's rule in
+  `records.json.selection` is the authoritative statement of what is kept.
+
 ## Iteration 7-16 (2026-10-19, ~00:3x–00:5x UTC) — the world view gets real records
 
 Written up late: this iteration timed out before I recorded it. Its commits are
