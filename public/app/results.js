@@ -499,6 +499,7 @@ export function init(ctx) {
       if (collectionEl.value !== state.collection) collectionEl.value = state.collection;
     }
     syncFacetCounts(state);
+    refreshHistogramCounts(state);
     updateHistogram(state);
     if (yearFrom && document.activeElement !== yearFrom) yearFrom.value = String(state.from);
     if (yearTo && document.activeElement !== yearTo) yearTo.value = String(state.to);
@@ -606,31 +607,40 @@ export function init(ctx) {
 
   const histogramEl = qs('#year-histogram');
   const histogramScale = qs('#year-histogram-scale');
-  const BIN_YEARS = 10;
-  const decadeOf = (year) => Math.floor(Number(year) / BIN_YEARS) * BIN_YEARS;
+  const histogramHint = qs('#year-histogram-hint');
+  // The hint is the drag preview while a range is being brushed.
+  const HISTOGRAM_HINT = histogramHint?.textContent ?? '';
 
-  /** One bin per decade that the publication years of the seed actually span. */
-  const histogramBins = (() => {
-    const counts = new Map();
-    for (let start = decadeOf(years.min); start <= decadeOf(years.max); start += BIN_YEARS) counts.set(start, 0);
-    for (const record of records) {
-      const year = Number.isFinite(record.yearStart) ? record.yearStart : record.yearEnd;
-      if (!Number.isFinite(year)) continue;
-      const key = decadeOf(Math.max(years.min, Math.min(years.max, year)));
-      counts.set(key, (counts.get(key) ?? 0) + 1);
+  // The chart's *structure* is fixed — one bin per decade the seed spans — so a
+  // filter change or a brush never reflows it and keyboard focus stays put.
+  // Only the counts, the labels and the bar heights are rewritten.
+  const histogramBins = histogramBinsFor(years.min, years.max);
+  const histogramButtons = () => [...(histogramEl?.querySelectorAll('button') ?? [])];
+
+  /** The records the bars count: every active filter *except* the period itself,
+   *  so the chart shows what widening the range would bring back (facet logic). */
+  function histogramScope(state) {
+    let scoped = filterRecords({ ...state, from: -Infinity, to: Infinity }, records);
+    const point = parsePoint(state.at);
+    if (point) scoped = scoped.filter((record) => coversPoint(record, point.lat, point.lon));
+    if (state.viewport === '1' && viewBounds) {
+      const inBounds = new Set(recordsInBounds(scoped, viewBounds).map((record) => record.id));
+      scoped = scoped.filter((record) => inBounds.has(record.id));
     }
-    return [...counts.entries()].map(([start, count]) => ({ start, end: start + BIN_YEARS - 1, count }));
-  })();
+    return scoped;
+  }
+
+  /** The state range a clicked bin or a brushed span of bins stands for. */
+  function selectBins(lo, hi) {
+    const range = brushYears(histogramBins, lo, hi, years.min, years.max);
+    if (range) ctx.store.update(range);
+  }
 
   function buildHistogram() {
     if (!histogramEl) return;
-    const busiest = Math.max(1, ...histogramBins.map((bin) => bin.count));
     histogramEl.replaceChildren(
-      ...histogramBins.map((bin) => {
-        const from = Math.max(years.min, bin.start);
-        const to = Math.min(years.max, bin.end);
-        const label = `${bin.start}–${bin.end}: ${bin.count} ${bin.count === 1 ? 'Datensatz' : 'Datensätze'}`;
-        return el(
+      ...histogramBins.map((bin, index) =>
+        el(
           'button',
           {
             class: 'zh-histogram__bin',
@@ -638,29 +648,51 @@ export function init(ctx) {
             tabindex: '-1',
             'data-start': bin.start,
             'data-end': bin.end,
-            'data-count': bin.count,
-            title: label,
-            'aria-label': `${label}. Zeitraum ${from}–${to} filtern.`,
-            onclick: () => ctx.store.update({ from, to }),
+            'data-count': '0',
+            onclick: () => {
+              if (Date.now() < brushGuardUntil) return; // the click that follows a drag
+              selectBins(index, index);
+            },
           },
-          [
-            el('span', {
-              class: 'zh-histogram__bar',
-              style: `height:${bin.count === 0 ? 2 : Math.max(4, Math.round((bin.count / busiest) * 100))}%`,
-            }),
-          ],
-        );
-      }),
+          [el('span', { class: 'zh-histogram__bar' })],
+        ),
+      ),
     );
     histogramScale?.replaceChildren(el('span', { text: String(years.min) }), el('span', { text: String(years.max) }));
     const first = histogramEl.querySelector('button');
     if (first) first.tabIndex = 0;
+    refreshHistogramCounts(ctx.store.getState());
+  }
+
+  /** Rewrite counts, accessible names and bar heights for the current filter scope. */
+  function refreshHistogramCounts(state) {
+    if (!histogramEl) return;
+    const buttons = histogramButtons();
+    if (buttons.length === 0) return;
+    const counts = countHistogramBins(histogramBins, histogramScope(state), years.min, years.max);
+    const busiest = Math.max(1, ...counts.values());
+    let total = 0;
+    buttons.forEach((button, index) => {
+      const bin = histogramBins[index];
+      const count = counts.get(bin.start) ?? 0;
+      total += count;
+      button.dataset.count = String(count);
+      const from = Math.max(years.min, bin.start);
+      const to = Math.min(years.max, bin.end);
+      const label = `${bin.start}–${bin.end}: ${count} ${count === 1 ? 'Datensatz' : 'Datensätze'}`;
+      button.title = label;
+      button.setAttribute('aria-label', `${label}. Zeitraum ${from}–${to} filtern.`);
+      const bar = button.firstElementChild;
+      if (bar) bar.style.height = `${count === 0 ? 2 : Math.max(4, Math.round((count / busiest) * 100))}%`;
+      button.classList.toggle('is-empty', count === 0);
+    });
+    histogramEl.setAttribute('aria-label', `Datensätze je Jahrzehnt – Zeitraum wählen (${total} im aktuellen Filter)`);
   }
 
   /** Mark the bins inside the current range and keep exactly one tabbable bin. */
   function updateHistogram(state) {
     if (!histogramEl) return;
-    const buttons = [...histogramEl.querySelectorAll('button')];
+    const buttons = histogramButtons();
     for (const button of buttons) {
       button.setAttribute('aria-current', Number(button.dataset.start) <= state.to && Number(button.dataset.end) >= state.from ? 'true' : 'false');
     }
@@ -669,6 +701,74 @@ export function init(ctx) {
       if (anchor) anchor.tabIndex = 0;
     }
   }
+
+  /* ---------- brushing a range across the bars ---------- */
+
+  let brush = null; // { pointerId, anchor, index, moved }
+  let brushGuardUntil = 0; // swallows the click the browser fires after a drag
+
+  function paintBrush(a, b, on) {
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    histogramButtons().forEach((button, index) => button.classList.toggle('is-brushing', Boolean(on) && index >= lo && index <= hi));
+  }
+
+  function announceBrush(a, b) {
+    if (!histogramHint) return;
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    const range = brushYears(histogramBins, lo, hi, years.min, years.max);
+    if (!range) return;
+    let count = 0;
+    for (let index = lo; index <= hi; index += 1) count += Number(histogramButtons()[index]?.dataset.count ?? 0);
+    histogramHint.textContent = `${range.from}–${range.to} gewählt: ${count} ${count === 1 ? 'Datensatz' : 'Datensätze'} – loslassen zum Filtern.`;
+  }
+
+  function endBrush(event, commit) {
+    if (!brush || (event && event.pointerId !== brush.pointerId)) return;
+    const { anchor, index, moved } = brush;
+    brush = null;
+    paintBrush(0, 0, false);
+    if (histogramHint) histogramHint.textContent = HISTOGRAM_HINT;
+    if (!commit) return;
+    // A pointer gesture ends with a click whose target may be the chart itself
+    // (`setPointerCapture`), the button, or the common ancestor of a drag: the
+    // range is therefore committed here, and the trailing click is ignored.
+    brushGuardUntil = Date.now() + 400;
+    selectBins(anchor, index);
+  }
+
+  histogramEl?.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    const button = event.target.closest?.('button.zh-histogram__bin');
+    const index = button ? histogramButtons().indexOf(button) : -1;
+    if (index < 0) return;
+    brush = { pointerId: event.pointerId, anchor: index, index, moved: false };
+    // Capture so a drag that leaves the chart (or the pointer's target) still ends here.
+    try {
+      histogramEl.setPointerCapture(event.pointerId);
+    } catch {
+      /* capture is a convenience, the pointerup listener still handles a tap */
+    }
+  });
+
+  histogramEl?.addEventListener('pointermove', (event) => {
+    if (!brush || event.pointerId !== brush.pointerId) return;
+    const buttons = histogramButtons();
+    const rect = histogramEl.getBoundingClientRect();
+    if (!rect.width || buttons.length === 0) return;
+    const ratio = (event.clientX - rect.left) / rect.width;
+    const index = Math.max(0, Math.min(buttons.length - 1, Math.floor(ratio * buttons.length)));
+    if (index !== brush.index) {
+      brush.index = index;
+      brush.moved = true;
+    }
+    if (!brush.moved) return;
+    event.preventDefault();
+    paintBrush(brush.anchor, brush.index, true);
+    announceBrush(brush.anchor, brush.index);
+  });
+
+  histogramEl?.addEventListener('pointerup', (event) => endBrush(event, true));
+  histogramEl?.addEventListener('pointercancel', (event) => endBrush(event, false));
 
   // Toolbar pattern: one tab stop, arrows move between decades, Enter/Space filters.
   histogramEl?.addEventListener('keydown', (event) => {
@@ -701,6 +801,49 @@ function clampYear(value, years) {
   const number = Number(value);
   if (!Number.isFinite(number)) return years.min;
   return Math.max(years.min, Math.min(years.max, Math.round(number)));
+}
+
+/**
+ * One bin per decade the publication years span (inclusive, zero-count decades
+ * included so the axis never lies about a gap). Pure: the caller supplies the
+ * data range, the returned bins carry no counts.
+ */
+export function histogramBinsFor(minYear, maxYear, binYears = 10) {
+  if (!Number.isFinite(minYear) || !Number.isFinite(maxYear) || maxYear < minYear || binYears <= 0) return [];
+  const bins = [];
+  for (let start = Math.floor(minYear / binYears) * binYears; start <= maxYear; start += binYears) {
+    bins.push({ start, end: start + binYears - 1 });
+  }
+  return bins;
+}
+
+/**
+ * Count records into the fixed bins. A record's publication year is `yearStart`
+ * with `yearEnd` as the honest fallback (`yearStart` may be null upstream); years
+ * outside the data range are clamped into the end bins like the chart does.
+ */
+export function countHistogramBins(bins, records, minYear = -Infinity, maxYear = Infinity, binYears = 10) {
+  const counts = new Map((bins ?? []).map((bin) => [bin.start, 0]));
+  for (const record of records ?? []) {
+    const year = Number.isFinite(record?.yearStart) ? record.yearStart : record?.yearEnd;
+    if (!Number.isFinite(year)) continue;
+    const start = Math.floor(Math.max(minYear, Math.min(maxYear, year)) / binYears) * binYears;
+    if (counts.has(start)) counts.set(start, counts.get(start) + 1);
+  }
+  return counts;
+}
+
+/**
+ * The year range a selection of bins stands for: the first bin's start to the
+ * last bin's end, clamped to what the data offers. Order-insensitive, so a brush
+ * dragged to the left gives the same range as one dragged to the right;
+ * `null` when there is no bin to select.
+ */
+export function brushYears(bins, a, b, minYear = -Infinity, maxYear = Infinity) {
+  if (!bins || bins.length === 0) return null;
+  const clampIndex = (index) => Math.max(0, Math.min(bins.length - 1, Math.trunc(index)));
+  const [lo, hi] = a <= b ? [clampIndex(a), clampIndex(b)] : [clampIndex(b), clampIndex(a)];
+  return { from: Math.max(minYear, bins[lo].start), to: Math.min(maxYear, bins[hi].end) };
 }
 
 export { TYPE_LABELS };

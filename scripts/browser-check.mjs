@@ -530,6 +530,126 @@ try {
       && histogramKeys.tabbable === 1,
     JSON.stringify(histogramKeys),
   );
+  /* --- 2c-2. the bars follow the filters, and one drag brushes a range --- */
+  // The histogram is a facet like the provider/type checkboxes above: its bars
+  // count every active filter *except* the period, so a narrow range must not
+  // shrink them (the visitor sees what widening the range would bring back).
+  const histogramScope = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    return {
+      sum: [...host.querySelectorAll('button')].reduce((total, b) => total + Number(b.dataset.count), 0),
+      aria: host.getAttribute('aria-label') || '',
+      bins: host.querySelectorAll('button').length,
+      rows: document.querySelectorAll('#result-list > *').length,
+      from: document.querySelector('#year-from')?.value ?? '',
+      to: document.querySelector('#year-to')?.value ?? '',
+    };
+  })()`);
+  check(
+    'histogram bars count the other filters, not the period',
+    histogramScope.bins >= 10
+      && histogramScope.sum > histogramScope.rows
+      && histogramScope.aria.includes(`${histogramScope.sum} im aktuellen Filter`),
+    `period ${histogramScope.from}–${histogramScope.to}: ${histogramScope.rows} rows but ${histogramScope.sum} records in ${histogramScope.bins} bars, aria “${histogramScope.aria}”`,
+  );
+  const providerChoice = await cdp.eval(`(() => {
+    const input = document.querySelector('#provider-filters input');
+    if (!input) return null;
+    input.click();
+    return { value: input.value };
+  })()`);
+  await sleep(600);
+  const providerScope = await cdp.eval(`(() => ({
+    sum: [...document.querySelectorAll('#year-histogram button')].reduce((total, b) => total + Number(b.dataset.count), 0),
+    aria: document.querySelector('#year-histogram')?.getAttribute('aria-label') || '',
+    rows: document.querySelectorAll('#result-list > *').length,
+    provider: new URLSearchParams(location.search).get('p'),
+    facetText: [...document.querySelectorAll('#provider-filters label')].map((l) => l.textContent.trim()).join(', '),
+  }))()`);
+  check(
+    'a provider filter narrows the histogram to that provider\u2019s records',
+    Boolean(providerChoice)
+      && providerScope.provider === providerChoice.value
+      && providerScope.sum > 0
+      && providerScope.sum < histogramScope.sum
+      && providerScope.rows <= providerScope.sum
+      && providerScope.aria.includes(`${providerScope.sum} im aktuellen Filter`),
+    `${providerChoice?.value ?? 'none'}: bars ${histogramScope.sum} -> ${providerScope.sum}, ${providerScope.rows} rows, facet “${providerScope.facetText}”`,
+  );
+  await cdp.eval(`(() => { const input = document.querySelector('#provider-filters input'); if (input && input.checked) input.click(); })()`);
+  await sleep(500);
+
+  // One gesture, one range: press on a decade, drag across, release. The hint
+  // previews the range while dragging; the URL gets exactly the brushed decades.
+  const brushBins = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    host.scrollIntoView({ block: 'center', behavior: 'instant' });
+    return [...host.querySelectorAll('button')].map((b, index) => {
+      const r = b.getBoundingClientRect();
+      return { index, start: Number(b.dataset.start), end: Number(b.dataset.end), count: Number(b.dataset.count), x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height - 6) };
+    });
+  })()`);
+  let brushFrom = brushBins.find((b) => b.count > 2) ?? brushBins[0];
+  brushFrom = brushBins[Math.min(brushBins.length - 1, brushFrom.index)];
+  const brushTo = brushBins[Math.min(brushBins.length - 1, brushFrom.index + 2)];
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: brushFrom.x, y: brushFrom.y });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: brushFrom.x, y: brushFrom.y, button: 'left', clickCount: 1, buttons: 1 });
+  for (let step = 1; step <= 6; step += 1) {
+    await cdp.send('Input.dispatchMouseEvent', {
+      type: 'mouseMoved',
+      x: Math.round(brushFrom.x + ((brushTo.x - brushFrom.x) * step) / 6),
+      y: brushTo.y,
+      button: 'left',
+      buttons: 1,
+    });
+    await sleep(20);
+  }
+  const brushPreview = await cdp.eval(`({
+    brushed: document.querySelectorAll('#year-histogram .is-brushing').length,
+    hint: document.querySelector('#year-histogram-hint')?.textContent || '',
+  })`);
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: brushTo.x, y: brushTo.y, button: 'left', buttons: 0 });
+  await sleep(600);
+  const brushState = await cdp.eval(`(() => ({
+    search: location.search,
+    current: [...document.querySelectorAll('#year-histogram button')].filter((b) => b.getAttribute('aria-current') === 'true').map((b) => Number(b.dataset.start)),
+    brushed: document.querySelectorAll('#year-histogram .is-brushing').length,
+    hint: document.querySelector('#year-histogram-hint')?.textContent || '',
+    rows: document.querySelectorAll('#result-list > *').length,
+    yearMin: Number(document.querySelector('#year-from')?.min || 0),
+    yearMax: Number(document.querySelector('#year-to')?.max || 0),
+  }))()`);
+  const brushParams = new URLSearchParams(brushState.search);
+  check(
+    'dragging across the decades filters one range in a single gesture',
+    Number(brushParams.get('from')) === Math.max(brushState.yearMin, brushFrom.start)
+      && Number(brushParams.get('to')) === Math.min(brushState.yearMax, brushTo.end)
+      && brushPreview.brushed === 3
+      && brushPreview.hint.includes(`${brushFrom.start}–${brushTo.end}`)
+      && brushState.current.length === 3
+      && brushState.brushed === 0
+      && !/gewählt/.test(brushState.hint)
+      && brushState.rows <= histogramScope.sum,
+    `${brushFrom.start}–${brushTo.end}: mid-drag “${brushPreview.hint}” (${brushPreview.brushed} bars) -> ${brushState.search}, ${brushState.rows} rows, ${brushState.current.join(',')}`,
+  );
+  // A pointer *tap* ends the same gesture without movement: exactly one decade.
+  const tapBin = brushBins.find((b) => b.count > 0 && b.index !== brushFrom.index) ?? brushBins[0];
+  await cdp.click('#year-histogram button', { index: tapBin.index });
+  await sleep(600);
+  const tapState = await cdp.eval(`(() => ({
+    search: location.search,
+    yearMin: Number(document.querySelector('#year-from')?.min || 0),
+    yearMax: Number(document.querySelector('#year-to')?.max || 0),
+    rows: document.querySelectorAll('#result-list > *').length,
+  }))()`);
+  const tapParams = new URLSearchParams(tapState.search);
+  check(
+    'one tap on a bar still selects exactly that decade',
+    Number(tapParams.get('from')) === Math.max(tapState.yearMin, tapBin.start)
+      && Number(tapParams.get('to')) === Math.min(tapState.yearMax, tapBin.end),
+    `tapped ${tapBin.start} (${tapBin.count}) -> ${tapState.search}, ${tapState.rows} rows`,
+  );
+
   // Restore the start year of the initial view plus the 1850 end of the time-range
   // check, so the reload comparison below still means something.
   await cdp.eval(`(() => {

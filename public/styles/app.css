@@ -1343,3 +1343,35 @@ body.app-compare--open {
   flex-wrap: wrap;
   gap: var(--zh-size-mini);
 }
+
+/* ---------- histogram brush (module: public/app/results.js, maps-2) ------
+   Dragging across the decades selects a range in one gesture. `pan-y` keeps the
+   page scrollable on touch while a horizontal drag reaches the chart, and the
+   brushed columns are tinted even when their bar is only 2 px tall. */
+.zh-histogram {
+  touch-action: pan-y;
+}
+
+.zh-histogram__bin {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.zh-histogram__bin.is-brushing {
+  background: var(--zh-neutral-soft);
+}
+
+.zh-histogram__bin.is-brushing .zh-histogram__bar {
+  opacity: 1;
+  background: var(--zh-color-accent-dark);
+}
+
+.zh-histogram__bin.is-empty .zh-histogram__bar {
+  background: var(--zh-color-border-strong);
+  opacity: 0.45;
+}
+
+.zh-histogram__bin.is-empty[aria-current='true'] .zh-histogram__bar {
+  background: var(--zh-color-accent-dark);
+  opacity: 0.6;
+}
