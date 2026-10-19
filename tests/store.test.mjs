@@ -70,6 +70,24 @@ test('the sheet number round-trips through the URL and is clamped by sanitise', 
   assert.equal(sanitise({ ...STATE_DEFAULTS, sheet: '2.7' }).sheet, 2, 'fractional sheet numbers are floored');
 });
 
+test('the viewer region round-trips through the URL and only keeps the exact shape', () => {
+  assert.equal(STATE_DEFAULTS.vv, '', 'the whole sheet is the default and has no parameter');
+  const query = stateToQuery({ ...STATE_DEFAULTS, selected: 'e-rara:11', vv: '1160,2395,1487,824' });
+  const params = new URLSearchParams(query);
+  assert.equal(params.get(PARAM.vv), '1160,2395,1487,824');
+  const back = readStateFromUrl(`?${query}`);
+  assert.equal(back.selected, 'e-rara:11');
+  assert.equal(back.vv, '1160,2395,1487,824');
+  assert.equal(new URLSearchParams(stateToQuery({ ...STATE_DEFAULTS, vv: '' })).has(PARAM.vv), false);
+  // A hand-edited value cannot reach the viewer: only "x,y,w,h" in plain digits is kept.
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: '0,0,1000' }).vv, '');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: '0,0,1000,1000,5' }).vv, '');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: 'javascript:alert(1)' }).vv, '');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: '1e3,0,500,500' }).vv, '');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: ' 1,2,3,4 ' }).vv, '', 'whitespace is not normalised silently');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, vv: '1234567,0,500,500' }).vv, '', 'absurdly large coordinates are dropped');
+});
+
 test('createStore updates, notifies subscribers with changed keys and stays silent on no-ops', () => {
   const store = createStore({ initial: { q: '' } });
   const seen = [];

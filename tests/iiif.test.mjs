@@ -15,12 +15,14 @@ import {
   describeUpstreamError,
   eRaraTitleId,
   eRaraViewerUrl,
+  formatViewParam,
   fullImageUrl,
   imageRequestUrl,
   labelText,
   panView,
   parseManifest,
   parseMetadata,
+  parseViewParam,
   regionRequest,
   serviceId,
   sheetThumbUrl,
@@ -258,6 +260,48 @@ test('zoomPercent reports the displayed resolution', () => {
   assert.equal(zoomPercent({ w: 500 }, 1000), 200);
   assert.equal(zoomPercent(null, 1000), 0);
   assert.equal(zoomPercent({ w: 500 }, 0), 0);
+});
+
+/* ------------------------------------------------------- shareable region */
+
+test('formatViewParam writes whole pixels and omits the default whole sheet', () => {
+  const bounds = boundsForCanvas(3808, 5613);
+  assert.equal(formatViewParam({ x: 0, y: 0, w: 3808, h: 5613 }, bounds), '', 'the whole sheet is the default, not a parameter');
+  assert.equal(formatViewParam({ x: 1160.4, y: 2395.2, w: 1487, h: 824 }, bounds), '1160,2395,1487,824');
+  assert.equal(formatViewParam({ x: 1, y: 0, w: 3807, h: 5613 }, bounds), '', 'one pixel of rounding is still the whole sheet');
+  assert.equal(formatViewParam(null, bounds), '');
+  assert.equal(formatViewParam({ x: 0, y: 0, w: 0, h: 100 }, bounds), '', 'an unusable view never reaches a shared link');
+  assert.equal(formatViewParam({ x: 0, y: 0, w: 100, h: 100 }, null), '');
+});
+
+test('parseViewParam accepts only regions this viewer could have produced', () => {
+  const bounds = boundsForCanvas(3808, 5613);
+  assert.deepEqual(parseViewParam('1160,2395,1487,824', bounds), { x: 1160, y: 2395, w: 1487, h: 824 });
+  assert.deepEqual(
+    parseViewParam('3700,5500,1487,824', bounds),
+    { x: 2321, y: 4789, w: 1487, h: 824 },
+    'a region that only sits slightly outside the sheet is clamped, not rejected',
+  );
+  assert.equal(parseViewParam('', bounds), null, 'an empty value is not a region');
+  assert.equal(parseViewParam('1,2,3', bounds), null, 'the shape is fixed');
+  assert.equal(parseViewParam('a,b,c,d', bounds), null);
+  assert.equal(parseViewParam('0,0,100000,100', bounds), null, 'wider than the sheet');
+  assert.equal(parseViewParam('0,0,10,10', bounds), null, 'smaller than the deepest zoom');
+  assert.equal(parseViewParam('-10,0,1000,1000', bounds), null, 'negative coordinates');
+  assert.equal(parseViewParam('0,0,1000,1000', null), null, 'without a known sheet size nothing is applied');
+});
+
+test('a formatted region round-trips through parseViewParam at every zoom step', () => {
+  const bounds = boundsForCanvas(3808, 5613);
+  let view = viewForCanvas(bounds.w, bounds.h);
+  for (let i = 0; i < 30; i += 1) {
+    view = zoomView(view, 1.6, { x: 0.4, y: 0.6 }, bounds, { aspect: 1.4 });
+    const param = formatViewParam(view, bounds);
+    if (!param) continue;
+    const restored = parseViewParam(param, bounds);
+    assert.ok(restored, `step ${i}: ${param} must round-trip`);
+    assert.ok(Math.abs(restored.w - view.w) < 1.5 && Math.abs(restored.x - view.x) < 1.5, `step ${i}: geometry survives rounding`);
+  }
 });
 
 /* ----------------------------------------------------------------- metadata */

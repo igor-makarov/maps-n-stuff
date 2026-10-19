@@ -280,6 +280,57 @@ export function zoomPercent(view, stageWidth) {
   return Math.round((stageWidth / view.w) * 100);
 }
 
+/* --------------------------------------------------------- shareable view */
+
+/**
+ * Compact, shareable form of a view: `x,y,w,h` in image pixels.
+ *
+ * Returns `''` (no URL parameter) when the view is the whole sheet — the default
+ * is not spelled out — and also for a view that cannot be expressed, so a broken
+ * viewer state can never put nonsense in a shared link. Integer pixels are exact
+ * enough: every image request rounds the region to whole pixels anyway.
+ */
+export function formatViewParam(view, bounds, tolerance = 1) {
+  if (!view || !bounds) return '';
+  const { x, y, w, h } = view;
+  if (![x, y, w, h].every((value) => Number.isFinite(value)) || w <= 0 || h <= 0) return '';
+  const whole =
+    x <= bounds.x + tolerance &&
+    y <= bounds.y + tolerance &&
+    w >= bounds.w - tolerance &&
+    h >= bounds.h - tolerance;
+  if (whole) return '';
+  const parts = [x, y, w, h].map((value) => Math.max(0, Math.round(value)));
+  if (parts[2] <= 0 || parts[3] <= 0) return '';
+  return parts.join(',');
+}
+
+/**
+ * Parse a shared `vv` value back into a view of the given sheet.
+ *
+ * Returns `null` when the value is not a region this viewer could have produced:
+ * wrong shape, non-numeric, larger than the sheet, or smaller than the deepest
+ * zoom (`MIN_REGION_FRACTION`). The caller then shows the whole sheet instead of
+ * a random corner, and clears the unusable value from the URL. A valid region
+ * that only sits slightly outside the sheet is clamped, not rejected.
+ */
+export function parseViewParam(value, bounds) {
+  if (!bounds || !(bounds.w > 0) || !(bounds.h > 0)) return null;
+  const parts = String(value ?? '').split(',');
+  if (parts.length !== 4) return null;
+  const numbers = parts.map((part) => (part.trim() === '' ? Number.NaN : Number(part)));
+  if (!numbers.every((number) => Number.isFinite(number) && number >= 0)) return null;
+  const [x, y, w, h] = numbers;
+  if (w <= 0 || h <= 0) return null;
+  // One pixel of tolerance: `formatViewParam` rounds to whole pixels, so a region
+  // at the deepest zoom can come back up to 1 px smaller than the exact bound.
+  if (w > bounds.w + 1 || h > bounds.h + 1) return null;
+  const minW = bounds.w * MIN_REGION_FRACTION;
+  const minH = bounds.h * MIN_REGION_FRACTION;
+  if (w < minW - 1 || h < minH - 1) return null;
+  return clampView({ x, y, w, h }, bounds);
+}
+
 /* ----------------------------------------------------------------- metadata */
 
 /**

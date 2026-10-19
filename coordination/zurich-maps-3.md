@@ -1,5 +1,65 @@
 # zurich-maps-3 status
 
+Iteration 7-14 (2026-10-18/19, ~23:45–00:5x UTC). Member `zurich-maps-3`. Same
+paths: `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`,
+`tests/**`, `scripts/browser-check.mjs` (plus one additive key in maps-1's
+`store.js` and small noted edits in `docs/run.md` / `README.md`).
+
+## Landed on `main` this iteration
+
+**The visible cut-out of the IIIF viewer is shareable state (`?vv=x,y,w,h`), so a
+permalink now reproduces the exact region a visitor is looking at.**
+
+| Change | File | Why |
+| --- | --- | --- |
+| `formatViewParam` / `parseViewParam` (pure, unit-tested) | `iiif.js` | `x,y,w,h` in image pixels, `''` for the whole sheet; parsing accepts only regions this viewer could have produced (shape, ≤ sheet, ≥ deepest zoom) and clamps a region that only slightly sits outside. One pixel of tolerance keeps the integer round-trip exact. |
+| `vv` state key + `vv` URL parameter | `store.js` (**maps-1's file, additive**) | Same pattern as `sh`: default `''`, only `/^\d{1,6}(,\d{1,6}){3}$/` survives `sanitise`, so a hand-edited URL cannot feed the viewer junk. |
+| viewer reports the region debounced (400 ms) | `detail.js` | `notifyView()` after zoom, reset, drag/pinch end and keyboard pan; only when the value changed since the last report, so the store's own notification cannot loop back into the viewer (`restoreView` treats an equal region as a no-op). |
+| restore on open/sheet change, clear on close | `detail.js` | `setCanvas(canvas, { restore })` applies a shared value once the canvas size is known (also for P3 manifests that need `info.json`); an unusable value is reported back as `''` so the URL drops it. A new work, another sheet and closing the panel clear `vv`. |
+| “Permalink kopieren” flushes first | `detail.js` | The copied link is the view on screen even if the user clicks inside the debounce window. |
+
+**Verified in a real browser** (new harness section `3a2`, 4 checks): zooming writes
+the region into the URL, a reload of that URL restores the same region *and*
+read-out, a hand-edited impossible value (`vv=999999,999999,5,5`) shows the whole
+sheet and is dropped, and closing the panel removes `vv`. A first harness run
+failed because the check read the URL inside the 400 ms debounce window (the
+region was served from the browser cache); the check now waits for the write
+instead of reading once — the product behaviour was correct, the assertion was
+racy. Evidence screenshot `02c-region-permalink.png`.
+
+## Verified
+
+- `npm run check` ✓ — validation, **105/105** `node --test` (3 new IIIF round-trip
+  tests, 1 new store test), `wrangler deploy --dry-run` (28.76 KiB Worker).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **92/92** on the
+  integrated tree (88 existing + 4 new). No teammate's check was dropped or
+  weakened; the two reloads in the new section keep the whole query string, so the
+  later “shared URL reproduces the filters” check still sees `to=1850`.
+
+## Messages
+
+- **→ maps-1**: `store.js` gained the documented `vv` key/param (additive, same
+  shape as `sh`), and `docs/run.md` + `README.md` list it and the new harness count
+  (92). The store test for it lives in `tests/store.test.mjs` (my file). Revert or
+  reword freely; nothing else in your modules changed.
+- **→ maps-2**: untouched; the viewer writes only `vv`, and `restoreView` ignores a
+  value that matches the screen, so no module sees extra notifications beyond the
+  debounced one.
+- **→ maps-0**: nothing needed; the region works for any IIIF image service, and a
+  record without a manifest still gets the static preview (no `vv` is written).
+- **→ all**: if you navigate in the harness, remember the debounce — assert on the
+  URL with `cdp.waitFor`, not a single read (that was this iteration's only red
+  run).
+
+## Next (my area)
+
+- `previewSection` support for `imageService`-only records (no manifest) once a
+  provider like LoC is harvested.
+- Sheet strip for very large works (collapse after the first N with “alle Blätter”).
+- Region deep links for the *comparison* view (two regions side by side).
+
+---
+
 Iteration 7-13 (2026-10-18, ~23:1x–00:0x UTC). Member `zurich-maps-3`. Same paths:
 `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`,
 `tests/**`, `scripts/browser-check.mjs` (plus two small, noted edits in

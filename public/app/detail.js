@@ -16,10 +16,12 @@ import {
   boundsForCanvas,
   describeUpstreamError,
   eRaraViewerUrl,
+  formatViewParam,
   fullImageUrl,
   imageRequestUrl,
   panView,
   parseManifest,
+  parseViewParam,
   sheetThumbUrl,
   viewForCanvas,
   zoomPercent,
@@ -47,10 +49,11 @@ export function init(ctx) {
     const changedWork = current?.id !== record.id;
     current = record;
     manifest = null;
-    // A newly chosen work starts on its first sheet; an explicitly shared `sh`
-    // value (deep link or reload) is kept and clamped to the real canvas count
-    // once the manifest is parsed.
-    if (changedWork && !keepSheet) ctx.store.update({ sheet: 1 });
+    // A newly chosen work starts on its first sheet and on the whole sheet; an
+    // explicitly shared `sh`/`vv` value (deep link or reload) is kept — `sh` is
+    // clamped to the real canvas count once the manifest is parsed, `vv` to the
+    // real sheet size once the image service states it.
+    if (changedWork && !keepSheet) ctx.store.update({ sheet: 1, vv: '' });
     const wasOpen = !panel.hidden;
     if (!wasOpen) opener = document.activeElement;
     render(record);
@@ -69,8 +72,9 @@ export function init(ctx) {
     viewer?.destroy();
     viewer = null;
     page = 0;
-    // A closed panel must not leave a sheet number behind in the shared URL.
-    if (ctx.store.getState().sheet !== 1) ctx.store.update({ sheet: 1 });
+    // A closed panel must not leave a sheet number or a viewer region behind in
+    // the shared URL.
+    if (ctx.store.getState().sheet !== 1 || ctx.store.getState().vv) ctx.store.update({ sheet: 1, vv: '' });
     panel.hidden = true;
     if (scrim) scrim.hidden = true;
     panel.setAttribute('aria-modal', 'false');
@@ -148,6 +152,10 @@ export function init(ctx) {
           type: 'button',
           text: 'Permalink kopieren',
           onclick: async (event) => {
+            // The region reaches the URL debounced; flush it first so the copied
+            // link is the view on screen even if the user clicks immediately.
+            const region = viewer?.getViewParam?.();
+            if (region !== undefined && region !== null) ctx.store.update({ vv: region });
             const ok = await copyText(window.location.href);
             event.currentTarget.textContent = ok ? 'Link kopiert ✓' : 'Kopieren nicht möglich';
             setTimeout(() => (event.currentTarget.textContent = 'Permalink kopieren'), 2500);
@@ -326,6 +334,10 @@ export function init(ctx) {
         const readout = viewerEl.querySelector('#viewer-resolution');
         if (readout) readout.textContent = text;
       },
+      // The visible region is shareable state: the viewer reports it (debounced)
+      // and detail.js keeps `vv` in the URL, so a permalink reproduces the exact
+      // cut-out. An unusable shared value is cleared instead of kept.
+      onViewChange: (param) => ctx.store.update({ vv: param }),
       onError: (message) => setStatus(statusNode(), message, 'error'),
     });
     const instance = viewerEl.__viewer;
@@ -448,7 +460,7 @@ export function init(ctx) {
     if (!canvas) return;
     const pageLabel = qs('#page-label');
     if (pageLabel) pageLabel.textContent = `Blatt ${page + 1} von ${total}`;
-    viewer?.setCanvas(canvas, { label: canvas.label });
+    viewer?.setCanvas(canvas, { label: canvas.label, restore: ctx.store.getState().vv });
     updateReuseLinks(current);
     const nav = qs('#page-nav');
     if (nav) nav.hidden = total <= 1;
@@ -463,7 +475,9 @@ export function init(ctx) {
     const total = manifest?.canvases?.length ?? 0;
     if (total === 0) return;
     const target = Math.max(0, Math.min(total - 1, Math.floor(Number(next) || 0)));
-    ctx.store.update({ sheet: target + 1 });
+    // Each sheet has its own region: a shared `vv` belongs to the sheet it was
+    // copied from, so switching sheets starts on the whole sheet.
+    ctx.store.update({ sheet: target + 1, vv: '' });
     showCanvas();
   }
 
@@ -773,8 +787,11 @@ export function init(ctx) {
   // The comparison list is shareable state; keep the panel's pin label in sync
   // when the sidebar (or a shared ?cmp= link) changes it.
   ctx.store.subscribe((state, changed) => {
-    if (!changed.includes('cmp')) return;
-    updatePinButton(qs('#detail-pin'), current);
+    if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
+    // A hand-edited or reloaded `vv` (or a cleared one) drives the open viewer;
+    // the viewer ignores a value that matches what is already on screen, so the
+    // debounced write-back from the viewer cannot loop back into it.
+    if (changed.includes('vv')) viewer?.restoreView?.(state.vv);
   });
   ctx.bus.on('records:loaded', () => {
     const id = ctx.store.getState().selected;
@@ -817,7 +834,7 @@ export function init(ctx) {
  * box and gives immediate feedback by transforming the current bitmap while the
  * next region is loading.
  */
-function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } = {}) {
+function createViewer(stage, { record, live, loadJson, meta, onZoom, onError, onViewChange } = {}) {
   const img = el('img', { class: 'app-viewer__image', alt: '', decoding: 'async' });
   const spinner = stage.querySelector('.zh-spinner') ?? el('span', { class: 'zh-spinner' });
   stage.replaceChildren(spinner, img);
@@ -830,6 +847,9 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
   /** What the visible bitmap shows: { view, left, top, width, height }. */
   let rendered = null;
   let fetchTimer = null;
+  let viewTimer = null;
+  /** Last `vv` value reported to the store, so identical states are not re-written. */
+  let lastViewParam = null;
   let destroyed = false;
   let loadToken = 0;
   let pendingPreload = null;
@@ -926,6 +946,24 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     onZoom?.(whole ? `Gesamtansicht · Auflösung ${percent} %` : `Auflösung ${percent} % · ${box}`);
   }
 
+  /**
+   * Report the visible region as the shareable `vv` value, debounced so a drag or
+   * a wheel zoom does not rewrite the URL on every frame. The value is only sent
+   * when it actually changed since the last report.
+   */
+  function notifyView({ immediate = false } = {}) {
+    clearTimeout(viewTimer);
+    const run = () => {
+      if (destroyed || !view || !bounds) return;
+      const param = formatViewParam(view, bounds);
+      if (param === lastViewParam) return;
+      lastViewParam = param;
+      onViewChange?.(param);
+    };
+    if (immediate) run();
+    else viewTimer = setTimeout(run, 400);
+  }
+
   /* ---------------------------------------------------------------- loading */
 
   function scheduleFetch({ immediate = false } = {}) {
@@ -1015,6 +1053,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     updateReadout();
     announce(`Auflösung ${zoomPercent(view, stageSize().width)} Prozent`);
     scheduleFetch();
+    notifyView();
   }
 
   function reset() {
@@ -1024,12 +1063,14 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       // Only the full-sheet derivative is available: show it and stay honest.
       rendered = null;
       load();
+      notifyView();
       return;
     }
     applyTransform();
     updateReadout();
     announce('Ganzes Blatt');
     scheduleFetch();
+    notifyView();
   }
 
   /* ---------------------------------------------------------------- events */
@@ -1096,6 +1137,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       delete stage.dataset.dragging;
       updateReadout();
       scheduleFetch();
+      notifyView();
     }
   }
 
@@ -1115,6 +1157,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       view = panView(view, step[0] * amount, step[1] * amount, bounds);
       applyTransform();
       scheduleFetch();
+      notifyView();
       return;
     }
     if (event.key === '+' || event.key === '=' || event.key === 'PageUp') {
@@ -1144,8 +1187,14 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
   window.addEventListener('resize', onResize);
 
   return {
-    /** Show a canvas of the current manifest (possibly at full resolution). */
-    setCanvas(next, { label } = {}) {
+    /**
+     * Show a canvas of the current manifest (possibly at full resolution).
+     *
+     * `restore` is the shared `vv` value for this sheet: a usable region becomes
+     * the initial view, an unusable one is reported back as `''` so the URL does
+     * not keep a value this viewer would never produce.
+     */
+    setCanvas(next, { label, restore = '' } = {}) {
       if (!next?.service) return;
       canvas = { ...next, label: label ?? next.label };
       service = next.service;
@@ -1154,12 +1203,15 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       if (!width || !height) {
         // Presentation 3 manifests may omit the size; the image service states it.
         loadJson(`${service}/info.json`)
-          .then((info) => this.setCanvas({ ...canvas, width: info.width, height: info.height }))
+          .then((info) => this.setCanvas({ ...canvas, width: info.width, height: info.height }, { restore }))
           .catch(() => onError?.('Die Bildmasse konnten nicht ermittelt werden (info.json nicht erreichbar).'));
         return;
       }
       bounds = boundsForCanvas(width, height);
-      view = viewForCanvas(width, height);
+      const restored = restore ? parseViewParam(restore, bounds) : null;
+      view = restored ?? viewForCanvas(width, height);
+      lastViewParam = formatViewParam(view, bounds);
+      if (restore && !restored) onViewChange?.('');
       regionsUnsupported = false;
       regionFailures = 0;
       rendered = null;
@@ -1168,6 +1220,26 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
     zoomIn: () => zoom(1.6),
     zoomOut: () => zoom(1 / 1.6),
     reset,
+    /** The current region as the shareable `vv` value (`''` = whole sheet). */
+    getViewParam: () => (bounds ? formatViewParam(view, bounds) : null),
+    /**
+     * Apply a `vv` value that came from outside (reload, hand-edited URL, a
+     * cleared value). A value equal to what is on screen is a no-op, which is
+     * what keeps the viewer's own debounced write-back from looping.
+     */
+    restoreView(value) {
+      if (!bounds || !view) return false;
+      const next = value ? parseViewParam(value, bounds) : viewForCanvas(bounds.w, bounds.h);
+      if (!next) return false;
+      const same =
+        Math.abs(next.x - view.x) < 1 && Math.abs(next.y - view.y) < 1 && Math.abs(next.w - view.w) < 1 && Math.abs(next.h - view.h) < 1;
+      if (same) return true;
+      view = next;
+      applyTransform();
+      updateReadout();
+      scheduleFetch();
+      return true;
+    },
     /** Re-fit after the stage changed size outside a window resize (fullscreen). */
     refresh() {
       layout();
@@ -1177,6 +1249,7 @@ function createViewer(stage, { record, live, loadJson, meta, onZoom, onError } =
       destroyed = true;
       clearTimeout(fetchTimer);
       clearTimeout(announceTimer);
+      clearTimeout(viewTimer);
       window.removeEventListener('resize', onResize);
       stage.removeEventListener('wheel', onWheel);
       stage.removeEventListener('dblclick', onDblClick);

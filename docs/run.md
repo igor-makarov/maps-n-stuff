@@ -27,7 +27,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **463/463 URLs, 0 failures** on the 109-record seed |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 95 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 99 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure | 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
 
 ## Cloudflare Workers deployment
 
@@ -99,16 +99,16 @@ throws is reported in the UI (`#app-notices`) and in
 | `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
 | `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1). Also keeps the pinned ids in this browser (`localStorage['kartenzeit.cmp.v1']`, ids only, never sent to a server); a link that carries `?cmp=` always wins over the stored list |
 
-URL state is documented in `store.js`: `q, from, to, p, t, c, vp, ex, at,
-place, lat, lon, z, sel, sh, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet
-of the open digitised work (detail.js clamps it to the real canvas count and
-shows the same sheet in the IIIF viewer). `at` is the point filter `"lat,lon"`:
-only records whose documented extent covers that point remain in the list and on
-the map (`coversPoint` in `records.js`; a record without a stated extent cannot
-match). `ex=1` draws the documented footprints of the currently filtered records
-as outlines on the map (“Ausschnitte”; `extentRects()` in `map.js` — purely
-visual, `pointer-events: none`, identical extents are one rectangle, records
-without an extent are counted in the status line instead of guessed).
+URL state is documented in `store.js`: `q, from, to, p, t, c, vp, ex, at, place, lat,
+lon, z, sel, sh, vv, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the
+open digitised work (detail.js clamps it to the real canvas count and shows the
+same sheet in the IIIF viewer). `vv` is the visible region of that sheet in the
+IIIF viewer as `x,y,w,h` in image pixels (`''` = whole sheet): the viewer writes
+it debounced while zooming/panning, “Ganzes Blatt”/closing the panel removes it,
+and a shared link opens exactly that cut-out (an impossible value is ignored and
+dropped). `at` is the point filter `"lat,lon"`: only records
+whose documented extent covers that point remain in the list and on the map
+(`coversPoint` in `records.js`; a record without a stated extent cannot match). 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
 
 ## Response headers and caching
 

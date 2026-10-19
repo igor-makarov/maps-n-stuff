@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, at, place, lat, lon, zoom, selected, sheet, view, sort, overlay, otime, cmp }
+ *   store.getState()            -> { q, from, to, provider, type, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp }
  *   store.update({ from: 1800 }) -> merge, sync URL (replaceState), notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *
@@ -29,6 +29,7 @@ export const STATE_DEFAULTS = Object.freeze({
   zoom: 12,
   selected: '', // record id
   sheet: 1, // 1-based sheet/canvas of the open multi-sheet work (shareable)
+  vv: '', // "x,y,w,h" visible region of that sheet in image pixels (shareable; '' = whole sheet)
   view: 'split', // 'split' | 'map' | 'list'
   sort: 'year-asc',
   overlay: '', // swisstopo layer id of the comparison layer
@@ -53,6 +54,7 @@ export const PARAM = {
   zoom: 'z',
   selected: 'sel',
   sheet: 'sh',
+  vv: 'vv',
   view: 'view',
   sort: 'sort',
   overlay: 'ov',
@@ -61,7 +63,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
+  string: ['q', 'provider', 'type', 'collection', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -155,6 +157,10 @@ export function sanitise(state) {
   // count is only known after the manifest loads, so the hard bound stays wide;
   // detail.js clamps to the actual count and writes the corrected value back.
   out.sheet = Math.max(1, Math.min(999, Math.floor(Number(out.sheet) || 1)));
+  // The visible region of the detail viewer, as "x,y,w,h" in image pixels. It is
+  // hand-editable like every other parameter, so only the exact shape is kept;
+  // the viewer checks it against the real sheet size and drops what does not fit.
+  out.vv = /^\d{1,6}(,\d{1,6}){3}$/.test(String(out.vv ?? '')) ? String(out.vv) : '';
   // The compare list is a hand-editable URL value: keep only ids that match the
   // data contract "<providerId>:<record id>" (lower-case provider, safe value
   // characters) and never more than four of them.

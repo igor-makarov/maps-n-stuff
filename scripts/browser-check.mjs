@@ -636,9 +636,64 @@ try {
   const resetSrc = reset.src;
   check('Home returns to the whole sheet', resetSrc === fullSheetSrc && /\/full\//.test(resetSrc), resetSrc.slice(-60));
 
+  /* --- 3a2. the visible region is shareable state (?vv=x,y,w,h) -------- */
+  await cdp.eval(`document.querySelector('#viewer-zoom-in').click(); document.querySelector('#viewer-zoom-in').click(); true`);
+  await waitForViewer('(v) => v.decoded && /\\d+,\\d+,\\d+,\\d+\\//.test(v.src) && !v.src.includes("/full/")');
+  // The viewer writes the region into the URL debounced (a drag must not rewrite
+  // history on every frame), so wait for the write instead of reading once.
+  const regionState = await cdp
+    .waitFor(
+      `(() => {
+        const src = document.querySelector('.app-viewer__image')?.src || '';
+        const region = (src.match(/\\/(\\d+,\\d+,\\d+,\\d+)\\//) || [])[1] || null;
+        const search = decodeURIComponent(location.search);
+        if (!region || !search.includes('vv=' + region)) return '';
+        return { search, region, readout: document.querySelector('#viewer-resolution')?.textContent || '' };
+      })()`,
+      { label: 'shareable viewer region in the URL', timeout: 15_000 },
+    )
+    .catch(() => null);
+  const regionSearch = regionState?.search ?? (await cdp.eval(`decodeURIComponent(location.search)`));
+  check(
+    'the visible viewer region is shareable (?vv=)',
+    Boolean(regionState?.region) && regionState.search.includes(`vv=${regionState.region}`),
+    JSON.stringify(regionState).slice(0, 220),
+  );
+  // `window.__kzBefore` proves the assertions below run in the reloaded document
+  // (the old one is briefly still there after Page.navigate).
+  await cdp.eval(`window.__kzBefore = 1`);
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/${regionSearch}` });
+  await cdp.waitFor(`document.readyState === 'complete' && !window.__kzBefore`, { label: 'reload of the shared ?vv= link', timeout: 30_000 });
+  const restoredRegion = await waitForViewer(`(v) => v.decoded && v.src.includes(${JSON.stringify(regionState?.region ?? '')})`, 30_000);
+  check(
+    'a shared ?vv= link reopens the same cut-out',
+    Boolean(regionState?.region) && restoredRegion.src.includes(regionState.region) && restoredRegion.readout === regionState.readout,
+    `${restoredRegion.readout} · ${restoredRegion.src.slice(-44)}`,
+  );
+  // A hand-edited region this viewer could never produce (off the sheet and far
+  // smaller than the deepest zoom) must not open a random corner: the whole
+  // sheet is shown and the unusable value is dropped from the URL.
+  const impossible = new URLSearchParams(regionSearch);
+  impossible.set('vv', '999999,999999,5,5');
+  await cdp.eval(`window.__kzBefore = 1`);
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?${impossible}` });
+  await cdp.waitFor(`document.readyState === 'complete' && !window.__kzBefore`, { label: 'reload with an impossible ?vv= value', timeout: 30_000 });
+  const regionFallback = await waitForViewer('(v) => v.decoded && /Gesamtansicht/.test(v.readout)', 30_000);
+  const fallbackSearch = await cdp.eval(`location.search`);
+  check(
+    'an impossible ?vv= value shows the whole sheet and is dropped',
+    /Gesamtansicht/.test(regionFallback.readout) && !/(?:^|&)vv=/.test(fallbackSearch),
+    `${regionFallback.readout} · ${fallbackSearch}`,
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '02c-region-permalink.png')).then(() => report.screenshots.push('02c-region-permalink.png'));
+  // The reload left the focus on <body>; a keyboard user reaches the panel again
+  // by clicking/tabbing into the viewer (Escape is handled by the panel).
+  await cdp.click('#viewer-stage');
+
   await cdp.pressKey('Escape');
   const closed = await cdp.eval(`document.querySelector('#detail')?.hidden`);
   check('Escape closes the detail panel', closed === true);
+  check('closing the panel clears the region from the URL', !/(?:^|&)vv=/.test(await cdp.eval(`location.search`)), await cdp.eval(`location.search`));
   check('detail selection is shareable', /sel=/.test(await cdp.eval(`location.search`)), await cdp.eval(`location.search`));
 
   /* --- 3b. swisstopo comparison layer (real georeferenced tiles) -------- */

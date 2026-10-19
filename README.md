@@ -42,7 +42,10 @@ What works today (verified with `wrangler dev` + headless Chromium):
 - coordinated result list ↔ map selection, list/map/split view switch;
 - detail panel with publication vs depicted dates, institution, shelfmark, rights,
   an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
-  navigation, real fullscreen), a link to the library's own viewer and a prominent
+  navigation, real fullscreen) whose visible cut-out is shareable (`?vv=x,y,w,h`,
+  written debounced while zooming/panning; a shared link reopens exactly that
+  region, an impossible value is dropped and “Ganzes Blatt” clears it), a link to
+  the library's own viewer and a prominent
   link to the original record — plus “use this sheet's period as the time filter”;
   when the image service is unreachable the panel says so in plain German and keeps
   the metadata, the thumbnail and the provider link (verified by a check that blocks
@@ -61,10 +64,11 @@ What works today (verified with `wrangler dev` + headless Chromium):
   route to every map action and the cantonal “Nach oben” control once the page
   is scrolled;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
-  `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
+  `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a
-  26-sheet work does not add 26 stops; `at` = point filter).
+  26-sheet work does not add 26 stops; `vv` = visible region of that sheet in the
+  IIIF viewer, so a permalink reopens the exact cut-out; `at` = point filter).
 
 ```sh
 npm install
