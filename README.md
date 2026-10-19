@@ -156,7 +156,7 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 199 records (172 e-rara maps and atlases — 26 ZB Zürich
+Known limitations: the seed set holds 213 records (186 e-rara maps and atlases — 26 ZB Zürich
 Wildkarte sheets, 56 Swiss maps from ETH-Bibliothek holdings (1547–1900, after the
 7-19 widening of the `landkarten` window), 47 Zürich plans and
 canton maps found through the catalogue's SRU search (1852 “Plan der Stadt Zürich
@@ -164,10 +164,12 @@ nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 can
 11 further Zürich-region maps from three more SRU questions (18th-century lake
 prospects, the 1875–1881 Übersichtspläne, the 1896 Zürichsee map, 1908/1919
 sheets), 10 city ground and site plans (the 1696/1705 fortress plans, the 1800
-and 1838 city plans, the 1881 quay and 1890 tramway situations), 21 overview maps
-of Europe and the world (1787–1914, extent centre deliberately outside the
+and 1838 city plans, the 1881 quay and 1890 tramway situations), 35 overview maps
+of Europe and the world (1546–1914; extent centre deliberately outside the
 canton, at least 5° of span; the 7-20 country keywords add German, Italian,
-Austrian and Franco-German sheets to the continent maps) and 1 map from the
+Austrian and Franco-German sheets, and the 7-21 hemisphere fix adds whole-globe
+sheets — 1546, 1700, 1835, 1893 — plus the Americas, Africa, India, Japan and
+Asia Minor) and 1 map from the
 Bibliothèque de Genève) — plus 27 georeferenced swisstopo overlay editions; the UI
 states the real count and `records.json.selection`
 documents the rule per set, including the `landkarten` window (30 of the set's 2335

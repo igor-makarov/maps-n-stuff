@@ -98,6 +98,13 @@ export function init(ctx) {
    * not rewrite the URL the visitor just opened.
    */
   let mounting = false;
+  /**
+   * True while one “Ganzes Blatt” press returns the coupled panes to their own
+   * whole sheets. Without this the first pane's whole-sheet view would be mapped
+   * onto the others by `propagate()` and the panes would hand a cut-out back and
+   * forth, so the button's promise depended on which extent contains which.
+   */
+  let resetting = false;
 
   const recordOf = (id) => ctx.data.recordIndex?.get(id) ?? null;
   const pinnedIds = () => {
@@ -428,9 +435,27 @@ export function init(ctx) {
   function resetPane(index) {
     const pane = panes.find((entry) => entry.index === index);
     if (!pane) return;
-    pane.viewer.reset();
-    refreshPaneReset(index);
-    setStatus(status, `Karte ${index + 1} zeigt wieder das ganze Blatt.`, 'info');
+    // “Ganzes Blatt” is a reset, not a gesture: with the coupling on every live
+    // pane returns to its *own* whole sheet (the state the comparison opens in),
+    // instead of the reset sheet's place being mapped onto the others. The
+    // coupling check in the harness pins this: after the reset both panes read
+    // “Gesamtansicht” and the shareable cut-out is empty again.
+    const targets = coupled ? panes.filter((entry) => !entry.failed) : [pane];
+    resetting = true;
+    try {
+      for (const entry of targets) {
+        entry.viewer.reset();
+        refreshPaneReset(entry.index);
+      }
+    } finally {
+      resetting = false;
+    }
+    scheduleViewsWrite();
+    setStatus(
+      status,
+      targets.length > 1 ? `${targets.length} Karten zeigen wieder das ganze Blatt.` : `Karte ${index + 1} zeigt wieder das ganze Blatt.`,
+      'info',
+    );
   }
 
   /** Replace a failed viewer stage with the record's documented thumbnail. */
@@ -467,6 +492,7 @@ export function init(ctx) {
    * their own `setView` back, so this cannot loop.
    */
   function propagate(sourceIndex) {
+    if (resetting) return;
     lastActivePane = sourceIndex;
     const source = panes.find((pane) => pane.index === sourceIndex);
     const geometry = source?.viewer.getView();
