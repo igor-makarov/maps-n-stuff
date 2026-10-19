@@ -83,6 +83,13 @@ export function recordCenter(record) {
   return null;
 }
 
+/**
+ * The searchable text of a record: everything the dataset itself states about
+ * it. The collection (Kartenwerk) and the imprint are included on purpose — a
+ * visitor who reads “Karte des Kantons Zürich 1:25 000 (Wildkarte)” in the
+ * collection facet or “Zentralbibliothek Zürich, 4 Lb 06: 9” in a citation can
+ * type those words and must find the sheet. Nothing is derived from them.
+ */
 export function titleText(record) {
   return [
     record.title,
@@ -92,6 +99,8 @@ export function titleText(record) {
     record.publisher,
     record.subjectPlace,
     record.shelfmark,
+    record.collection,
+    record.imprint,
   ]
     .filter(Boolean)
     .join(' ')

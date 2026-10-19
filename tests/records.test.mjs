@@ -67,6 +67,43 @@ test('matchesQuery is token-based and case-insensitive', () => {
   assert.ok(matchesQuery(fixture[0], ''));
 });
 
+test('the keyword search also covers the collection, imprint and shelfmark', () => {
+  const sheet = {
+    ...fixture[0],
+    collection: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)',
+    imprint: 'Zürich : [s. n.], 1853',
+    shelfmark: '4 Lb 06: 9',
+  };
+  // Words a visitor reads in the facet list, the citation or the detail panel.
+  assert.ok(matchesQuery(sheet, 'Wildkarte'));
+  assert.ok(matchesQuery(sheet, 'wildkarte 1:25'));
+  assert.ok(matchesQuery(sheet, '4 Lb 06'));
+  assert.ok(matchesQuery(sheet, 'zürich : [s. n.], 1853'));
+  // Still a filter: an unrelated word matches nothing.
+  assert.ok(!matchesQuery(sheet, 'siegfriedkarte'));
+});
+
+test('the committed seed answers the words its own facets use', async () => {
+  const raw = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  const { records } = await loadRecords(async () => ({ ok: true, json: async () => raw }));
+  const byWord = (word) => records.filter((r) => matchesQuery(r, word));
+  // Every collection name in the seed is findable through the keyword box, and a
+  // collection search cannot return more records than the collection has rows
+  // (both come from the same data, so a facet rename cannot break the search).
+  for (const collection of new Set(records.map((r) => r.collection))) {
+    assert.equal(
+      byWord(collection).length,
+      records.filter((r) => r.collection === collection).length,
+      `the collection “${collection}” must be findable by its own name`,
+    );
+  }
+  // And every institution the records credit is findable, including the ones
+  // added by the SRU discovery runs (UB Bern, Bibliothèque de Genève).
+  for (const institution of new Set(records.map((r) => r.institution))) {
+    assert.ok(byWord(institution).length > 0, `${institution} must be findable`);
+  }
+});
+
 test('overlapsRange handles publication ranges and single years', () => {
   assert.ok(overlapsRange(fixture[0], 1800, 1900));
   assert.ok(overlapsRange(fixture[0], 1860, 1870), 'range intersects');
