@@ -18,8 +18,17 @@ on every result and overlay.
 
 Assumption: the site should remain usable commercially. Noncommercial sources
 are recorded separately pending a product decision. No provider is approved
-wholesale: rights and an actual usable alignment must pass for each image or
-sheet. Unknown rights remain pending; missing georeferencing enters a work queue.
+wholesale: rights must be established for each image or sheet. **User clarification:
+georeferencing is strongly preferred, not required for catalogue inclusion.**
+Rights-cleared scans can be browseable without an alignment; distinguish missing
+location, approximate catalogue location, automatic alignment and reviewed
+alignment. Unknown rights remain pending. Actual overlay rendering requires a
+usable transformation. Missing georeferencing can enter a work queue without
+excluding an otherwise eligible scan from the catalogue.
+
+See the [Swiss/language inventory](swiss-and-language-inventory.md) for remaining
+geographic bias and the [automatic-georeferencing review](automatic-georeferencing.md)
+for ways to expand alignment coverage after import.
 
 ## What “all sources” can currently mean
 
@@ -62,7 +71,7 @@ GeoTIFF downloads through the public UI.
 | **USGS Historical Topographic Map Collection** | USGS-produced historical topographic maps are public domain. Keep third-party credit notices; do not extend this conclusion to every modern US Topo asset. | Native georeferenced GeoTIFF/GeoPDF products. The [programme page](https://www.usgs.gov/programs/national-geospatial-program/historical-topographic-maps-preserving-past) describes over 185,000 files from 1884–2006. | Harvest the official index with pagination; follow its file links; inspect source CRS and raster geotransform; build masked web tiles. The index polygon is a search footprint, not the image transform. |
 | **Allmaps + original institutions** | Allmaps publishes its georeferencing data under CC0. This licenses annotations, **not the referenced scans**. | GCPs, image-space masks, transformation model and IIIF image identifiers. | Join each annotation to its institutional manifest/record and verified image rights. Preserve multiple maps per scan and canvas. Build an index and render with the Allmaps plugin or generate tiles. |
 | **National Library of Scotland** | Documented CC BY 4.0 reuse for eligible map images, with collection exceptions. Metadata datasets have their own licences. | Georeferenced mosaics and individual WMTS links; some IIIF images can also join Allmaps. | Verify collection-specific terms and service/API traffic permission. Obtain a supported feed/export. Do not assume unlimited use of NLS-hosted tiles. Includes material outside Britain, such as Survey of India sheets. |
-| **Kartverket** | Official free-product terms specify CC BY 4.0 and attribution; external layers may differ. | Historical county-map WMS and available GeoTIFF products; some scanned maps are still awaiting georeferencing. | Harvest the historical catalogue and capabilities; retain only aligned products. Confirm downloadable GeoTIFF availability per item; free JPEG access alone is insufficient. |
+| **Kartverket** | Official free-product terms specify CC BY 4.0 and attribution; external layers may differ. | Historical county-map WMS and available GeoTIFF products; some scanned maps are still awaiting georeferencing. | Harvest the historical catalogue and capabilities; distinguish aligned products from eligible unaligned scans. Confirm downloadable GeoTIFF availability per item; free JPEG access alone does not establish overlay alignment. |
 | **Leventhal / Boston Public Library** | Public-domain originals may be reused; the library does not assert extra scan restrictions. Partner-institution images require separate checks. | Documented Allmaps integration and Atlascope georeferencing. | Enumerate institutional JSON/IIIF records, join annotations, filter rights and retain credits. Do not apply the website/article footer's licence to all collection images. |
 | **Harvard Map Collection** | Includes public-domain and restricted material; inspect each item and downloadable dataset licence. | Harvard Geospatial Library explicitly provides georeferenced scanned maps. | Harvest public geospatial records and verified download/service references; distinguish scans awaiting georeferencing from GIS-ready rasters. |
 | **NYPL** | Use the rights/advisory of the particular image; selected public-domain releases exist. | Current Digital Collections code includes Allmaps integration. Legacy Map Warper is archived and stopped receiving updates in 2021. | Prefer present IIIF + Allmaps annotations; investigate a reusable archived warp export separately. Do not design against a presumed live legacy Warper API. |
@@ -254,8 +263,9 @@ available. Do not make CF deployment depend on hundreds of upstream services.
 5. Queue permitted scans without alignments for georeferencing and visual QA.
    Keep them out of the overlay-ready catalogue until complete.
 
-A provider is integrated when its feed is reproducible and permitted, all
-published images have attributable rights evidence, every advertised overlay
+A provider is integrated when its feed is reproducible and permitted, published
+scans are browseable with an honest alignment status, all published images have
+attributable rights evidence, every advertised overlay
 has a usable transformation and a live render check, dates are sourced, and
 pagination, failure recovery and versioning work. This audit introduces no new
 maps into production and does not claim that all 50 providers are cleared.

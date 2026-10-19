@@ -14,14 +14,16 @@
     "commercialCompatibilityAssumed": true,
     "requireRecordLevelImageRights": true,
     "requireMetadataReuseEvidence": true,
-    "requireGeoreferencingReuseEvidence": true,
     "requireHostingOrRedistributionEvidence": true,
-    "requirePixelToGroundTransform": true,
     "bboxOrPlacePinIsSufficient": false,
     "unknownRights": "pending",
     "noncommercial": "conditional-excluded-under-default-policy",
     "noDerivatives": "no-automatic-warp-publication",
-    "noGeoreferencing": "georeferencing-work-queue"
+    "noGeoreferencing": "include-eligible-scan-with-honest-status-and-queue-for-georeferencing",
+    "georeferencingPreferred": true,
+    "georeferencingRequiredForCatalogue": false,
+    "requireGeoreferencingReuseEvidenceWhenUsed": true,
+    "requirePixelToGroundTransformForOverlay": true
   },
   "sources": [
     {
@@ -52,7 +54,8 @@
       "georeferencing": {
         "status": "documented-native-services",
         "note": "Provider georeferenced mosaics/WMTS; IIIF plus matching reusable annotations for other sheets.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -104,7 +107,8 @@
       "georeferencing": {
         "status": "documented-native-products",
         "note": "HTMC native georeferenced GeoTIFF/GeoPDF, with CRS and raster transformation. TopoView footprints alone are insufficient.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -150,7 +154,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "Inspect the archival catalogue and historical WMS/GeoTIFF layers; no reusable per-item historical transform export was verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -194,7 +199,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "IIIF routes and Georeferencer viewing exist; use matching Allmaps CC0 annotations or a permitted provider warp export, never a MapRank bbox.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -242,7 +248,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "TEMAP documents georeferencing work; exportable reusable transforms were not verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -290,7 +297,8 @@
       "georeferencing": {
         "status": "documented-native-services",
         "note": "Historical county-map WMS; available GeoTIFFs. Some historical scans remain unaligned.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -314,7 +322,7 @@
           "scope": "Provider-level research route; verify applicable record/collection before import."
         }
       ],
-      "nextAction": "Verify historical service capabilities and a permitted catalogue feed; include aligned products and queue unaligned scans."
+      "nextAction": "Verify historical service capabilities and a permitted catalogue feed; distinguish aligned products from eligible unaligned scans and queue the latter for georeferencing."
     },
     {
       "id": "nypl",
@@ -342,7 +350,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Current Digital Collections release history includes Allmaps. Legacy Map Warper was archived after updates stopped in April 2021.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -390,7 +399,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Allmaps publishes institutional IIIF routes; matching GCP/mask annotations or a provider export are still required.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -438,7 +448,8 @@
       "georeferencing": {
         "status": "documented-native-services",
         "note": "Virtual Map Forum contains a georeferenced subset; official code documents its georeferencing service.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -490,7 +501,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Existing catalogue coordinates are bounding boxes, not image alignment. Require actual GCP/mask annotations or provider georeferenced products.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -534,7 +546,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Georeferencer workflow and IIIF collection routes exist; a current reusable bulk alignment export was not verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -578,7 +591,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Institution describes georeferencing; public map collection is documented, but reusable exported transformations were not verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -622,7 +636,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -657,7 +672,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "The project describes georeferenced maps, but no permissively licensed per-item warp export was verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -697,7 +713,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "e-rara catalogue extents are not scan georectification.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -741,7 +758,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -776,7 +794,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Institutional IIIF examples appear in the Allmaps list; only matched GCP/mask annotations qualify.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -820,7 +839,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "Investigate KBR/Cartesius holdings, supported image services and reusable transformations.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -855,7 +875,8 @@
       "georeferencing": {
         "status": "documented-native-products",
         "note": "Harvard Geospatial Library provides georeferenced scanned maps for GIS download.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -903,7 +924,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -938,7 +960,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -973,7 +996,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "e-rara extents locate a record but do not align its pixels.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1019,7 +1043,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1054,7 +1079,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1089,7 +1115,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Officially documented Allmaps integration and Atlascope; use actual matching annotations/approved native products.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1139,7 +1166,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified; inspect institutional IIIF/Georeferencer products.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1183,7 +1211,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Historical maps are digitized; reusable per-map alignment export was not verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1227,7 +1256,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Allmaps collection list documents Cartoteca IIIF examples; reuse needs an actual matching annotation or native historical layer.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1271,7 +1301,8 @@
       "georeferencing": {
         "status": "possible-allmaps-join",
         "note": "Institutional IIIF routes and Georeferencer project exist; matching reusable GCP/mask data or a licensed warp export still required.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1319,7 +1350,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "The library publishes Georeferencer instructions; no current licensed bulk alignment export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1359,7 +1391,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1394,7 +1427,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1429,7 +1463,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1464,7 +1499,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable bulk alignment export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1504,7 +1540,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Digital collection access does not establish a reusable warp export; inspect provider annotations/exports.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1548,7 +1585,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Institution describes ARC Map Portal and Map Warper work; reusable alignment and image rights remain unverified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1588,7 +1626,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1628,7 +1667,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1668,7 +1708,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1703,7 +1744,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "Mapoteca projects exist; reusable per-item alignment export not verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1747,7 +1789,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1782,7 +1825,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1817,7 +1861,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1852,7 +1897,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1887,7 +1933,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1922,7 +1969,8 @@
       "georeferencing": {
         "status": "documented-service-no-export-verified",
         "note": "Site displays aligned maps, but no reusable bulk transformations or service entitlement were verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -1962,14 +2010,15 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
         "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
       },
       "evidence": [],
-      "nextAction": "Establish explicit compatible rights and usable georeferencing before including contemporary artist/retail imagery."
+      "nextAction": "Establish explicit compatible image and catalogue reuse rights before including artist/retail imagery; seek usable georeferencing as an enhancement."
     },
     {
       "id": "trier",
@@ -1999,7 +2048,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -2039,7 +2089,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -2074,7 +2125,8 @@
       "georeferencing": {
         "status": "not-verified",
         "note": "No reusable pixel-to-ground export verified.",
-        "usableTransformationRequired": true
+        "usableTransformationRequiredForOverlay": true,
+        "requiredForCatalogueInclusion": false
       },
       "hosting": {
         "status": "provider-service-or-redistribution-check-required",
@@ -2144,6 +2196,6 @@
     "Research used public primary pages, indexed primary text and official repositories; live API schemas, bulk files, IIIF pixels and tile alignment were not validated for prospective sources.",
     "Network access to primary collection hosts was unavailable in the execution environment; no endpoint, rights or coverage status is inferred from an inaccessible response.",
     "No providers contacted, paid access purchased or catalogue/imagery imported by this audit.",
-    "Every entry needs per-record clearance, transform validation and a live render check before publication."
+    "Every published record needs reuse clearance and supported provenance. Only overlays require transform validation and a live alignment/render check; unaligned eligible scans may be included with an honest status."
   ]
 }
