@@ -2498,6 +2498,181 @@ try {
   );
   await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
 
+  /* --- 8h2. a pin selection brings its row into view (maps-2) ----------- */
+  // With 199 records a pin's row can be screens away from the map, so a map
+  // selection scrolls the list to that row and marks it. Only in the desktop
+  // split layout (the map column is sticky there, so the page can move without
+  // taking the map away); on a phone the page must stay where the visitor is.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 20`, { label: 'rows for the reveal check' });
+  await cdp.waitFor(`document.querySelectorAll('.map-marker:not(.map-cluster)').length > 0`, { label: 'markers for the reveal check' });
+  await sleep(800);
+  // The marker with the lowest list position: its row is the furthest away from
+  // what the map currently shows, and it is a real pin in the current viewport.
+  const revealTarget = await cdp.eval(`(() => {
+    const rows = [...document.querySelectorAll('#result-list > *')];
+    const index = new Map(rows.map((li, i) => [li.querySelector('button.zh-result')?.dataset.recordId, i]));
+    let best = null;
+    for (const marker of document.querySelectorAll('.map-marker:not(.map-cluster)')) {
+      const i = index.get(marker.dataset.id);
+      if (i === undefined) continue;
+      if (!best || i < best.index) best = { index: i, id: marker.dataset.id };
+    }
+    if (!best) return null;
+    const row = rows[best.index].getBoundingClientRect();
+    // Park the row above the viewport on purpose: the reveal has to bring it
+    // back, not find it already visible.
+    window.scrollTo({ top: window.scrollY + row.top + 240, behavior: 'instant' });
+    const rect = rows[best.index].getBoundingClientRect();
+    const markerRect = document.querySelector('.map-marker[data-id="' + CSS.escape(best.id) + '"]').getBoundingClientRect();
+    return {
+      ...best,
+      scrollY: window.scrollY,
+      rowOutOfView: rect.bottom < 0 || rect.top > window.innerHeight,
+      x: markerRect.left + markerRect.width / 2,
+      y: markerRect.top + markerRect.height / 2,
+      mapVisible: document.querySelector('#map').getBoundingClientRect().bottom > 0,
+    };
+  })()`);
+  let revealAfter = null;
+  if (revealTarget) {
+    // A real mouse click at the pin: no `scrollIntoView`, the page position is
+    // exactly what this check is about.
+    const point = { x: Math.round(revealTarget.x), y: Math.round(revealTarget.y), button: 'left', clickCount: 1 };
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point });
+    try {
+      await cdp.waitFor(`new URLSearchParams(location.search).get('sel') === ${JSON.stringify(revealTarget.id)}`, { label: 'pin selection', timeout: 8_000 });
+    } catch {
+      /* reported below */
+    }
+    revealAfter = await cdp.eval(`(() => {
+      const li = [...document.querySelectorAll('#result-list > *')].find((node) => node.querySelector('button')?.dataset.recordId === ${JSON.stringify(revealTarget.id)});
+      if (!li) return null;
+      const button = li.querySelector('button');
+      const rect = li.getBoundingClientRect();
+      const detail = document.querySelector('#detail');
+      const panelLeft = detail.hidden ? window.innerWidth : detail.getBoundingClientRect().left;
+      return {
+        scrollY: window.scrollY,
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        inView: rect.top >= 0 && rect.bottom <= window.innerHeight,
+        selected: button.getAttribute('aria-current'),
+        revealed: button.classList.contains('is-revealed'),
+        coveredByPanel: rect.right > panelLeft,
+        mapVisible: document.querySelector('#map').getBoundingClientRect().bottom > 0,
+      };
+    })()`);
+  }
+  check(
+    'a pin click brings its result row into view in the split layout',
+    Boolean(revealTarget) &&
+      revealTarget.rowOutOfView === true &&
+      revealTarget.mapVisible === true &&
+      revealAfter?.inView === true &&
+      revealAfter?.selected === 'true' &&
+      revealAfter?.revealed === true &&
+      revealAfter?.coveredByPanel === false &&
+      revealAfter?.mapVisible === true &&
+      revealAfter?.scrollY !== revealTarget.scrollY,
+    `${JSON.stringify(revealTarget && { id: revealTarget.id, index: revealTarget.index, scrollY: revealTarget.scrollY, rowOutOfView: revealTarget.rowOutOfView })} -> ${JSON.stringify(revealAfter)}`,
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '13-map-reveal.png')).then(() => report.screenshots.push('13-map-reveal.png'));
+
+  // The same click on a phone must not scroll: the map is not sticky there, so
+  // the reveal would carry the visitor away from the pin they just used.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 20`, { label: 'phone rows for the reveal check' });
+  await cdp.waitFor(`document.querySelectorAll('.map-marker:not(.map-cluster)').length > 0`, { label: 'phone markers for the reveal check' });
+  await sleep(900);
+  const phonePin = await cdp.eval(`(() => {
+    const marker = [...document.querySelectorAll('.map-marker:not(.map-cluster)')].find((node) => {
+      const rect = node.getBoundingClientRect();
+      return rect.top > 40 && rect.bottom < window.innerHeight - 40;
+    });
+    if (!marker) return null;
+    const rect = marker.getBoundingClientRect();
+    return { id: marker.dataset.id, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, scrollY: window.scrollY };
+  })()`);
+  let phoneAfter = null;
+  if (phonePin) {
+    const point = { x: Math.round(phonePin.x), y: Math.round(phonePin.y), button: 'left', clickCount: 1 };
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point });
+    try {
+      await cdp.waitFor(`new URLSearchParams(location.search).get('sel') === ${JSON.stringify(phonePin.id)}`, { label: 'phone pin selection', timeout: 8_000 });
+    } catch {
+      /* reported below */
+    }
+    phoneAfter = await cdp.eval(`({ scrollY: window.scrollY, sel: new URLSearchParams(location.search).get('sel'), revealed: document.querySelectorAll('.zh-result.is-revealed').length })`);
+  }
+  check(
+    '390 px: a pin click keeps the page on the map it was used on',
+    Boolean(phonePin) && phoneAfter?.sel === phonePin.id && Math.abs(phoneAfter.scrollY - phonePin.scrollY) <= 2 && phoneAfter.revealed === 0,
+    `${JSON.stringify(phonePin && { id: phonePin.id, scrollY: phonePin.scrollY })} -> ${JSON.stringify(phoneAfter)}`,
+  );
+
+  /* --- 8h3. Windows high contrast / forced colors (maps-2) -------------- */
+  // The selected pin, the selected row and the selected decade are communicated
+  // with `background-color`, which forced-colors mode replaces. The rules in
+  // app.css use system colours and borders instead; this drives the real
+  // emulation and compares a selected element with an unselected one.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 20`, { label: 'rows for the forced-colors check' });
+  await cdp.waitFor(`document.querySelectorAll('.map-marker:not(.map-cluster)').length > 0`, { label: 'markers for the forced-colors check' });
+  await sleep(800);
+  await cdp.eval(`(() => { document.querySelector('.map-marker:not(.map-cluster)').click(); return true; })()`);
+  try {
+    await cdp.waitFor(`new URLSearchParams(location.search).get('sel') ? true : ''`, { label: 'selection for the forced-colors check', timeout: 8_000 });
+  } catch {
+    /* reported below */
+  }
+  await sleep(400);
+  await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'forced-colors', value: 'active' }] });
+  await sleep(400);
+  const forcedColors = await cdp.eval(`(() => {
+    const paint = (node) => {
+      if (!node) return null;
+      const style = getComputedStyle(node);
+      return {
+        background: style.backgroundColor,
+        borderLeft: style.borderLeftWidth + ' ' + style.borderLeftColor,
+        borderStyle: style.borderTopStyle,
+        outline: style.outlineWidth + ' ' + style.outlineStyle,
+      };
+    };
+    const bins = [...document.querySelectorAll('.zh-histogram__bin')];
+    const currentBin = bins.find((bin) => bin.getAttribute('aria-current') === 'true');
+    const otherBin = bins.find((bin) => bin.getAttribute('aria-current') !== 'true' && !bin.classList.contains('is-empty'));
+    return {
+      matches: matchMedia('(forced-colors: active)').matches,
+      selectedRow: paint(document.querySelector('.zh-result[aria-current="true"]')),
+      otherRow: paint(document.querySelector('.zh-result:not([aria-current="true"])')),
+      selectedPin: paint(document.querySelector('.map-marker.is-selected')),
+      otherPin: paint(document.querySelector('.map-marker:not(.is-selected):not(.map-cluster)')),
+      currentBar: paint(currentBin?.querySelector('.zh-histogram__bar')),
+      otherBar: paint(otherBin?.querySelector('.zh-histogram__bar')),
+    };
+  })()`);
+  check(
+    'forced colors: the selected pin, row and decade keep a state of their own',
+    forcedColors?.matches === true &&
+      forcedColors.selectedRow?.borderLeft !== forcedColors.otherRow?.borderLeft &&
+      forcedColors.otherRow?.borderStyle === 'solid' &&
+      forcedColors.selectedPin?.background !== forcedColors.otherPin?.background &&
+      forcedColors.selectedPin?.outline.startsWith('3px solid') &&
+      forcedColors.currentBar?.background !== forcedColors.otherBar?.background,
+    JSON.stringify(forcedColors),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '13b-forced-colors.png')).then(() => report.screenshots.push('13b-forced-colors.png'));
+  await cdp.send('Emulation.setEmulatedMedia', { features: [] });
+
   /* --- 8i. no placeholder values in the rendered UI --------------------- */
   // `replaceChildren(null)` renders a literal "null" text node (unlike `el()`),
   // so the panel with the most conditional links is scanned after a real session.

@@ -1577,3 +1577,128 @@ body.app-compare--open {
   background: var(--zh-color-accent-dark);
   opacity: 0.6;
 }
+
+/* ---- A row brought into view by a map selection (maps-2) ----
+   Clicking a pin on the map opens the detail panel and now also scrolls the
+   result list to that record (results.js `revealRow`). The brief marking says
+   whose row that is; it is not the selected style (`.zh-result[aria-current]`
+   stays after the mark is gone). */
+.zh-result.is-revealed {
+  outline: 3px solid var(--zh-color-accent-dark);
+  outline-offset: 2px;
+  border-left-color: var(--zh-color-accent-dark);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zh-result.is-revealed {
+    animation: zh-row-reveal 700ms var(--zh-easing-decelerate) 1;
+  }
+}
+
+@keyframes zh-row-reveal {
+  from {
+    background: var(--zh-darkblue-soft);
+  }
+  to {
+    background: var(--zh-color-surface);
+  }
+}
+
+/* ---- Windows high contrast / forced colors (maps-2) ----
+   Forced-colors mode replaces every author colour, so the states the app
+   communicates with `background-color` would disappear: a selected pin, the
+   hovered row, the brushed decade, a footprint and the histogram bars would all
+   look alike. These rules use system colour keywords, the only colours the mode
+   keeps, and prefer borders/outlines over fills so every state stays readable.
+
+   Values are the documented CSS system colours
+   (https://www.w3.org/TR/css-color-4/#css-system-colors), not author colours. */
+@media (forced-colors: active) {
+  /* The map keeps its author colours where they carry meaning (a pin is an
+     annotation on top of the tiles, which the mode leaves alone too). */
+  .map-marker {
+    border: 2px solid ButtonBorder;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  .map-marker.map-cluster {
+    border-width: 3px;
+  }
+
+  /* Selected / previewed / hovered pins: an outline is what survives, because
+     the mode drops the background colour that used to say “selected”. */
+  .map-marker.is-selected,
+  .map-marker[aria-current='true'] {
+    background: Highlight;
+    color: HighlightText;
+    outline: 3px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .map-marker.is-preview {
+    outline: 3px dashed Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Extents and the point crosshair are outline-only drawings in this mode: the
+     translucent fills are dropped, the dashed/solid outline is the information. */
+  .map-extent {
+    border: 3px dashed CanvasText;
+    background: none;
+  }
+
+  .map-point {
+    border: 3px solid CanvasText;
+    background: none;
+  }
+
+  .map-footprint {
+    border: 2px solid CanvasText;
+  }
+
+  .map-footprint.is-preview,
+  .map-footprint.is-selected {
+    border: 3px dashed CanvasText;
+    background: none;
+  }
+
+  /* The selected or previewed row: the mode drops `background` and the
+     accent-coloured left rule, so both states get a border of their own. */
+  .zh-result[aria-current='true'],
+  .zh-result.is-revealed {
+    border: 3px double Highlight;
+    border-left: 8px solid Highlight;
+    outline: 1px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .zh-result.is-preview {
+    border: 3px dashed Highlight;
+  }
+
+  /* Histogram: bars are drawn with `background` only, which the mode would turn
+     into the canvas colour — invisible. System colours keep the chart readable,
+     and the selected/brushed decades keep their Highlight fill. */
+  .zh-histogram__bar {
+    background: ButtonText;
+    opacity: 1;
+  }
+
+  .zh-histogram__bin[aria-current='true'] .zh-histogram__bar,
+  .zh-histogram__bin.is-brushing .zh-histogram__bar {
+    background: Highlight;
+  }
+
+  /* An empty decade keeps its faint bar: a system GrayText can render as the
+     canvas colour in some palettes, so the faintness comes from `opacity`
+     (which the mode does not replace) on the same readable ButtonText. */
+  .zh-histogram__bin.is-empty .zh-histogram__bar {
+    background: ButtonText;
+    opacity: 0.4;
+  }
+
+  .zh-histogram__bin.is-brushing {
+    outline: 1px solid Highlight;
+  }
+}

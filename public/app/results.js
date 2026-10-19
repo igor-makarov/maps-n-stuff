@@ -16,6 +16,42 @@ const TYPE_LABELS = {
 
 const SCALE_MAX = 1000; // slider resolution for the year range
 
+/** The split layout whose map column is sticky; below it the page scrolls the
+ *  map away, so a pin selection must not move the page there. */
+const REVEAL_MIN_WIDTH = 1024;
+
+/** How long a row that was brought into view stays marked. */
+export const REVEAL_HIGHLIGHT_MS = 2200;
+
+/** Readable band of the viewport: nothing sticky is above the list, and the
+ *  floating “Nach oben” control sits in the bottom-right corner. */
+const REVEAL_BAND = { top: 8, bottom: 24, gap: 8 };
+
+/**
+ * How far the window has to scroll so `row` is fully inside the readable band,
+ * or 0 when it already is. Pure, so the rule is unit tested rather than
+ * eyeballed: `row` and `view` are rectangles in viewport coordinates (exactly
+ * what `getBoundingClientRect()` returns), the result is the delta for
+ * `window.scrollBy({ top })` — negative scrolls up.
+ *
+ * A row taller than the band is aligned to the band's top instead, because the
+ * title (what identifies the row) is at the top, not the bottom.
+ */
+export function revealScrollDelta(row, view, { top = 0, bottom = 0, gap = 8 } = {}) {
+  if (!row || !view) return 0;
+  const bandTop = Math.max(0, top);
+  const bandBottom = Math.max(bandTop, view.height - Math.max(0, bottom));
+  const height = row.bottom - row.top;
+  if (bandBottom <= bandTop) return 0;
+  if (height >= bandBottom - bandTop) {
+    if (row.top >= bandTop && row.top <= bandBottom) return 0;
+    return Math.round(bandTop + gap - row.top);
+  }
+  if (row.bottom > bandBottom) return Math.round(row.bottom - bandBottom + gap);
+  if (row.top < bandTop) return -Math.round(bandTop - row.top + gap);
+  return 0;
+}
+
 export function init(ctx) {
   const listEl = qs('#result-list');
   const stateEl = qs('#results-state');
@@ -421,6 +457,48 @@ export function init(ctx) {
     ctx.bus.emit('record:selected', { record, source: 'list' });
   }
 
+  /* ---------- bringing a selection made elsewhere into view ---------- */
+
+  let revealTimer = null;
+
+  const rowButton = (id) => {
+    if (!id) return null;
+    for (const item of listEl.children) {
+      const button = item.querySelector('button.zh-result');
+      if (button?.dataset.recordId === id) return button;
+    }
+    return null;
+  };
+
+  /**
+   * Bring the row of a record selected somewhere else (a pin, a point pile, a
+   * related sheet) into view and mark it for a moment. At 199 records a pin's
+   * row can be screens away from the map; without this the map click looked
+   * like it had only opened the panel.
+   *
+   * Restricted to the desktop split layout: there `.app-mapwrap` is sticky, so
+   * the page can move while the map stays in view, whereas on a phone the same
+   * scroll would carry the visitor away from the map they just used. A
+   * selection made *in* the list never moves the page — the row is already
+   * where the visitor is looking.
+   */
+  function revealRow(id) {
+    if (!id || typeof window === 'undefined') return false;
+    if (!window.matchMedia?.(`(min-width: ${REVEAL_MIN_WIDTH}px)`)?.matches) return false;
+    const button = rowButton(id);
+    if (!button) return false;
+    const delta = revealScrollDelta(button.getBoundingClientRect(), { height: window.innerHeight }, REVEAL_BAND);
+    // `behavior: 'instant'` on purpose: the canton stylesheet sets
+    // `scroll-behavior: smooth`, and a long smooth scroll is still travelling
+    // when the visitor starts the next interaction.
+    if (delta !== 0) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
+    for (const node of listEl.querySelectorAll('.zh-result.is-revealed')) node.classList.remove('is-revealed');
+    button.classList.add('is-revealed');
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => button.classList.remove('is-revealed'), REVEAL_HIGHLIGHT_MS);
+    return true;
+  }
+
   let items = [];
   const render = debounce((filtered) => {
     lastFiltered = filtered;
@@ -570,6 +648,12 @@ export function init(ctx) {
       : buttons.length - 1;
     buttons[next]?.focus();
     buttons[next]?.scrollIntoView({ block: 'nearest' });
+  });
+
+  ctx.bus.on('record:selected', ({ record, source }) => {
+    // Came from the map (pin or point pile) or from a related sheet: mirror the
+    // selection in the list, which is its accessible twin.
+    if (source !== 'list') revealRow(record?.id);
   });
 
   // The time slider can only express years that exist in the data: clamp a state
