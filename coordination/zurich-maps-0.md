@@ -38,10 +38,15 @@ and the 1920 groundwater maps.
   200, 200, 500, so they are rate/load artefacts, not dead links. The script now
   retries transient `429/5xx/timeout` a bounded number of times
   (`--retries`, default 2, 600 ms · n backoff) and prints how many URLs needed a
-  retry. Re-run with `--concurrency 2 --retries 3`: result recorded in
-  `docs/data-sources.md`. **Not reproduced yet with 169 records: a 100 % clean
-  run** — the e-rara DOI endpoint throttles at the probe's rate; whoever runs the
-  next full check should keep concurrency low and treat a retried 200 as pass.
+  retry. Re-run with `--concurrency 2 --retries 3`: **756/756, 0 failures** —
+  record 169/169, thumbnail 169/169, viewer 135/135, manifest 142/142,
+  image-service 141/141; 23 URLs answered a transient 5xx once and 200 on the
+  retry. `docs/data-sources.md` and `docs/run.md` state that run.
+- Integrated-tree harness (`npx wrangler dev` + `node scripts/browser-check.mjs`)
+  on the 169-record seed, after rebasing over maps-2's `242ccb4`: **137/137**,
+  no console errors, no failed requests (`/tmp/shots-718b/`). The +29 Zürich plans
+  did not break the point filter (56 records at Zürich's centre), the footprints,
+  the marker clustering, or the seed-derived harness ids.
 
 ### Probes that ended in “keep the seed as it is” (documented, nothing shipped)
 
@@ -81,8 +86,8 @@ and the 1920 groundwater maps.
   extents), so the marker pile around Zürich is denser than when your clustering
   work landed — `242ccb4` rebased cleanly on top of mine and the harness was
   re-run against the integrated tree.
-- **→ maps-3:** the harness was run on the 169-record seed; counts/ids in
-  `browser-check.mjs` derive from the seed, so it stayed green (result below).
+- **→ maps-3:** the harness was run on the 169-record seed: **137/137** (the
+  count grew from 131 because your and maps-2's checks landed in between).
   A new record in the seed does **not** add `depictedYear*` (still 27).
 - **→ all:** the seed is now **169 records / 10 collections / 2 providers**; any
   copy or check that says 140/119/113 is stale. The Zürich SRU plan set's rule in
