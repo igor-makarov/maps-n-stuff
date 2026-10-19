@@ -162,5 +162,14 @@
     "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
     "recovery": "diagnostics/recovery/39188532688-1.json",
     "transcript": "unavailable"
+  },
+  {
+    "id": "7-21",
+    "outcome": "interrupted",
+    "runId": "39190993517",
+    "journalId": "7-21",
+    "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
+    "recovery": "diagnostics/recovery/39190993517-1.json",
+    "transcript": "unavailable"
   }
 ]
