@@ -2093,6 +2093,169 @@ try {
     JSON.stringify(clusterClick),
   );
 
+  /* --- 8o. point piles: a cluster zooming provably cannot split -------------
+   * Groups of records in the seed share one *documented* anchor (six Zürich
+   * Stadtpläne sit on 47.358330 / 8.533340), so their pins keep landing in the
+   * same 56 px cell at every zoom level. The pile is derived from the committed
+   * seed at run time — a new harvest may move it, but it cannot make this check
+   * lie — and the time range is the pile's own years, so no filter hides its
+   * members. maps-2 owns map.js; this section is additive, flagged in
+   * coordination/zurich-maps-2.md.
+   */
+  const pile = await cdp.eval(`(async () => {
+    const seed = await (await fetch('/data/records.json')).json();
+    const records = Array.isArray(seed) ? seed : (seed.records ?? []);
+    const groups = new Map();
+    for (const record of records) {
+      const geo = record.geo;
+      if (!geo || !Number.isFinite(geo.lat) || !Number.isFinite(geo.lon)) continue;
+      const key = geo.lat.toFixed(6) + ':' + geo.lon.toFixed(6);
+      groups.set(key, [...(groups.get(key) ?? []), record]);
+    }
+    const biggest = [...groups.values()].filter((list) => list.length > 2).sort((a, b) => b.length - a.length)[0];
+    if (!biggest) return null;
+    const years = biggest.map((record) => record.yearStart).sort((a, b) => a - b);
+    return {
+      count: biggest.length,
+      lat: biggest[0].geo.lat,
+      lon: biggest[0].geo.lon,
+      ids: biggest.map((record) => record.id),
+      firstTitle: biggest[0].title,
+      from: years[0],
+      to: years[years.length - 1],
+    };
+  })()`);
+  if (pile) {
+    const pileUrl = `${BASE_URL}/?lat=${pile.lat.toFixed(5)}&lon=${pile.lon.toFixed(5)}&z=17&from=${pile.from}&to=${pile.to}`;
+    await cdp.send('Page.navigate', { url: pileUrl });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'point pile records' });
+    await cdp.waitFor(`document.querySelector('.map-cluster[data-action=\"list\"]') != null`, { label: 'point pile cluster', timeout: 15_000 });
+
+    // The hover card is read in the same turn as the event: a deferred re-render
+    // (records:filtered, ResizeObserver) legitimately hides it again.
+    const pileCluster = await cdp.eval(`(() => {
+      const node = document.querySelector('.map-cluster[data-action="list"]');
+      node.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }));
+      const card = document.querySelector('.map-preview');
+      const snapshot = { cardText: card.textContent, cardHidden: card.hidden };
+      node.dispatchEvent(new PointerEvent('pointerleave', { bubbles: true }));
+      return {
+        count: Number(node.dataset.count || 0),
+        action: node.dataset.action,
+        label: node.getAttribute('aria-label') || '',
+        cardText: snapshot.cardText,
+        cardHidden: snapshot.cardHidden,
+        zoom: new URLSearchParams(location.search).get('z'),
+      };
+    })()`);
+    check(
+      'a cluster of records on one documented point offers its list instead of a zoom',
+      pileCluster.count === pile.count &&
+        pileCluster.action === 'list' &&
+        !pileCluster.cardHidden &&
+        /Liste öffnen/.test(pileCluster.label) &&
+        !/Ansicht vergrössern/.test(pileCluster.label) &&
+        /Klick öffnet die Liste/.test(pileCluster.cardText),
+      JSON.stringify(pileCluster),
+    );
+
+    // The list must be reachable without a mouse: focus the pin, press Enter.
+    await cdp.eval(`document.querySelector('.map-cluster[data-action="list"]').focus(); true`);
+    await cdp.pressKey('Enter');
+    await sleep(500);
+    const pileList = await cdp.eval(`(() => {
+      const list = document.querySelector('.map-cluster-list');
+      const items = [...list.querySelectorAll('.map-cluster-list__item')];
+      const mapRect = document.querySelector('#map').getBoundingClientRect();
+      const rect = list.getBoundingClientRect();
+      return {
+        hidden: list.hidden,
+        role: list.getAttribute('role'),
+        title: document.getElementById(list.getAttribute('aria-labelledby'))?.textContent || '',
+        items: items.length,
+        ids: items.map((item) => item.dataset.recordId),
+        firstFocused: document.activeElement === items[0],
+        firstText: items[0]?.textContent || '',
+        insideMap: rect.top >= mapRect.top - 1 && rect.bottom <= mapRect.bottom + 1 && rect.left >= mapRect.left - 1 && rect.right <= mapRect.right + 1,
+        zoom: new URLSearchParams(location.search).get('z'),
+      };
+    })()`);
+    check(
+      'the pile list is a labelled dialog that names every record and takes focus',
+      !pileList.hidden &&
+        pileList.role === 'dialog' &&
+        pileList.title === `Karten an diesem Punkt (${pile.count})` &&
+        pileList.items === pile.count &&
+        pile.count === pileList.ids.length &&
+        pileList.firstFocused &&
+        pileList.insideMap &&
+        pileList.zoom === '17',
+      JSON.stringify(pileList),
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '12-point-pile.png')).then(() => report.screenshots.push('12-point-pile.png'));
+
+    // Choosing a row is a real record choice: the same path as a marker click.
+    await cdp.pressKey('Enter');
+    await cdp.waitFor(`document.querySelector('#detail') && !document.querySelector('#detail').hidden`, { label: 'pile detail panel', timeout: 15_000 });
+    await sleep(400);
+    const pileChoice = await cdp.eval(`(() => ({
+      listHidden: document.querySelector('.map-cluster-list').hidden,
+      url: location.search,
+      detailTitle: document.querySelector('#detail-title')?.textContent || '',
+      source: document.querySelector('#detail a[href^="https://"]')?.getAttribute('href') || '',
+    }))()`);
+    const chosenId = new URLSearchParams(pileChoice.url).get('sel');
+    check(
+      'pressing Enter on a pile row opens that record and closes the list',
+      pileChoice.listHidden && pile.ids.includes(chosenId) && pileChoice.detailTitle.length > 0 && pileChoice.source.startsWith('https://'),
+      `${chosenId} · ${pileChoice.detailTitle.slice(0, 48)} · ${pileChoice.source}`,
+    );
+    await cdp.pressKey('Escape');
+    await sleep(400);
+
+    // Escape closes the list and hands focus back to the pin it came from.
+    await cdp.eval(`document.querySelector('.map-cluster[data-action="list"]').focus(); true`);
+    await cdp.pressKey('Enter');
+    await sleep(400);
+    await cdp.pressKey('Escape');
+    await sleep(400);
+    const pileEscape = await cdp.eval(`(() => ({
+      hidden: document.querySelector('.map-cluster-list').hidden,
+      focusOnPin: document.activeElement === document.querySelector('.map-cluster[data-action="list"]'),
+    }))()`);
+    check(
+      'Escape closes the pile list and returns focus to the pin',
+      pileEscape.hidden && pileEscape.focusOnPin,
+      JSON.stringify(pileEscape),
+    );
+
+    // The list does not remove the zoom gesture, it only stops being the *only*
+    // offer: “Ansicht trotzdem vergrössern” really zooms (and cannot loop back
+    // into the list it came from).
+    await cdp.eval(`document.querySelector('.map-cluster[data-action="list"]').focus(); true`);
+    await cdp.pressKey('Enter');
+    await sleep(400);
+    const pileZoom = await cdp.eval(`(async () => {
+      const before = new URLSearchParams(location.search).get('z');
+      const foot = document.querySelector('.map-cluster-list__foot button');
+      const label = foot?.textContent || '';
+      foot?.click();
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      return { label, before, after: new URLSearchParams(location.search).get('z'), hidden: document.querySelector('.map-cluster-list').hidden };
+    })()`);
+    check(
+      'the pile list still offers a real zoom (no dead end)',
+      pileZoom.label.includes('vergrössern') && Number(pileZoom.after) > Number(pileZoom.before) && pileZoom.hidden,
+      JSON.stringify(pileZoom),
+    );
+  } else {
+    console.log('· no point pile in this seed — the pile checks were skipped');
+  }
+
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'start page after the pile checks' });
+  await sleep(600);
+
   const mapOnly = await cdp.eval(`(() => {
     document.querySelector('[data-view="map"]')?.click();
     const map = document.querySelector('#map');
@@ -2837,9 +3000,14 @@ try {
   await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'typing history page' });
   await sleep(600);
   await cdp.click('#text-filter');
-  for (const char of 'Zürich') {
+  for (const [index, char] of [...'Zürich'].entries()) {
     await cdp.send('Input.insertText', { text: char });
-    await sleep(260); // slower than the field's own debounce, so every keystroke reaches the store
+    // Slower than the field's own debounce, so every keystroke reaches the store
+    // — plus one deliberate stall in the middle of the word: a busy main thread
+    // (or a visitor who pauses to read) must not cut one query into two history
+    // entries. This is where the check failed on 2026-10-19 (maps-1 fixed the
+    // store: HISTORY_TEXT_KEYS keeps a still-edited query in its entry).
+    await sleep(index === 2 ? 1_200 : 260);
   }
   await sleep(1200);
   const searchTyped = await cdp.eval(`({ q: new URLSearchParams(location.search).get('q'), rows: document.querySelectorAll('#result-list > *').length })`);
@@ -3171,6 +3339,41 @@ try {
       /nicht erreichbar/.test(searchStatus) && !/Failed to fetch|NetworkError|undefined/.test(searchStatus) && localSuggestions >= 1,
       `"${String(searchStatus).slice(0, 150)}" · ${localSuggestions} local suggestions`,
     );
+
+    // The seed itself is one file: when it cannot be fetched, the results area
+    // must say so in plain German, drop its aria-busy flag, stop claiming to
+    // load and keep the raw browser string out of the UI (maps-1, 7-17).
+    await cdp.send('Network.setBlockedURLs', { urls: ['*/data/records.json'] });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+    let seedOutage = null;
+    try {
+      seedOutage = await cdp.waitFor(
+        `(() => {
+          const state = document.querySelector('#results-state');
+          if (!state || state.hidden || !/konnten nicht geladen werden/.test(state.textContent)) return '';
+          return {
+            text: state.textContent.replace(/\\s+/g, ' ').trim(),
+            count: (document.querySelector('#result-count')?.textContent || '').trim(),
+            busy: document.querySelector('#result-list')?.getAttribute('aria-busy') ?? null,
+            loadingHidden: document.querySelector('#results-loading')?.hidden ?? null,
+            rawLeak: /Failed to fetch|NetworkError|undefined|\\.json/.test(state.textContent.replace('/data/records.json', '')),
+          };
+        })()`,
+        { label: 'seed outage state', timeout: 15_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'an unreachable seed says so in plain German and stops claiming to load',
+      Boolean(seedOutage) &&
+        seedOutage.count === 'Bestand nicht geladen' &&
+        seedOutage.busy === 'false' &&
+        seedOutage.loadingHidden === true &&
+        seedOutage.rawLeak === false,
+      JSON.stringify(seedOutage).slice(0, 220),
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '07b-seed-outage.png')).then(() => report.screenshots.push('07b-seed-outage.png'));
 
     // …and the app must recover on its own once the upstream answers again.
     await cdp.send('Network.setBlockedURLs', { urls: [] });

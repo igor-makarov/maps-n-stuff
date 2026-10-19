@@ -32,6 +32,7 @@ Shurik gives us no messaging channel, so **`main` is the message bus**.
 | D4 | 2026-10-18 | Modules integrate through `public/app/store.js` (URL-backed state) + `document` custom events; modules must be optional so a missing one degrades gracefully. |
 | D5 | 2026-10-18 | The vendored Leaflet copy (192 KiB, never referenced since `map.js` became our own implementation) is **removed** by maps-1 after maps-2 rewrote the map without it; `NOTICE.md`/`README.md` no longer list it. Its licence and history stay in git. |
 | D6 | 2026-10-18 | **Browser history is part of the URL contract** (`store.js`, maps-1): changing `q, from, to, provider, type, collection, viewport, at, place, selected` opens a history entry (`pushState`); everything else (`lat, lon, zoom, sheet, view, sort, overlay, otime, cmp`) replaces the current one. Changes to the same key set within `HISTORY_COALESCE_MS` (900 ms) merge, so a typed search or a slider drag is one step. `popstate` re-reads the URL and notifies subscribers like `update()` does — modules need no extra wiring, but a module that *clears* a selection must expect `detail.js` to close its panel, and no module may write state during start-up in a way that consumes the visitor's first “back”. |
+| D6a | 2026-10-19 | **A still-edited query stays in its entry** (`store.js`, maps-1; extends D6): while a `q` change continues the text of the current entry (typing *or* backspacing, either direction — `HISTORY_TEXT_KEYS`), it replaces instead of pushing even after a pause longer than `HISTORY_COALESCE_MS`. Measured before the change: a 1.2 s stall in the middle of “Zürich” pushed a second entry, so one “back” left `?q=Zür` behind instead of the unfiltered list. A cleared box or a query rewritten from scratch is still its own step. The harness check now types with a deliberate 1.2 s stall. |
 
 ## Architecture contract (v1)
 
@@ -92,18 +93,20 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 ## Status board
 
-| Member | Owns | Status (integrated tree, iteration 7-16) |
+| Member | Owns | Status (integrated tree, 2026-10-19) |
 |--------|------|-------------------------|
-| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **140 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, 18 Zürich plans + 11 Zürich-region + 10 city ground/site plans + 21 Europe/world overview maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window (mirrored for the world set), per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (618/618 on 2026-10-19), `docs/data-sources.md` + `sources.json` registry |
-| zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell incl. the **phone step** (hero figures move to “Über das Projekt” below 600 px: map top 609 px / 235 px visible at 390×844), visible “Datenstand”, canton design tokens/components (48 px controls), URL-backed store with **working browser back/forward (D6)**, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed |
-| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`) |
-| zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen + shareable cut-out (`vv=`), thumbnails fetched on demand, “Blatt” jump for large works, the panel’s own layer toggle for georeferenced swisstopo records, honest degraded-upstream states, series navigation; the comparison panes are the same viewer and are **coupled through each record’s documented extent** (`viewToExtent`/`extentToView`, switch `#compare-sync`); 137 unit tests and the 128-check CDP harness (maps-1 added the phone map-first check) |
+| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **169 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, **47** Zürich plans + 11 Zürich-region + 10 city ground/site plans + 21 Europe/world overview maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window (mirrored for the world set), per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (756 distinct URLs on 2026-10-19; the script retries transient 429/5xx because e-rara's DOI pages throttle), `docs/data-sources.md` + `sources.json` registry |
+| zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell incl. the **phone step** and honest **loading/seed-outage states** (hero figures move to “Über das Projekt” below 600 px: map top 609 px / 235 px visible at 390×844), visible “Datenstand”, canton design tokens/components (48 px controls), URL-backed store with **working browser back/forward (D6)**, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed |
+| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram whose **bars count the filter scope (not the period) and whose drag-brush selects a range**, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`) |
+| zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen + shareable cut-out (`vv=`), thumbnails fetched on demand, “Blatt” jump for large works, the panel’s own layer toggle for georeferenced swisstopo records, honest degraded-upstream states, series navigation; the comparison panes are the same viewer and are **coupled through each record’s documented extent** (`viewToExtent`/`extentToView`, switch `#compare-sync`); the suite as a whole is **149 unit tests** and the CDP harness **138 checks** (measured 2026-10-19 on the 169-record seed) |
 
-Integration gate as of iteration 7-16 (verified on this runner, 140-record seed):
+Integration gate as of 2026-10-19 (verified on this runner, 169-record seed):
 `npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`),
-`node scripts/browser-check.mjs` against `npx wrangler dev` (**127/127** on the tree with
-maps-2's Grundkarte, maps-2's brushed histogram, maps-3's coupled comparison
-and maps-1's phone step) and
+`node scripts/browser-check.mjs` against `npx wrangler dev` (**138/138**: maps-2's scoped
+histogram brush and Grundkarte, maps-3's coupled 390 px comparison and cluster behaviour,
+maps-1's phone map-first, deliberate-typing-stall history check and seed-outage check) and
 `node scripts/verify:endpoints` for the upstream URLs (maps-0's line states the count it
-last measured). The counts move with every teammate commit — each member's own line above
+last measured; 756 distinct URLs). A fresh clone (`git clone … && npm ci && npm run check`)
+passes on this tree — the Cloudflare build path needs nothing but the repository.
+The counts move with every teammate commit — each member's own line above
 states the numbers they last measured.

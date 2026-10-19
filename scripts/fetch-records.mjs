@@ -772,9 +772,12 @@ const SRU_SEARCHES = {
     rule:
       'map genre, a stated year and a stated MODS coordinates statement in the SRU record, ' +
       'then confirmed by OAI GetRecord and a IIIF manifest that states the holding institution ' +
-      'and a Kartendaten extent; one entry per title and year, oldest first',
-    candidateCap: 44,
-    recordCap: 18,
+      'and a Kartendaten extent; one entry per title and year across all SRU sets, oldest first, ' +
+      'cap 48 — every candidate the two queries answer (92) is pooled, and 47 of them pass the ' +
+      'gates (the rest are duplicate editions, series volumes without a stated extent or ' +
+      'candidates without a stated year), so no productive decade is cut off',
+    candidateCap: 100,
+    recordCap: 48,
   },
   zurichRegion: {
     id: 'zurich-region',

@@ -4,7 +4,9 @@ Machine-readable registry: [`public/data/sources.json`](../public/data/sources.j
 (providers, endpoints actually used, rights, attribution, retrieval date) and
 [`public/data/overlays.json`](../public/data/overlays.json) (georeferenced map
 layers). Refresh script: [`scripts/fetch-records.mjs`](../scripts/fetch-records.mjs)
-(`npm run harvest`, `npm run harvest:offline`).
+(`npm run harvest`, `npm run harvest:offline`; the offline rebuild reproduces the
+committed `public/data/**` byte for byte apart from `generatedAt` — re-checked
+2026-10-19 on a cold cache and again with the warm one).
 All checks below were run on **2026-10-18** (UTC) from this repository.
 
 OldMapsOnline was used only for *UX research* (information architecture: search →
@@ -22,7 +24,7 @@ endpoint is called by the application.
 | Discovery endpoint (SRU) | `https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=<cql>&startRecord=<n>&maximumRecords=100&recordSchema=mods` (standard SRU 1.2 with CQL; the search indexes that answer are `dc.title`, `dc.subject` and `dc.creator` — `dc.type`, `dc.genre`, `dc.format` and `dc.coverage` always answer 0 records). MODS records state the IIIF id and holding corpus verbatim (`<vl:id>`, `<vl:prefix>`) plus a `<coordinates>` statement; a hit is confirmed with `oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:www.e-rara.ch:<titleId>` before it becomes a record |
 | IIIF manifest (Presentation API 2.0) | `https://www.e-rara.ch/i3f/v20/<titleId>/manifest` |
 | IIIF image service (Image API 2, level 2) | `https://www.e-rara.ch/i3f/v20/<imageId>/full/<size>/0/default.jpg` |
-| Holding institution | per record from the manifest `Besitzende Institution` — in the seed (140 records): Zentralbibliothek Zürich (53), ETH-Bibliothek Zürich (51), swisstopo (27 overlays), Universitätsbibliothek Bern (8), Bibliothèque de Genève (1). The registry's `institutions` list is derived from the harvested records, so it cannot drift; a set whose manifests do not name an institution (see `museecarto` below) contributes no record. When a manifest omits the field, the library is taken from the **corpus the catalogue itself states** (`<vl:prefix>` of an SRU hit, the `setSpec` of an OAI set, or the `og:url` of the DOI landing page — `zuz`, `zut`, `bes_1`, `gep_r`); a corpus the harvest cannot name produces no record, and the drop is listed in `records.json.skipped` (no library is ever defaulted) |
+| Holding institution | per record from the manifest `Besitzende Institution` — in the seed (169 records): ETH-Bibliothek Zürich (68), Zentralbibliothek Zürich (65), swisstopo (27 overlays), Universitätsbibliothek Bern (8), Bibliothèque de Genève (1). The registry's `institutions` list is derived from the harvested records, so it cannot drift; a set whose manifests do not name an institution (see `museecarto` below) contributes no record. When a manifest omits the field, the library is taken from the **corpus the catalogue itself states** (`<vl:prefix>` of an SRU hit, the `setSpec` of an OAI set, or the `og:url` of the DOI landing page — `zuz`, `zut`, `bes_1`, `gep_r`); a corpus the harvest cannot name produces no record, and the drop is listed in `records.json.skipped` (no library is ever defaulted) |
 | Rights | per record from `dc:rights` — the seed set is `PDM 1.0` (Public Domain Mark) |
 | Attribution | “Zentralbibliothek Zürich via e-rara” |
 | Related collection context | <https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen> (ZB Zürich, Karten und Panoramen) |
@@ -46,9 +48,9 @@ Field mapping (nothing invented):
 | `title` | IIIF manifest `label` (verbatim); falls back to `dc:title` |
 | `creators` | `oai_dc` `dc:creator` (verbatim, may be empty) |
 | `yearStart`/`yearEnd` | publication year from `dc:date`, else parsed from the manifest `Impressum` |
-| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year). The harvest accepts exactly one anchored phrase from the e-rara manifest — “in den Jahren 1843-1851 gemachten Aufnahmen” — and stores the verbatim match in `depictedSource`; 27 of the 140 records (all Zürich Wildkarte sheets and the 1852 canton map, printed 1853) carry it. A bare “Aufnahmen von 1852-1865” is *rejected*: on those sheets that range is the engraving, not the survey, and 35 cached manifests contain exactly that trap. Records whose *title* names a different map year (e.g. “Stadtplan von Winterthur vom Jahre 1755”, published 1919) keep the publication year as `yearStart` and `depictedYearStart: null`; the title is shown verbatim, so the difference is visible instead of guessed |
+| `depictedYearStart`/`depictedYearEnd` | only when the record itself states a survey/map date; otherwise `null` (never derived from the publication year). The harvest accepts exactly one anchored phrase from the e-rara manifest — “in den Jahren 1843-1851 gemachten Aufnahmen” — and stores the verbatim match in `depictedSource`; 27 of the 169 records (all Zürich Wildkarte sheets and the 1852 canton map, printed 1853) carry it. A bare “Aufnahmen von 1852-1865” is *rejected*: on those sheets that range is the engraving, not the survey, and 35 cached manifests contain exactly that trap. Records whose *title* names a different map year (e.g. “Stadtplan von Winterthur vom Jahre 1755”, published 1919) keep the publication year as `yearStart` and `depictedYearStart: null`; the title is shown verbatim, so the difference is visible instead of guessed |
 | `institution` | manifest `Besitzende Institution` (first institution before the comma) |
-| `shelfmark` | the part of the manifest `Besitzende Institution` after the comma, verbatim (`Zentralbibliothek Zürich, 4 Lb 06: 9` → `4 Lb 06: 9`); 113 of 140 records state one (all e-rara records; swisstopo states no signature), the others show “nicht angegeben” in the detail view |
+| `shelfmark` | the part of the manifest `Besitzende Institution` after the comma, verbatim (`Zentralbibliothek Zürich, 4 Lb 06: 9` → `4 Lb 06: 9`); 142 of 169 records state one (all e-rara records; swisstopo states no signature), the others show “nicht angegeben” in the detail view |
 | `recordUrl` | the DOI landing page (`https://www.e-rara.ch/doi/10.3931/e-rara-<id>`) |
 | `thumbnail` | IIIF thumbnail from the manifest (`…/full/304/0/default.jpg`) |
 | `imageService` | IIIF Image API 2 service id of the first canvas |
@@ -57,7 +59,7 @@ Field mapping (nothing invented):
 | `imprint`, `collection`, `sheet` | manifest `Impressum`; the OAI set / sheet name from the manifest label |
 | `imageService` | IIIF Image API 2 service id of the first canvas |
 | `canvasCount` | number of canvases in the manifest (`sequences[0].canvases.length`) — 38 of 39 records state it, four are real multi-sheet works (2–3 sheets) |
-| `viewerUrl` | the library's own deep-zoom viewer: the DOI landing page states the holding corpus in `og:url` (`http://www.e-rara.ch/<corpus>/<id>`); the harvest keeps only the corpus after checking `<id>` against the manifest title id and stores `https://www.e-rara.ch/<corpus>/content/zoom/<id>`. For SRU-discovered records the corpus comes verbatim from the catalogue record (`<vl:prefix>`), so no landing page request is needed. Corpora in the seed: `zuz` 53, `zut` 51, `bes_1` 8, `gep_r` 1 (all 113 e-rara records have one). Nothing is constructed when neither states it. For the same title and year the ZB Zürich copy is preferred, so the cantonal library — the design reference's own — keeps the duplicate (see below) |
+| `viewerUrl` | the library's own deep-zoom viewer: the DOI landing page states the holding corpus in `og:url` (`http://www.e-rara.ch/<corpus>/<id>`); the harvest keeps only the corpus after checking `<id>` against the manifest title id and stores `https://www.e-rara.ch/<corpus>/content/zoom/<id>`. For SRU-discovered records the corpus comes verbatim from the catalogue record (`<vl:prefix>`), so no landing page request is needed. Corpora in the seed: `zut` 65, `zuz` 61, `bes_1` 8, `gep_r` 1 — 135 of the 142 e-rara records state one; the seven without a catalogue-stated corpus (a Sammelband and six compute sheets) keep the DOI landing page as their link instead, nothing is constructed. Nothing is constructed when neither states it. For the same title and year the ZB Zürich copy is preferred, so the cantonal library — the design reference's own — keeps the duplicate (see below) |
 
 Selection rule (no hand-picked titles): every map record of an OAI set that is
 not a series volume, oldest first, with a cap per set (ZB Wildkarte 26 sheets,
@@ -66,7 +68,7 @@ states a `Kartendaten` bbox and an upstream year; duplicates of the same work ar
 dropped by leading title. The per-set numbers (`considered`/`kept`/`rule`) are
 written into `records.json.selection`.
 
-### Zürich plans, the Zürich region and the city plans via SRU (7-14, extended 7-15)
+### Zürich plans, the Zürich region and the city plans via SRU (7-14, extended 7-15 and 7-18)
 
 The OAI sets are unsorted *ingest* order, so single sheets and city plans are hard
 to reach by paging them (pages 32–50 of `zuz` yield three map candidates, all the
@@ -76,7 +78,7 @@ into three sets, and keeps the results that survive the same gates as every othe
 record:
 
 ```
-dc.title=Plan  and dc.subject=Zürich      104 hits  → “Pläne aus Zürich (Stadt und Umgebung)”, cap 18
+dc.title=Plan  and dc.subject=Zürich      104 hits  → “Pläne aus Zürich (Stadt und Umgebung)”, cap 48 (all 92 candidates pooled)
 dc.title=Karte and dc.subject=Zürich       63 hits  → same set
 
 dc.title=Umgebung  and dc.subject=Zürich   45 hits  → “Zürich und Umgebung (Kanton, Stadt und See)”, cap 16, ≤ 3/decade
@@ -91,6 +93,17 @@ dc.title=Situationsplan and dc.subject=Zürich 16 hits → same set
 `dc.title=Vogelschau and dc.subject=Zürich` (2 hits) were probed on 2026-10-18
 and yield **no map record with a stated extent** (they answer facade views and
 viewsheds of buildings), so they are deliberately not queried.
+
+**Extended 7-18 (measured on this runner).** The plan set now pools *every*
+candidate the two queries answer instead of the 44 oldest: 92 candidates with a
+stated year and `<coordinates>`, all of them confirmed through `GetRecord` + manifest,
+47 of which pass the gates and are kept (cap 48). The 45 dropped candidates are
+duplicate editions of a title already kept for the same year, series volumes without
+a stated `Kartendaten` extent, or model/series records without a map year — none is
+dropped for space. Probed and *not* changed: the region and city sets stay at 11 and
+10 records because their candidate pools are exhausted, not their caps — raising
+their per-decade rule from 3 to 9 leaves both counts unchanged. The world set stays
+at 21 (a quota of 9 would add two more sheets of the same three decades).
 
 Three sets instead of one on purpose: a 1705 fortress plan and a 1838 city plan
 are the same kind of “small area, one sheet” object, and inside a single set they
@@ -194,7 +207,7 @@ a bounded sample of each and the window sizes are part of the method:
 | `landkarten` | “Schweizer Landkarten aus vier Jahrhunderten” | 12 (120) | 50 maps | 26 |
 | `cartesgeneve` | Geneva and surroundings | 6 (60) | 40 maps | 1 (1837 “Geneva”, Bibliothèque de Genève) |
 | `museecarto` | world maps (Mappae mundi and reproductions) | 6 (54) | 20 maps | **0** |
-| SRU `dc.title=Plan/Karte and dc.subject=Zürich` | Zürich plans and canton maps (single sheets, not a series) | 3 SRU pages (167 hits) | 92 candidates with year + stated extent → 44 with a manifest request | **18** |
+| SRU `dc.title=Plan/Karte and dc.subject=Zürich` | Zürich plans and canton maps (single sheets, not a series) | 3 SRU pages (167 hits) | 92 candidates with year + stated extent → all 92 with a manifest request | **47** |
 | SRU `dc.title=Umgebung / dc.subject=Zürichsee / dc.title=Stadtplan` + `dc.subject=Zürich` | Zürich and its surroundings, the lake, city plans | 3 SRU pages (72 hits) | 24 candidates with year + stated extent → 40 with a manifest request | **11** |
 | SRU `dc.title=Grundriss / dc.title=Situationsplan` + `dc.subject=Zürich` | city ground plans (1696–1838) and site plans of Zürich | 2 SRU pages (48 hits) | 35 candidates with year + stated extent → 45 with a manifest request | **10** |
 | SRU `Europa`/`Erdkarte`/`Weltkarte`/`Afrika`/`Amerika`/`Asien` + `dc.title=Karte` | overview maps of Europe and the world, **extent centre outside** the canton and ≥ 5° span | 6 SRU pages | 39 candidates with year + stated extent | **21** |
@@ -308,7 +321,7 @@ metadata can appear in the public data or the UI.
 `yearStart`/`yearEnd` are the **publication** years from the imprint;
 `depictedYearStart`/`depictedYearEnd` are the dates **shown on the map** and are
 only filled when the upstream statement documents them, with the verbatim
-evidence in `depictedSource` (27 of 140 records; the rest stay `null`, which the
+evidence in `depictedSource` (27 of 169 records; the rest stay `null`, which the
 detail panel labels “vom Anbieter nicht angegeben”). The filter uses publication
 years, and the UI says so (“Zeitraum (Publikationsjahr)”), so the detail panel's
 “Zeitraum dieses Blattes filtern” button also feeds the *publication* range — with
@@ -329,16 +342,26 @@ image service, WMTS preview tile), probes each one once with a descriptive
 and exits non-zero when anything stops answering 200 (`--json <file>` writes the
 full report, `--offline` only lists the URLs, `--limit n` probes a prefix).
 
-Last full run — **2026-10-19, 618 distinct URLs, 0 failures** on the 140-record
-seed:
+Last full run — **2026-10-19, 756 distinct URLs, 0 failures** on the 169-record
+seed (`--concurrency 2 --retries 3`):
 
 | Kind | Result |
 | --- | --- |
-| original record (DOI landing page / `map.geo.admin.ch` viewer) | 140/140 |
-| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 140/140 |
-| library viewer (`…/content/zoom/<id>`) | 113/113 |
-| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 113/113 |
-| IIIF image service (`…/info.json`) | 112/112 |
+| original record (DOI landing page / `map.geo.admin.ch` viewer) | 169/169 |
+| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 169/169 |
+| library viewer (`…/content/zoom/<id>`) | 135/135 |
+| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 142/142 |
+| IIIF image service (`…/info.json`) | 141/141 |
+
+**Transient 5xx are retried, because e-rara's DOI landing pages throttle.** The
+same 169-record seed at `--concurrency 4` reported 21 failures, every one of them
+a `record` URL answering **500**; three consecutive hand probes of one of them
+answered 200, 200, 500, so they are load artefacts, not dead links. The script
+now retries an answer of `429`, `5xx` or a timeout a bounded number of times
+(`--retries n`, default 2, with a 600 ms · n backoff) and prints how many URLs
+needed the retry; the clean run above needed **23** retries, all of which answered
+200 on the second attempt. A future full check should keep the request rate low
+(`--concurrency 2`) rather than read a 500 as a dead link.
 
 The script is deliberately *not* part of `npm run check`: the gate stays offline,
 hermetic and fast, and this check needs the network.

@@ -223,6 +223,19 @@ function wireBackToTop() {
   sync();
 }
 
+/**
+ * The results area starts with a visible loading state (see index.html): the
+ * seed is one JSON file, and on a slow connection the difference between “the
+ * app is working” and a blank panel. Both paths below end it — the data, or the
+ * failure — so the page never keeps claiming to load.
+ */
+function finishLoading() {
+  const loading = qs('#results-loading');
+  if (loading) loading.hidden = true;
+  const list = qs('#result-list');
+  if (list) list.setAttribute('aria-busy', 'false');
+}
+
 async function main() {
   document.documentElement.dataset.app = 'kartenzeit';
   initViewSwitch();
@@ -237,16 +250,23 @@ async function main() {
     ctx.data.years = yearBounds(records);
     ctx.data.generatedAt = generatedAt;
     ctx.data.loadErrors = errors;
+    finishLoading();
     bus.emit('records:loaded', { records, sources: sources.providers, overlays: overlays.overlays });
   } catch (err) {
+    // The raw message (a browser string like “Failed to fetch”) stays in the
+    // console and in the title attribute; the visible text is plain German.
     console.error('[kartenzeit] data load failed', err);
+    finishLoading();
+    const count = qs('#result-count');
+    if (count) count.textContent = 'Bestand nicht geladen';
     const state = qs('#results-state') || qs('#map-fallback');
     if (state) {
       state.hidden = false;
       state.className = 'zh-state zh-state--error';
+      state.title = String(err?.message || err);
       state.replaceChildren(
         el('span', { class: 'zh-state__title', text: 'Die Datensätze konnten nicht geladen werden.' }),
-        el('span', { text: `Grund: ${err?.message || err}. Bitte die Seite neu laden; die Rohdaten liegen unter /data/records.json.` }),
+        el('span', { text: 'Bitte die Seite neu laden. Die Rohdaten liegen unter /data/records.json; den technischen Grund nennt die Browser-Konsole.' }),
       );
     }
     bus.emit('records:error', { error: err });

@@ -10,7 +10,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { HISTORY_COALESCE_MS, HISTORY_PUSH_KEYS, STATE_DEFAULTS, createStore } from '../public/app/store.js';
+import { HISTORY_COALESCE_MS, HISTORY_PUSH_KEYS, HISTORY_TEXT_KEYS, STATE_DEFAULTS, createStore } from '../public/app/store.js';
 
 /** A stand-in for window.history + window.location + window. */
 function fakeBrowser(startUrl = '/?from=1754') {
@@ -88,6 +88,9 @@ test('the push keys are the deliberate search/selection steps, never the view', 
   for (const key of ['lat', 'lon', 'zoom', 'sheet', 'vv', 'extents', 'view', 'sort', 'overlay', 'otime', 'cmp']) {
     assert.equal(HISTORY_PUSH_KEYS.includes(key), false, `${key} must only replace the current entry`);
   }
+  // The typed query is the one key whose *text* decides whether a later change
+  // continues the entry (see the search-pause test below).
+  assert.deepEqual([...HISTORY_TEXT_KEYS], ['q']);
 });
 
 test('a search or a selection opens a history entry; panning replaces the current one', () => {
@@ -125,10 +128,18 @@ test('typing and dragging coalesce into one entry per gesture', () => {
   assert.equal(browser.url(), '/?q=rhei', 'the latest text still lands in the URL');
   assert.equal(browser.history.length, 2, 'one extra entry, not one per keystroke');
 
-  // A later gesture on the same control is its own entry again.
+  // A pause longer than the window does not cut one query into two steps: the
+  // text still continues the entry. (Measured 2026-10-19: a stalled keystroke
+  // pushed a second entry, so one “back” only undid the last character.)
   tick(HISTORY_COALESCE_MS + 1);
   store.update({ q: 'rheinau' });
-  assert.equal(browser.calls.at(-1)[0], 'push');
+  assert.equal(browser.calls.at(-1)[0], 'replace', 'a pause inside one query is still that query');
+  assert.equal(browser.history.length, 2, 'no second entry for the same, still-edited query');
+
+  // A query that is *not* a continuation is its own entry again.
+  tick(HISTORY_COALESCE_MS + 1);
+  store.update({ q: 'Siegfriedkarte' });
+  assert.equal(browser.calls.at(-1)[0], 'push', 'a rewritten query is a new step');
   assert.equal(browser.history.length, 3);
 
   // A drag of the year control is one entry, even with the knob moving a lot.
@@ -138,7 +149,7 @@ test('typing and dragging coalesce into one entry per gesture', () => {
     store.update({ from: year });
   }
   assert.equal(browser.history.length, before + 1, 'a slider drag is a single step');
-  assert.equal(browser.url(), '/?q=rheinau&from=1630');
+  assert.equal(browser.url(), '/?q=Siegfriedkarte&from=1630');
 
   // A gesture that lasts longer than the window stays one entry as long as the
   // changes keep arriving — otherwise a slow drag would push halfway through.
@@ -149,7 +160,62 @@ test('typing and dragging coalesce into one entry per gesture', () => {
     store.update({ from: 1700 + i });
   }
   assert.equal(browser.history.length, longStart + 1, '12 slow steps are still one gesture');
-  assert.equal(browser.url(), '/?q=rheinau&from=1711');
+  assert.equal(browser.url(), '/?q=Siegfriedkarte&from=1711');
+});
+
+test('one “back” undoes a whole typed search, however slow the typing was', () => {
+  const { browser, store, tick } = makeStore('/');
+  browser.act();
+
+  // Typing, a pause longer than the coalescing window, then more typing: the
+  // browser check drives exactly this and used to need a second “back”.
+  for (const text of ['Z', 'Zü', 'Zür']) {
+    tick(260);
+    store.update({ q: text });
+  }
+  tick(HISTORY_COALESCE_MS + 300);
+  for (const text of ['Züri', 'Züric', 'Zürich']) {
+    tick(260);
+    store.update({ q: text });
+  }
+  assert.equal(browser.kinds().filter((kind) => kind === 'push').length, 1, 'one search, one entry');
+  assert.equal(browser.url(), '/?q=Z%C3%BCrich');
+
+  // Backspacing inside the same entry is still that entry…
+  tick(HISTORY_COALESCE_MS + 300);
+  store.update({ q: 'Züric' });
+  assert.equal(browser.calls.at(-1)[0], 'replace');
+
+  // …and the entry that the query started from is really reachable with one
+  // “back”, with no results filter left behind.
+  browser.popTo('/');
+  assert.equal(store.getState().q, '');
+  assert.equal(browser.kinds().filter((kind) => kind === 'push').length, 1);
+
+  // A new search (empty box, then typing) is a step of its own again.
+  tick(HISTORY_COALESCE_MS + 1); // the entry we moved to must settle after the popstate
+  browser.act();
+  store.update({ q: 'Rheinau' });
+  assert.equal(browser.calls.at(-1)[0], 'push', 'a search that starts from an empty box opens an entry');
+
+  // So is a query that replaces the text instead of continuing it.
+  tick(HISTORY_COALESCE_MS + 300);
+  store.update({ q: 'Winterthur' });
+  assert.equal(browser.calls.at(-1)[0], 'push', 'a different query is a new step');
+
+  // Clearing the box is its own step…
+  tick(HISTORY_COALESCE_MS + 300);
+  store.update({ q: '' });
+  assert.equal(browser.calls.at(-1)[0], 'push', 'clearing the search is its own step');
+
+  // …and a search typed after the box was emptied is a step of its own too,
+  // not a continuation of the query that was cleared.
+  tick(HISTORY_COALESCE_MS + 300);
+  store.update({ q: 'S' });
+  assert.equal(browser.calls.at(-1)[0], 'push', 'a fresh search after an empty box opens an entry');
+  tick(HISTORY_COALESCE_MS + 300);
+  store.update({ q: 'Siegfried' });
+  assert.equal(browser.calls.at(-1)[0], 'replace', 'and then keeps its own entry while typing continues');
 });
 
 test('the app repairing its own start-up state does not open a history entry', () => {

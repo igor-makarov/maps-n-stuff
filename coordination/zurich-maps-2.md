@@ -1,5 +1,78 @@
 # zurich-maps-2 status
 
+Iteration 7-17 (2026-10-19, ~01:0x–01:4x UTC). Member `zurich-maps-2` (map,
+search, results). Files: `public/app/results.js`, plus additive edits in maps-1's
+`public/index.html`, `public/styles/app.css`, `docs/run.md` and maps-3's
+`scripts/browser-check.mjs`; new `tests/histogram.test.mjs` (own file, no
+conflict with maps-3's test files).
+
+## Landed on `main` this iteration
+
+**The decade chart became a real time browser: the bars follow the filters, and
+one drag selects a range.** Until now the histogram was drawn once from the whole
+corpus (it never moved when a provider, keyword or point filter changed) and one
+click was the only way to pick a span — coarse next to the facet counts already
+behaving like facets.
+
+| Content | Files |
+| --- | --- |
+| The bars now count every active filter **except the period itself** (`q, p, t, c, at, vp`), exactly like the provider/type/collection counts. A narrow range no longer empties the chart; the unfiltered decades stay visible so a visitor can see what widening the range would bring back. The structure is unchanged (one bin per decade the seed spans), only counts/labels/heights are rewritten — so a filter change never reflows the chart or drops keyboard focus. The group's accessible name states the scope size: “Datensätze je Jahrzehnt – Zeitraum wählen (113 im aktuellen Filter)”. | `results.js` |
+| Dragging across the bars brushes a range in one gesture (pointer events + `setPointerCapture`, so a drag that leaves the chart still ends cleanly). `#year-histogram-hint` becomes a live preview (“1830–1859 gewählt: 35 Datensätze – loslassen zum Filtern.”), brushed columns are tinted, and the hint is restored on release. Release commits `from`/`to` once; the click the browser fires afterwards is swallowed by a short guard, and an *unmoved* pointer gesture still selects exactly one decade (the tap path now goes through the same handler, so it no longer depends on where the click lands). | `results.js`, `app.css` (`touch-action: pan-y` keeps vertical page scrolling, `is-brushing`/`is-empty` tints) |
+| `histogramBinsFor(min, max)`, `countHistogramBins(bins, records, min, max)` and `brushYears(bins, a, b, min, max)` are exported pure functions (bins, honest `yearStart`→`yearEnd` fallback, clamping, order-insensitive brush). | `results.js`, `tests/histogram.test.mjs` (6 cases) |
+| Harness section **2c-2** (3 checks): the bars are period-independent but follow the provider filter (140 → 113 for e-rara, and the aria label agrees); a real mouse drag over three decades commits exactly `?from=1780&to=1809` with 3 tinted columns and the live preview mid-drag; a real mouse tap selects exactly one decade (clamped to the data, `1690` → `?from=1696&to=1699`). | `browser-check.mjs` (maps-3, additive, flagged) |
+
+Nothing in the URL contract changed: the brush writes the existing `from`/`to`
+history keys, so one drag is one step to undo (D6).
+
+### Verified (rebased tree, this runner, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation (140 records), **138/138** `node --test` (132
+  before + 6 histogram cases), `wrangler deploy --dry-run` (30 asset files,
+  28.76 KiB Worker).
+- `node scripts/browser-check.mjs` → **130/130** on the integrated tree I measured
+  (my three 2c-2 checks plus maps-3's four new comparison-coupling checks that
+  landed while this was building); maps-3's `d6dabc8` adds a 390 px comparison
+  check on top, so the newest tree is **131/131** (their 7-17 note says the same).
+- Manual CDP probe with real `Input.dispatchMouseEvent` gestures (before the
+  harness checks existed): drag 1830→1850 → `?from=1830&to=1859`, 35 rows, 3
+  `aria-current` bins, no leftover `is-brushing`; tap 1780 → `?from=1780&to=1789`,
+  6 rows; provider `e-rara` → bars 140 → 113 and 16 empty decades marked.
+- `docs/run.md`’s harness count was stale (126 → **130**) and now names the
+  histogram behaviour; the URL paragraph documents the chart’s scope and brush.
+
+## Messages
+
+- **→ maps-1**: additive edits in your files, all flagged — `index.html` (the
+  existing hint paragraph gained `id="year-histogram-hint"` and the drag/
+  filter-scope wording), `app.css` (one block appended: `.zh-histogram`
+  `touch-action: pan-y`, `.is-brushing`, `.is-empty`), `docs/run.md` (harness
+  count 126 → 130 plus two paragraphs on the chart). Please look at the
+  `is-empty` tint: I made zero-record decades grey so a gap is visible even
+  without hovering; reword or revert the CSS freely, the harness asserts
+  attributes/behaviour, not colours.
+- **→ maps-3**: section 2c-2 is inside your file (right after the existing
+  histogram keyboard check, before the “restore the year range” block), and
+  `tests/histogram.test.mjs` is a new file so I did not touch your test files.
+  The drag check uses real `Input.dispatchMouseEvent` moves and needs the chart
+  to be scrolled into view (it asserts coordinates). Please reword/verify.
+- **→ maps-0**: no new requests. The chart reads only `yearStart`/`yearEnd` and
+  the provider/collection fields that already exist; nothing new to harvest.
+- **→ all**: the gate stays `npm run check` + `node scripts/browser-check.mjs`
+  (**130/130** on this tree). If you add data that pushes a decade over ~200
+  records, the chart is unaffected (counts are O(n) per render over 140 records).
+
+### Next (my area)
+
+- The chart is still decade-granular: a two-thumb drag over the *slider* would
+  give year precision. The year inputs and the quick-range chips already do that,
+  so this is polish, not a gap.
+- A footprint-aware map click (`Alt`+click selects the smallest footprint under
+  the cursor) — still deliberately not done: it competes with the documented
+  map-click point filter.
+- Screen-reader order check for the preview card / histogram at 320 px (the
+  contrast sweep and 320 px layout checks pass, but the reading order was never
+  asserted).
+
 Iteration 7-16 (2026-10-19, ~00:5x–01:2x UTC). Member `zurich-maps-2` (map,
 search, results). Files: `public/app/map.js`, `public/app/search.js`,
 `public/app/results.js`, plus additive edits in maps-1's `store.js`,

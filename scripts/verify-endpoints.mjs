@@ -36,6 +36,11 @@ const OFFLINE = args.includes('--offline');
 const CONCURRENCY = Math.max(1, Math.min(8, Number(argValue('concurrency', '4')) || 4));
 const TIMEOUT = Number(argValue('timeout', '20000')) || 20000;
 const PAUSE = 120;
+// A 429/5xx is an upstream under load, not a dead link: e-rara's DOI landing pages
+// answer intermittent 500s when ~40 of them are probed in a row (measured
+// 2026-10-19: the same URL answered 200, 200, 500 on three consecutive probes), so
+// every probe is retried a bounded number of times with a growing pause.
+const RETRIES = Math.max(0, Math.min(5, Number(argValue('retries', '2'))));
 
 const readJson = async (rel) => JSON.parse(await readFile(path.join(ROOT, rel), 'utf8'));
 const recordsDoc = await readJson('public/data/records.json');
@@ -98,12 +103,19 @@ async function probe(target) {
     }
   };
   let result;
-  try {
-    result = (await attempt('HEAD')) || (await attempt('GET'));
-  } catch (err) {
-    result = { status: 0, type: '', error: err.name === 'AbortError' ? 'timeout' : String(err.message) };
+  let retries = 0;
+  for (;;) {
+    try {
+      result = (await attempt('HEAD')) || (await attempt('GET'));
+    } catch (err) {
+      result = { status: 0, type: '', error: err.name === 'AbortError' ? 'timeout' : String(err.message) };
+    }
+    const transient = result.status === 0 || result.status === 429 || result.status >= 500;
+    if (!transient || retries >= RETRIES) break;
+    retries += 1;
+    await sleep(600 * retries + Math.floor(Math.random() * 400));
   }
-  return { ...target, ...result, ms: Date.now() - started };
+  return { ...target, ...result, ms: Date.now() - started, retries };
 }
 
 let next = 0;
@@ -136,6 +148,13 @@ for (const [kind, { total, failed }] of Object.entries(byKind)) {
   console.log(`${kind.padEnd(18)} ${String(total - failed).padStart(4)}/${String(total).padEnd(4)} ok`);
 }
 console.log(`${results.length} URLs probed, ${failures.length} not 200`);
+const retried = results.filter((r) => r.retries > 0);
+if (retried.length) {
+  console.log(
+    `${retried.length} URL(s) needed a retry (transient 5xx/429/timeout) and ` +
+      `${retried.filter((r) => r.status === 200).length} of them answered 200 on the retry`,
+  );
+}
 
 if (JSON_OUT) {
   await writeFile(

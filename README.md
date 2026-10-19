@@ -87,6 +87,14 @@ What works today (verified with `wrangler dev` + headless Chromium):
   Projekt” (same data, `#about-facts`) so the map still starts on the first phone
   screen (measured at 390×844: map top 609 px with 235 px of map visible, before
   722 px / 122 px);
+- honest loading and outage states: the results area starts with a visible
+  “Bestand wird geladen …” block (cantonal spinner) and `aria-busy` on the list,
+  both cleared when the seed arrives — measured with a throttled connection
+  (~40 kB/s: the block is on screen for seconds instead of a blank panel); if
+  `/data/records.json` cannot be fetched, the panel says so in plain German, the
+  toolbar count reads “Bestand nicht geladen” instead of pretending to load, and
+  the raw browser string stays in the console (`title` attribute) — the browser
+  check blocks the seed file on purpose to keep it that way;
 - the seed's own provenance is visible in the app: “Quellen und Rechte” lists
   every provider with attribution, rights, homepage and OAI-PMH endpoint and
   states the harvest date (`Datenstand`, read from `records.json.generatedAt`);
@@ -99,8 +107,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   **browser's back and forward buttons work**: a search, a filter or a selected
   record is a history step, while panning the map and dragging the year control
   only replace the current entry (a typed search is one step, not one per
-  keystroke), and the app's own start-up corrections never consume a step — so
-  “back” walks the exploration instead of leaving the site;
+  keystroke, and a pause in the middle of a query does not split it either), and
+  the app's own start-up corrections never consume a step — so “back” walks the
+  exploration instead of leaving the site;
 
 ```sh
 npm install
@@ -124,8 +133,8 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 140 records (113 e-rara maps and atlases — 26 ZB Zürich
-Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 18 Zürich plans and
+Known limitations: the seed set holds 169 records (142 e-rara maps and atlases — 26 ZB Zürich
+Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 47 Zürich plans and
 canton maps found through the catalogue's SRU search (1852 “Plan der Stadt Zürich
 nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 canton maps),
 11 further Zürich-region maps from three more SRU questions (18th-century lake

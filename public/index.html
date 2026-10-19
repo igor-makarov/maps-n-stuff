@@ -103,10 +103,13 @@
         </h1>
         <ul class="zh-facts" id="intro-facts" aria-label="Bestand in Zahlen"></ul>
         <p class="zh-lead">
+          <!-- Deliberately one sentence: the band above the map is clamped on
+               narrow screens, and a paragraph that ends mid-sentence on a wide
+               screen reads like a defect. The longer provenance sentence
+               (swisstopo layers, e-rara partner libraries) stands verbatim in
+               “Über das Projekt” below, and the provider tags sit right here. -->
           Der Bestand umfasst aktuell <span id="intro-count" data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
-          Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte und
-          die historischen Kartenwerke stammen von swisstopo, die Blätter von den e-rara-Partnerbibliotheken
-          (Zentralbibliothek Zürich, ETH-Bibliothek Zürich, Bibliothèque de Genève).
+          Sammlungen – mit Kartenvorschau, Zeitfilter, Vergleichsebene und direkter Verlinkung zum Originaldatensatz.
         </p>
         <p class="app-intro__more">
           <a class="zh-link" href="#about">
@@ -258,7 +261,22 @@
                 Punktfilter entfernen
               </button>
             </div>
-            <ol class="app-result-list" id="result-list"></ol>
+            <!-- The seed is one JSON file. Until it arrives the list area would
+                 be blank for seconds on a slow connection, so the shell states
+                 what is happening; main.js hides this block (and the aria-busy
+                 flag on the list) when the data arrives, or replaces it with the
+                 error state when the fetch fails. -->
+            <div class="zh-state zh-state--loading" id="results-loading" role="status">
+              <span class="zh-spinner" role="presentation"></span>
+              <span>
+                <span class="zh-state__title">Bestand wird geladen …</span>
+                <span class="zh-hint">
+                  Die Metadaten der Karten stehen als eine Datei in diesem Projekt; die Vorschaubilder lädt der Browser
+                  erst, wenn ein Blatt geöffnet wird.
+                </span>
+              </span>
+            </div>
+            <ol class="app-result-list" id="result-list" aria-busy="true" aria-label="Trefferliste"></ol>
             <div class="zh-state" id="results-state" hidden></div>
           </section>
 

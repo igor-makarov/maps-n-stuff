@@ -25,10 +25,10 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run dry-run` | bundles the Worker and writes the deploy artefact to `dist/` without uploading |
 | `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo |
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
-| `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **618/618 URLs, 0 failures** on the 140-record seed |
+| `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **756/756 URLs, 0 failures** on the 169-record seed at `--concurrency 2 --retries 3` (23 URLs answered a transient 5xx once and 200 on the retry; the script retries transient 429/5xx/timeouts by default, `--retries n`) |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 127 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home; thumbnails are fetched as they come into view), the “Blatt” jump control of the seed’s largest work (65 sheets: options, sheet 7 really loaded and centred, 390 px, no control on a 3-sheet work), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare (both panes of records with a manifest are real IIIF viewers; `+` in one pane pulls the other to the matching region — coupled through the documented extent — the switch decouples them again, and 390 px stacks the panes with the switch still reachable), the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), the record search inside the place box (“Karten zum Stichwort …” applies the keyword filter, its count matches the list, an unmatched query says so), “Nach oben”, 320 px list layout, map-first layout (desktop/tablet **and** the phone step: at 390×844 the map starts at 609 px so 235 px of it are visible, while the stock figures move into “Über das Projekt” under 600 px), pin/unpin from the detail panel, the georeferenced WMTS record's own “Kartenebene” toggle (on from the panel: `ov`/`ot` set, sidebar select agrees, real overlay tiles; a second press removes it again), the **Grundkarte switch** (three documented swisstopo layers, default marked, real grey tiles after a click with the old layer's tiles gone and the view unchanged, shared `?base=luftbild` link, Enter on the focused chip, 390 px), the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
-
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 138 checks (measured on the integrated tree, 2026-10-19) — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home; thumbnails are fetched as they come into view), the “Blatt” jump control of the seed’s largest work (65 sheets: options, sheet 7 really loaded and centred, 390 px, no control on a 3-sheet work), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare (the decade bars count the other filters but *not* the period, a real mouse drag brushes a range in one gesture with a live preview, one tap still selects a decade; both panes of records with a manifest are real IIIF viewers; `+` in one pane pulls the other to the matching region — coupled through the documented extent — the switch decouples them again, and 390 px stacks the panes with the switch still reachable), the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, **point piles** (a cluster whose records share one *documented* point — the seed’s six Zürich Stadtpläne — opens a focusable “Karten an diesem Punkt” list instead of a zoom that provably cannot split them: labelled dialog, every record in chronological order, Enter opens that record, Escape returns focus to the pin, and its own “Ansicht trotzdem vergrössern” still zooms), the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), the record search inside the place box (“Karten zum Stichwort …” applies the keyword filter, its count matches the list, an unmatched query says so), “Nach oben”, 320 px list layout, map-first layout (desktop/tablet **and** the phone step: at 390×844 the map starts at 609 px so 235 px of it are visible, while the stock figures move into “Über das Projekt” under 600 px), pin/unpin from the detail panel, the georeferenced WMTS record's own “Kartenebene” toggle (on from the panel: `ov`/`ot` set, sidebar select agrees, real overlay tiles; a second press removes it again), the **Grundkarte switch** (three documented swisstopo layers, default marked, real grey tiles after a click with the old layer's tiles gone and the view unchanged, shared `?base=luftbild` link, Enter on the focused chip, 390 px), the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service, the place-search API *and* the seed file `/data/records.json` on purpose and asserts that all three fall back to plain German messages, local title suggestions, working provider links and a results area that stops claiming to load (`aria-busy`, visible loading block) — plus the loading state itself: `#results-loading` is visible and `#result-list` carries `aria-busy="true"` until the seed arrives. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+>>>>>>> f9f305e (shell: honest loading and seed-outage states; one complete sentence in the hero)
 ## Cloudflare Workers deployment
 
 The repository is a **Workers static-assets site**: `public/` is uploaded as
@@ -123,6 +123,29 @@ so a shared link always opens on a real swisstopo layer — the chips under the 
 (`#base-layer-switch`, one `aria-pressed` button per layer) are built from that
 same list, and the map badge carries the attribution of the layer in use.
 
+
+A numbered cluster zooms into its records when the pins can still be separated by
+zooming. When they provably cannot — every member carries the *same* documented
+anchor (the seed’s six Zürich Stadtpläne sit on 47.358330 / 8.533340), or the map
+is already at zoom 18 — the click opens **“Karten an diesem Punkt”** instead: a
+labelled, focusable dialog that lists every record behind the number in
+chronological order (`clusterCanSplit()` and `clusterRecords()` in `map.js` are
+pure and covered by `tests/map.test.mjs`). Enter on a row opens that record,
+Escape hands focus back to the pin, the wheel scrolls the list instead of zooming
+the map, and the dialog’s own “Ansicht trotzdem vergrössern” still zooms — no
+control is left doing nothing, for mouse or keyboard.
+
+The decade chart above the year slider (`#year-histogram`, `results.js`) is a
+facet of its own: its bars count every active filter *except* the period
+(`q, p, t, c, at, vp`), so a narrow range never empties the chart and a visitor
+sees what widening it would bring back. Each bar is a button in a toolbar
+pattern (Tab reaches the chart once, ←/→/Home/End move, Enter sets that decade);
+dragging across the bars brushes a range in one gesture, previewed in
+`#year-histogram-hint` and committed on release as `from`/`to` (both are history
+keys, so one drag is one step to undo). `histogramBinsFor()`,
+`countHistogramBins()` and `brushYears()` in `results.js` are pure and covered by
+`tests/histogram.test.mjs`; the browser checks drive a real mouse drag and tap.
+
 ### Browser history (back/forward)
 
 The store turns *deliberate* state changes into real history entries, so the
@@ -135,7 +158,15 @@ browser buttons walk the way the visitor explored instead of leaving the app:
 
 Repeated changes to the same key set inside `HISTORY_COALESCE_MS` (900 ms, both
 exported from `store.js`) merge into the entry that started the gesture: a typed
-search and a slider drag are one step each, not one per keystroke. Two guard
+search and a slider drag are one step each, not one per keystroke. The typed
+query gets one more rule on top (`HISTORY_TEXT_KEYS`): as long as the new text
+*continues* the text of the current entry (typing or backspacing, either
+direction), the change stays in that entry no matter how long the pause was — a
+visitor who stops mid-word, or a busy main thread, must not split one search
+into two “back” steps (measured 2026-10-19: a 1.2 s stall did exactly that, and
+the harness check “one “back” undoes a whole typed search” failed). A query
+typed after the box was emptied, cleared, or rewritten from scratch is a step of
+its own. Two guard
 rails keep the app's own start-up work out of the history — the year range is
 clamped to the data right after the records arrive, and a view may write a
 clamped value back (`sheet`) — so the first “back” after landing on the site
