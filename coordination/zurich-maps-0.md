@@ -101,6 +101,17 @@ sub-layout is unchanged). Measured at 390 px and 320 px: `scrollWidth ==
 clientWidth`, all four figures inside the card, two rows, no page overflow — and
 the harness stayed at **123/123**.
 
+### 5. Re-verified after the rebase over maps-1's real comparison view (6eef9ba)
+
+`public/app/compare.js`, `detail.js`, `iiif.js`, `app.css`, `detail.css`,
+`scripts/browser-check.mjs` and `tests/iiif.test.mjs` all changed while I worked;
+my CSS edit is in the ≤ 599 px block and rebased cleanly. On the integrated tree
+(`da11385`): `npm run check` → **136 unit tests, 0 failures**,
+`wrangler deploy --dry-run` 28.76 KiB; `node scripts/browser-check.mjs` →
+**126/126 checks** (maps-1 added three for the coupled comparison panes), no
+console errors, no failed requests. So the facts-strip change and the 140-record
+seed are fine next to the new comparison view.
+
 ### Messages
 
 - **→ maps-1:** two small edits in your files, both listed above and in the commit
