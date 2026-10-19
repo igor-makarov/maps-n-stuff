@@ -105,7 +105,7 @@ async function checkHtmlAssets() {
 }
 
 async function checkModules() {
-  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'public/app/history.js', 'src/worker/index.js'];
+  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'public/app/history.js', 'public/app/georeference.js', 'public/app/collections.js', 'src/browser/cog.js', 'src/worker/catalogue.js', 'src/worker/georeference.js', 'src/worker/raster.js', 'src/worker/index.js'];
   for (const file of modules) {
     try {
       await run(process.execPath, ['--check', abs(file)]);
@@ -131,7 +131,7 @@ async function checkModules() {
     if (!worker.includes(endpoint)) fail(`src/worker/index.js: endpoint ${endpoint} missing`);
   }
   const main = await readFile(abs('public/app/main.js'), 'utf8');
-  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js', 'compare.js', 'history.js']) {
+  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js', 'compare.js', 'history.js', 'georeference.js', 'collections.js']) {
     if (!main.includes(moduleName)) fail(`public/app/main.js: optional module ${moduleName} not wired`);
   }
   notes.push(`modules: ${modules.length} checked, optional modules wired`);
@@ -148,7 +148,7 @@ async function checkData() {
   let depicted = 0;
   const providerIds = new Set(sources.providers.map((p) => p.id));
   for (const record of records.records ?? []) {
-    for (const field of ['id', 'title', 'providerId', 'institution', 'rights', 'recordUrl', 'yearStart', 'yearEnd', 'thumbnail']) {
+    for (const field of ['id', 'title', 'providerId', 'institution', 'rights', 'recordUrl']) {
       if (record[field] === undefined || record[field] === null || record[field] === '') fail(`records.json: ${record.id ?? '?'} missing ${field}`);
     }
     if (ids.has(record.id)) fail(`records.json: duplicate id ${record.id}`);
@@ -165,7 +165,7 @@ async function checkData() {
         fail(`records.json: ${record.id} states only half a depicted period`);
       } else {
         if (record.depictedYearStart > record.depictedYearEnd) fail(`records.json: ${record.id} depicted start > end`);
-        if (record.depictedYearEnd > (record.yearEnd ?? record.yearStart)) {
+        if (Number.isFinite(record.yearEnd ?? record.yearStart) && record.depictedYearEnd > (record.yearEnd ?? record.yearStart)) {
           fail(`records.json: ${record.id} depicted period ends after the publication year`);
         }
       }

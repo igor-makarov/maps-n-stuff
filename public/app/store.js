@@ -27,12 +27,12 @@
 
 export const STATE_DEFAULTS = Object.freeze({
   q: '', // free-text filter over title/creator/place
-  from: 1500, // publication year range filter
+  from: 1400, // include the earliest digitized maps
   to: 2026, // include the full catalogue, including early twentieth-century city maps
   provider: '', // providerId or '' for all
   type: '', // record type or '' for all
   collection: '', // upstream series/collection name or '' for all (facet from the data)
-  base: '', // short key of the chosen Grundkarte ('farbe' | 'grau' | 'luftbild'); '' = the default layer
+  base: '', // chosen worldwide basemap ('osm' | 'satellite'); '' = the default layer
   viewport: '', // '1' = only records inside the current map view
   extents: '', // '1' = draw the documented footprints of the filtered records on the map
   at: '', // "lat,lon" point filter: only records whose documented extent covers this point
@@ -45,7 +45,7 @@ export const STATE_DEFAULTS = Object.freeze({
   vv: '', // "x,y,w,h" visible region of that sheet in image pixels (shareable; '' = whole sheet)
   view: 'split', // 'split' | 'map' | 'list' | 'history' (the historical-borders view)
   sort: 'year-asc',
-  overlay: '', // swisstopo layer id of the comparison layer
+  overlay: '', // provider layer id of the comparison layer
   otime: '', // time value for that layer (YYYYMMDD where the layer is a Zeitreise layer)
   cmp: '', // comma-separated record ids pinned in the comparison list (max 4)
   cvv: '', // cut-outs of the comparison panes: "id@x,y,w,h" pairs, ";"-separated (shareable)

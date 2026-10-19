@@ -1,8 +1,11 @@
+import { rasterResponse } from './raster.js';
+import { georeferenceResponse } from './georeference.js';
+import { catalogueResponse } from './catalogue.js';
 import { ALLOWLIST, USER_AGENT, VERSION, isAllowed } from './allowlist.js';
 import { NOMINATIM_ATTRIBUTION, NOMINATIM_SOURCE, nominatimUrl, searchPayload } from './geocode.js';
 
 /**
- * Request handler for the Zurich maps Workers site.
+ * Request handler for the global historical maps Workers site.
  *
  * The Worker only answers `/api/*` (see `assets.run_worker_first` in
  * wrangler.jsonc); every other request is served directly from the static asset
@@ -12,8 +15,7 @@ import { NOMINATIM_ATTRIBUTION, NOMINATIM_SOURCE, nominatimUrl, searchPayload } 
  *  - Worldwide place search runs on *OpenStreetMap's* Nominatim gazetteer. Its
  *    usage policy asks for an identified client, low request rates and caching;
  *    routing it through the Worker gives the project one identifiable
- *    User-Agent, a bounded query and a five-minute edge cache per query. The
- *    Swiss swisstopo SearchServer stays as the fallback for Swiss places.
+ *    User-Agent, a bounded query and a five-minute edge cache per query.
  *  - e-rara IIIF images/manifests normally allow CORS; `/api/fetch` is a
  *    *fallback* for clients/networks where the direct call fails. It is limited
  *    to a literal allowlist of hosts, so it cannot be used as an open proxy.
@@ -62,17 +64,17 @@ function health(request) {
     version: VERSION,
     runtime: 'cloudflare-workers',
     upstreams: ALLOWLIST.map((r) => r.host),
-    endpoints: ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch'],
+    endpoints: ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch', '/api/raster', '/api/georeference', '/api/catalogue'],
     placeSearch: {
       primary: NOMINATIM_SOURCE,
       attribution: NOMINATIM_ATTRIBUTION,
-      fallback: 'swisstopo SearchServer (Swiss places)',
+      fallback: 'Local catalogue keyword search',
     },
     time: new Date().toISOString(),
   });
 }
 
-/** GET /api/search/places?q=&limit= — worldwide places, Swiss places as fallback. */
+/** GET /api/search/places?q=&limit= — worldwide places. */
 async function searchPlaces(request, ctx) {
   const url = new URL(request.url);
   const q = (url.searchParams.get('q') || '').trim();
@@ -90,49 +92,11 @@ async function searchPlaces(request, ctx) {
         if (res.ok) {
           const payload = searchPayload(await res.json(), { limit, query: q });
           if (payload.results.length > 0) return payload;
-          // No worldwide hit: a Swiss micro-toponym may still exist, so fall
-          // through to swisstopo instead of answering “nothing” too early.
         }
       } catch {
-        // Network/timeout: the Swiss fallback below still answers.
+        // The client can still search the bundled catalogue by keyword.
       }
-      // 2) Swiss fallback (documented SearchServer API, covers the country only).
-      try {
-        const target = new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer');
-        target.searchParams.set('searchText', q);
-        target.searchParams.set('type', 'locations');
-        target.searchParams.set('sr', '4326'); // WGS84 lon/lat
-        target.searchParams.set('limit', String(limit));
-        const res = await upstream(target.toString(), { accept: 'application/json' });
-        if (!res.ok) {
-          return { results: [], query: q, upstreamStatus: res.status, note: 'Both place services failed.' };
-        }
-        const data = await res.json();
-        const results = (data.results || [])
-          .map((r) => {
-            const a = r.attrs || {};
-            const box = (a.geom_st_box2d || '').match(/BOX\(([-\d.]+) ([-\d.]+),([-\d.]+) ([-\d.]+)\)/);
-            return {
-              label: String(a.label || '').replace(/<[^>]*>/g, ''),
-              origin: a.origin || null,
-              lat: typeof a.lat === 'number' ? a.lat : null,
-              lon: typeof a.lon === 'number' ? a.lon : null,
-              layerBodId: a.layerBodId || null,
-              zoom: Number.isFinite(a.zoomlevel) && a.zoomlevel > 0 && a.zoomlevel <= 20 ? a.zoomlevel : null,
-              bbox: box ? { west: Number(box[1]), south: Number(box[2]), east: Number(box[3]), north: Number(box[4]) } : null,
-            };
-          })
-          .filter((r) => r.label && Number.isFinite(r.lat) && Number.isFinite(r.lon));
-        return {
-          results,
-          query: q,
-          source: 'swisstopo SearchServer (Swiss places)',
-          attribution: '© swisstopo',
-          ...(results.length === 0 ? { note: 'No place matches this query.' } : {}),
-        };
-      } catch (err) {
-        return { results: [], query: q, note: `Place search unavailable: ${String(err && err.message).slice(0, 80)}` };
-      }
+      return { results: [], query: q, source: NOMINATIM_SOURCE, attribution: NOMINATIM_ATTRIBUTION, note: 'Worldwide place search returned no usable result or is temporarily unavailable. Try a catalogue keyword instead.' };
     },
     300,
   );
@@ -196,6 +160,12 @@ export default {
             return health(request);
           case '/api/search/places':
             return await searchPlaces(request, ctx);
+          case '/api/raster':
+            return await rasterResponse(request, ctx);
+          case '/api/georeference':
+            return await georeferenceResponse(request, env, ctx);
+          case '/api/catalogue':
+            return await catalogueResponse(request, ctx);
           case '/api/fetch':
             return await fetchUpstream(request, ctx);
           case '/api/records':

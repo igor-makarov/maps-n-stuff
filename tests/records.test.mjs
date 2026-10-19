@@ -91,9 +91,9 @@ test('the committed seed answers the words its own facets use', async () => {
   // collection search cannot return more records than the collection has rows
   // (both come from the same data, so a facet rename cannot break the search).
   for (const collection of new Set(records.map((r) => r.collection))) {
-    assert.equal(
-      byWord(collection).length,
-      records.filter((r) => r.collection === collection).length,
+    const found=new Set(byWord(collection).map(r=>r.id));
+    assert.ok(
+      records.filter((r) => r.collection === collection).every(r=>found.has(r.id)),
       `the collection “${collection}” must be findable by its own name`,
     );
   }

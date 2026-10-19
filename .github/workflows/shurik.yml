@@ -19,7 +19,7 @@ on:
         description: Swarm prefix on start; exact member ID on stop/resume
         required: true
         type: string
-        default: zurich-maps
+        default: maps-n-stuff
       model:
         description: 'Required on manual start: {"provider":"opencode-go","name":"deepseek-v4.1-flash","reasoning":"max"}; blank resume retains settings'
         type: string
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
-      group: shurik-control-${{ inputs.loop_id || 'zurich-maps' }}
+      group: shurik-control-${{ inputs.loop_id || 'maps-n-stuff' }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6

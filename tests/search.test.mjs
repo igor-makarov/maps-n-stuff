@@ -23,7 +23,7 @@ import { filterRecords, matchesQuery } from '../public/app/records.js';
 const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8')).records;
 
 test('fallback suggestions never carry a null coordinate for a record with an extent', () => {
-  const withoutGeo = records.filter((record) => !record.geo);
+  const withoutGeo = records.filter((record) => !record.geo && record.extent);
   assert.ok(withoutGeo.length > 0, 'the seed is expected to contain overlay records without a point');
   const hits = fallbackSuggestions(withoutGeo, 'karte');
   assert.ok(hits.length > 0, 'the overlay titles match "karte"');

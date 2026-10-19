@@ -22,9 +22,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BASE_LAYERS, tileUrl } from '../public/app/map.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const UA = 'Kartenzeit/1.0 (endpoint verification; contact: project maintainers)';
+const UA = 'maps-n-stuff/0.2 (+https://github.com/igor-makarov/maps-n-stuff; endpoint verification)';
 const args = process.argv.slice(2);
 const argValue = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
@@ -62,6 +63,7 @@ for (const r of records) {
   add(r.viewerUrl, 'viewer', r.id);
   add(r.thumbnail, 'thumbnail', r.id);
   add(r.iiifManifest, 'manifest', r.id);
+  add(r.georeference?.url, 'raster', r.id);
   // The first canvas image service: the detail viewer asks it for `info.json`.
   if (r.imageService) add(`${r.imageService.replace(/\/$/, '')}/info.json`, 'image-service', r.id);
 }
@@ -70,6 +72,7 @@ for (const r of records) {
 for (const o of overlaysDoc.overlays) {
   if (o.thumbnail) add(o.thumbnail, 'overlay-thumbnail', o.id);
 }
+for (const layer of BASE_LAYERS) add(tileUrl(layer.urlTemplate, { z: 2, x: 2, y: 1 }), 'reference-tile', layer.id);
 
 const list = [...targets.values()];
 if (OFFLINE) {
@@ -88,7 +91,7 @@ async function probe(target) {
     try {
       const res = await fetch(target.url, {
         method,
-        headers: { 'user-agent': UA, accept: '*/*' },
+        headers: { 'user-agent': UA, accept: '*/*', ...(target.kind === 'raster' ? { range: 'bytes=0-1023' } : {}) },
         redirect: 'follow',
         signal: ctrl.signal,
       });
@@ -106,7 +109,7 @@ async function probe(target) {
   let retries = 0;
   for (;;) {
     try {
-      result = (await attempt('HEAD')) || (await attempt('GET'));
+      result = target.kind === 'raster' ? await attempt('GET') : (await attempt('HEAD')) || (await attempt('GET'));
     } catch (err) {
       result = { status: 0, type: '', error: err.name === 'AbortError' ? 'timeout' : String(err.message) };
     }
@@ -115,7 +118,7 @@ async function probe(target) {
     retries += 1;
     await sleep(600 * retries + Math.floor(Math.random() * 400));
   }
-  return { ...target, ...result, ms: Date.now() - started, retries };
+  return { ...target, ...result, ok: result.status === (target.kind === 'raster' ? 206 : 200), ms: Date.now() - started, retries };
 }
 
 let next = 0;
@@ -125,7 +128,7 @@ async function worker() {
     const target = list[next++];
     const result = await probe(target);
     results.push(result);
-    const ok = result.status === 200;
+    const ok = result.ok;
     console.log(
       `${ok ? '✔' : '✖'} ${String(result.status).padEnd(4)} ${result.kind.padEnd(18)} ${result.url.slice(0, 110)}` +
         `${ok ? '' : `  — ${result.error || result.type}`}`,
@@ -136,23 +139,23 @@ async function worker() {
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
 results.sort((a, b) => a.status - b.status || a.url.localeCompare(b.url));
-const failures = results.filter((r) => r.status !== 200);
+const failures = results.filter((r) => !r.ok);
 const byKind = {};
 for (const r of results) {
   byKind[r.kind] = byKind[r.kind] || { total: 0, failed: 0 };
   byKind[r.kind].total += 1;
-  if (r.status !== 200) byKind[r.kind].failed += 1;
+  if (!r.ok) byKind[r.kind].failed += 1;
 }
 console.log('');
 for (const [kind, { total, failed }] of Object.entries(byKind)) {
   console.log(`${kind.padEnd(18)} ${String(total - failed).padStart(4)}/${String(total).padEnd(4)} ok`);
 }
-console.log(`${results.length} URLs probed, ${failures.length} not 200`);
+console.log(`${results.length} URLs probed, ${failures.length} failed (expected HTTP 200, or 206 for raster ranges)`);
 const retried = results.filter((r) => r.retries > 0);
 if (retried.length) {
   console.log(
     `${retried.length} URL(s) needed a retry (transient 5xx/429/timeout) and ` +
-      `${retried.filter((r) => r.status === 200).length} of them answered 200 on the retry`,
+      `${retried.filter((r) => r.ok).length} of them answered 200 on the retry`,
   );
 }
 

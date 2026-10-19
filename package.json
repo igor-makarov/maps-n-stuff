@@ -1,5 +1,5 @@
 {
-  "name": "zurich-maps",
+  "name": "maps-n-stuff",
   "version": "0.1.0",
   "private": true,
   "description": "Meridian Atlas: historical maps and changing borders around the world. Cloudflare Workers site.",
@@ -10,17 +10,25 @@
   "scripts": {
     "dev": "wrangler dev",
     "preview": "wrangler dev --local",
-    "build": "node scripts/validate.mjs",
+    "build": "node scripts/build-assets.mjs && node scripts/validate.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "check": "npm run build && npm test && npm run dry-run",
     "dry-run": "wrangler deploy --dry-run --outdir dist",
-    "harvest": "node scripts/fetch-records.mjs --out public/data",
-    "harvest:offline": "node scripts/fetch-records.mjs --out public/data --offline",
+    "harvest": "node scripts/harvest-global.mjs",
+    "harvest:offline": "node scripts/harvest-global.mjs --offline",
     "harvest:history": "node scripts/harvest-history.mjs --out public/data/history",
     "harvest:history:offline": "node scripts/harvest-history.mjs --out public/data/history --offline",
-    "verify:endpoints": "node scripts/verify-endpoints.mjs"
+    "verify:endpoints": "node scripts/verify-endpoints.mjs",
+    "harvest:regional": "node scripts/fetch-records.mjs --out public/data"
   },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "wrangler": "^4.151.1"
+  },
+  "dependencies": {
+    "@allmaps/annotation": "1.0.0-beta.38",
+    "geotiff": "3.0.5",
+    "geotiff-geokeys-to-proj4": "2026.10.9",
+    "proj4": "2.22.0"
   }
 }

@@ -230,7 +230,7 @@ export function init(ctx) {
       urlTemplate: overlay.urlTemplate,
       timeValues: overlay.timeValue ? [overlay.timeValue] : [],
       maxZoom: overlay.maxZoom ?? 18,
-      attribution: overlay.attribution ?? '© swisstopo',
+      attribution: overlay.attribution ?? record.institution,
     };
     ctx.store.update({ overlay: layer.id, otime: overlay.timeValue ?? '' });
     ctx.bus.emit('overlay:changed', { layer, time: overlay.timeValue ?? 'current' });
@@ -459,7 +459,7 @@ export function init(ctx) {
         el('img', { src: record.thumbnail, alt: `Map tile: ${record.title}`, decoding: 'async' }),
       ]),
       el('p', { class: 'app-viewer__caption' }, [
-        el('span', { text: 'Sample map tile (© swisstopo). View the full layer using the overlay control.' }),
+        el('span', { text: record.overlay ? 'Sample map tile. View the full map with its overlay control.' : 'Collection preview. Open the original record or download for the full image.' }),
       ]),
     ]);
   }
@@ -820,13 +820,23 @@ export function init(ctx) {
           ? `W ${record.extent.west.toFixed(2)}° / E ${record.extent.east.toFixed(2)}° / S ${record.extent.south.toFixed(2)}° / N ${record.extent.north.toFixed(2)}°`
           : 'not stated',
       ],
-      ['Extent', record.canvasCount ? `${record.canvasCount} digitalisierte Seiten` : 'not stated'],
+      ['Digitized pages', record.canvasCount ? `${record.canvasCount} pages` : 'not stated'],
       ['Source', `${record.providerId} · ${record.id}`],
     ];
     return el('section', {}, [
       el('h3', { class: 'zh-heading zh-heading--4', text: 'About this map' }),
       el('dl', { class: 'app-detail__facts' }, facts.flatMap(([term, value]) => [el('dt', { text: term }), el('dd', { text: value })])),
+      record.dateNote ? el('p', { class: 'zh-hint', text: record.dateNote }) : null,
       record.geoNote ? el('p', { class: 'zh-hint', text: `Location note: ${record.geoNote}` }) : null,
+      el('div', { class: 'app-alignment' }, [
+        record.georeference?.kind === 'cog'
+          ? el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-show-raster': record.id, text: 'Overlay this georeferenced map' })
+          : (record.iiifManifest || record.imageService)
+            ? el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-find-alignment': record.id, text: 'Find reusable alignment' }) : null,
+        record.georeference?.url ? el('a', { class: 'zh-link', href: record.georeference.url, target: '_blank', rel: 'noopener', text: 'Download original GeoTIFF ↗' }) : null,
+        !record.georeference && record.iiifManifest ? el('a', { class: 'zh-link', href: `https://editor.allmaps.org/?url=${encodeURIComponent(record.iiifManifest)}`, target: '_blank', rel: 'noopener', text: 'Georeference in Allmaps ↗' }) : null,
+        el('p', { class: 'zh-hint', 'data-alignment-result': '', text: record.georeference || record.overlay ? 'Provider-supplied alignment. Historical accuracy varies by map.' : 'Alignment is optional. This scan can be viewed and compared without it.' }),
+      ]),
       el('p', { class: 'zh-hint' }, [
         el('span', { text: 'Image rights and citation guidance are available from the holding collection. ' }),
         el('a', { href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'Check rights ↗' }),

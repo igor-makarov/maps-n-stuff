@@ -14,22 +14,25 @@ export const ALLOWLIST = [
   // not a general Nominatim client, and the usage policy wants identified,
   // cached, low-volume traffic.
   { host: 'nominatim.openstreetmap.org', prefixes: ['/search'] },
-  // Swiss places/addresses: the fallback when the worldwide gazetteer is down or
-  // returns nothing, and the source of Swiss micro-toponyms Nominatim lacks.
-  { host: 'api3.geo.admin.ch', prefixes: ['/rest/services/api/SearchServer'] },
+  { host: 'purl.stanford.edu', prefixes: ['/'] },
+  { host: 'stacks.stanford.edu', prefixes: ['/image/iiif/'] },
+  { host: 'collections.leventhalmap.org', prefixes: ['/search/commonwealth:'] },
+  { host: 'iiif.digitalcommonwealth.org', prefixes: ['/iiif/'] },
   { host: 'www.loc.gov', prefixes: ['/item/'] },
   { host: 'tile.loc.gov', prefixes: ['/image-services/iiif/service:gmd:'] },
   { host: 'www.e-rara.ch', prefixes: ['/i3f/', '/zuz/oai', '/oai'] },
   { host: 'wmts.geo.admin.ch', prefixes: ['/1.0.0/', '/EPSG/'] },
-  { host: 'data.geo.admin.ch', prefixes: ['/'] },
 ];
 
 export const USER_AGENT =
-  'meridian-atlas/0.1 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
+  'maps-n-stuff/0.2 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
 
 /** True when the URL is https, on an allowlisted host and path. */
 export function isAllowed(target) {
   if (!(target instanceof URL) || target.protocol !== 'https:') return false;
+  if (target.username || target.password || target.port) return false;
+  if (target.hostname === 'purl.stanford.edu') return /^\/[a-z]{2}\d{3}[a-z]{2}\d{4}\/iiif3?\/manifest$/.test(target.pathname);
+  if (target.hostname === 'collections.leventhalmap.org') return /^\/search\/commonwealth:[a-z0-9]+\/manifest$/.test(target.pathname);
   const rule = ALLOWLIST.find((r) => r.host === target.hostname);
   if (!rule) return false;
   return rule.prefixes.some((prefix) => target.pathname.startsWith(prefix));

@@ -97,6 +97,23 @@
           <a class="zh-link" href="#map">Go to the map</a>
         </p>
         <ul class="zh-tags" id="intro-tags" aria-label="Data sources"></ul>
+        <details class="zh-panel collection-panel">
+          <summary class="zh-panel__summary">Search more original collections</summary>
+          <form id="collection-search" class="zh-panel__body">
+            <label class="zh-label" for="collection-source">Collection</label>
+            <select id="collection-source" class="zh-select">
+              <option value="loc">Library of Congress — worldwide maps</option>
+              <option value="leventhal">Leventhal Map &amp; Education Center</option>
+              <option value="usgs">USGS historical topographic maps — United States</option>
+            </select>
+            <label class="zh-label" for="collection-query">Place or map title</label>
+            <input id="collection-query" class="zh-input" type="search" required minlength="2" maxlength="160" placeholder="e.g. Cairo or Boston" />
+            <button id="collection-submit" class="zh-button" type="submit">Search collection</button>
+            <button id="collection-more" class="zh-button zh-button--ghost" type="button" hidden>Search next page</button>
+            <p class="zh-hint">Results with established reuse permission are added to this session. Scans can be included without alignment. For USGS, move the map to the area you want to search.</p>
+            <p id="collection-status" class="zh-hint" role="status" aria-live="polite"></p>
+          </form>
+        </details>
       </section>
 
       <div class="app-toolbar" role="group" aria-label="View and sort">
@@ -146,7 +163,7 @@
                 <legend class="zh-legend">Publication period</legend>
                 <div class="zh-histogram" id="year-histogram" role="toolbar" aria-label="Maps by publication decade. Choose a period."></div>
                 <p class="zh-histogram__scale" id="year-histogram-scale" aria-hidden="true"></p>
-                <p class="zh-hint" id="year-histogram-hint">Maps by publication decade, based on the other filters. Drag to select a period, or click a decade. Arrow keys move; Enter applies the filter.</p>
+                <p class="zh-hint" id="year-histogram-hint">Maps by publication decade, based on the other filters. Drag to select a period, or click a decade. Arrow keys move; Enter applies the filter. Undated scans remain included in results.</p>
                 <div class="zh-slider" id="year-slider">
                   <div class="zh-slider__track" aria-hidden="true">
                     <span class="zh-slider__fill" id="year-fill"></span>
@@ -196,7 +213,7 @@
           </details>
 
           <details class="zh-panel app-filters">
-            <summary class="zh-panel__summary">Map types and regional overlays</summary>
+            <summary class="zh-panel__summary">Map types and historical layers</summary>
             <div class="zh-panel__body">
               <fieldset class="zh-fieldset">
                 <legend class="zh-legend">Map type</legend>
@@ -204,7 +221,7 @@
               </fieldset>
 
               <fieldset class="zh-fieldset">
-                <legend class="zh-legend">Swiss historical overlays (swisstopo)</legend>
+                <legend class="zh-legend">Historical map overlays</legend>
                 <label class="zh-label" for="overlay-select">Overlay layer</label>
                 <select class="zh-select" id="overlay-select">
                   <option value="">No overlay</option>
@@ -220,7 +237,7 @@
                   <output class="zh-hint" id="overlay-opacity-output">85 %</output>
                 </div>
                 <p class="zh-hint" id="overlay-note">
-                  Georeferenced Swiss map layers from swisstopo. These regional overlays cover Switzerland.
+                  Choose an aligned historical map. Each layer states its coverage and original collection.
                 </p>
               </fieldset>
             </div>
@@ -307,7 +324,7 @@
             <h3 class="zh-heading zh-heading--4">Maps, straight from the source</h3>
             <ul class="zh-facts zh-facts--about" id="about-facts" aria-label="Catalogue at a glance"></ul>
             <p>Browse <span data-record-count>…</span> digitised maps and atlases. Each record links back to its holding collection, with original titles, dates and rights statements. Search places worldwide using OpenStreetMap; archive coverage depends on the maps currently in the catalogue.</p>
-            <p>Archive maps and historical borders are separate ways to explore. Archive dates describe publication, with a separate period depicted when documented. Optional Swiss map overlays cover Switzerland.</p>
+            <p>Archive maps and historical borders are separate ways to explore. Archive dates describe publication, with a separate period depicted when documented. Maps with available alignment can be overlaid; other licensed scans remain browseable.</p>
           </article>
           <article class="zh-card" id="sources">
             <h3 class="zh-heading zh-heading--4">Sources and rights</h3>
@@ -346,7 +363,7 @@
           <li><a href="https://github.com/igor-makarov/maps-n-stuff">Source code ↗</a></li>
           <li><a href="https://github.com/igor-makarov/maps-n-stuff/blob/main/NOTICE.md">Rights and credits ↗</a></li>
         </ul>
-        <p class="zh-footer__fine">Archive images belong to their holding collections. Check the rights statement on each original record. Historical borders: André Ourednik and contributors. Basemap: © OpenStreetMap contributors. Swiss overlays: © swisstopo.</p>
+        <p class="zh-footer__fine">Archive images belong to their holding collections. Check the rights statement on each original record. Historical borders: André Ourednik and contributors. Basemap: © OpenStreetMap contributors. Satellite imagery: NASA EOSDIS GIBS. Regional map credits appear with each layer.</p>
       </div>
     </footer>
     <section
@@ -380,7 +397,7 @@
         "inLanguage": "en",
         "applicationCategory": "ReferenceApplication",
         "isAccessibleForFree": true,
-        "isBasedOn": ["https://www.e-rara.ch/", "https://www.loc.gov/maps/", "https://github.com/aourednik/historical-basemaps"]
+        "isBasedOn": ["https://www.e-rara.ch/", "https://www.loc.gov/maps/", "https://earthworks.stanford.edu/", "https://github.com/aourednik/historical-basemaps"]
       }
     </script>
 

@@ -69,7 +69,7 @@ test('a brush range is order-insensitive and clamped to the data range', () => {
 });
 
 test('the histogram scope is every filter except the period', () => {
-  const min = Math.min(...records.map((r) => r.yearStart));
+  const min = Math.min(...records.map((r) => r.yearStart).filter(Number.isFinite));
   const max = Math.max(...records.map((r) => (r.yearEnd ?? r.yearStart) || 0));
   const bins = histogramBinsFor(min, max);
 
@@ -79,7 +79,7 @@ test('the histogram scope is every filter except the period', () => {
   const scope = filterRecords({ from: -Infinity, to: Infinity }, records);
   const all = countHistogramBins(bins, scope, min, max);
   assert.equal(scope.length, records.length);
-  assert.equal([...all.values()].reduce((a, b) => a + b, 0), records.length);
+  assert.equal([...all.values()].reduce((a, b) => a + b, 0), records.filter(r=>Number.isFinite(r.yearStart)).length);
 
   const periodOnly = countHistogramBins(bins, filterRecords({ from: 1800, to: 1900 }, records), min, max);
   const inPeriod = [...periodOnly.values()].reduce((a, b) => a + b, 0);
@@ -91,7 +91,7 @@ test('the histogram scope is every filter except the period', () => {
   // Every other filter does narrow them, and only by its own records.
   const provider = records[0].providerId;
   const scoped = countHistogramBins(bins, filterRecords({ from: -Infinity, to: Infinity, provider }, records), min, max);
-  assert.equal([...scoped.values()].reduce((a, b) => a + b, 0), records.filter((r) => r.providerId === provider).length);
+  assert.equal([...scoped.values()].reduce((a, b) => a + b, 0), records.filter((r) => r.providerId === provider && Number.isFinite(r.yearStart)).length);
 
   // A keyword that matches nothing empties the chart instead of keeping stale bars.
   const none = countHistogramBins(bins, filterRecords({ from: -Infinity, to: Infinity, q: 'xyzzy-kein-treffer' }, records), min, max);

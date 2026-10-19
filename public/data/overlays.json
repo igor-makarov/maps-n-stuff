@@ -5,11 +5,11 @@
   "source": "swisstopo WMTS 1.0.0 GetCapabilities (georeferenced historical map and aerial-image services)",
   "capabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
   "attribution": "© swisstopo",
-  "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich",
+  "license": "Swiss Open Government Data; attribution © swisstopo required.",
   "overlays": [
     {
       "id": "ch.swisstopo.zeitreihen",
-      "title": "Zeitreise - Kartenwerke",
+      "title": "Swiss historical topographic maps",
       "providerId": "swisstopo",
       "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
       "timeValues": [
@@ -200,12 +200,15 @@
         "east": 11.47757,
         "north": 48.230651
       },
-      "attribution": "© swisstopo – Zeitreise (Kartenwerke)",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "© swisstopo",
+      "license": "Swiss Open Government Data; attribution © swisstopo required.",
+      "sourceTitle": "Zeitreise - Kartenwerke",
+      "historical": true,
+      "coverage": "Switzerland"
     },
     {
       "id": "ch.swisstopo.hiks-siegfried",
-      "title": "Siegfriedkarte",
+      "title": "Siegfried historical map series",
       "providerId": "swisstopo",
       "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-siegfried/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
       "timeValues": [
@@ -298,12 +301,15 @@
         "east": 11.47757,
         "north": 48.230651
       },
-      "attribution": "© swisstopo – Siegfriedkarte",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "© swisstopo",
+      "license": "Swiss Open Government Data; attribution © swisstopo required.",
+      "sourceTitle": "Siegfriedkarte",
+      "historical": true,
+      "coverage": "Switzerland"
     },
     {
       "id": "ch.swisstopo.hiks-dufour",
-      "title": "Dufourkarte Erstausgabe",
+      "title": "Dufour map, first edition",
       "providerId": "swisstopo",
       "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.hiks-dufour/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
       "timeValues": [
@@ -317,12 +323,15 @@
         "east": 11.47757,
         "north": 48.230651
       },
-      "attribution": "© swisstopo – Dufourkarte Erstausgabe",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "© swisstopo",
+      "license": "Swiss Open Government Data; attribution © swisstopo required.",
+      "sourceTitle": "Dufourkarte Erstausgabe",
+      "historical": true,
+      "coverage": "Switzerland"
     },
     {
       "id": "ch.swisstopo.swissimage-product",
-      "title": "SWISSIMAGE Zeitreise",
+      "title": "Historical aerial imagery — Switzerland",
       "providerId": "swisstopo",
       "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
       "timeValues": [
@@ -435,12 +444,15 @@
         "east": 11.47757,
         "north": 48.230651
       },
-      "attribution": "© swisstopo – SWISSIMAGE Zeitreise",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "© swisstopo",
+      "license": "Swiss Open Government Data; attribution © swisstopo required.",
+      "sourceTitle": "SWISSIMAGE Zeitreise",
+      "historical": true,
+      "coverage": "Switzerland"
     },
     {
       "id": "ch.swisstopo.swissimage-product_1946",
-      "title": "SWISSIMAGE HIST 1946",
+      "title": "Swiss aerial imagery, 1946",
       "providerId": "swisstopo",
       "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product_1946/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
       "timeValues": [
@@ -454,305 +466,2233 @@
         "east": 11.47757,
         "north": 48.230651
       },
-      "attribution": "© swisstopo – SWISSIMAGE 1946",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "© swisstopo",
+      "license": "Swiss Open Government Data; attribution © swisstopo required.",
+      "sourceTitle": "SWISSIMAGE HIST 1946",
+      "historical": true,
+      "coverage": "Switzerland"
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk1000.noscale",
-      "title": "Landeskarte 1:1 Million | LK1000",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk1000.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-bh691yj7263",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Isthme de Suez avec Tracé de Canaux Concédés par S. A. le Vice-Roi d'Egypte pourle Jonction du Nil au Lac Timsah tel qu'il a été arrèté par le Commission Internationale 1857 (Raster Image)",
+      "recordId": "stanford:bh691yj7263",
+      "url": "https://stacks.stanford.edu/file/druid:bh691yj7263/AM_0395_G2_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": 29.343889,
+        "east": 33.114444,
+        "south": 28.764167,
+        "north": 31.688333
       },
-      "attribution": "© swisstopo – Landeskarte 1:1 Million | LK1000",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1857
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk500.noscale",
-      "title": "Landeskarte 1:500'000 | LK500",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk500.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-bm864yd2626",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte Generale de L'Afrique (Raster Image)",
+      "recordId": "stanford:bm864yd2626",
+      "url": "https://stacks.stanford.edu/file/druid:bm864yd2626/AM_0162_G2_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": -84.263056,
+        "east": 128.401944,
+        "south": -54.539167,
+        "north": 57.751667
       },
-      "attribution": "© swisstopo – Landeskarte 1:500'000 | LK500",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1829
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk200.noscale",
-      "title": "Landeskarte 1:200'000 | LK200",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk200.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-cb162xm5582",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:cb162xm5582",
+      "url": "https://stacks.stanford.edu/file/druid:cb162xm5582/AM_0484_G2_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": 29.136944,
+        "east": 33.756389,
+        "south": 24.698611,
+        "north": 32.189722
       },
-      "attribution": "© swisstopo – Landeskarte 1:200'000 | LK200",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk100.noscale",
-      "title": "Landeskarte 1:100'000 | LK100",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk100.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-cb341wy2516",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Dai Shanhai shin chizu (Raster Image)",
+      "recordId": "stanford:cb341wy2516",
+      "url": "https://stacks.stanford.edu/file/druid:cb341wy2516/ID_25_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": 121.371111,
+        "east": 121.609722,
+        "south": 31.177222,
+        "north": 31.350833
       },
-      "attribution": "© swisstopo – Landeskarte 1:100'000 | LK100",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1937
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk50.noscale",
-      "title": "Landeskarte 1:50'000 | LK50",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk50.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current",
-        "2026",
-        "2025",
-        "2024",
-        "2023",
-        "2022",
-        "2021",
-        "2020",
-        "2019",
-        "2018",
-        "2017",
-        "2016",
-        "2015",
-        "2014",
-        "2013",
-        "2012",
-        "2011",
-        "2010",
-        "2009",
-        "2008",
-        "2007",
-        "2006",
-        "2005",
-        "2004",
-        "2003",
-        "2002",
-        "2001",
-        "2000",
-        "1999",
-        "1998",
-        "1997",
-        "1996",
-        "1995",
-        "1994",
-        "1993",
-        "1992",
-        "1991",
-        "1990",
-        "1989",
-        "1988",
-        "1987",
-        "1986",
-        "1985",
-        "1984",
-        "1983",
-        "1982",
-        "1981",
-        "1980",
-        "1979",
-        "1978",
-        "1977",
-        "1976",
-        "1975",
-        "1974",
-        "1973",
-        "1972",
-        "1971",
-        "1970",
-        "1969",
-        "1968",
-        "1967",
-        "1966",
-        "1965",
-        "1964",
-        "1963",
-        "1962",
-        "1961",
-        "1960",
-        "1959",
-        "1958",
-        "1957",
-        "1956",
-        "1955",
-        "1954",
-        "1953",
-        "1952",
-        "1951",
-        "1950",
-        "1949",
-        "1948",
-        "1947",
-        "1946",
-        "1945",
-        "1944",
-        "1943",
-        "1942",
-        "1941",
-        "1940",
-        "1939",
-        "1938"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-cc901fj3410",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai shi jiaotong quan tu (Raster Image)",
+      "recordId": "stanford:cc901fj3410",
+      "url": "https://stacks.stanford.edu/file/druid:cc901fj3410/ID_147_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": 121.359722,
+        "east": 121.615833,
+        "south": 31.138889,
+        "north": 31.336944
       },
-      "attribution": "© swisstopo – Landeskarte 1:50'000 | LK50",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1951
     },
     {
-      "id": "ch.swisstopo.pixelkarte-farbe-pk25.noscale",
-      "title": "Landeskarte 1:25'000 | LK25",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe-pk25.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current",
-        "2026",
-        "2025",
-        "2024",
-        "2023",
-        "2022",
-        "2021",
-        "2020",
-        "2019",
-        "2018",
-        "2017",
-        "2016",
-        "2015",
-        "2014",
-        "2013",
-        "2012",
-        "2011",
-        "2010",
-        "2009",
-        "2008",
-        "2007",
-        "2006",
-        "2005",
-        "2004",
-        "2003",
-        "2002",
-        "2001",
-        "2000",
-        "1999",
-        "1998",
-        "1997",
-        "1996",
-        "1995",
-        "1994",
-        "1993",
-        "1992",
-        "1991",
-        "1990",
-        "1989",
-        "1988",
-        "1987",
-        "1986",
-        "1985",
-        "1984",
-        "1983",
-        "1982",
-        "1981",
-        "1980",
-        "1979",
-        "1978",
-        "1977",
-        "1976",
-        "1975",
-        "1974",
-        "1973",
-        "1972",
-        "1971",
-        "1970",
-        "1969",
-        "1968",
-        "1967",
-        "1966",
-        "1965",
-        "1964",
-        "1963",
-        "1962",
-        "1961",
-        "1960",
-        "1959",
-        "1958",
-        "1957",
-        "1956",
-        "1955",
-        "1954",
-        "1953",
-        "1952"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-cg169bt4299",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "New Map of Shanghai (Raster Image)",
+      "recordId": "stanford:cg169bt4299",
+      "url": "https://stacks.stanford.edu/file/druid:cg169bt4299/ID_255_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": 121.394722,
+        "east": 121.561389,
+        "south": 31.184444,
+        "north": 31.283333
       },
-      "attribution": "© swisstopo – Landeskarte 1:25'000 | LK25",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1945
     },
     {
-      "id": "ch.swisstopo.pixelkarte-grau-pk1000.noscale",
-      "title": "Landeskarte 1:1 Million (grau)",
-      "providerId": "swisstopo",
-      "urlTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau-pk1000.noscale/default/{Time}/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      "timeValues": [
-        "current"
-      ],
-      "maxZoom": 18,
-      "tileMatrixSet": "3857_18",
+      "id": "cog-cj719gj6639",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:cj719gj6639",
+      "url": "https://stacks.stanford.edu/file/druid:cj719gj6639/AM_0254_G2_cog.tif",
       "extent": {
-        "west": 5.140242,
-        "south": 45.398181,
-        "east": 11.47757,
-        "north": 48.230651
+        "west": -43.767222,
+        "east": 88.843056,
+        "south": -39.321389,
+        "north": 44.066667
       },
-      "attribution": "© swisstopo – Landeskarte 1:1 Million (grau)",
-      "license": "OGD swisstopo (Open Government Data); Quellenangabe «©swisstopo» erforderlich"
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1867
+    },
+    {
+      "id": "cog-cn934pb9430",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte Generale de L'Afrique (Raster Image)",
+      "recordId": "stanford:cn934pb9430",
+      "url": "https://stacks.stanford.edu/file/druid:cn934pb9430/AM_0143_G2_cog.tif",
+      "extent": {
+        "west": -64.169167,
+        "east": 98.581667,
+        "south": -43.693611,
+        "north": 43.401111
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1832
+    },
+    {
+      "id": "cog-cp231qk1515",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai in 1855 (Raster Image)",
+      "recordId": "stanford:cp231qk1515",
+      "url": "https://stacks.stanford.edu/file/druid:cp231qk1515/ID_190_cog.tif",
+      "extent": {
+        "west": 121.458333,
+        "east": 121.510833,
+        "south": 31.209722,
+        "north": 31.2575
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1928
+    },
+    {
+      "id": "cog-cs724dy3723",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Neihuan shiqu tu (Raster Image)",
+      "recordId": "stanford:cs724dy3723",
+      "url": "https://stacks.stanford.edu/file/druid:cs724dy3723/ID_9_cog.tif",
+      "extent": {
+        "west": 121.362222,
+        "east": 121.596111,
+        "south": 31.154444,
+        "north": 31.316111
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1995
+    },
+    {
+      "id": "cog-cw053qy7632",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa, and its Several Regions and Islands according to the most recent Descriptions (Raster Image)",
+      "recordId": "stanford:cw053qy7632",
+      "url": "https://stacks.stanford.edu/file/druid:cw053qy7632/AM_0134_G2_cog.tif",
+      "extent": {
+        "west": -65.785278,
+        "east": 100.968056,
+        "south": -49.653611,
+        "north": 41.883056
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1800
+    },
+    {
+      "id": "cog-db666qy1143",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "China's Eastern Coast, Shanghai, 1932 (Raster Image)",
+      "recordId": "stanford:db666qy1143",
+      "url": "https://stacks.stanford.edu/file/druid:db666qy1143/ID_217224_c_cog.tif",
+      "extent": {
+        "west": 121.311111,
+        "east": 121.566944,
+        "south": 31.089167,
+        "north": 31.418333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1932
+    },
+    {
+      "id": "cog-df634mk1844",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai shi jiedao xiangtu (Raster Image)",
+      "recordId": "stanford:df634mk1844",
+      "url": "https://stacks.stanford.edu/file/druid:df634mk1844/ID_341_cog.tif",
+      "extent": {
+        "west": 121.388333,
+        "east": 121.551111,
+        "south": 31.185833,
+        "north": 31.296389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1946
+    },
+    {
+      "id": "cog-dz245wg8294",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai jiaotong ditu (Raster Image)",
+      "recordId": "stanford:dz245wg8294",
+      "url": "https://stacks.stanford.edu/file/druid:dz245wg8294/ID_7_cog.tif",
+      "extent": {
+        "west": 121.370278,
+        "east": 121.589722,
+        "south": 31.163611,
+        "north": 31.314444
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1995
+    },
+    {
+      "id": "cog-fc567hs5733",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa by Jas Wyld, Geographer to the Queen (Raster Image)",
+      "recordId": "stanford:fc567hs5733",
+      "url": "https://stacks.stanford.edu/file/druid:fc567hs5733/AM_604_G2_cog.tif",
+      "extent": {
+        "west": 11.187222,
+        "east": 37.54,
+        "south": -35.888611,
+        "north": -21.904167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1886
+    },
+    {
+      "id": "cog-fd901rd3340",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Lower Egypt (Raster Image)",
+      "recordId": "stanford:fd901rd3340",
+      "url": "https://stacks.stanford.edu/file/druid:fd901rd3340/AM_0482_G2_cog.tif",
+      "extent": {
+        "west": 29.380556,
+        "east": 32.973611,
+        "south": 29.831667,
+        "north": 31.864722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-fn566hh7972",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A New Map of Egypt (Raster Image)",
+      "recordId": "stanford:fn566hh7972",
+      "url": "https://stacks.stanford.edu/file/druid:fn566hh7972/AM_0490_G2_cog.tif",
+      "extent": {
+        "west": 24.541944,
+        "east": 36.428333,
+        "south": 23.057222,
+        "north": 32.11
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1805
+    },
+    {
+      "id": "cog-ft495wc4758",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai chengxiang (Raster Image)",
+      "recordId": "stanford:ft495wc4758",
+      "url": "https://stacks.stanford.edu/file/druid:ft495wc4758/ID_308_cog.tif",
+      "extent": {
+        "west": 121.475278,
+        "east": 121.508889,
+        "south": 31.205556,
+        "north": 31.233889
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1871
+    },
+    {
+      "id": "cog-fx777rt6947",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Eastern Frontier of the Colony of the Cape of Good Hope, (and part of Kafirland) from Algoa Bay to the Great Kei River. Chiefly from M.S. Surveys & Sketches communicated by Lt. Col. Michell Survr. Genl. of the Colony ... Compiled by John Arrowsmith (Raster Image)",
+      "recordId": "stanford:fx777rt6947",
+      "url": "https://stacks.stanford.edu/file/druid:fx777rt6947/AM_0403_G2_cog.tif",
+      "extent": {
+        "west": 25.186667,
+        "east": 28.585833,
+        "south": -34.141667,
+        "north": -31.793611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-gb407jx0064",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte d'Afrique (Raster Image)",
+      "recordId": "stanford:gb407jx0064",
+      "url": "https://stacks.stanford.edu/file/druid:gb407jx0064/AM_0183_G2_cog.tif",
+      "extent": {
+        "west": -62.270278,
+        "east": 94.904444,
+        "south": -39.2375,
+        "north": 44.567778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1851
+    },
+    {
+      "id": "cog-gd455vk9424",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa, from official and other authentic authorities (Raster Image)",
+      "recordId": "stanford:gd455vk9424",
+      "url": "https://stacks.stanford.edu/file/druid:gd455vk9424/AM_0228_G2_cog.tif",
+      "extent": {
+        "west": 11.234722,
+        "east": 35.591944,
+        "south": -36.127778,
+        "north": -19.071111
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1870
+    },
+    {
+      "id": "cog-gh720pr2699",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "The New Map of Shanghai City (Raster Image)",
+      "recordId": "stanford:gh720pr2699",
+      "url": "https://stacks.stanford.edu/file/druid:gh720pr2699/ID_326_cog.tif",
+      "extent": {
+        "west": 121.431111,
+        "east": 121.523889,
+        "south": 31.191111,
+        "north": 31.283056
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1919
+    },
+    {
+      "id": "cog-gk357zj6283",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:gk357zj6283",
+      "url": "https://stacks.stanford.edu/file/druid:gk357zj6283/AM_0315_G2_cog.tif",
+      "extent": {
+        "west": -47.178056,
+        "east": 84.100833,
+        "south": -40.369167,
+        "north": 42.797778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1809
+    },
+    {
+      "id": "cog-gq333dm9471",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai (Raster Image)",
+      "recordId": "stanford:gq333dm9471",
+      "url": "https://stacks.stanford.edu/file/druid:gq333dm9471/ID_124_cog.tif",
+      "extent": {
+        "west": 121.430278,
+        "east": 121.536944,
+        "south": 31.190833,
+        "north": 31.266944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1904
+    },
+    {
+      "id": "cog-hc927cx9544",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of South Africa illustrating Dr. Livingstone's Discoveries (Raster Image)",
+      "recordId": "stanford:hc927cx9544",
+      "url": "https://stacks.stanford.edu/file/druid:hc927cx9544/AM_0166_G2R_cog.tif",
+      "extent": {
+        "west": -3.55,
+        "east": 63.378889,
+        "south": -40.480833,
+        "north": 9.565278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1858
+    },
+    {
+      "id": "cog-hj663rt1266",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Colton's Africa: southern sheet (Raster Image)",
+      "recordId": "stanford:hj663rt1266",
+      "url": "https://stacks.stanford.edu/file/druid:hj663rt1266/AM_0151_G2_cog.tif",
+      "extent": {
+        "west": -1.123333,
+        "east": 69.031944,
+        "south": -39.898611,
+        "north": 3.748333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1855
+    },
+    {
+      "id": "cog-hq448cf5995",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shice Shanghai Chengxiang Zujie Tu (Raster Image)",
+      "recordId": "stanford:hq448cf5995",
+      "url": "https://stacks.stanford.edu/file/druid:hq448cf5995/ID_260_cog.tif",
+      "extent": {
+        "west": 121.428056,
+        "east": 121.565833,
+        "south": 31.191111,
+        "north": 31.281944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1910
+    },
+    {
+      "id": "cog-hv035cb4173",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:hv035cb4173",
+      "url": "https://stacks.stanford.edu/file/druid:hv035cb4173/AM_0144_G2_cog.tif",
+      "extent": {
+        "west": -97.5225,
+        "east": 119.7725,
+        "south": -51.785278,
+        "north": 53.069722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1853
+    },
+    {
+      "id": "cog-jb291zp4015",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Saishin Shanhai chizu (Raster Image)",
+      "recordId": "stanford:jb291zp4015",
+      "url": "https://stacks.stanford.edu/file/druid:jb291zp4015/ID_245_cog.tif",
+      "extent": {
+        "west": 121.3825,
+        "east": 121.591389,
+        "south": 31.156944,
+        "north": 31.311944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1932
+    },
+    {
+      "id": "cog-jc604kx9499",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:jc604kx9499",
+      "url": "https://stacks.stanford.edu/file/druid:jc604kx9499/AM_0095_G2_cog.tif",
+      "extent": {
+        "west": -50.2625,
+        "east": 79.101667,
+        "south": -38.063889,
+        "north": 41.795
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1834
+    },
+    {
+      "id": "cog-jh940jk0147",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Chang-hai et environs (Raster Image)",
+      "recordId": "stanford:jh940jk0147",
+      "url": "https://stacks.stanford.edu/file/druid:jh940jk0147/ID_333_cog.tif",
+      "extent": {
+        "west": 121.36,
+        "east": 121.528333,
+        "south": 31.162778,
+        "north": 31.288611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1902
+    },
+    {
+      "id": "cog-jt747qj3932",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:jt747qj3932",
+      "url": "https://stacks.stanford.edu/file/druid:jt747qj3932/AM_0518_G2_cog.tif",
+      "extent": {
+        "west": 27.987778,
+        "east": 37.437778,
+        "south": 20.759444,
+        "north": 34.189722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1830
+    },
+    {
+      "id": "cog-jw635zq6235",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of the Colony of Natal (Raster Image)",
+      "recordId": "stanford:jw635zq6235",
+      "url": "https://stacks.stanford.edu/file/druid:jw635zq6235/AM_0390_G2_cog.tif",
+      "extent": {
+        "west": 28.527778,
+        "east": 33.403056,
+        "south": -31.247778,
+        "north": -26.465556
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-jz864sc3723",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A Map of Egypt and Sinai (Raster Image)",
+      "recordId": "stanford:jz864sc3723",
+      "url": "https://stacks.stanford.edu/file/druid:jz864sc3723/AM_0411_G2_cog.tif",
+      "extent": {
+        "west": 28.866667,
+        "east": 37.126111,
+        "south": 27.12,
+        "north": 31.931667
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-kd672xr9045",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:kd672xr9045",
+      "url": "https://stacks.stanford.edu/file/druid:kd672xr9045/AM_625_G2_cog.tif",
+      "extent": {
+        "west": -31.331111,
+        "east": 61.331111,
+        "south": -50.715833,
+        "north": 56.840278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1818
+    },
+    {
+      "id": "cog-kf661bq6975",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Portion of Egypt: East Part of the Delta of the Nile, incl. Cairo, Red Sea, Port Said, Suez (Raster Image)",
+      "recordId": "stanford:kf661bq6975",
+      "url": "https://stacks.stanford.edu/file/druid:kf661bq6975/AM_0485_G2_cog.tif",
+      "extent": {
+        "west": 30.907778,
+        "east": 32.896111,
+        "south": 29.743333,
+        "north": 31.821389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1855
+    },
+    {
+      "id": "cog-kj751hs0595",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:kj751hs0595",
+      "url": "https://stacks.stanford.edu/file/druid:kj751hs0595/AM_0104_G2_cog.tif",
+      "extent": {
+        "west": -50.480833,
+        "east": 83.115278,
+        "south": -39.323889,
+        "north": 42.663611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1839
+    },
+    {
+      "id": "cog-kp673cn9449",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte de L'Afrique Divisee en ses principaux Etats pour servir a l'instruction de la Jeunesse (Raster Image)",
+      "recordId": "stanford:kp673cn9449",
+      "url": "https://stacks.stanford.edu/file/druid:kp673cn9449/AM_0266_G2_cog.tif",
+      "extent": {
+        "west": -59.647778,
+        "east": 97.758056,
+        "south": -44.69,
+        "north": 42.883333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1771
+    },
+    {
+      "id": "cog-mb529rz1103",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Chang-hai et Zi-Ka-Wei [Shanghai et Zicawei] (Raster Image)",
+      "recordId": "stanford:mb529rz1103",
+      "url": "https://stacks.stanford.edu/file/druid:mb529rz1103/ID_335_cog.tif",
+      "extent": {
+        "west": 121.424444,
+        "east": 121.514444,
+        "south": 31.172222,
+        "north": 31.26
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1901
+    },
+    {
+      "id": "cog-md565sn7692",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "San Francisco Rapid Transit Plan, 1972 (Raster Image)",
+      "recordId": "stanford:md565sn7692",
+      "url": "https://stacks.stanford.edu/file/druid:md565sn7692/RapidTransitPlanND_cog.tif",
+      "extent": {
+        "west": -122.527222,
+        "east": -122.344167,
+        "south": 37.679722,
+        "north": 37.826389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1972
+    },
+    {
+      "id": "cog-md733cv4241",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Plan of the English Settlement at Shanghae (Raster Image)",
+      "recordId": "stanford:md733cv4241",
+      "url": "https://stacks.stanford.edu/file/druid:md733cv4241/ID_343_cog.tif",
+      "extent": {
+        "west": 121.464167,
+        "east": 121.494167,
+        "south": 31.228333,
+        "north": 31.249167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1864
+    },
+    {
+      "id": "cog-mj017zz7129",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa Compiled from the M.S. Maps in the Colonial Office Captn. Owen's Survey &c (Raster Image)",
+      "recordId": "stanford:mj017zz7129",
+      "url": "https://stacks.stanford.edu/file/druid:mj017zz7129/AM_0099_G2_cog.tif",
+      "extent": {
+        "west": 12.562778,
+        "east": 35.125556,
+        "south": -36.141944,
+        "north": -21.378889
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1834
+    },
+    {
+      "id": "cog-mm029kc5411",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Street Plan of the Northern & Eastern Districts of the Foreign Settlement at Shanghai (Raster Image)",
+      "recordId": "stanford:mm029kc5411",
+      "url": "https://stacks.stanford.edu/file/druid:mm029kc5411/ID_271_cog.tif",
+      "extent": {
+        "west": 121.458333,
+        "east": 121.535278,
+        "south": 31.234444,
+        "north": 31.274722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1926
+    },
+    {
+      "id": "cog-mn423zg8440",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Colony of Good Hope etc (Raster Image)",
+      "recordId": "stanford:mn423zg8440",
+      "url": "https://stacks.stanford.edu/file/druid:mn423zg8440/AM_0308_G2_cog.tif",
+      "extent": {
+        "west": 13.224167,
+        "east": 31.968611,
+        "south": -36.699167,
+        "north": -24.456667
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1870
+    },
+    {
+      "id": "cog-mq130mj8173",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:mq130mj8173",
+      "url": "https://stacks.stanford.edu/file/druid:mq130mj8173/AM_0362_G2R_cog.tif",
+      "extent": {
+        "west": -40.916389,
+        "east": 70.8175,
+        "south": -39.8775,
+        "north": 40.509444
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-mq457xb3818",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A chart of the Indian Ocean improved from the chart of M. d'Apres de Mannevillette; with the addition of a part of the Pacific Ocean, as well as of the original tracks of the principal discoverers or other navigators to India and China; and in which it has been attempted to give a chronological indication of the successive discoveries (Raster Image)",
+      "recordId": "stanford:mq457xb3818",
+      "url": "https://stacks.stanford.edu/file/druid:mq457xb3818/AM_655_G2_cog.tif",
+      "extent": {
+        "west": 13.294444,
+        "east": 180,
+        "south": -48.753611,
+        "north": 39.174722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1803
+    },
+    {
+      "id": "cog-ms203rz1824",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Xin shanghai shiqu mingxi tu (Raster Image)",
+      "recordId": "stanford:ms203rz1824",
+      "url": "https://stacks.stanford.edu/file/druid:ms203rz1824/ID_196_cog.tif",
+      "extent": {
+        "west": 121.357222,
+        "east": 121.600833,
+        "south": 31.144444,
+        "north": 31.350556
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1950
+    },
+    {
+      "id": "cog-mw424wt3857",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of the Cape Colony of Natal (Raster Image)",
+      "recordId": "stanford:mw424wt3857",
+      "url": "https://stacks.stanford.edu/file/druid:mw424wt3857/AM_0397_G2_cog.tif",
+      "extent": {
+        "west": 15.361111,
+        "east": 31.698333,
+        "south": -35.870556,
+        "north": -23.387778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-mz293bw8065",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Plan of Shanghai published under the authority of the Municipal Council (Raster Image)",
+      "recordId": "stanford:mz293bw8065",
+      "url": "https://stacks.stanford.edu/file/druid:mz293bw8065/ID_76_cog.tif",
+      "extent": {
+        "west": 121.399444,
+        "east": 121.576389,
+        "south": 31.201389,
+        "north": 31.302778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1904
+    },
+    {
+      "id": "cog-nh423yg6266",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Southern Africa (Raster Image)",
+      "recordId": "stanford:nh423yg6266",
+      "url": "https://stacks.stanford.edu/file/druid:nh423yg6266/AM_623_G2_cog.tif",
+      "extent": {
+        "west": 5.303611,
+        "east": 57.718056,
+        "south": -38.791389,
+        "north": -6.956944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1809
+    },
+    {
+      "id": "cog-nh811hh4637",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Shanghai (Raster Image)",
+      "recordId": "stanford:nh811hh4637",
+      "url": "https://stacks.stanford.edu/file/druid:nh811hh4637/ID_468_cog.tif",
+      "extent": {
+        "west": 121.333056,
+        "east": 121.581667,
+        "south": 31.163333,
+        "north": 31.304722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1923
+    },
+    {
+      "id": "cog-ns296gg0572",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:ns296gg0572",
+      "url": "https://stacks.stanford.edu/file/druid:ns296gg0572/AM_0210_G2_cog.tif",
+      "extent": {
+        "west": -66.3675,
+        "east": 79.670556,
+        "south": -38.648333,
+        "north": 42.858056
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1821
+    },
+    {
+      "id": "cog-nx601gk5509",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt and Part of Arabia (Raster Image)",
+      "recordId": "stanford:nx601gk5509",
+      "url": "https://stacks.stanford.edu/file/druid:nx601gk5509/AM_0401_G2_cog.tif",
+      "extent": {
+        "west": 29.068056,
+        "east": 36.420556,
+        "south": 22.732222,
+        "north": 32.2525
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-ny485wh6734",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "(Ottoman Empire) ممالك محرسى وشاهانى بك حاى واولديغى بلاد Istanbul, 1309 Rumi Calendar [1893] (Raster Image)",
+      "recordId": "stanford:ny485wh6734",
+      "url": "https://stacks.stanford.edu/file/druid:ny485wh6734/Ottoman_Routes_and_Hours_cog.tif",
+      "extent": {
+        "west": 10.423889,
+        "east": 59.133333,
+        "south": 26.048611,
+        "north": 48.954167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1893
+    },
+    {
+      "id": "cog-ph802gv3518",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Street Plan of the Foreign Settlement (Central District) & French Settlement at Shanghai (Raster Image)",
+      "recordId": "stanford:ph802gv3518",
+      "url": "https://stacks.stanford.edu/file/druid:ph802gv3518/ID_272_cog.tif",
+      "extent": {
+        "west": 121.462222,
+        "east": 121.496944,
+        "south": 31.220556,
+        "north": 31.256944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1926
+    },
+    {
+      "id": "cog-pj438gk9074",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Ground plan of the Foreign Settlement at Shanghai - North of the Yang Kang Pang Canal (Raster Image)",
+      "recordId": "stanford:pj438gk9074",
+      "url": "https://stacks.stanford.edu/file/druid:pj438gk9074/ID_30_cog.tif",
+      "extent": {
+        "west": 121.465833,
+        "east": 121.493611,
+        "south": 31.223611,
+        "north": 31.249167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1855
+    },
+    {
+      "id": "cog-pn735pt7303",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A Map of Upper Egypt ... Desaix ... Expedition of Bonaparte ... Citizen Denon (Raster Image)",
+      "recordId": "stanford:pn735pt7303",
+      "url": "https://stacks.stanford.edu/file/druid:pn735pt7303/AM_0481_G2_cog.tif",
+      "extent": {
+        "west": 29.699444,
+        "east": 34.699722,
+        "south": 23.403333,
+        "north": 30.903333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-pr438gp8328",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Ancient Africa or Libya, Part I (western section) (Raster Image)",
+      "recordId": "stanford:pr438gp8328",
+      "url": "https://stacks.stanford.edu/file/druid:pr438gp8328/AM_0357_G2_cog.tif",
+      "extent": {
+        "west": -14.256389,
+        "east": 14.240556,
+        "south": 25.223056,
+        "north": 43.563889
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1840
+    },
+    {
+      "id": "cog-pt756wd7353",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Lower Egypt and the adjacent deserts, with a part of Palestine; to which has been added the Nomenclature of the Roman age (Raster Image)",
+      "recordId": "stanford:pt756wd7353",
+      "url": "https://stacks.stanford.edu/file/druid:pt756wd7353/AM_615_G2_cog.tif",
+      "extent": {
+        "west": 29.305833,
+        "east": 35.710278,
+        "south": 29.166667,
+        "north": 33.090833
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1835
+    },
+    {
+      "id": "cog-pw331pq1347",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai (Raster Image)",
+      "recordId": "stanford:pw331pq1347",
+      "url": "https://stacks.stanford.edu/file/druid:pw331pq1347/ID_261_cog.tif",
+      "extent": {
+        "west": 121.3175,
+        "east": 121.591667,
+        "south": 31.147222,
+        "north": 31.421667
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1982
+    },
+    {
+      "id": "cog-px984sn6906",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Africa Showing its most Recent Discoveries (Raster Image)",
+      "recordId": "stanford:px984sn6906",
+      "url": "https://stacks.stanford.edu/file/druid:px984sn6906/AM_0100_G2_cog.tif",
+      "extent": {
+        "west": -69.655278,
+        "east": 110.066389,
+        "south": -45.6275,
+        "north": 49.483611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1881
+    },
+    {
+      "id": "cog-qc372gw5495",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Plan of Shanghai (Raster Image)",
+      "recordId": "stanford:qc372gw5495",
+      "url": "https://stacks.stanford.edu/file/druid:qc372gw5495/ID_33_cog.tif",
+      "extent": {
+        "west": 121.31,
+        "east": 121.603333,
+        "south": 31.138611,
+        "north": 31.316944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1928
+    },
+    {
+      "id": "cog-qf446kc9931",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:qf446kc9931",
+      "url": "https://stacks.stanford.edu/file/druid:qf446kc9931/AM_0483_G2_cog.tif",
+      "extent": {
+        "west": 28.351944,
+        "east": 36.951944,
+        "south": 22.110833,
+        "north": 32.638889
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-qf941zk2030",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:qf941zk2030",
+      "url": "https://stacks.stanford.edu/file/druid:qf941zk2030/AM_0399_G2_cog.tif",
+      "extent": {
+        "west": -49.174722,
+        "east": 79.027778,
+        "south": -38.752778,
+        "north": 41.950278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-qj152rq1246",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:qj152rq1246",
+      "url": "https://stacks.stanford.edu/file/druid:qj152rq1246/AM_0196_G2_cog.tif",
+      "extent": {
+        "west": -39.064444,
+        "east": 73.425833,
+        "south": -46.647778,
+        "north": 46.589167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1831
+    },
+    {
+      "id": "cog-qm654xf7893",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:qm654xf7893",
+      "url": "https://stacks.stanford.edu/file/druid:qm654xf7893/AM_0393_G2_cog.tif",
+      "extent": {
+        "west": 27.567778,
+        "east": 35.737778,
+        "south": 23.636667,
+        "north": 32.508333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1841
+    },
+    {
+      "id": "cog-qr891rz3640",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of South Africa Showing the Routes of the Revd Dr. Livingstone between the years 1849 & 1857 (Raster Image)",
+      "recordId": "stanford:qr891rz3640",
+      "url": "https://stacks.stanford.edu/file/druid:qr891rz3640/AM_0407_G2_cog.tif",
+      "extent": {
+        "west": -1.5525,
+        "east": 51.306389,
+        "south": -40.439722,
+        "north": 3.199444
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1849
+    },
+    {
+      "id": "cog-qy755sg2430",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:qy755sg2430",
+      "url": "https://stacks.stanford.edu/file/druid:qy755sg2430/AM_0296_G2R_cog.tif",
+      "extent": {
+        "west": -36.3925,
+        "east": 74.744167,
+        "south": -39.463889,
+        "north": 45.393611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1813
+    },
+    {
+      "id": "cog-rf661ps1674",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Bowles's new pocket plan with the cities of London & Westminster with the borough of Southwark : comprehending the new buildings and other alterations to the year 1783 (Raster Image)",
+      "recordId": "stanford:rf661ps1674",
+      "url": "https://stacks.stanford.edu/file/druid:rf661ps1674/G5754_L7_1783_B6_modified3857_cog.tif",
+      "extent": {
+        "west": -0.173056,
+        "east": -0.030833,
+        "south": 51.490278,
+        "north": 51.535
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1783
+    },
+    {
+      "id": "cog-rk277pw4065",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:rk277pw4065",
+      "url": "https://stacks.stanford.edu/file/druid:rk277pw4065/AM_0313_G2_cog.tif",
+      "extent": {
+        "west": -51.076111,
+        "east": 91.705833,
+        "south": -41.111667,
+        "north": 44.96
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-sc986pd2767",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Plan of Shanghai (Raster Image)",
+      "recordId": "stanford:sc986pd2767",
+      "url": "https://stacks.stanford.edu/file/druid:sc986pd2767/ID_28_cog.tif",
+      "extent": {
+        "west": 121.369444,
+        "east": 121.584167,
+        "south": 31.173611,
+        "north": 31.306944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1919
+    },
+    {
+      "id": "cog-sd043cc5402",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Neueste Karte von Sud Africa (Raster Image)",
+      "recordId": "stanford:sd043cc5402",
+      "url": "https://stacks.stanford.edu/file/druid:sd043cc5402/AM_0106_G2_cog.tif",
+      "extent": {
+        "west": 11.997778,
+        "east": 34.78,
+        "south": -35.991389,
+        "north": -20.761389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1846
+    },
+    {
+      "id": "cog-sh439yp0551",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte Générale de la Basse Egypte (Raster Image)",
+      "recordId": "stanford:sh439yp0551",
+      "url": "https://stacks.stanford.edu/file/druid:sh439yp0551/AM_0464_G2_cog.tif",
+      "extent": {
+        "west": 29.351667,
+        "east": 32.786667,
+        "south": 29.617222,
+        "north": 31.991389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-sm471nm5916",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:sm471nm5916",
+      "url": "https://stacks.stanford.edu/file/druid:sm471nm5916/AM_0226_G2R_cog.tif",
+      "extent": {
+        "west": -55.190278,
+        "east": 100.262778,
+        "south": -43.321944,
+        "north": 45.914167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1750
+    },
+    {
+      "id": "cog-sn593vp5053",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa by Jas. Wyld, Geographer to the Queen and H.R.H. Prince Albert (Raster Image)",
+      "recordId": "stanford:sn593vp5053",
+      "url": "https://stacks.stanford.edu/file/druid:sn593vp5053/AM_647_G2_cog.tif",
+      "extent": {
+        "west": 11.145556,
+        "east": 37.368333,
+        "south": -35.820278,
+        "north": -21.898611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1844
+    },
+    {
+      "id": "cog-sq570nx6125",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Saishin Shanhai chizu (Raster Image)",
+      "recordId": "stanford:sq570nx6125",
+      "url": "https://stacks.stanford.edu/file/druid:sq570nx6125/ID_269_cog.tif",
+      "extent": {
+        "west": 121.451389,
+        "east": 121.521111,
+        "south": 31.22,
+        "north": 31.259167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1908
+    },
+    {
+      "id": "cog-sw972jn1884",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:sw972jn1884",
+      "url": "https://stacks.stanford.edu/file/druid:sw972jn1884/AM_0459_G2_cog.tif",
+      "extent": {
+        "west": 28.489167,
+        "east": 35.393889,
+        "south": 24.285278,
+        "north": 32.290833
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-tk943wf2394",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai shijie ditu (Raster Image)",
+      "recordId": "stanford:tk943wf2394",
+      "url": "https://stacks.stanford.edu/file/druid:tk943wf2394/ID_153_cog.tif",
+      "extent": {
+        "west": 121.459167,
+        "east": 121.516111,
+        "south": 31.2275,
+        "north": 31.285556
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1928
+    },
+    {
+      "id": "cog-tp917xf7051",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Cape Colony, Natal & c. (Raster Image)",
+      "recordId": "stanford:tp917xf7051",
+      "url": "https://stacks.stanford.edu/file/druid:tp917xf7051/AM_0379_G2_cog.tif",
+      "extent": {
+        "west": 11.209167,
+        "east": 38.742222,
+        "south": -36.164722,
+        "north": -18.485833
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1902
+    },
+    {
+      "id": "cog-tr686ng1378",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Oahu. Hawaiian Islands. Compiled from Maps of Government Surveys and other reliable sources. Drawn by T.D. Beasley under supervision of Jas. T. Taylor, M. Am. Soc. C.E. November, 1899. United States, Copyright by Jas. T. Taylor 1899. Lith. Britton & Rey, S.F., Cal. (Raster Image)",
+      "recordId": "stanford:tr686ng1378",
+      "url": "https://stacks.stanford.edu/file/druid:tr686ng1378/g3707000_cog.tif",
+      "extent": {
+        "west": -158.315278,
+        "east": -157.595556,
+        "south": 21.213889,
+        "north": 21.7525
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1899
+    },
+    {
+      "id": "cog-ts198sr7769",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:ts198sr7769",
+      "url": "https://stacks.stanford.edu/file/druid:ts198sr7769/AM_0211_G2R_cog.tif",
+      "extent": {
+        "west": -37.699722,
+        "east": 72.282222,
+        "south": -49.912222,
+        "north": 52.924722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1836
+    },
+    {
+      "id": "cog-ts913kd3517",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carta geografica de Africa. del Capo de bon Esperanze sino al Regno et Imperio Monamotapo e Rio de la Goa, Scoperto dell' Citadino e Commandante (Raster Image)",
+      "recordId": "stanford:ts913kd3517",
+      "url": "https://stacks.stanford.edu/file/druid:ts913kd3517/AM_0111_G2_cog.tif",
+      "extent": {
+        "west": 12.711111,
+        "east": 36.848889,
+        "south": -37.471944,
+        "north": -23.956389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1793
+    },
+    {
+      "id": "cog-tz862pt4955",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Afrique Meridionale (Raster Image)",
+      "recordId": "stanford:tz862pt4955",
+      "url": "https://stacks.stanford.edu/file/druid:tz862pt4955/AM_0497_G2_cog.tif",
+      "extent": {
+        "west": -15.896944,
+        "east": 83.299444,
+        "south": -44.320556,
+        "north": 9.424722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1809
+    },
+    {
+      "id": "cog-vb974xp6459",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:vb974xp6459",
+      "url": "https://stacks.stanford.edu/file/druid:vb974xp6459/AM_0320_G2_cog.tif",
+      "extent": {
+        "west": -50.141389,
+        "east": 82.702222,
+        "south": -39.836111,
+        "north": 41.954167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1839
+    },
+    {
+      "id": "cog-vh772td2101",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa 1841 (Raster Image)",
+      "recordId": "stanford:vh772td2101",
+      "url": "https://stacks.stanford.edu/file/druid:vh772td2101/AM_0373_G2_cog.tif",
+      "extent": {
+        "west": -58.777778,
+        "east": 98.406944,
+        "south": -41.938889,
+        "north": 46.4275
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1841
+    },
+    {
+      "id": "cog-vh885jq9763",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Saishin dai Shanhai shigai chizu (Raster Image)",
+      "recordId": "stanford:vh885jq9763",
+      "url": "https://stacks.stanford.edu/file/druid:vh885jq9763/ID_35_cog.tif",
+      "extent": {
+        "west": 121.363611,
+        "east": 121.610833,
+        "south": 31.175556,
+        "north": 31.352222
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1939
+    },
+    {
+      "id": "cog-vj873xk9564",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Aegyptus (Raster Image)",
+      "recordId": "stanford:vj873xk9564",
+      "url": "https://stacks.stanford.edu/file/druid:vj873xk9564/AM_0402_G2_cog.tif",
+      "extent": {
+        "west": 27.358889,
+        "east": 37.4125,
+        "south": 22.017778,
+        "north": 32.247778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1940
+    },
+    {
+      "id": "cog-vr426sf1153",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:vr426sf1153",
+      "url": "https://stacks.stanford.edu/file/druid:vr426sf1153/AM_0212_G2_cog.tif",
+      "extent": {
+        "west": -56.648333,
+        "east": 96.954167,
+        "south": -41.516944,
+        "north": 45.091389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1841
+    },
+    {
+      "id": "cog-vs137cg7196",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A map of the foreign settlements at Shanghai (Raster Image)",
+      "recordId": "stanford:vs137cg7196",
+      "url": "https://stacks.stanford.edu/file/druid:vs137cg7196/ID_342_cog.tif",
+      "extent": {
+        "west": 121.390278,
+        "east": 121.559444,
+        "south": 31.172222,
+        "north": 31.296111
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1900
+    },
+    {
+      "id": "cog-vs584qj1472",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A map of the foreign settlements at Shanghai (Raster Image)",
+      "recordId": "stanford:vs584qj1472",
+      "url": "https://stacks.stanford.edu/file/druid:vs584qj1472/ID_135_cog.tif",
+      "extent": {
+        "west": 121.413056,
+        "east": 121.536667,
+        "south": 31.185278,
+        "north": 31.2725
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1904
+    },
+    {
+      "id": "cog-vz360ty9195",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa from the latest Authorities (Raster Image)",
+      "recordId": "stanford:vz360ty9195",
+      "url": "https://stacks.stanford.edu/file/druid:vz360ty9195/AM_0312_G2_cog.tif",
+      "extent": {
+        "west": -50.952222,
+        "east": 90.987778,
+        "south": -42.673889,
+        "north": 44.649722
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1806
+    },
+    {
+      "id": "cog-wj954zx7303",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Shanghai (Raster Image)",
+      "recordId": "stanford:wj954zx7303",
+      "url": "https://stacks.stanford.edu/file/druid:wj954zx7303/ID_72_cog.tif",
+      "extent": {
+        "west": 121.3725,
+        "east": 121.582778,
+        "south": 31.174722,
+        "north": 31.306667
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1918
+    },
+    {
+      "id": "cog-wt468px7035",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:wt468px7035",
+      "url": "https://stacks.stanford.edu/file/druid:wt468px7035/AM_0516_G2_cog.tif",
+      "extent": {
+        "west": -94.911667,
+        "east": 120.1275,
+        "south": -47.618611,
+        "north": 55.319167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-wx000xc6558",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map to illustrate the route of David Roberts, Esq: R.A. in the Holy Land, Petrea & Syria (Raster Image)",
+      "recordId": "stanford:wx000xc6558",
+      "url": "https://stacks.stanford.edu/file/druid:wx000xc6558/AM_0517_G2_cog.tif",
+      "extent": {
+        "west": 28.562222,
+        "east": 37.495,
+        "south": 25.925833,
+        "north": 35.478889
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1855
+    },
+    {
+      "id": "cog-xd075qg7593",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai chengqu tu (Raster Image)",
+      "recordId": "stanford:xd075qg7593",
+      "url": "https://stacks.stanford.edu/file/druid:xd075qg7593/ID_262_cog.tif",
+      "extent": {
+        "west": 121.322222,
+        "east": 121.649722,
+        "south": 31.106111,
+        "north": 31.393333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 2003
+    },
+    {
+      "id": "cog-xm206bd4447",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa by Jas Wyld, Geographer to the Queen and HRH Prince Albert (Raster Image)",
+      "recordId": "stanford:xm206bd4447",
+      "url": "https://stacks.stanford.edu/file/druid:xm206bd4447/AM_605_G2_cog.tif",
+      "extent": {
+        "west": 11.765278,
+        "east": 37.92,
+        "south": -36.401111,
+        "north": -21.562222
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1855
+    },
+    {
+      "id": "cog-xt991gd5336",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa, South part (Raster Image)",
+      "recordId": "stanford:xt991gd5336",
+      "url": "https://stacks.stanford.edu/file/druid:xt991gd5336/AM_0305_G2_cog.tif",
+      "extent": {
+        "west": 12.768056,
+        "east": 35.130833,
+        "south": -35.979722,
+        "north": -23.298333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-xv004vb6085",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Egypt Engraved for the Modern Traveller (Raster Image)",
+      "recordId": "stanford:xv004vb6085",
+      "url": "https://stacks.stanford.edu/file/druid:xv004vb6085/AM_0466_G2_cog.tif",
+      "extent": {
+        "west": 27.501667,
+        "east": 36.367778,
+        "south": 23.422778,
+        "north": 32.483056
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1827
+    },
+    {
+      "id": "cog-xw368cf0253",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Afrique (Raster Image)",
+      "recordId": "stanford:xw368cf0253",
+      "url": "https://stacks.stanford.edu/file/druid:xw368cf0253/AM_0195_G2_cog.tif",
+      "extent": {
+        "west": -180,
+        "east": 180,
+        "south": -65.675833,
+        "north": 65.695
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1840
+    },
+    {
+      "id": "cog-xx177jt7908",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Xin shanghai ditu (Raster Image)",
+      "recordId": "stanford:xx177jt7908",
+      "url": "https://stacks.stanford.edu/file/druid:xx177jt7908/ID_144_cog.tif",
+      "extent": {
+        "west": 121.386389,
+        "east": 121.5775,
+        "south": 31.175556,
+        "north": 31.304444
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1931
+    },
+    {
+      "id": "cog-xy854tt0907",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A Plain Map of Africa According to the Method of the Abbé Gaultier (Raster Image)",
+      "recordId": "stanford:xy854tt0907",
+      "url": "https://stacks.stanford.edu/file/druid:xy854tt0907/AM_0317_G2R_cog.tif",
+      "extent": {
+        "west": -51.09,
+        "east": 75.749444,
+        "south": -47.827778,
+        "north": 48.9325
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1802
+    },
+    {
+      "id": "cog-yg037vw1750",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:yg037vw1750",
+      "url": "https://stacks.stanford.edu/file/druid:yg037vw1750/AM_0203_G2_cog.tif",
+      "extent": {
+        "west": -46.301944,
+        "east": 87.136944,
+        "south": -40.388056,
+        "north": 45.225278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1828
+    },
+    {
+      "id": "cog-yh473tv9289",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "South Africa from Official and other authentic Authorities (Raster Image)",
+      "recordId": "stanford:yh473tv9289",
+      "url": "https://stacks.stanford.edu/file/druid:yh473tv9289/AM_0321_G2_cog.tif",
+      "extent": {
+        "west": 11.471944,
+        "east": 35.7425,
+        "south": -36.095,
+        "north": -19.1325
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1801
+    },
+    {
+      "id": "cog-yj385yn3969",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa with the discoveries to May 1858 of Livingstone, Barth, Vogel, & of the Chadda expedition, from documents in possession of the Royal Geographical Society (Raster Image)",
+      "recordId": "stanford:yj385yn3969",
+      "url": "https://stacks.stanford.edu/file/druid:yj385yn3969/AM_0169_G2_cog.tif",
+      "extent": {
+        "west": -46.953889,
+        "east": 81.560556,
+        "south": -50.922222,
+        "north": 50.889167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1858
+    },
+    {
+      "id": "cog-yn681zp0153",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of South Africa, 1892 (Raster Image)",
+      "recordId": "stanford:yn681zp0153",
+      "url": "https://stacks.stanford.edu/file/druid:yn681zp0153/AM_0256_G2_cog.tif",
+      "extent": {
+        "west": 11.625833,
+        "east": 36.419444,
+        "south": -35.691389,
+        "north": -20.7375
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1892
+    },
+    {
+      "id": "cog-ys908pb1971",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of lower Egypt and of the adjacent country with part of Palestine (Raster Image)",
+      "recordId": "stanford:ys908pb1971",
+      "url": "https://stacks.stanford.edu/file/druid:ys908pb1971/AM_642_G2_cog.tif",
+      "extent": {
+        "west": 27.990833,
+        "east": 35.998056,
+        "south": 27.051944,
+        "north": 32.7475
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1882
+    },
+    {
+      "id": "cog-yz255xy4422",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carte Physique et Politique de L'Afrique (Raster Image)",
+      "recordId": "stanford:yz255xy4422",
+      "url": "https://stacks.stanford.edu/file/druid:yz255xy4422/AM_628_G2_cog.tif",
+      "extent": {
+        "west": -66.464444,
+        "east": 100.169444,
+        "south": -39.79,
+        "north": 43.130278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1822
+    },
+    {
+      "id": "cog-yz476bf3484",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Carta dell' Africa che serve d'illustrazione al nuovo Dizionario Geographico Universale (Raster Image)",
+      "recordId": "stanford:yz476bf3484",
+      "url": "https://stacks.stanford.edu/file/druid:yz476bf3484/AM_0147_G2_cog.tif",
+      "extent": {
+        "west": -80.227222,
+        "east": 102.928889,
+        "south": -51.05,
+        "north": 46.581389
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1832
+    },
+    {
+      "id": "cog-yz724mh2458",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Map of Shanghai and Environs (Raster Image)",
+      "recordId": "stanford:yz724mh2458",
+      "url": "https://stacks.stanford.edu/file/druid:yz724mh2458/ID_334_cog.tif",
+      "extent": {
+        "west": 121.383889,
+        "east": 121.596667,
+        "south": 31.1625,
+        "north": 31.328333
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1903
+    },
+    {
+      "id": "cog-zb162wk6653",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Afrique Physique (Raster Image)",
+      "recordId": "stanford:zb162wk6653",
+      "url": "https://stacks.stanford.edu/file/druid:zb162wk6653/AM_0098_G2_cog.tif",
+      "extent": {
+        "west": -63.832222,
+        "east": 108.0425,
+        "south": -44.673333,
+        "north": 46.075278
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1891
+    },
+    {
+      "id": "cog-zd451rk7545",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "A new mapp of the city of London &c. : with the many additionall buildings and new streets anno 1723 in a playne (Raster Image)",
+      "recordId": "stanford:zd451rk7545",
+      "url": "https://stacks.stanford.edu/file/druid:zd451rk7545/G5754_L7_1723_T3_modified3857_cog.tif",
+      "extent": {
+        "west": -0.158333,
+        "east": -0.058611,
+        "south": 51.489444,
+        "north": 51.532222
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": []
+    },
+    {
+      "id": "cog-zh462pr5572",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "China East coast: City of Shanghai (Raster Image)",
+      "recordId": "stanford:zh462pr5572",
+      "url": "https://stacks.stanford.edu/file/druid:zh462pr5572/ID_31_cog.tif",
+      "extent": {
+        "west": 121.386389,
+        "east": 121.591389,
+        "south": 31.179722,
+        "north": 31.325
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1944
+    },
+    {
+      "id": "cog-zj386tq6375",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Shanghai (in Russian) (Raster Image)",
+      "recordId": "stanford:zj386tq6375",
+      "url": "https://stacks.stanford.edu/file/druid:zj386tq6375/ID_225_cog.tif",
+      "extent": {
+        "west": 121.330833,
+        "east": 121.596111,
+        "south": 31.141944,
+        "north": 31.399167
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1973
+    },
+    {
+      "id": "cog-zm534vp6363",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:zm534vp6363",
+      "url": "https://stacks.stanford.edu/file/druid:zm534vp6363/AM_0250_G2_cog.tif",
+      "extent": {
+        "west": -77.648056,
+        "east": 117.395833,
+        "south": -49.732778,
+        "north": 50.471944
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1880
+    },
+    {
+      "id": "cog-zp052wn6600",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Egypt (Raster Image)",
+      "recordId": "stanford:zp052wn6600",
+      "url": "https://stacks.stanford.edu/file/druid:zp052wn6600/AM_0477_G2_cog.tif",
+      "extent": {
+        "west": 26.476111,
+        "east": 36.610278,
+        "south": 21.972778,
+        "north": 32.427778
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1831
+    },
+    {
+      "id": "cog-zt453th4315",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "Africa (Raster Image)",
+      "recordId": "stanford:zt453th4315",
+      "url": "https://stacks.stanford.edu/file/druid:zt453th4315/AM_0222_G2_cog.tif",
+      "extent": {
+        "west": -55.590278,
+        "east": 97.430278,
+        "south": -41.817778,
+        "north": 43.343611
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1825
+    },
+    {
+      "id": "cog-zt904qs2382",
+      "kind": "cog",
+      "providerId": "stanford",
+      "title": "[Proposed railway from Cairo to the Sea of Suez] (Raster Image)",
+      "recordId": "stanford:zt904qs2382",
+      "url": "https://stacks.stanford.edu/file/druid:zt904qs2382/AM_0520_G2_cog.tif",
+      "extent": {
+        "west": 30.987222,
+        "east": 32.890556,
+        "south": 29.620556,
+        "north": 30.5525
+      },
+      "attribution": "Stanford University Libraries",
+      "license": "This work is in the public domain. There are no restrictions on use.",
+      "historical": true,
+      "timeValues": [],
+      "mapYear": 1840
     }
   ]
 }

@@ -108,7 +108,7 @@ export function init(ctx) {
 
   if (!listEl || !countEl) return;
 
-  const records = ctx.data.records;
+  let records = ctx.data.records;
   const years = ctx.data.years;
   const { providers, types } = facets(records);
   let lastFiltered = [];
@@ -167,7 +167,7 @@ export function init(ctx) {
 
   /* ---------- collection ("Map series") facet ---------- */
 
-  const collectionNames = [...facets(records).collections.keys()].sort((a, b) => a.localeCompare(b, 'en'));
+  let collectionNames = [...facets(records).collections.keys()].sort((a, b) => a.localeCompare(b, 'en'));
   const collectionOptions = new Map(); // collection name -> { option, unknown }
 
   function buildCollectionOptions() {
@@ -299,7 +299,7 @@ export function init(ctx) {
     // "…swissimage-product.metadata" is a tile-pyramid division layer, not map imagery.
     (layer) => !/\.metadata$/.test(layer.id),
   );
-  const isHistorical = (layer) => /zeitreihen|hiks|swissimage/.test(layer.id);
+  const isHistorical = (layer) => layer.historical !== false;
 
   /** Editions ascending: slider left = oldest, and the default is a historical one. */
   const editionsOf = (layer) => [...(layer?.timeValues ?? [])].sort();
@@ -329,8 +329,8 @@ export function init(ctx) {
     const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'en'));
     overlayEl.replaceChildren(
       el('option', { value: '', text: 'No overlay' }),
-      el('optgroup', { label: 'Historical Swiss maps and aerial imagery' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
-      el('optgroup', { label: 'Modern Swiss national maps' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('optgroup', { label: 'Historical maps and imagery' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('optgroup', { label: 'Other regional layers' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
     );
     overlayEl.addEventListener('change', () => {
       const layer = layers.find((l) => l.id === overlayEl.value) ?? null;
@@ -339,6 +339,13 @@ export function init(ctx) {
       applyOverlay(layer, edition);
     });
   }
+
+  ctx.bus.on('overlay:added', ({ layer }) => {
+    if (!layers.some(value => value.id === layer.id)) {
+      layers.push(layer);
+      overlayEl?.append(el('option', { value: layer.id, text: `${layer.title} — reusable alignment` }));
+    }
+  });
 
   // Explicit "match the time filter" action: choosing an edition is a user
   // decision, so nothing changes behind their back.
@@ -373,7 +380,7 @@ export function init(ctx) {
       ctx.bus.emit('overlay:changed', { layer: null, time: null });
       if (overlayTimeWrap) overlayTimeWrap.hidden = true;
       if (overlayOpacityField) overlayOpacityField.hidden = true;
-      if (overlayNote) overlayNote.textContent = 'Georeferenced Swiss map layers from swisstopo. These regional overlays cover Switzerland.';
+      if (overlayNote) overlayNote.textContent = 'Choose an aligned historical map. Coverage and attribution depend on the original collection.';
       return;
     }
     if (overlayOpacityField) overlayOpacityField.hidden = false;
@@ -393,7 +400,7 @@ export function init(ctx) {
     }
     if (overlayNote) {
       overlayNote.textContent = `${layer.title} – ${values.length > 1 ? `${values.length} editions` : 'one edition'}; ${
-        layer.license ?? 'swisstopo geoservices'
+        layer.license ?? 'See original source terms'
       }.`;
     }
     ctx.bus.emit('overlay:changed', { layer, time: time ?? values[0] ?? 'current' });
@@ -419,13 +426,14 @@ export function init(ctx) {
 
   function formatTime(value) {
     const text = String(value ?? '');
-    if (/^\d{8}$/.test(text)) return `${text.slice(6, 8)}.${text.slice(4, 6)}.${text.slice(0, 4)}`;
+    if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
     return text === 'current' ? 'current' : text;
   }
 
   /* ---------- result list ---------- */
 
   function thumb(record) {
+    if (!record.thumbnail) return el('span', { class: 'zh-result__thumb zh-result__thumb--missing', 'aria-hidden': 'true', text: '🗺' });
     const img = el('img', {
       class: 'zh-result__thumb',
       loading: 'lazy',
@@ -468,7 +476,7 @@ export function init(ctx) {
           el('span', { class: 'zh-result__meta' }, [
             el('span', { text: record.institution }),
             record.extent ? el('span', { class: 'zh-tag zh-tag--green', text: 'Extent documented' }) : el('span', { class: 'zh-tag', text: 'Extent not stated' }),
-            record.iiifManifest ? el('span', { class: 'zh-tag zh-tag--turquoise', text: 'IIIF' }) : null,
+            record.georeference || record.overlay ? el('span', { class: 'zh-tag zh-tag--turquoise', text: record.georeference ? 'Georeferenced raster' : 'Aligned map layer' }) : el('span', { class: 'zh-tag', text: 'Scan; alignment not verified' }),
           ]),
         ]),
       ],
@@ -476,7 +484,7 @@ export function init(ctx) {
     return el('li', {}, [button]);
   }
 
-  const showIndex = (index) => `Nr. ${index + 1}`;
+  const showIndex = (index) => `No. ${index + 1}`;
 
   function select(record) {
     ctx.store.update({ selected: record.id });
@@ -511,7 +519,8 @@ export function init(ctx) {
   function revealRow(id) {
     if (!id || typeof window === 'undefined') return false;
     if (!window.matchMedia?.(`(min-width: ${REVEAL_MIN_WIDTH}px)`)?.matches) return false;
-    const button = rowButton(id);
+    let button = rowButton(id);
+    if (!button) { const index = lastFiltered.findIndex(record => record.id === id); if (index >= visibleLimit) { visibleLimit = index + 1; render(lastFiltered); render.flush(lastFiltered); button = rowButton(id); } }
     if (!button) return false;
     const delta = revealScrollDelta(button.getBoundingClientRect(), { height: window.innerHeight }, REVEAL_BAND);
     // `behavior: 'instant'` on purpose: the canton stylesheet sets
@@ -525,10 +534,19 @@ export function init(ctx) {
     return true;
   }
 
+  let visibleLimit = 100;
+  let lastFilterKey = '';
+  const moreButton = el('button', { class: 'zh-button zh-button--ghost', type: 'button', id: 'results-more', hidden: true, onclick: () => { visibleLimit += 100; render(lastFiltered); } }, ['Show 100 more maps']);
+  listEl.after(moreButton);
   let items = [];
   const render = debounce((filtered) => {
+    const filterKey = JSON.stringify([ctx.store.getState().q, ctx.store.getState().from, ctx.store.getState().to, ctx.store.getState().provider, ctx.store.getState().type, ctx.store.getState().collection, ctx.store.getState().at, ctx.store.getState().sort, ctx.store.getState().viewport, filtered.length]);
+    if (filterKey !== lastFilterKey) visibleLimit = 100;
+    lastFilterKey = filterKey;
     lastFiltered = filtered;
     items = filtered;
+    moreButton.hidden = filtered.length <= visibleLimit;
+    moreButton.textContent = `Show more maps (${Math.min(visibleLimit, filtered.length)} of ${filtered.length} shown)`;
     if (filtered.length === 0) {
       listEl.replaceChildren();
       if (stateEl) {
@@ -552,7 +570,7 @@ export function init(ctx) {
       }
     } else {
       if (stateEl) stateEl.hidden = true;
-      listEl.replaceChildren(...filtered.map((record, index) => renderItem(record, index)));
+      listEl.replaceChildren(...filtered.slice(0, visibleLimit).map((record, index) => renderItem(record, index)));
     }
     updateCount(filtered);
     // A hover/focus preview survives a re-render of the list.
@@ -698,7 +716,17 @@ export function init(ctx) {
   }
 
   ctx.bus.on('records:loaded', () => {
+    records = ctx.data.records;
+    Object.assign(years, ctx.data.years);
+    const nextFacets = facets(records);
+    buildCheckboxes(providerWrap, nextFacets.providers, 'providers');
+    buildCheckboxes(typeWrap, nextFacets.types, 'types');
+    collectionNames = [...nextFacets.collections.keys()].sort((a,b) => a.localeCompare(b,'en'));
+    collectionOptions.clear();
+    buildCollectionOptions();
     clampYearsToData();
+    histogramBins = histogramBinsFor(years.min, years.max);
+    buildHistogram();
     apply();
   });
   ctx.bus.on('map:moved', ({ bounds }) => {
@@ -729,7 +757,7 @@ export function init(ctx) {
   // The chart's *structure* is fixed — one bin per decade the seed spans — so a
   // filter change or a brush never reflows it and keyboard focus stays put.
   // Only the counts, the labels and the bar heights are rewritten.
-  const histogramBins = histogramBinsFor(years.min, years.max);
+  let histogramBins = histogramBinsFor(years.min, years.max);
   const histogramButtons = () => [...(histogramEl?.querySelectorAll('button') ?? [])];
 
   /** The records the bars count: every active filter *except* the period itself,
@@ -784,7 +812,9 @@ export function init(ctx) {
     if (!histogramEl) return;
     const buttons = histogramButtons();
     if (buttons.length === 0) return;
-    const counts = countHistogramBins(histogramBins, histogramScope(state), years.min, years.max);
+    const scope = histogramScope(state);
+    const undated = scope.filter(record => !Number.isFinite(record.yearStart ?? record.yearEnd)).length;
+    const counts = countHistogramBins(histogramBins, scope, years.min, years.max);
     const busiest = Math.max(1, ...counts.values());
     let total = 0;
     buttons.forEach((button, index) => {
@@ -801,7 +831,7 @@ export function init(ctx) {
       if (bar) bar.style.height = `${count === 0 ? 2 : Math.max(4, Math.round((count / busiest) * 100))}%`;
       button.classList.toggle('is-empty', count === 0);
     });
-    histogramEl.setAttribute('aria-label', `Maps by publication decade. Choose a period (${total} in the current filters).`);
+    histogramEl.setAttribute('aria-label', `Maps by publication decade. Choose a period (${total} dated records; ${undated} undated records remain browseable).`);
   }
 
   /** Mark the bins inside the current range and keep exactly one tabbable bin. */

@@ -32,6 +32,8 @@ const optionalModules = [
   ['detail', './detail.js'],
   ['compare', './compare.js'],
   ['history', './history.js'],
+  ['georeference', './georeference.js'],
+  ['collections', './collections.js'],
 ];
 
 async function initModules() {
@@ -127,7 +129,7 @@ function renderIntro() {
   })();
   const collections = new Set(ctx.data.records.map((r) => r.collection).filter(Boolean)).size;
   const withExtent = ctx.data.records.filter((r) => r.extent).length;
-  const factsTitle = `${collections} collections · ${withExtent} of ${ctx.data.records.length} records with documented extents · ${ctx.data.overlays.length} Swiss overlay layers`;
+  const factsTitle = `${collections} collections · ${withExtent} of ${ctx.data.records.length} records with documented extents · ${ctx.data.overlays.length} aligned map layers`;
   for (const facts of document.querySelectorAll('#intro-facts, #about-facts')) {
     facts.replaceChildren(...factsItems.map((item) => item.cloneNode(true)));
     // The compact strip on a phone carries the same honest detail as a title.
@@ -143,7 +145,7 @@ function renderIntro() {
         .map((source) =>
           el('li', {}, [el('span', { class: 'zh-tag zh-tag--blue', text: source.name?.split('–')[0]?.trim() || source.id })]),
         ),
-      el('li', {}, [el('span', { class: 'zh-tag zh-tag--turquoise', text: `${ctx.data.overlays.length} Swiss overlay layers` })]),
+      el('li', {}, [el('span', { class: 'zh-tag zh-tag--turquoise', text: `${ctx.data.overlays.length} aligned map layers` })]),
     );
   }
   const sourceList = qs('#source-list');
@@ -282,7 +284,7 @@ async function main() {
 
   // Diagnostics for the console and for curious users of the API.
   console.info(
-    `[meridian-atlas] ${ctx.modules?.length ?? 0} Modul(e): ${(ctx.modules ?? []).join(', ')} · ` +
+    `[meridian-atlas] ${ctx.modules?.length ?? 0} modules: ${(ctx.modules ?? []).join(', ')} · ` +
       `${ctx.data.records.length} records · ${ctx.data.overlays.length} overlays (${ctx.data.generatedAt ?? 'undated'})`,
   );
 }

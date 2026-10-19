@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        member: [zurich-maps-0, zurich-maps-1, zurich-maps-2, zurich-maps-3]
+        member: [maps-n-stuff-0, maps-n-stuff-1, maps-n-stuff-2, maps-n-stuff-3]
     env:
       SHURIK_MEMBER: ${{ matrix.member }}
     steps:

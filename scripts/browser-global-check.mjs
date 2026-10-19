@@ -8,6 +8,7 @@ import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import { writeArrayBuffer } from 'geotiff';
 
 const base = process.argv[2] || 'http://127.0.0.1:8787';
 const out = process.argv[3] || '/tmp/meridian-atlas-checks';
@@ -92,7 +93,50 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1080, deviceScaleFactor: 1, mobile: false });
   await go();
   await check('English document, metadata, and original globe branding', `document.documentElement.lang === 'en' && document.title.includes('Meridian Atlas') && document.querySelector('.zh-brand__mark circle') && !document.querySelector('.zh-header').textContent.includes('Kanton')`);
-  await check('All six app modules initialise successfully', `(async()=>{ const ctx = ${atlas}; return ctx.moduleErrors.length === 0 && ctx.modules.length === 6; })()`);
+  await check('All eight app modules initialise successfully', `(async()=>{ const ctx = ${atlas}; return ctx.moduleErrors.length === 0 && ctx.modules.length === 8; })()`);
+  await check('Rights-cleared global import includes unaligned and undated scans', `(async()=>{ const r=(${atlas}).data.records; return r.length===4685 && r.filter(v=>v.providerId==='stanford').length===4464 && r.some(v=>v.yearStart===null&&!v.georeference); })()`);
+  await check('Large result lists start with a bounded page', `document.querySelectorAll('#result-list .zh-result').length<=100 && !document.querySelector('#results-more').hidden`);
+  await evaluate(`document.querySelector('#results-more').click()`);
+  await waitFor(`document.querySelectorAll('#result-list .zh-result').length>100`);
+  await check('More results expands the catalogue page', `document.querySelectorAll('#result-list .zh-result').length===200`);
+  await go('?base=satellite');
+  await check('Satellite choice uses NASA globally and states source resolution', `(async()=>{const ctx=${atlas};return ctx.map.getView().base==='satellite' && document.querySelector('#map').textContent.includes('NASA') && document.querySelector('#map-attribution-extra').textContent.includes('500');})()`);
+  await go();
+  // A generated, explicitly synthetic GeoTIFF verifies the actual browser
+  // decoder, range handling, projection and canvas painting without asserting
+  // that a blocked institutional image server has been reached.
+  const pixels=[];
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++)pixels.push(x<8?240:10,x<8?10:240,20);
+  const fixture=Buffer.from(await writeArrayBuffer(pixels,{width:16,height:16,PhotometricInterpretation:2,SamplesPerPixel:3,BitsPerSample:[8,8,8],GTModelTypeGeoKey:2,GeographicTypeGeoKey:4326,GTRasterTypeGeoKey:1,ModelPixelScale:[2.5,2.5,0],ModelTiepoint:[0,0,0,-20,40,0]})).toString('base64');
+  await evaluate(`(async()=>{
+    const ctx=${atlas};window.originalRasterFetch=window.fetch;
+    const bytes=Uint8Array.from(atob(${JSON.stringify(fixture)}),c=>c.charCodeAt(0));
+    window.fetch=async(input,init={})=>{
+      if(String(typeof input==='string'?input:input.url).includes('/api/raster?')){
+        const range=new Headers(init.headers).get('range')?.match(/bytes=(\\d+)-(\\d+)/);
+        if(!range)throw new Error('Expected a bounded raster byte range');
+        const start=Number(range[1]),end=Math.min(Number(range[2]),bytes.length-1);
+        return new Response(bytes.slice(start,end+1),{status:206,headers:{'content-range':'bytes '+start+'-'+end+'/'+bytes.length,'accept-ranges':'bytes','content-length':String(end-start+1)}});
+      }
+      return window.originalRasterFetch(input,init);
+    };
+    const layer=ctx.data.overlays.find(v=>v.kind==='cog');ctx.store.update({overlay:layer.id,lat:20,lon:-5,zoom:5});
+  })()`);
+  const rasterPixel=`(()=>{const c=document.querySelector('.map-raster');return c?.getContext('2d').getImageData(Math.floor(c.width/2),Math.floor(c.height/2),1,1).data;})()`;
+  await waitFor(`document.querySelector('#alignment-status')?.textContent.includes('Provider-supplied georeferencing') && (${rasterPixel})[0]>200`);
+  await check('Synthetic native GeoTIFF decodes, projects and paints the correct colour', `(${rasterPixel})[3]===255 && (${rasterPixel})[1]<50`);
+  await evaluate(`(async()=>{(${atlas}).store.update({lon:5});})()`);
+  await waitFor(`(${rasterPixel})[1]>200`);
+  await check('Raster projection follows map panning', `(${rasterPixel})[0]<50`);
+  await evaluate(`(async()=>{const ctx=${atlas};ctx.bus.emit('overlay:opacity',{opacity:0});})()`);
+  await check('Raster opacity supports a fully transparent overlay', `document.querySelector('.map-raster').style.opacity==='0'`);
+  await evaluate(`window.fetch=window.originalRasterFetch`);
+  await go();
+  await evaluate(`window.originalCollectionFetch=window.fetch;window.fetch=async(input,init)=>String(input).includes('/api/catalogue?')?Response.json({records:[{id:'leventhal:commonwealth:fixture123',providerId:'leventhal',title:'Fixture Boston harbour',yearStart:1800,yearEnd:1800,creators:[],institution:'Fixture library',rights:'This work is in the public domain.',recordUrl:'https://collections.leventhalmap.org/search/commonwealth:fixture123',thumbnail:null,type:'map',collection:'Fixture collection',extent:null,geoNote:'Synthetic adapter test, not an imported map.'}],withheld:1,nextPage:null}):window.originalCollectionFetch(input,init);document.querySelector('#collection-source').value='leventhal';document.querySelector('#collection-query').value='Fixture Boston';document.querySelector('#collection-search').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));`);
+  await waitFor(`document.querySelector('[data-record-id="leventhal:commonwealth:fixture123"]')`);
+  await check('Original collection searches merge admitted records and update filters', `(async()=>{const ctx=${atlas};return ctx.data.records.length===4686 && ctx.store.getState().provider==='leventhal' && document.querySelector('#collection-status').textContent.includes('1 map added');})()`);
+  await evaluate(`window.fetch=window.originalCollectionFetch`);
+  await go();
   await check('Archive map opens worldwide', `(async()=>{ const s = (${atlas}).store.getState(); return s.lat === 20 && s.lon === 0 && !s.base; })()`);
   await check('Worldwide basemap host is permitted by the delivered image policy', `(async()=>{ const csp = (await fetch('/')).headers.get('content-security-policy'); return csp.includes('https://tile.openstreetmap.org') && csp.includes('https://tile.loc.gov'); })()`);
   await check('The initial publication period includes early twentieth-century maps', `(async()=>{ return (${atlas}).store.getState().to >= 1920; })()`);

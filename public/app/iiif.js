@@ -29,7 +29,7 @@ export const MIN_REGION_FRACTION = 0.04;
  * IIIF labels are a string (v2) or a language map (v3, e.g. `{ de: ['Sheet 1'] }`).
  * Returns a plain string or `null`; never invents a label.
  */
-export function labelText(label, preferred = ['en', 'none', 'de']) {
+export function labelText(label, preferred = ['en', 'none']) {
   if (label == null) return null;
   if (typeof label === 'string') return label.trim() || null;
   if (Array.isArray(label)) {
@@ -109,7 +109,7 @@ function numberOrNull(value) {
  * Throws for input that is not a manifest, so callers can show an honest error.
  */
 export function parseManifest(manifest) {
-  if (!manifest || typeof manifest !== 'object') throw new Error('Kein IIIF-Manifest (JSON erwartet).');
+  if (!manifest || typeof manifest !== 'object') throw new Error('No IIIF manifest was returned (expected JSON).');
   const raw = Array.isArray(manifest.sequences?.[0]?.canvases)
     ? manifest.sequences[0].canvases
     : Array.isArray(manifest.items)

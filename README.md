@@ -2,9 +2,10 @@
 
 A global historical atlas in English, inspired by OldMapsOnline’s Maps and History views. Explore archive maps from original collections or follow changing political borders on a world timeline. The interface draws on the Canton Zürich design system’s typography, spacing, colour and controls; the name and globe mark are original to this project.
 
-- **Maps:** a worldwide OpenStreetMap basemap, worldwide place search, publication-year and collection filters, map details with original-record links, IIIF previews, and saved comparisons.
+- **Maps:** worldwide OpenStreetMap and NASA satellite reference layers, global place search, date and collection filters, original-record links, IIIF previews, and saved comparisons. NASA Blue Marble is a 500 m overview; zooming closer enlarges the imagery.
 - **Borders through time:** 54 bundled world snapshots from [André Ourednik’s Historical Basemaps](https://github.com/aourednik/historical-basemaps), with a timeline, playback, BCE/CE year entry, polygon details, cross-period polity search, and shareable map positions. Open `/?view=history`.
-- **Original sources:** 221 catalogue records from e-rara partner libraries, swisstopo, and a curated international Library of Congress selection. Original titles and institution names retain their source language. Coverage varies by place and period.
+- **Original sources:** 4,685 bundled catalogue records, including 4,464 explicitly public-domain Stanford maps, plus e-rara, swisstopo and Library of Congress holdings. Search additional original LoC, Leventhal and USGS collections on demand. Live adapters require network access to those institutions and admit only compatible rights statements; they are not a claim to have imported every holding.
+- **Georeferencing:** 117 provider-supplied Stanford GeoTIFF overlays read their own CRS and pixel transform. Other IIIF scans can look up reusable Allmaps alignments or open in its georeferencing editor. A missing alignment, date, extent or thumbnail does not exclude an otherwise eligible scan. Source titles and institution names retain their original language.
 - **Honest geography:** publication dates and depicted periods are separate. Border gaps use an explicitly named nearest snapshot. Approximate place anchors for international archive records are labelled; they never become fabricated map extents. Optional Swiss overlays cover Switzerland.
 
 ## Run and check
@@ -24,11 +25,12 @@ Cloudflare’s connected repository integration handles build and deployment fro
 - Deploy command: `npx wrangler deploy`
 - Root directory: repository root
 
-The Worker’s internal deployment name stays `zurich-maps` to retain the existing Cloudflare site. No Cloudflare credentials belong in Shurik or this repository.
+The package, Wrangler Worker and new Shurik member names are `maps-n-stuff`, matching the repository. The Cloudflare connected Worker must also be named `maps-n-stuff`; an existing `zurich-maps` project needs that dashboard migration and any custom-domain reassignment. Changing this repository does not rename an account-side Worker. No Cloudflare credentials belong in Shurik or this repository.
 
 ## Sources and refreshes
 
-- `npm run harvest` refreshes e-rara and Swiss map metadata and retains the audited international selection. `npm run harvest:offline` replays cached upstream responses.
+- `npm run harvest` imports the complete eligible map subset of Stanford’s pinned CC0 institutional metadata repository. The image-rights gate is separate: each admitted item must explicitly carry PDM/CC0 and no conflicting restrictions. The importer has no geography, decade or count quota. `npm run harvest:offline` reuses its checkout; `node scripts/harvest-global.mjs --input /path/to/checkout --offline` uses an existing checkout at the pinned revision.
+- `npm run harvest:regional` refreshes the legacy e-rara/Swiss holdings while preserving the global collections. Their historic sampling limits remain documented; the Stanford import has no such limit.
 - `data/international-maps.json` records the curated Library of Congress selection and provenance. `node scripts/add-international-maps.mjs` reapplies it without a network request or duplicate records. Live image endpoints were not reachable in the development environment used for this correction; run the endpoint check from a network with access to the primary services.
 - `npm run harvest:history` rebuilds the pinned historical-border bundle; `npm run harvest:history:offline` replays its cache.
 

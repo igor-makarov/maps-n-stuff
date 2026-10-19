@@ -175,7 +175,7 @@ test('parseManifest reads a Presentation 3.0 manifest', () => {
 });
 
 test('parseManifest rejects things that are not usable manifests', () => {
-  assert.throws(() => parseManifest(null), /Kein IIIF-Manifest/);
+  assert.throws(() => parseManifest(null), /No IIIF manifest/);
   assert.throws(() => parseManifest({ '@type': 'sc:Collection' }), /no image pages/);
   assert.throws(() => parseManifest({ sequences: [{ canvases: [] }] }), /no usable image pages/);
 });

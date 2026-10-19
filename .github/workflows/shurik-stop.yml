@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        member: [zurich-maps-0, zurich-maps-1, zurich-maps-2, zurich-maps-3]
+        member: [maps-n-stuff-0, maps-n-stuff-1, maps-n-stuff-2, maps-n-stuff-3, zurich-maps-0, zurich-maps-1, zurich-maps-2, zurich-maps-3]
     concurrency:
       group: shurik-control-${{ matrix.member }}
       cancel-in-progress: false
@@ -27,7 +27,22 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Check whether the saved loop exists
+        id: member
+        env:
+          MEMBER: ${{ matrix.member }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          const response = await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/ref/heads/shurik-control/${process.env.MEMBER}`, {
+            headers: { authorization: `Bearer ${process.env.GH_TOKEN}`, accept: 'application/vnd.github+json' },
+          });
+          if (!response.ok && response.status !== 404) throw new Error(`Cannot inspect saved loop: HTTP ${response.status}`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `exists=${response.ok}\n`);
+          JS
       - name: Stop the member and cancel its active iteration
+        if: steps.member.outputs.exists == 'true'
         uses: igor-makarov/shurik@v2
         with:
           command: stop

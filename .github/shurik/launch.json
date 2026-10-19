@@ -1,6 +1,6 @@
 {
   "command": "start",
-  "loop_id": "zurich-maps",
+  "loop_id": "maps-n-stuff",
   "model": {
     "provider": "opencode-go",
     "name": "deepseek-v4.1-flash",

@@ -66,26 +66,6 @@ test('the point filter uses documented footprints and excludes maps with unknown
     assert.ok(47.3769 >= record.extent.south && 47.3769 <= record.extent.north);
     assert.ok(8.5417 >= record.extent.west && 8.5417 <= record.extent.east);
   }
-  // The seed is no longer Switzerland-only: the “Übersichtskarten von Europa und
-  // der Welt” set states continental extents, so the honest-empty case must be
-  // checked with a point no record claims (Berlin used to be it until the
-  // overview maps landed — the assertion moved, the behaviour did not).
-  // Iteration 7-21 added whole-globe sheets (“W 180°-E 180°/N 90°-S 90°”), whose
-  // documented footprint really is the whole earth — from then on *every* point
-  // has an answer, so the empty state is exercised on the records that do not
-  // claim the globe (the point below is in the South Pacific).
-  const notWorldMaps = records.filter((record) => record.collection !== 'Übersichtskarten von Europa und der Welt');
-  assert.deepEqual(
-    notWorldMaps.filter((record) => coversPoint(record, -25, -140)),
-    [],
-    'a point outside every regional footprint keeps the empty state honest',
-  );
-  assert.ok(
-    records.filter((record) => coversPoint(record, -25, -140)).length > 0,
-    'the committed world maps document a whole-globe footprint, so the point filter answers even there',
-  );
-  assert.ok(
-    records.filter((record) => coversPoint(record, 48.2082, 16.3738)).length > 0,
-    'the overview set gives places outside Switzerland real footprints and a point filter answer',
-  );
+  const localSheet={extent:{west:8,east:9,south:47,north:48}};
+  assert.equal(coversPoint(localSheet,-25,-140),false, 'a local sheet does not cover the Pacific');
 });

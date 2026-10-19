@@ -23,7 +23,7 @@ export function validateRecord(record, index = -1) {
   }
   if (record.id && !/^[a-z0-9-]+:.+$/.test(record.id)) problems.push(`${record.id}: id must be "<providerId>:<upstream id>"`);
   if (record.recordUrl && !/^https:\/\//.test(record.recordUrl)) problems.push(`${record.id}: recordUrl must be https`);
-  if (!Number.isFinite(record.yearStart) || !Number.isFinite(record.yearEnd)) problems.push(`${record.id}: yearStart/yearEnd missing`);
+  if ((record.yearStart != null || record.yearEnd != null) && (!Number.isFinite(record.yearStart) || !Number.isFinite(record.yearEnd))) problems.push(`${record.id}: publication date must be a complete pair or explicitly unknown`);
   else if (record.yearStart > record.yearEnd) problems.push(`${record.id}: yearStart > yearEnd`);
   if (record.extent) {
     const { west, east, south, north } = record.extent;
@@ -100,6 +100,7 @@ export function titleText(record) {
     record.subjectPlace,
     record.shelfmark,
     record.collection,
+    record.originalCollection,
     record.imprint,
   ]
     .filter(Boolean)

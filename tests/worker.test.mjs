@@ -78,10 +78,10 @@ test('GET /api/health reports the allowlisted upstreams', async () => {
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.ok, true);
-  assert.ok(body.upstreams.includes('api3.geo.admin.ch'));
+  assert.ok(body.upstreams.includes('purl.stanford.edu'));
   assert.ok(body.upstreams.includes('wmts.geo.admin.ch'));
   assert.ok(!body.upstreams.includes('www.oldmapsonline.org'), 'the aggregator is not a data backend');
-  assert.deepEqual(body.endpoints, ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch']);
+  assert.deepEqual(body.endpoints, ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch', '/api/raster', '/api/georeference', '/api/catalogue']);
 });
 
 test('GET /api/records serves the committed seed data with a cache header', async () => {
@@ -100,43 +100,22 @@ test('GET /api/layers and /api/sources serve the registry files', async () => {
   assert.ok(Array.isArray(sources.providers) && sources.providers.length > 0);
 });
 
-test('GET /api/search/places validates input and normalises swisstopo results', async () => {
-  const tooShort = await call('/api/search/places?q=z');
-  assert.equal(tooShort.status, 400);
-  assert.equal((await tooShort.json()).error, 'query_too_short');
-  assert.equal(upstreamCalls.length, 0, 'invalid input never reaches the upstream');
-
-  upstreamResponder = () =>
-    new Response(
-      JSON.stringify({
-        results: [
-          {
-            attrs: {
-              label: '<b>Zürich</b> (ZH)',
-              lat: 47.3772,
-              lon: 8.5273,
-              origin: 'gg25',
-              geom_st_box2d: 'BOX(8.44688 47.32275,8.62595 47.43414)',
-            },
-          },
-        ],
-      }),
-      { status: 200, headers: { 'content-type': 'application/json' } },
-    );
-
-  const res = await call('/api/search/places?q=Z%C3%BCrich&limit=3');
-  assert.equal(res.status, 200);
-  const body = await res.json();
-  assert.equal(body.results.length, 1);
-  assert.equal(body.results[0].label, 'Zürich (ZH)', 'HTML from the upstream label is stripped');
-  assert.deepEqual(body.results[0].bbox, { west: 8.44688, south: 47.32275, east: 8.62595, north: 47.43414 });
-  assert.equal(body.attribution, '© swisstopo');
-
-  const upstreamUrl = new URL(upstreamCalls.at(-1).url);
-  assert.equal(upstreamUrl.hostname, 'api3.geo.admin.ch');
-  assert.equal(upstreamUrl.searchParams.get('type'), 'locations');
-  assert.equal(upstreamUrl.searchParams.get('sr'), '4326');
-  assert.match(upstreamCalls.at(-1).init.headers['user-agent'], /meridian-atlas/, 'polite, identifiable User-Agent');
+test('GET /api/search/places validates input and uses worldwide English geocoding', async () => {
+  assert.equal((await call('/api/search/places?q=z')).status,400);
+  assert.equal(upstreamCalls.length,0);
+  upstreamResponder=()=>Response.json([{display_name:'Cairo, Egypt',lat:'30.04',lon:'31.23',boundingbox:['29.7','30.3','31','31.6'],type:'city',class:'place'}]);
+  const body=await(await call('/api/search/places?q=Cairo')).json();
+  assert.equal(body.results.length,1);
+  assert.match(body.results[0].label,/Cairo/);
+  assert.match(body.attribution,/OpenStreetMap/);
+  assert.equal(new URL(upstreamCalls[0].url).hostname,'nominatim.openstreetmap.org');
+  assert.match(upstreamCalls[0].init.headers['user-agent'],/maps-n-stuff/);
+});
+test('place search outages return an honest empty result without Swiss fallback', async () => {
+  upstreamResponder=()=>new Response('unavailable',{status:503});
+  const body=await(await call('/api/search/places?q=Tokyo')).json();
+  assert.deepEqual(body.results,[]);
+  assert.equal(upstreamCalls.length,1);
 });
 
 test('GET /api/fetch refuses everything outside the host allowlist', async () => {

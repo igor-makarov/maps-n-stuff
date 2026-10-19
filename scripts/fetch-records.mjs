@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { formatCatalogue } from './catalogue-format.mjs';
+import { openImageRights } from '../src/worker/catalogue.js';
 /**
  * Reproduce the seed dataset from primary sources.
  *
@@ -296,6 +298,8 @@ const unstatedInstitution = [];
 async function manifestRecord(candidate, { sourceCollection, maxYear }) {
   const manifestUrl = `https://www.e-rara.ch/i3f/v20/${candidate.titleId}/manifest`;
   const manifest = await get(manifestUrl, { as: 'json', timeout: 40000 });
+  const rights = candidate.rights || String(manifest.license || manifest.rights || '').trim();
+  if (!openImageRights(rights) && !/^PDM\s*1\.0$/i.test(rights)) return null;
   const meta = metaMap(manifest);
   const label = String(manifest.label || candidate.title);
   const bbox = parseBbox(meta.Kartendaten);
@@ -362,7 +366,7 @@ async function manifestRecord(candidate, { sourceCollection, maxYear }) {
     creators: candidate.creators.length ? candidate.creators : [],
     providerId: 'e-rara',
     institution: attributed,
-    rights: candidate.rights || 'PDM 1.0',
+    rights,
     recordUrl: candidate.doi || `https://www.e-rara.ch/zuz/content/titleinfo/${candidate.titleId}`,
     thumbnail: thumb,
     iiifManifest: manifestUrl,
@@ -608,7 +612,7 @@ async function almaRecord(hit, options) {
   const resolved = await resolveDoiTitle(`https://www.e-rara.ch/doi/${hit.doi}`);
   if (!resolved) return null;
   return manifestRecord(
-    { ...hit, ...resolved, doi: `https://www.e-rara.ch/doi/${hit.doi}`, rights: 'PDM 1.0' },
+    { ...hit, ...resolved, doi: `https://www.e-rara.ch/doi/${hit.doi}` },
     options,
   );
 }
@@ -1336,9 +1340,8 @@ async function main() {
    * without this rule the surviving duplicate would be whichever the search
    * happened to return first — an arbitrary outcome, not a documented one.
    */
-  const byYearThenCantonLibrary = (a, b) =>
+  const byYearThenIdentifier = (a, b) =>
     a.year - b.year ||
-    (a.corpus === 'zuz' ? 0 : 1) - (b.corpus === 'zuz' ? 0 : 1) ||
     String(a.titleId).localeCompare(String(b.titleId));
 
   /**
@@ -1356,7 +1359,7 @@ async function main() {
       sruSeen.add(id);
       list.push(hit);
     }
-    return list.sort(byYearThenCantonLibrary);
+    return list.sort(byYearThenIdentifier);
   }
 
   const sruCandidates = collectSruCandidates([...planHits, ...karteHits]);
@@ -1514,14 +1517,11 @@ async function main() {
     return out;
   };
   const worldCandidates = roundRobin(worldQueryCandidates);
-  const worldHitsPooled = zurichWindow
-    ? await pool(worldCandidates.slice(0, SRU_SEARCHES.worldOverview.candidateCap), 3, (c) =>
-        sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.worldOverview.name, maxYear: 1930 }),
-      )
-    : [];
-  const spanDegrees = (r) => Math.max(r.extent.east - r.extent.west, r.extent.north - r.extent.south);
-  /** An overview map outside the canton window with a genuine continental extent. */
-  const isWorldOverview = (r) => !inZurich(r) && spanDegrees(r) >= 5;
+  const worldHitsPooled = await pool(worldCandidates, 3, (c) =>
+    sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.worldOverview.name, maxYear: 2026 }),
+  );
+  /** Keep worldwide discoveries with their stated extents, including local maps. */
+  const isWorldOverview = (r) => Boolean(r.extent);
   const worldRecords = selectSru(worldHitsPooled, {
     cap: SRU_SEARCHES.worldOverview.recordCap,
     perDecade: 3,
@@ -1957,6 +1957,17 @@ async function main() {
       `(${records.length} records, ${overlayLayers.length} comparison layers)`,
   );
   await addInternationalMaps(recordsDoc, sources);
+  // A regional refresh must preserve unrelated global collections.
+  try {
+    const previous = JSON.parse(await readFile(resolve(outDir, 'records.json'), 'utf8'));
+    const registry = JSON.parse(await readFile(resolve(outDir, 'sources.json'), 'utf8'));
+    const layers = JSON.parse(await readFile(resolve(outDir, 'overlays.json'), 'utf8'));
+    const refreshed = new Set(['e-rara', 'swisstopo', 'loc']);
+    recordsDoc.records.push(...previous.records.filter(record => !refreshed.has(record.providerId)));
+    sources.providers.push(...registry.providers.filter(source => !refreshed.has(source.id)));
+    overlaysDoc.overlays.push(...layers.overlays.filter(layer => !refreshed.has(layer.providerId)));
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  formatCatalogue(recordsDoc, sources, overlaysDoc);
   if (writeOutput) {
     await mkdir(outDir, { recursive: true });
     await writeFile(resolve(outDir, 'records.json'), JSON.stringify(recordsDoc, null, 2) + '\n');

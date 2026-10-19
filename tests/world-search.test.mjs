@@ -19,7 +19,7 @@ import {
   nominatimUrl,
   searchPayload,
 } from '../src/worker/geocode.js';
-import { BASE_LAYERS, DEFAULT_BASE, WORLD, WORLD_BOUNDS, ZURICH, baseLayerFor, tileUrl } from '../public/app/map.js';
+import { BASE_LAYERS, DEFAULT_BASE, WORLD, WORLD_BOUNDS, baseLayerFor, tileUrl } from '../public/app/map.js';
 import { QUICK_PLACES } from '../public/app/search.js';
 import { STATE_DEFAULTS } from '../public/app/store.js';
 
@@ -109,7 +109,7 @@ test('the Worker allowlist admits the worldwide gazetteer and nothing more', () 
   assert.equal(isAllowed(new URL(`https://${NOMINATIM_HOST}/search?q=Cairo`)), true);
   assert.equal(isAllowed(new URL(`https://${NOMINATIM_HOST}/reverse?q=Cairo`)), false, 'only the documented search path');
   assert.equal(isAllowed(new URL(`https://nominatim.openstreetmap.org.evil.example/search?q=x`)), false);
-  assert.equal(isAllowed(new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Bern')), true, 'the Swiss fallback stays');
+  assert.equal(isAllowed(new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Bern')), false, 'Swiss fallback was removed');
 });
 
 /* -------------------------------------------------------------- basemap */
@@ -121,18 +121,17 @@ test('the default basemap is global and the initial view is the world', () => {
   assert.match(DEFAULT_BASE.attribution, /OpenStreetMap/);
   assert.equal(baseLayerFor('').key, 'osm', 'an empty ?base= is the global default');
   assert.equal(baseLayerFor('nonsense').key, 'osm');
-  assert.equal(baseLayerFor('farbe').key, 'farbe', 'the Swiss detail layer remains reachable');
+  assert.equal(baseLayerFor('farbe').key, 'osm', 'obsolete regional choice falls back globally');
   for (const layer of BASE_LAYERS) {
     assert.ok(layer.key && layer.title && layer.attribution && layer.maxZoom > 0);
     assert.equal(/^https:\/\//.test(layer.urlTemplate), true);
   }
   const swiss = BASE_LAYERS.filter((layer) => layer.coverage === 'Switzerland');
-  assert.ok(swiss.length >= 2, 'Swiss coverage is labelled instead of implied');
+  assert.equal(swiss.length, 0);
 
   assert.deepEqual(WORLD, { lat: 20, lon: 0, zoom: 2 });
   assert.equal(MAP_DEFAULT().zoom <= 3, true, 'the app opens on a world view, not a city');
   assert.ok(WORLD_BOUNDS.west < -170 && WORLD_BOUNDS.east > 170);
-  assert.ok(ZURICH.zoom >= 10, 'Zürich remains available as a deliberate jump, not as the default');
   assert.equal(STATE_DEFAULTS.lat, WORLD.lat);
   assert.equal(STATE_DEFAULTS.lon, WORLD.lon);
   assert.equal(STATE_DEFAULTS.zoom, WORLD.zoom);

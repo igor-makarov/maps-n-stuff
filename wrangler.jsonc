@@ -2,7 +2,7 @@
   // Cloudflare Workers site: static assets from ./public + a small request
   // handler in src/worker/index.js for /api/* (allowlisted upstream proxy).
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "zurich-maps",
+  "name": "maps-n-stuff",
   "main": "src/worker/index.js",
   "compatibility_date": "2025-08-01",
   "compatibility_flags": ["nodejs_compat"],

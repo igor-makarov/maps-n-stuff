@@ -5,7 +5,7 @@
   "providers": [
     {
       "id": "e-rara",
-      "name": "e-rara — digitised maps from Swiss libraries",
+      "name": "e-rara — historic maps and atlases",
       "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
       "institutions": [
         "Bibliothèque de Genève",
@@ -19,13 +19,13 @@
       "collections": [
         {
           "id": "zuz-wildkarte",
-          "name": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+          "name": "Wild map of Zurich canton, 1:25,000",
           "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
           "discovery": "https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich"
         },
         {
           "id": "landkarten",
-          "name": "Schweizer Landkarten aus vier Jahrhunderten",
+          "name": "Swiss maps across four centuries",
           "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
           "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten"
         },
@@ -43,28 +43,28 @@
         },
         {
           "id": "zurich-plaene",
-          "name": "Pläne aus Zürich (Stadt und Umgebung)",
+          "name": "Zurich city and surroundings",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 47 records kept"
         },
         {
           "id": "zurich-stadtplaene",
-          "name": "Grundrisse und Situationspläne der Stadt Zürich",
+          "name": "Zurich city plans and site maps",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-26719",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DGrundriss%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DSituationsplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.title=Grundriss and dc.subject=Zürich | dc.title=Situationsplan and dc.subject=Zürich): 35 candidates with a stated extent, 10 records kept"
         },
         {
           "id": "zurich-region",
-          "name": "Zürich und Umgebung (Kanton, Stadt und See)",
+          "name": "Zurich canton, city and lake",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DUmgebung%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DZ%C3%BCrichsee&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DStadtplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Zürich | dc.subject=Zürichsee | dc.title=Stadtplan and dc.subject=Zürich): 24 candidates with a stated extent, 11 records kept"
         },
         {
           "id": "weltuebersichten",
-          "name": "Übersichtskarten von Europa und der Welt",
+          "name": "Maps of Europe and the world",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-12909",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DEuropa%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DErdkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DWeltkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAfrika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAmerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAsien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DDeutschland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DFrankreich%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DItalien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DOesterreich-Ungarn%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSpanien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DGrossbritannien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DS%C3%BCdamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DPal%C3%A4stina%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DT%C3%BCrkei%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DIndien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DNordamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DRussland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSyrien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DJapan%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.subject=Europa and dc.title=Karte | dc.title=Erdkarte | dc.title=Weltkarte | dc.subject=Afrika and dc.title=Karte | dc.subject=Amerika and dc.title=Karte | dc.subject=Asien and dc.title=Karte | dc.subject=Deutschland and dc.title=Karte | dc.subject=Frankreich and dc.title=Karte | dc.subject=Italien and dc.title=Karte | dc.subject=Oesterreich-Ungarn and dc.title=Karte | dc.subject=Spanien and dc.title=Karte | dc.subject=Grossbritannien and dc.title=Karte | dc.subject=Südamerika and dc.title=Karte | dc.subject=Palästina and dc.title=Karte | dc.subject=Türkei and dc.title=Karte | dc.subject=Indien and dc.title=Karte | dc.subject=Nordamerika and dc.title=Karte | dc.subject=Russland and dc.title=Karte | dc.subject=Syrien and dc.title=Karte | dc.subject=Japan and dc.title=Karte): 133 candidates with a stated extent, 35 records kept — the second coverage area, outside the canton window by rule"
@@ -95,32 +95,32 @@
     },
     {
       "id": "swisstopo",
-      "name": "swisstopo — Swiss historical map layers",
+      "name": "swisstopo",
       "operator": "Bundesamt für Landestopografie swisstopo",
       "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
       "home": "https://www.swisstopo.admin.ch/",
       "collections": [
         {
           "id": "zeitreise",
-          "name": "Zeitreise – Kartenwerke",
+          "name": "Historical topographic maps",
           "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
         },
         {
           "id": "siegfriedkarte",
-          "name": "Siegfriedkarte 1:25 000 (1870–1949)",
+          "name": "Siegfried map series, 1870–1949",
           "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
         },
         {
           "id": "dufourkarte",
-          "name": "Dufourkarte Erstausgabe",
+          "name": "Dufour map, first edition",
           "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
         },
         {
           "id": "swissimage-zeitreise",
-          "name": "SWISSIMAGE HIST (historische Luftbilder)",
+          "name": "Historical aerial imagery — Switzerland",
           "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
         },
@@ -133,9 +133,7 @@
       ],
       "endpoints": {
         "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
-        "basemapTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
-        "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer"
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
       },
       "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
       "attribution": "© swisstopo",
@@ -143,14 +141,12 @@
       "retrievalDate": "2026-10-19",
       "apiHosts": [
         "wmts.geo.admin.ch",
-        "api3.geo.admin.ch",
         "map.geo.admin.ch"
       ],
       "api": {
         "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
         "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
-        "searchServer": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}",
-        "mapViewer": "https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}"
+        "mapViewer": "https://map.geo.admin.ch/?lang=en&layers={layerId}&time={Time}"
       }
     },
     {
@@ -167,9 +163,52 @@
         "image": "https://tile.loc.gov/image-services/iiif/",
         "documentation": "https://www.loc.gov/apis/"
       },
-      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov."
+      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov.",
+      "liveSearch": "https://www.loc.gov/maps/?fo=json"
+    },
+    {
+      "id": "stanford",
+      "name": "Stanford University Libraries",
+      "operator": "Stanford University Libraries",
+      "homepage": "https://earthworks.stanford.edu/",
+      "attribution": "Stanford University Libraries / original collection",
+      "rights": "Metadata CC0 1.0. Only public map records with an explicit Public Domain Mark or CC0 image statement are included; original per-item rights are retained.",
+      "terms": "https://github.com/OpenGeoMetadata/edu.stanford.purl/blob/ff804e306fb2f79ac837c5045c7e0d9acb1d979b/LICENSE",
+      "api": {
+        "metadata": "https://github.com/OpenGeoMetadata/edu.stanford.purl",
+        "manifest": "https://purl.stanford.edu/{druid}/iiif3/manifest",
+        "images": "https://stacks.stanford.edu/image/iiif/",
+        "raster": "https://stacks.stanford.edu/file/druid:{druid}/{file}"
+      },
+      "sourceRevision": "ff804e306fb2f79ac837c5045c7e0d9acb1d979b",
+      "retrieved": "2026-10-19"
+    },
+    {
+      "id": "leventhal",
+      "name": "Leventhal Map & Education Center",
+      "homepage": "https://collections.leventhalmap.org/",
+      "attribution": "Leventhal Map & Education Center at the Boston Public Library / original holding collection",
+      "rights": "Item-level public-domain or compatible licence required. Partner collections are checked separately.",
+      "api": {
+        "catalogue": "https://collections.leventhalmap.org/search.json"
+      },
+      "mode": "live-search",
+      "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
+    },
+    {
+      "id": "usgs",
+      "name": "USGS Historical Topographic Maps",
+      "homepage": "https://ngmdb.usgs.gov/topoview/",
+      "attribution": "U.S. Geological Survey",
+      "rights": "USGS-produced historical topographic maps are public domain; retain source credits.",
+      "api": {
+        "catalogue": "https://tnmaccess.nationalmap.gov/api/v1/products",
+        "terms": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted"
+      },
+      "mode": "live-search",
+      "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-19T02:58:45.100Z"
+  "generatedAt": "2026-10-19T20:04:14.683Z"
 }

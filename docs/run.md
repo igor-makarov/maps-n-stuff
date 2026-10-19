@@ -1,26 +1,10 @@
 # Current application and verification
 
-The product is Meridian Atlas, a global English atlas. Start with the updated [README](../README.md). The Worker deployment name remains `zurich-maps`.
+The current product is Meridian Atlas, a global English atlas. Use the [README](../README.md) and [global integration notes](global-integration.md) for current commands, source counts, georeferencing and the `maps-n-stuff` Cloudflare identity.
 
-- Build: `npm run build`; deploy through Cloudflare’s connected-repository integration: `npx wrangler deploy`.
-- Local verification: `npm run check`.
-- Browser correction checks: `node scripts/browser-global-check.mjs http://127.0.0.1:8787 /tmp/meridian-atlas-checks` (external services blocked deliberately).
-- History route: `/?view=history`; its timeline uses 54 bundled dated snapshots, with explicit nearest-snapshot notes for gaps.
-- The catalogue has 221 records from three providers. New international records may have labelled approximate place anchors and unknown extents. Their live image endpoints need verification from an unrestricted primary-source network.
-- All four Shurik loops are stopped; brief edits require manual resume.
+Build: `npm run build`. Cloudflare handles deployment from `main` using `npx wrangler deploy`. Local checks: `npm run check`. Browser checks: `node scripts/browser-global-check.mjs http://127.0.0.1:8787 /tmp/maps-checks`.
 
-The earlier detailed integration notes below describe the previous German Swiss-focused UI. Labels, default basemap/search, branding and catalogue counts in those notes are superseded by the current application above.
-
----
-
-# Run book — Kartenzeit (Cloudflare Workers site)
-
-Product: a historical-map explorer (OldMapsOnline-style workflow) with an
-interactive map, place search, publication-year filter, swisstopo comparison
-layers, a coordinated result list, an IIIF detail view and a side-by-side
-comparison list. Design reference: Canton Zürich design system (see
-[design-system.md](design-system.md)), data from documented original sources (see
-[data-sources.md](data-sources.md)).
+The notes below are a historical development log. Swiss defaults, old deployment names and old catalogue counts in this log are superseded by the documents above.
 
 ## Requirements
 

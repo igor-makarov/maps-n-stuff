@@ -25,19 +25,9 @@ import { parsePoint, sanitisePoint } from './store.js';
 const TILE = 256;
 
 /**
- * Base maps (Grundkarten): the documented swisstopo WMTS layers a visitor can
- * choose from. Tiles are public geoservices and carry
- * `Access-Control-Allow-Origin: *`.
- *
- * Verified against the official capabilities document
- * https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml (fetched
- * 2026-10-19): all three layers are published there with style id = layer id,
- * `image/jpeg` tiles and the 3857_19 / 3857_20 tile matrix sets, so the same
- * 256 px `{TileMatrix}/{TileCol}/{TileRow}` template serves each of them.
- * `maxZoom: 18` is the deepest matrix every one of them has (the store clamps
- * the zoom to 18 as well), so no request can ask for a missing tile.
- *
- * `key` is what the URL carries (`?base=grau`): short, stable, printable.
+ * Worldwide reference layers. NASA GIBS supplies the Blue Marble overview;
+ * its native resolution is advertised in the control and map hint. `key` is
+ * the stable URL choice (for example `?base=satellite`).
  */
 export const BASE_LAYERS = Object.freeze([
   {
@@ -52,40 +42,16 @@ export const BASE_LAYERS = Object.freeze([
     global: true,
   },
   {
-    key: 'farbe',
-    id: 'ch.swisstopo.pixelkarte-farbe',
-    title: 'Swiss national map (colour)',
-    chip: 'Swiss map',
-    hint: 'The swisstopo national map — detailed Swiss coverage only; worldwide views use OpenStreetMap.',
-    maxZoom: 18,
-    urlTemplate:
-      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
-    attribution: '© swisstopo – Landeskarte (farbig)',
-    coverage: 'Switzerland',
-  },
-  {
-    key: 'grau',
-    id: 'ch.swisstopo.pixelkarte-grau',
-    title: 'Swiss national map (grey)',
-    chip: 'Swiss grey',
-    hint: 'The grey swisstopo map — a calm Swiss background for markers, footprints and historical layers.',
-    maxZoom: 18,
-    urlTemplate:
-      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
-    attribution: '© swisstopo – Landeskarte (grau)',
-    coverage: 'Switzerland',
-  },
-  {
-    key: 'luftbild',
-    id: 'ch.swisstopo.swissimage',
-    title: 'SWISSIMAGE (aerial)',
-    chip: 'Aerial',
-    hint: 'Current swisstopo aerial imagery for Switzerland — useful next to an old sheet.',
-    maxZoom: 18,
-    urlTemplate:
-      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
-    attribution: '© swisstopo – SWISSIMAGE',
-    coverage: 'Switzerland',
+    key: 'satellite',
+    id: 'nasa-blue-marble',
+    title: 'Satellite — NASA Blue Marble',
+    chip: 'Satellite',
+    hint: 'Worldwide NASA satellite mosaic from August 2004, about 500 m per source pixel. Zooming closer enlarges the overview imagery.',
+    maxZoom: 8,
+    urlTemplate: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_NextGeneration/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg',
+    attribution: 'NASA Blue Marble / NASA EOSDIS GIBS',
+    global: true,
+    resolution: '500 m source imagery',
   },
 ]);
 
@@ -109,8 +75,6 @@ export function baseLayerFor(key) {
 export const WORLD = { lat: 20, lon: 0, zoom: 2 };
 /** The whole world as a fitBounds() box (used when no result has a position). */
 export const WORLD_BOUNDS = { west: -179.9, east: 179.9, south: -85, north: 85 };
-export const ZURICH = { lat: 47.3769, lon: 8.5417, zoom: 12 };
-export const SWITZERLAND = { west: 5.140242, east: 11.47757, south: 45.398181, north: 48.230651 };
 
 export const lonToTileX = (lon, z) => ((lon + 180) / 360) * 2 ** z;
 export const latToTileY = (lat, z) => {
@@ -661,6 +625,7 @@ export function init(ctx) {
     updateBadge();
     updateVisibleCount();
     updateLive();
+    ctx.bus.emit('map:rendered', { lat: state.lat, lon: state.lon, zoom: state.zoom });
   }
 
   function renderTiles(layerEl, tileCache, kind, template, time, originX, originY, w, h, z, maxZoom) {
@@ -1068,8 +1033,8 @@ export function init(ctx) {
     const extra = qs('#map-attribution-extra');
     if (extra) {
       extra.textContent = state.overlay
-        ? `Overlay: ${state.overlay.title} (${state.overlay.attribution ?? '© swisstopo'})`
-        : '';
+        ? `Overlay: ${state.overlay.title} (${state.overlay.attribution ?? 'see original source'})`
+        : (activeBase.resolution ? `Satellite detail: ${activeBase.resolution}; imagery is enlarged at closer zooms.` : '');
     }
   }
 
@@ -1188,14 +1153,14 @@ export function init(ctx) {
   }
 
   function setOverlay(layer, time) {
-    state.overlay = layer ?? null;
+    state.overlay = layer?.kind === 'cog' ? null : (layer ?? null);
     state.overlayTime = time ?? null;
     render();
   }
 
   function formatTime(value) {
     const text = String(value);
-    if (/^\d{8}$/.test(text)) return `${text.slice(6, 8)}.${text.slice(4, 6)}.${text.slice(0, 4)}`;
+    if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
     if (/^\d{4}$/.test(text)) return text;
     return text === 'current' ? 'current' : text;
   }
@@ -1292,12 +1257,11 @@ export function init(ctx) {
       const cmd = button.dataset.mapCmd;
       if (cmd === 'in') zoomBy(1);
       if (cmd === 'out') zoomBy(-1);
-      if (cmd === 'world' || cmd === 'zurich') {
+      if (cmd === 'world') {
         Object.assign(state, { ...WORLD });
         render();
         push();
       }
-      if (cmd === 'fitswitzerland') fitBounds(SWITZERLAND, { maxZoom: 8 });
       if (cmd === 'fitresults') fitBounds(resultsBounds(), { maxZoom: 12 });
       if (cmd === 'point') setPoint(state.lat, state.lon, 'button');
       // “Ausschnitte”: the switch lives in the store, so the chip, the URL

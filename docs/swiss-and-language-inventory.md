@@ -1,5 +1,10 @@
 # Swiss-specific features and remaining German
 
+**Implementation update:** the recommendations are now applied. See
+[global integration notes](global-integration.md) for current counts, removed
+Swiss features, English labels and deployment identity. The table below records
+the original inventory.
+
 Inspected 19 October 2026, starting at commit `ad500026`. This is a source-code
 and bundled-data inventory, with recommendations; no product features or records
 were removed. The global/English correction retained too much functionality from

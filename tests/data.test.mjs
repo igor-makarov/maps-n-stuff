@@ -31,6 +31,8 @@ const providerById = new Map(providers.map((p) => [p.id, p]));
 /** Hosts the source registry documents as the primary endpoints for this app. */
 const REGISTRY_HOSTS = new Set([
   'www.e-rara.ch',
+  'purl.stanford.edu',
+  'stacks.stanford.edu',
   'www.loc.gov',
   'tile.loc.gov',
   'api3.geo.admin.ch',
@@ -80,7 +82,7 @@ test('every record satisfies the D4 schema and points at a known provider', () =
   const ids = new Set();
   for (const record of records) {
     const where = record?.id ?? '(record without id)';
-    for (const field of ['title', 'providerId', 'institution', 'rights', 'recordUrl', 'thumbnail', 'type']) {
+    for (const field of ['title', 'providerId', 'institution', 'rights', 'recordUrl', 'type']) {
       assert.ok(typeof record[field] === 'string' && record[field].length > 0, `${where}: ${field} must be a non-empty string`);
     }
     assert.match(record.id, /^[a-z0-9-]+:.+$/, `${where}: id must be "<providerId>:<upstream id>"`);
@@ -88,9 +90,11 @@ test('every record satisfies the D4 schema and points at a known provider', () =
     ids.add(record.id);
     assert.ok(providerById.has(record.providerId), `${where}: providerId ${record.providerId} missing from sources.json`);
 
+    if (record.yearStart != null || record.yearEnd != null) {
     assert.ok(Number.isInteger(record.yearStart) && Number.isInteger(record.yearEnd), `${where}: integer publication years`);
     assert.ok(record.yearStart >= 1400 && record.yearEnd <= 2100, `${where}: publication years plausible`);
     assert.ok(record.yearStart <= record.yearEnd, `${where}: yearStart <= yearEnd`);
+    }
 
     assert.ok(Array.isArray(record.creators), `${where}: creators array (may be empty)`);
     for (const key of ['depictedYearStart', 'depictedYearEnd']) {
@@ -102,9 +106,9 @@ test('every record satisfies the D4 schema and points at a known provider', () =
     }
 
     assert.ok(record.recordUrl.startsWith('https://'), `${where}: recordUrl must be https`);
-    assert.ok(record.thumbnail.startsWith('https://'), `${where}: thumbnail must be https`);
+    if (record.thumbnail) assert.ok(record.thumbnail.startsWith('https://'), `${where}: thumbnail must be https`);
     assert.ok(REGISTRY_HOSTS.has(hostOf(record.recordUrl)), `${where}: recordUrl host ${hostOf(record.recordUrl)} is not in the source registry`);
-    assert.ok(REGISTRY_HOSTS.has(hostOf(record.thumbnail)), `${where}: thumbnail host ${hostOf(record.thumbnail)} is not in the source registry`);
+    if (record.thumbnail) assert.ok(REGISTRY_HOSTS.has(hostOf(record.thumbnail)), `${where}: thumbnail host ${hostOf(record.thumbnail)} is not in the source registry`);
     if (record.iiifManifest) {
       assert.ok(record.iiifManifest.startsWith('https://'), `${where}: iiifManifest must be https`);
       assert.ok(REGISTRY_HOSTS.has(hostOf(record.iiifManifest)), `${where}: iiifManifest host not in the source registry`);
@@ -137,10 +141,18 @@ test('fixtures are labelled as fixtures and never mixed into the harvest silentl
   }
 });
 
-test('overlays.json only references documented swisstopo WMTS templates', () => {
+test('overlays.json references provider-supplied COGs or documented historical WMTS templates', () => {
   assert.ok(Array.isArray(overlays) && overlays.length > 0);
   const wmtsHosts = new Set(['wmts.geo.admin.ch']);
   for (const overlay of overlays) {
+    if (overlay.kind === 'cog') {
+      assert.equal(overlay.providerId, 'stanford');
+      assert.match(overlay.url, /^https:\/\/stacks\.stanford\.edu\/file\/druid:/);
+      const record=records.find(value=>value.id===overlay.recordId);
+      assert.equal(overlay.url,record?.georeference?.url);
+      assert.ok(overlay.license && overlay.attribution);
+      continue;
+    }
     assert.match(overlay.id, /^ch\.swisstopo\./, `${overlay.id}: swisstopo layer id`);
     assert.ok(overlay.title, `${overlay.id}: title`);
     assert.ok(providerById.has(overlay.providerId), `${overlay.id}: providerId ${overlay.providerId}`);
@@ -177,10 +189,10 @@ test('overlays.json only references documented swisstopo WMTS templates', () => 
   }
 });
 
-test('the collection covers the Zürich initial view and a usable time span', () => {
+test('the global collection retains Swiss holdings and a usable time span', () => {
   const zurich = records.filter((r) => r.extent && r.extent.west < 8.9 && r.extent.east > 8.2 && r.extent.south < 47.6 && r.extent.north > 47.2);
   assert.ok(zurich.length >= 5, `expected several maps over the Zürich area, found ${zurich.length}`);
-  const years = records.flatMap((r) => [r.yearStart, r.yearEnd]);
+  const years = records.flatMap((r) => [r.yearStart, r.yearEnd]).filter(Number.isFinite);
   assert.ok(Math.max(...years) - Math.min(...years) >= 100, 'the time slider needs a usable span');
   const providersUsed = new Set(records.map((r) => r.providerId));
   assert.ok(providersUsed.size >= 1);
@@ -190,6 +202,7 @@ test('thumbnails are direct image services (IIIF) rather than HTML pages', () =>
   const withIiif = records.filter((r) => r.iiifManifest);
   assert.ok(withIiif.length >= 10, `expected a IIIF-backed majority, found ${withIiif.length}/${records.length}`);
   for (const record of withIiif) {
+    if (!record.thumbnail) continue; // A missing thumbnail never excludes a rights-cleared scan.
     assert.ok(
       /default\.jpg|\/full\/|\.jpeg$/.test(record.thumbnail),
       `${record.id}: thumbnail should be a direct image derivative (${record.thumbnail})`,
