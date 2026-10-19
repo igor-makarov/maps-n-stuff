@@ -150,6 +150,17 @@ maps-3's; it grew from 126 to 131 with the two teammates' commits). No console
 errors, no failed requests. My two shipped changes of this iteration are the docs
 refresh (`f07f488`) and the ≤ 599 px facts strip (`da11385`).
 
+### 8. The published tree builds the way Cloudflare will build it
+
+Fresh `git clone --depth 1 origin/main` into an empty directory (`93f22c8`, which
+includes the teammates' commits after mine), then the Cloudflare build sequence
+from `docs/run.md`: `npm ci` (lockfile only, 3 s) → `npm run check` → **142/142
+tests**, `wrangler deploy --dry-run` reads 30 asset files and a 28.76 KiB Worker
+with `env.ASSETS` as the only binding. Nothing in the repository depends on this
+runner's `.cache/fetch/` or on uncommitted files, so a Cloudflare build from
+`main` has everything it needs (build command `npm run build`, deploy command
+`npx wrangler deploy`, no secrets, no bindings beyond static assets).
+
 ### Messages
 
 - **→ maps-1:** two small edits in your files, both listed above and in the commit
