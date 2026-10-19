@@ -478,17 +478,43 @@ export function init(ctx) {
       return;
     }
     let applied = 0;
+    let withoutExtent = 0;
+    const coarsePanes = [];
     for (const pane of panes) {
       if (pane === source || pane.failed) continue;
+      if (!pane.record.extent) {
+        withoutExtent += 1;
+        continue;
+      }
       const target = pane.viewer.getView();
       if (!target) continue;
       const view = extentToView(geo, target.bounds, pane.record.extent);
-      if (view && pane.viewer.setView(view)) applied += 1;
+      if (!view) continue;
+      // The mapping produced the whole sheet: the cut-out covers this document
+      // completely (or misses it), so a fraction of the source sheet is no place
+      // on this one. The viewer is still set — that is the honest result of the
+      // documented mapping — but the hint must not promise a close coupling.
+      const coarse = view.w >= target.bounds.w - 1 && view.h >= target.bounds.h - 1;
+      if (!pane.viewer.setView(view)) continue;
+      applied += 1;
+      if (coarse) coarsePanes.push(pane.index + 1);
     }
-    if (applied > 0) {
-      updateSyncHint(`Ausschnitt von Karte ${sourceIndex + 1} auf ${applied} weitere Karte${applied === 1 ? '' : 'n'} übertragen.`);
-    } else if (panes.length > 1) {
-      updateSyncHint(`Karte ${sourceIndex + 1} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`);
+    // "Nothing moved" and "only the whole sheet came out of it" have different
+    // reasons and the hint names the real one.
+    if (applied > 0 && coarsePanes.length === 0) {
+      updateSyncHint(`Ausschnitt von Karte ${sourceIndex + 1} auf ${applied} weitere Karte${applied === 1 ? '' : 'n'} übertragen.`, 'transferred');
+    } else if (applied > 0 && applied > coarsePanes.length) {
+      updateSyncHint(
+        `Ausschnitt von Karte ${sourceIndex + 1} auf ${applied - coarsePanes.length} weitere Karte${applied - coarsePanes.length === 1 ? '' : 'n'} übertragen; Karte ${coarsePanes.join(', ')} zeigt nur die ganze Karte (zu verschiedener Maßstab).`,
+        'scale',
+      );
+    } else if (coarsePanes.length > 0) {
+      updateSyncHint(
+        `Karte ${coarsePanes.join(', ')} zeigt nur die ganze Karte – die belegten Maßstäbe sind zu verschieden für eine engere Kopplung.`,
+        'scale',
+      );
+    } else if (withoutExtent > 0 && panes.length > 1) {
+      updateSyncHint(`Karte ${sourceIndex + 1} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`, 'no-extent');
     }
   }
 
@@ -504,9 +530,10 @@ export function init(ctx) {
     updateSyncHint();
   }
 
-  function updateSyncHint(text) {
+  function updateSyncHint(text, state = '') {
     const hint = qs('#compare-sync-hint');
     if (!hint) return;
+    hint.dataset.syncState = state;
     if (text) {
       hint.textContent = text;
       return;

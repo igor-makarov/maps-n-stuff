@@ -318,24 +318,39 @@ try {
 }
 
 /**
- * A point that no committed record's documented extent covers — the honest
- * “nothing here” for the point-filter empty state. Derived from the seed instead
- * of hard-coded: the overview maps added in iteration 7-16 cover large parts of
- * Europe, so a fixed “outside” point (Berlin was one for a while) stops being
- * outside as soon as the data grows.
+ * A point (and, when the seed documents some sheet everywhere, a period) that no
+ * record in that filter scope covers — the honest “nothing here” for the
+ * point-filter empty state. Derived from the seed instead of hard-coded: the
+ * overview maps added in iteration 7-16 cover large parts of Europe and since
+ * 7-20 the world set documents the whole globe, so “outside every footprint” can
+ * now mean “outside every footprint **of that period**”. The period is the
+ * publication year of a sheet elsewhere in the seed, so an empty result is the
+ * point's doing and not an empty period.
  */
-const uncoveredPoint = (() => {
-  const boxes = [...recordIndex.values()].map((record) => record.extent).filter(Boolean);
-  if (boxes.length === 0) return { lat: 52.52, lon: 13.405 };
+const pointProbe = (() => {
+  const records = [...recordIndex.values()].filter((record) => record.extent);
+  if (records.length === 0) return { lat: 52.52, lon: 13.405, from: 1900, to: 1900 };
+  const covers = (box, lat, lon) => lon >= box.west && lon <= box.east && lat >= box.south && lat <= box.north;
+  const years = [...new Set(records.map((record) => Number(record.yearStart)).filter(Number.isFinite))].sort((a, b) => a - b);
   for (let lat = 62; lat >= -54; lat -= 4) {
     for (let lon = -178; lon <= 178; lon += 4) {
-      const covered = boxes.some((b) => lon >= b.west && lon <= b.east && lat >= b.south && lat <= b.north);
-      if (!covered) return { lat, lon };
+      const covering = records.filter((record) => covers(record.extent, lat, lon));
+      if (covering.length === 0) return { lat, lon, from: 1781, to: 1900 };
+      const year = years.find((candidate) =>
+        covering.every((record) => {
+          const start = Number(record.yearStart);
+          const end = Number(record.yearEnd ?? record.yearStart);
+          return Number.isFinite(start) && (candidate < start || candidate > end);
+        }),
+      );
+      if (year !== undefined) return { lat, lon, from: year, to: year };
     }
   }
-  return { lat: -58, lon: -178 };
+  return { lat: -58, lon: -178, from: 1781, to: 1900 };
 })();
-const uncoveredAt = `${uncoveredPoint.lat.toFixed(4)}%2C${uncoveredPoint.lon.toFixed(4)}`;
+const uncoveredPoint = pointProbe;
+const uncoveredAt = `${pointProbe.lat.toFixed(4)}%2C${pointProbe.lon.toFixed(4)}`;
+const uncoveredQuery = `from=${pointProbe.from}&to=${pointProbe.to}`;
 
 const { chrome, userDataDir, info, target } = await launchChrome();
 const ws = new WebSocket(target);
@@ -1224,8 +1239,41 @@ try {
     })()`);
   };
 
-  const pinOne = await pinResult(0);
-  const pinTwo = await pinResult(1);
+  // The coupling in 8c2 maps the visible region through the extents the
+  // catalogue documents, so it can only keep “the same place” between sheets of
+  // a comparable scale. The seed's first rows are no longer two such sheets: the
+  // world set (1787–1914) sorts first, and a cut-out of a world map covers a city
+  // sheet whole — the mapping is degenerate and nothing should move. Pin two
+  // sheets whose documented spans are within a factor of four and that overlap,
+  // so the check tests the promised coupling; the degenerate pair is what 8c4
+  // asserts instead.
+  const listIds = await cdp.eval(`[...document.querySelectorAll('#result-list > *')].map((row) => (row.querySelector('button[data-record-id]') || row).dataset?.recordId || row.dataset?.recordId || '')`);
+  const rowOf = new Map(listIds.map((id, index) => [id, index]));
+  const spanOf = (record) => {
+    const box = record?.extent;
+    return box && Number.isFinite(box.east) ? Math.max(Math.abs(box.east - box.west), Math.abs(box.north - box.south)) : 0;
+  };
+  const overlapOf = (a, b) => a.west < b.east && b.west < a.east && a.south < b.north && b.south < a.north;
+  const pickPair = (maxSpan) => {
+    const candidates = [...recordIndex.values()].filter(
+      (record) => record.iiifManifest && record.extent && rowOf.has(record.id) && spanOf(record) <= maxSpan,
+    );
+    for (const first of candidates) {
+      for (const second of candidates) {
+        if (first.id === second.id) continue;
+        const ratio = spanOf(first) / spanOf(second);
+        if (ratio < 0.25 || ratio > 4 || !overlapOf(first.extent, second.extent)) continue;
+        return [first, second];
+      }
+    }
+    return null;
+  };
+  // Prefer two regional sheets (faster to load, and the check then measures the
+  // coupling the seed's Zürich maps promise), fall back to any comparable pair.
+  const couplingPair = pickPair(6) ?? pickPair(Infinity);
+  const couplingRows = couplingPair ? [rowOf.get(couplingPair[0].id), rowOf.get(couplingPair[1].id)] : [0, 1];
+  const pinOne = await pinResult(couplingRows[0]);
+  const pinTwo = await pinResult(couplingRows[1]);
   const pinnedIds = (pinTwo.cmp || pinOne.cmp).split(',').filter(Boolean);
   check(
     'compare: two records can be pinned and the list is shareable',
@@ -1318,6 +1366,9 @@ try {
   await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
   await cdp.pressKey('+', { keyCode: 187 });
   await cdp.pressKey('+', { keyCode: 187 });
+  // Both panes fetch their own region on a debounce, so the followed pane can
+  // arrive before the source pane's own request does. Wait for the source too.
+  const paneOneZoomed = await waitForComparePane(0, `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane1Before)}`, 40_000).catch(() => null);
   const followed = await waitForComparePane(
     1,
     `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane2Before)} && /Ausschnitt/.test(pane.readout)`,
@@ -1326,7 +1377,7 @@ try {
   const pane1After = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
   check(
     'zooming one pane follows in the other (coupled through the documented extent)',
-    Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
+    Boolean(paneOneZoomed) && Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
     `pane 1 ${pane1Before.slice(-32)} -> ${pane1After.slice(-32)} · pane 2 ${pane2Before.slice(-32)} -> ${followed ? followed.src.slice(-32) : 'unchanged'} (${followed?.readout ?? 'no readout'})`,
   );
   await cdp.screenshot(path.join(OUT_DIR, '11-compare-coupled.png')).then(() => report.screenshots.push('11-compare-coupled.png'));
@@ -1475,6 +1526,52 @@ try {
       restoredUrl.includes(`${pinnedIds[1]}@`),
     `pane 1 ${restoredOwn?.readout ?? 'no cut-out'} · pane 2 ${restoredOther?.readout ?? 'no cut-out'} · link cvv "${restoredUrl}"`,
   );
+
+  // A pair whose documented scales are worlds apart (a world map next to a city
+  // plan, both in the seed since 7-20) cannot keep “the same place”: a fraction
+  // of the world is the whole city sheet. The panes must then stay put and the
+  // hint must name that reason instead of claiming a coupling that does nothing.
+  const wideRecord = [...recordIndex.values()].find((record) => {
+    const box = record.extent;
+    return record.iiifManifest && box && Math.abs(box.east - box.west) > 60 && Math.abs(box.north - box.south) > 30;
+  });
+  const closeRecord = [...recordIndex.values()].find((record) => {
+    const box = record.extent;
+    return (
+      record.iiifManifest && box && Math.abs(box.east - box.west) < 3 && Math.abs(box.north - box.south) < 3 && wideRecord && record.id !== wideRecord.id
+    );
+  });
+  if (wideRecord && closeRecord) {
+    const degeneratePanesReady = `(() => {
+      const panes = [...document.querySelectorAll('#compare-view-body .app-compare__pane')];
+      return panes.length === 2 && panes.every((pane) => pane.querySelector('[data-compare-stage]')?.dataset.state === 'ready');
+    })()`;
+    const degenerateImage = '#compare-view-body .app-viewer__image';
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(`${wideRecord.id},${closeRecord.id}`)}` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'incompatible pair' });
+    await sleep(500);
+    await cdp.click('#compare-open');
+    await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view for the incompatible pair', timeout: 10_000 });
+    await cdp.waitFor(degeneratePanesReady, { label: 'incompatible panes ready', timeout: 60_000 }).catch(() => null);
+    await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.waitFor(`document.querySelectorAll('[data-compare-readout]')[0]?.textContent !== 'Gesamtansicht'`, { label: 'wide pane zoomed', timeout: 20_000 }).catch(() => null);
+    await sleep(1500);
+    const degenerate = await cdp.eval(`(() => ({
+      syncState: document.querySelector('#compare-sync-hint')?.dataset.syncState ?? '',
+      hint: document.querySelector('#compare-sync-hint')?.textContent ?? '',
+      pane2: document.querySelectorAll('${degenerateImage}')[1]?.src || '',
+      pane2Readout: document.querySelectorAll('[data-compare-readout]')[1]?.textContent ?? '',
+    }))()`);
+    check(
+      'sheets whose documented scales differ are not coupled to nonsense',
+      degenerate.syncState === 'scale' && /Maßst/.test(degenerate.hint) && /Gesamtansicht/.test(degenerate.pane2Readout),
+      `${wideRecord.id} (world) + ${closeRecord.id} (city): ${JSON.stringify(degenerate)}`,
+    );
+  } else {
+    check('sheets whose documented scales differ are not coupled to nonsense', false, 'no wide/narrow pair with a manifest in the seed');
+  }
 
   /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
   const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
@@ -2842,7 +2939,7 @@ try {
   );
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
-  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=${uncoveredAt}` });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?${uncoveredQuery}&at=${uncoveredAt}` });
   let emptyPoint = null;
   try {
     emptyPoint = await cdp.waitFor(
@@ -2866,7 +2963,7 @@ try {
   await sleep(500);
   const afterPointRemove = await cdp.eval(`({ rows: document.querySelectorAll('#result-list > *').length, at: new URLSearchParams(location.search).get('at') })`);
   check(
-    `a point outside every footprint says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon})`,
+    `a point no ${uncoveredPoint.from}–${uncoveredPoint.to} sheet documents says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon})`,
     Boolean(emptyPoint) && emptyPoint.rows === 0 && emptyPoint.empty && pointRemove === true && afterPointRemove.rows > 0 && !afterPointRemove.at,
     `${JSON.stringify(emptyPoint)} remove=${pointRemove} ${JSON.stringify(afterPointRemove)}`,
   );
