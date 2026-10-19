@@ -5,12 +5,14 @@
   "generation": 8,
   "iteration": 67,
   "startedAt": "2026-10-19T05:34:59.117Z",
-  "outcome": "running",
+  "outcome": "interrupted",
   "journalId": "8-67",
   "source": "e0fbc8baab14c83de0ba782eb9f1a670b8285a4f",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "e0fbc8baab14c83de0ba782eb9f1a670b8285a4f"
+  "workCommit": "e0fbc8baab14c83de0ba782eb9f1a670b8285a4f",
+  "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
+  "recovery": "diagnostics/recovery/39205261632-1.json"
 }
