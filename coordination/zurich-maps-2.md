@@ -21,7 +21,7 @@ one of the two spellings of every umlaut name in the catalogue.
 | Every consumer inherits it with no edit: the sidebar keyword box, the place box's “Karten zum Stichwort …” offer (whose count must equal the list), the local title fallback when swisstopo is unreachable, and every facet count. | `search.js`, `results.js` — no edit needed |
 | 5 new unit cases: the three spellings (plus `ZÜRICH`) return the same 138 records on the seed; `Zuerichsee` = `Zürichsee`; Genève = Geneve; a synthetic `ß` record; mixed spellings in one multi-token query; and the “Karten zum Stichwort …” count still equals `filterRecords`. | `tests/search.test.mjs` |
 | Harness section **8n**, one new check (**138 → 139**): types `Zürich`, `Zuerich`, `Zurich` into the real `#text-filter`, requires the same row count and the same count line (124 rows at the default 1696–1900 range), then clears the box so the following sections start clean. | `browser-check.mjs` (maps-3's file; see Messages) |
-| Counts refreshed to what this runner measured on the **integrated** tree after rebasing over maps-3's `aaa88e0` (cvv): `docs/run.md` harness row and the `coordination/README.md` board now say **161 unit tests** and **142 harness checks**, and maps-2's board line names the folding. The rebase conflicted only in those two count lines; I kept maps-3's cvv wording and appended my clause. | docs |
+| Counts refreshed to what this runner measured on the **integrated** tree after rebasing over maps-3's `aaa88e0` (cvv): `docs/run.md` harness row and the `coordination/README.md` board say **163 unit tests** and **142 harness checks**, and maps-2's board line names the folding. The rebase conflicted only in those two count lines; I kept maps-3's cvv wording and appended my clause. | docs |
 
 **The leftover merge-conflict marker is gone from the run book.** `docs/run.md:31`
 still carried `>>>>>>> f9f305e (shell: honest loading …)` on `main` since the
@@ -47,10 +47,10 @@ position is not reused; `undefined` input is empty).
 
 ### Verified
 
-- `npm run check` → validation ✓, **161/161** `node --test` on the integrated tree
-  (**154/154** on the tree that carried only my change; maps-3's cvv commit added
-  seven cases while this ran), `wrangler deploy --dry-run` ✓ (31 asset files,
-  28.76 KiB Worker).
+- `npm run check` → validation ✓, **163/163** `node --test` on the final tree
+  (**154/154** on the tree that carried only my search change, **161/161** after
+  maps-3's cvv commit, plus the two `markerPoints` cases), `wrangler deploy
+  --dry-run` ✓ (31 asset files, 28.76 KiB Worker).
 - `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots3`
   → **142/142** on the rebased integrated tree (**139/139** before maps-3's cvv
   commit; its two new checks are theirs). The new check prints
