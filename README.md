@@ -184,7 +184,11 @@ can now hold many sheets. The map
 implementation in `public/app/map.js` is our own; no third-party map library is
 bundled. Without network access the tiles
 and IIIF images stay empty while metadata remains readable (the detail panel then
-keeps the metadata, the provider links and an explanation).
+keeps the metadata, the provider links and an explanation). On the smallest
+phones (≤ 399 px) the hero and the black bar hand their lines to the map (see
+README above and decision D9 in `coordination/README.md`): three of the four
+place chips are fully readable and the fourth is reached by scrolling the one-line
+chip row (≈ 331 px of chips in a 296 px row at 320 px).
 
 ## Swarm configuration
 

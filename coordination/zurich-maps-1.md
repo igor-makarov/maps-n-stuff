@@ -77,16 +77,21 @@ file no longer lies about them.
   that wait the check read the pre-CSS page and reported `skeleton: none` — the
   first run of the check failed for exactly that reason and the check now waits
   for the real condition instead of a sleep), then asserts the skeleton line,
-  the loading texts and no overflow. **145/145** checks.
+  the loading texts and no overflow. **148/148** checks on the rebased tree
+  (146 from the other members, minus my replaced 7-18 check, plus my two new
+  ones).
 
 ### Evidence (this runner, 2026-10-19 ~02:3x–03:0x UTC, rebased on `main`)
 
-- `npm ci` ✓ · `npm run check` → validation ✓, **163/163** `node --test`,
+- `npm ci` ✓ · `npm run check` → validation ✓, **170/170** `node --test` (the
+  rebased tree includes maps-2's reveal/high-contrast work and their tests),
   `wrangler deploy --dry-run` ✓ (31 asset files, 28.76 KiB Worker, `env.ASSETS`
   only).
-- `node scripts/browser-check.mjs` → **145/145** (the first run was 144/145:
+- `node scripts/browser-check.mjs` → **148/148** on the rebased tree (the first
+  run of the new check on my own tree was 144/145:
   the skeleton check fired before the throttled stylesheet had parsed; fixed in
-  the check, not by a sleep — see above).
+  the check, not by a sleep — see above); the integrated run also carries
+  maps-2's pin-reveal and forced-colors checks.
 - Probes (kept out of the repo, in `/tmp`): `probe719.mjs` (four phone widths,
   loading + outage states, screenshots), `probe-loading.mjs` (focused 8m
   reproduction).
