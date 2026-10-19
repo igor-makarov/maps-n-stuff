@@ -1,7 +1,91 @@
 # zurich-maps-1 status
 
-Iteration 7-16 (2026-10-19 ~00:45–01:2x UTC). Shell/design-system/store/wrangler/
+Iteration 7-18 (2026-10-19 ~01:45–02:0x UTC). Shell/design-system/store/wrangler/
 docs/compare owner. Newest entry first; earlier iterations are kept below.
+
+## Iteration 7-18 — histories joined, the conflict marker is gone, the phone lead ends on a full stop
+
+### 0. Recovery: the branch was 18 commits behind `main`
+
+`origin/zurich-maps-1` still pointed at `5e3913b` (7-16), while `main` had
+integrated the same two commits as `fba1f86`/`6948507` and moved on (169-record
+seed, cluster point piles, loading/outage states, docs). I verified that every
+change of my two commits is present on `main` (per-file diff, no line of mine
+lost; the apparent deletions were teammates' later rewordings, e.g. the outage
+message and `HISTORY_TEXT_KEYS`) and then **joined the histories instead of
+rewriting the task branch**: `8121039` and `4db9687` are merge commits whose tree
+is exactly `origin/main`'s, so pushes to `main` *and* to `zurich-maps-1`
+fast-forward. Teammates' commits are untouched; no force-push anywhere.
+
+A real artefact from the interrupted 7-17 rebase had reached `main`:
+`docs/run.md` carried a literal `>>>>>>> f9f305e …` line between the harness row
+and the Cloudflare section (maps-2 then edited the same row, which is how it
+survived). Removed, blank line restored; the whole tree was grepped for markers.
+
+### 1. Phone hero: the lead was cut mid-word at every width below 600 px
+
+Screenshot/measurement of the integrated tree (`/tmp/measure-phone.mjs`, scratch
+CDP probe): the lead paragraph needed 4 lines at 430 px and 8 lines at 320 px,
+but the ≤599 px rule clamped it to 2 — so every phone ended in “…
+Vergleichsebene und” or “… aus…”. Fix: `.app-intro__lead-short`, a second,
+complete sentence for phones (“Der Bestand umfasst <n> Karten und Atlanten aus
+echten Sammlungen.”) that the existing count node fills via `[data-record-count]`;
+the clamp moves to 3 lines as a safety net only. The long desktop sentence is
+unchanged, and the `<span>`s are `display:none` on the other side of 600 px, so
+the accessibility tree only ever shows one.
+
+| Width | lead before (visible / needed) | lead after | map top / visible |
+| --- | --- | --- | --- |
+| 320×844 | 2 lines, clamped, scrollHeight 202 px | 3 lines, ends on “.” | 633 → 658 px / 211 → 186 px |
+| 390×844 | 2 lines, clamped, scrollHeight 151 px | 2 lines, ends on “.” | 609 px / 235 px (unchanged) |
+| 430×844 | 2 lines, clamped, scrollHeight 126 px | 2 lines, ends on “.” | 587 px / 257 px (unchanged) |
+| 600 px | not clamped (4 lines) | unchanged | unchanged |
+
+New harness check “the phone lead ends as a complete sentence at 390 and 320 px”
+(short variant visible, long one hidden, `scrollHeight === clientHeight`, text
+ends on a full stop, no overflow). Harness: **139 checks**.
+
+### 2. Tooling repair (D7): an upstream outage is evidence, not a failure
+
+The first full harness run of this iteration was **138/139**: the only failure
+was the console-hygiene check, with 42 browser log entries
+`Failed to load resource: net::ERR_CONNECTION_REFUSED https://www.e-rara.ch/i3f/…`.
+`curl` confirmed e-rara was refusing connections from the runner (an outage, and
+the third time this file records e-rara throttling: maps-0 measured 429/5xx
+retries, the run book documents them). The app had degraded exactly as designed
+(its image-fallback checks passed). The check now classifies browser-level
+`net::ERR_(CONNECTION|NAME|TIMED_OUT|…)_` entries for **external** origins into
+`report.upstreamConsoleErrors` (kept as evidence, printed as an ℹ line), while
+our own origin, our own exceptions and the deliberate `ERR_BLOCKED_BY_CLIENT`
+assertions still fail. Recorded as decision **D7** in `coordination/README.md`;
+`docs/run.md` troubleshooting has the reader-facing version. Re-run: **139/139**.
+
+### 3. Evidence (this runner, 2026-10-19)
+
+- `npm ci` ✓ · `npm run check` → validation ✓, **149/149** `node --test`,
+  `wrangler deploy --dry-run` ✓ (28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **139/139**
+  (first run 138/139, failure explained above; screenshots + `report.json`).
+- `README.md`, `docs/design-system.md`, `docs/run.md` describe the phone lead
+  variant and the D7 classification; the Cloudflare build settings section is
+  unchanged and still current.
+- Scratch probe (not committed): `/tmp/measure-phone.mjs`.
+
+### Open (unchanged from 7-17, plus)
+
+- 320 px: header ≈ 242 px + hero ≈ 242 px still put the map at 658 px of a
+  640 px screen; the map peeks on a 844 px-tall phone (186 px visible). The
+  quick-pick chips scroll horizontally in a one-line row (`overflow-x: auto`) —
+  usable, but the cut chip at the right edge is the next thing to polish.
+- `results.js` (maps-2): result thumbnails have no per-image fallback, so a
+  down partner library shows browser broken-image placeholders in the list
+  (the detail panel has one; the harness's hostile section only covers the
+  panel).
+- The filter panel's histogram/year area is visually empty while the seed loads
+  (maps-2); the shell says “Bestand wird geladen …” and marks the list busy.
+
+---
+
 
 ## Iteration 7-16 — the map starts on the phone screen, and the seed says when it was harvested
 
