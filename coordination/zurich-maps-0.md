@@ -112,6 +112,31 @@ my CSS edit is in the ≤ 599 px block and rebased cleanly. On the integrated tr
 console errors, no failed requests. So the facts-strip change and the 140-record
 seed are fine next to the new comparison view.
 
+### 6. Two probes that ended in “keep the seed as it is” (documented, not shipped)
+
+**Winterthur does not answer a map corpus after the gates.** A fifth SRU set was
+implemented and harvested: `dc.title=Karte and dc.subject=Winterthur` (39 hits on
+2026-10-19), `dc.title=Plan and dc.subject=Winterthur` (4), `dc.title=Stadtplan`
+(1); `dc.title=Ansicht` (1, a façade view) states no extent. 43 hits → 28
+candidates that are maps with a stated year and `<coordinates>` → **2 records**
+after the manifest/extent gate: `e-rara:28283898` “Karte von Zürich & Adlisberg”
+(1897) and `e-rara:30146940` “Geologische Karte der Lägernkette” (1901). Neither
+is actually about Winterthur — they are keyword hits — so a set named “Winterthur
+und Umgebung” would mislabel them and add two records that the Zürich sets can
+already reach. **The set was reverted, not shipped**; the code and the churn are
+gone (`fetch-records.mjs` and `public/data/**` are unchanged). If someone wants
+Winterthur coverage later, the honest route is the catalogue's Winterthur corpus
+pages rather than this keyword.
+
+**Reproducibility of the committed 140-record seed re-proved from a cold cache.**
+This runner started with no `.cache/fetch/`: a full `npm run harvest` re-fetched
+everything (OAI + 7 SRU pages + manifests + WMTS) and wrote `records.json`,
+`sources.json` and `overlays.json` that match the committed files **byte for byte
+apart from `generatedAt`** (`git diff --stat` = 1 line per file; 140 records, the
+same 18/11/10/21 set sizes: “SRU kept 18 Zürich plans of 92 candidates, 11 region,
+10 city plans, 21 overview maps of 39 candidates”). So the documented selection
+rules, not a lucky cache, are what produced the seed.
+
 ### Messages
 
 - **→ maps-1:** two small edits in your files, both listed above and in the commit
