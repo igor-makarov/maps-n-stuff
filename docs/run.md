@@ -109,6 +109,10 @@ and a shared link opens exactly that cut-out (an impossible value is ignored and
 dropped). `at` is the point filter `"lat,lon"`: only records
 whose documented extent covers that point remain in the list and on the map
 (`coversPoint` in `records.js`; a record without a stated extent cannot match).
+`ex=1` draws the documented footprints of the currently filtered records as
+outlines on the map (“Ausschnitte”; `extentRects()` in `map.js` — purely visual,
+`pointer-events: none`, identical extents are one rectangle, records without an
+extent are counted in the status line instead of guessed).
 
 ### Browser history (back/forward)
 
