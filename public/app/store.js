@@ -21,6 +21,7 @@ export const STATE_DEFAULTS = Object.freeze({
   type: '', // record type or '' for all
   collection: '', // upstream series/collection name or '' for all (facet from the data)
   viewport: '', // '1' = only records inside the current map view
+  extents: '', // '1' = draw the documented footprints of the filtered records on the map
   at: '', // "lat,lon" point filter: only records whose documented extent covers this point
   place: '', // selected place label
   lat: 47.3769, // Zürich as the initial view (documented default, not a search result)
@@ -44,6 +45,7 @@ export const PARAM = {
   type: 't',
   collection: 'c',
   viewport: 'vp',
+  extents: 'ex',
   at: 'at',
   place: 'place',
   lat: 'lat',
@@ -59,7 +61,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'viewport', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
+  string: ['q', 'provider', 'type', 'collection', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -142,6 +144,7 @@ export function sanitise(state) {
   if (!['split', 'map', 'list'].includes(out.view)) out.view = STATE_DEFAULTS.view;
   if (!['year-asc', 'year-desc', 'title'].includes(out.sort)) out.sort = STATE_DEFAULTS.sort;
   out.viewport = out.viewport === '1' || out.viewport === 'true' ? '1' : '';
+  out.extents = out.extents === '1' || out.extents === 'true' ? '1' : '';
   out.at = sanitisePoint(out.at);
   out.q = String(out.q || '').slice(0, 200);
   out.place = String(out.place || '').slice(0, 200);

@@ -81,6 +81,65 @@ export function clusterByCell(points, cellPx = CLUSTER_CELL) {
   return [...cells.values()].map((cell) => ({ ...cell, x: cell.x / cell.count, y: cell.y / cell.count }));
 }
 
+/**
+ * Pixel rectangles for the documented extents of `records`, relative to a map
+ * container of `size` ({ width, height }) showing `view` ({ lat, lon, zoom }).
+ *
+ * This is the geometry behind the “Ausschnitte” layer: it answers “which part of
+ * the map does each filtered record actually claim to cover?”. Only the
+ * documented extent is used — never an inferred or guessed footprint — and
+ * records without an extent are counted (`withExtent`) so the caller can say so
+ * honestly. Rectangles outside the visible box (plus a margin) are dropped, so
+ * panning a large result set stays cheap.
+ *
+ * Records that share the same extent (the swisstopo series sheets all state
+ * Switzerland) become ONE rectangle carrying every member id: drawing 27
+ * identical outlines would only darken the map. Pure (no DOM), so it is unit
+ * tested; `rects` is sorted largest-first and the caller paints in reverse so
+ * more specific (smaller) footprints stay readable on top of country-wide ones.
+ */
+export function extentRects(records, view, size, { margin = 64, max = 500 } = {}) {
+  const zoom = Math.max(2, Math.min(18, Math.round(Number(view?.zoom) || 12)));
+  const width = Math.max(1, Number(size?.width) || 1);
+  const height = Math.max(1, Number(size?.height) || 1);
+  const originX = lonToTileX(Number(view?.lon) || 0, zoom) * TILE - width / 2;
+  const originY = latToTileY(Number(view?.lat) || 0, zoom) * TILE - height / 2;
+  const byGeometry = new Map();
+  let withExtent = 0;
+  let visible = 0;
+  for (const record of records ?? []) {
+    const extent = record?.extent;
+    if (!extent) continue;
+    const west = Number(extent.west);
+    const east = Number(extent.east);
+    const south = Number(extent.south);
+    const north = Number(extent.north);
+    if (![west, east, south, north].every(Number.isFinite)) continue;
+    withExtent += 1;
+    const x1 = lonToTileX(Math.min(west, east), zoom) * TILE - originX;
+    const x2 = lonToTileX(Math.max(west, east), zoom) * TILE - originX;
+    const y1 = latToTileY(Math.max(south, north), zoom) * TILE - originY;
+    const y2 = latToTileY(Math.min(south, north), zoom) * TILE - originY;
+    const left = Math.min(x1, x2);
+    const top = Math.min(y1, y2);
+    const boxWidth = Math.abs(x2 - x1);
+    const boxHeight = Math.abs(y2 - y1);
+    if (left > width + margin || top > height + margin) continue;
+    if (left + boxWidth < -margin || top + boxHeight < -margin) continue;
+    visible += 1;
+    const key = `${Math.round(left)}:${Math.round(top)}:${Math.round(boxWidth)}:${Math.round(boxHeight)}`;
+    let area = byGeometry.get(key);
+    if (!area) {
+      area = { key, ids: [], left, top, width: boxWidth, height: boxHeight };
+      byGeometry.set(key, area);
+    }
+    area.ids.push(record.id);
+  }
+  const list = [...byGeometry.values()];
+  list.sort((a, b) => b.width * b.height - a.width * a.height);
+  return { rects: list.slice(0, max), visible, areas: list.length, withExtent, filtered: (records ?? []).length };
+}
+
 export function init(ctx) {
   const container = qs('[data-map]');
   if (!container) return;
@@ -94,6 +153,7 @@ export function init(ctx) {
     lon: ctx.store.getState().lon,
     zoom: Math.round(ctx.store.getState().zoom),
     at: ctx.store.getState().at,
+    extents: ctx.store.getState().extents,
     overlay: null,
     overlayTime: null,
     records: [],
@@ -123,6 +183,7 @@ export function init(ctx) {
 
   const baseLayer = el('div', { class: 'map-layer map-layer--base', 'aria-hidden': 'true' });
   const overlayLayer = el('div', { class: 'map-layer map-layer--overlay', 'aria-hidden': 'true' });
+  const footprintLayer = el('div', { class: 'map-layer map-layer--footprints', 'aria-hidden': 'true' });
   const shapeLayer = el('div', { class: 'map-layer map-layer--shapes', 'aria-hidden': 'true' });
   const markerLayer = el('div', { class: 'map-layer map-layer--markers' });
   const live = el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite' });
@@ -158,10 +219,11 @@ export function init(ctx) {
   // name and the result list already carry the same information.
   const preview = el('div', { class: 'map-preview', 'aria-hidden': 'true', hidden: true });
 
-  container.replaceChildren(baseLayer, overlayLayer, shapeLayer, markerLayer, controls, badge, preview, live);
+  container.replaceChildren(baseLayer, overlayLayer, footprintLayer, shapeLayer, markerLayer, controls, badge, preview, live);
 
   const cache = new Map(); // tile key -> <img>
   const markers = new Map(); // record id -> <button>
+  const footprints = new Map(); // record id -> footprint <div>
   const clusters = new Map(); // cell key -> { element, members, x, y }
   let lastOverlayKey = ''; // layer + edition currently displayed
   let previewId = ''; // record id whose preview card is visible
@@ -174,6 +236,7 @@ export function init(ctx) {
     preview.replaceChildren();
     previewId = '';
     for (const [, marker] of markers) marker.classList.remove('is-preview');
+    for (const [, node] of footprints) node.classList.remove('is-preview');
     for (const [, cluster] of clusters) cluster.element.classList.remove('is-preview');
   }
 
@@ -258,6 +321,7 @@ export function init(ctx) {
       lastOverlayKey = '';
     }
     renderMarkers(originX, originY, w, h, z);
+    renderFootprints();
     renderExtent(originX, originY, z);
     renderPoint(originX, originY, z);
     updateBadge();
@@ -480,6 +544,75 @@ export function init(ctx) {
     state.zoom = Math.max(2, Math.min(18, state.zoom + (cluster.members.length > 8 ? 3 : 2)));
     render();
     push();
+  }
+
+  /**
+   * “Ausschnitte”: draw the documented extent of every filtered record.
+   *
+   * The layer answers the question the point filter asks — “which maps claim to
+   * cover this place?” — and makes the viewport filter visible. It is purely
+   * visual (pointer-events: none) so a map click keeps setting the point filter;
+   * the result list stays the accessible way to select a record. Existing
+   * elements are reused, so panning/zooming only rewrites transforms.
+   */
+  function renderFootprints() {
+    const on = state.extents === '1';
+    const info = on
+      ? extentRects(state.filtered, { lat: state.lat, lon: state.lon, zoom: state.zoom }, { width: container.clientWidth || 640, height: container.clientHeight || 420 })
+      : { rects: [], visible: 0, areas: 0, withExtent: 0, filtered: state.filtered.length };
+    const wanted = new Set();
+    for (const [rank, rect] of info.rects.entries()) {
+      wanted.add(rect.key);
+      let node = footprints.get(rect.key);
+      if (!node) {
+        node = el('div', { class: 'map-footprint' });
+        node.dataset.recordIds = rect.ids.join(' ');
+        footprints.set(rect.key, node);
+        footprintLayer.append(node);
+      }
+      node.style.transform = `translate3d(${Math.round(rect.left)}px, ${Math.round(rect.top)}px, 0)`;
+      node.style.width = `${Math.max(1, Math.round(rect.width))}px`;
+      node.style.height = `${Math.max(1, Math.round(rect.height))}px`;
+      // Larger footprints sit below smaller ones (rank 0 = largest) and repeat
+      // the number of records that share exactly this extent.
+      node.style.zIndex = String(Math.max(1, 400 - rank));
+      node.classList.toggle('is-selected', rect.ids.includes(state.selected));
+      node.classList.toggle('is-preview', rect.ids.includes(previewId));
+    }
+    for (const [key, node] of footprints) {
+      if (!wanted.has(key)) {
+        node.remove();
+        footprints.delete(key);
+      }
+    }
+    updateExtentCount(info, on);
+  }
+
+  /**
+   * Honest status line for the footprint layer: how many of the filtered records
+   * state an extent at all, and how many distinct rectangles the view shows.
+   */
+  function updateExtentCount(info, on) {
+    const host = qs('#map-extent-count');
+    if (!host) return;
+    if (!on || info.filtered === 0) {
+      host.textContent = '';
+      return;
+    }
+    const parts = [`Ausschnitte: ${info.withExtent} von ${info.filtered} gefilterten Karten mit dokumentiertem Ausmass`];
+    parts.push(info.areas < info.visible ? `${info.visible} im Bild, in ${info.areas} Flächen gebündelt` : `${info.visible} im Bild`);
+    if (info.rects.length < info.areas) parts.push(`nur die ${info.rects.length} grössten gezeichnet`);
+    host.textContent = `${parts.join(' · ')}.`;
+  }
+
+  /** The visible chips, the URL and the inline link are views of one switch. */
+  function syncExtentChip() {
+    const on = state.extents === '1';
+    for (const chip of document.querySelectorAll('[data-map-cmd="extents"]')) {
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      // The chip states the action; the inline link in the hint keeps its label.
+      if (chip.dataset.mapCmdLabel !== 'fixed') chip.textContent = on ? 'Ausschnitte ausblenden' : 'Ausschnitte zeigen';
+    }
   }
 
   function renderExtent(originX, originY, z) {
@@ -754,6 +887,9 @@ export function init(ctx) {
       if (cmd === 'fitswitzerland') fitBounds(SWITZERLAND, { maxZoom: 8 });
       if (cmd === 'fitresults') fitBounds(resultsBounds(), { maxZoom: 12 });
       if (cmd === 'point') setPoint(state.lat, state.lon, 'button');
+      // “Ausschnitte”: the switch lives in the store, so the chip, the URL
+      // (?ex=1) and every other module see the same state.
+      if (cmd === 'extents') ctx.store.update({ extents: state.extents === '1' ? '' : '1' });
     });
   }
 
@@ -782,6 +918,11 @@ export function init(ctx) {
   ctx.store.subscribe((next, changed) => {
     if (changed.includes('at') && next.at !== state.at) {
       state.at = next.at;
+      render();
+    }
+    if (changed.includes('extents') && next.extents !== state.extents) {
+      state.extents = next.extents;
+      syncExtentChip();
       render();
     }
     const interesting = changed.filter((key) => ['lat', 'lon', 'zoom'].includes(key));
@@ -828,6 +969,9 @@ export function init(ctx) {
   // or the cluster that contains it.
   ctx.bus.on('record:preview', ({ id }) => {
     for (const [markerId, marker] of markers) marker.classList.toggle('is-preview', Boolean(id) && markerId === id);
+    for (const [, node] of footprints) {
+      node.classList.toggle('is-preview', Boolean(id) && (node.dataset.recordIds ?? '').split(' ').includes(id));
+    }
     for (const [, cluster] of clusters) {
       cluster.element.classList.toggle('is-preview', Boolean(id) && cluster.members.some((member) => member.id === id));
     }
@@ -853,6 +997,7 @@ export function init(ctx) {
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(container);
   else window.addEventListener('resize', resize);
 
+  syncExtentChip();
   render();
 
   ctx.map = {
@@ -861,6 +1006,7 @@ export function init(ctx) {
     zoomBy,
     setPoint,
     setOverlay,
+    setExtents: (on) => ctx.store.update({ extents: on ? '1' : '' }),
     getView: () => ({ ...state }),
     getMarkers: () => ({
       individual: markers.size,

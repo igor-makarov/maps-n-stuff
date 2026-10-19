@@ -1251,3 +1251,69 @@ body.app-compare--open {
     bottom: var(--zh-size-small-huge);
   }
 }
+
+/* ---- “Ausschnitte”: documented footprints of the filtered records ----
+   The layer sits above the tiles/overlay and below the markers, the selected
+   extent and the point crosshair. It is purely visual: pointer-events stay off
+   so a map click keeps setting the point filter (the result list is the
+   accessible way to select a record). Colours come from the cantonal palette
+   (--zh-darkblue #00407c).
+
+   Outline only, deliberately: the swisstopo series sheets all state the same
+   Switzerland-wide extent, so per-record fills stacked into a solid blue slab.
+   Identical extents are one rectangle (map.js) and the layer is outline-only:
+   any per-record fill stacks into a solid wash as soon as several filtered
+   maps cover the current view (which is exactly what a point filter produces).
+   Only the hovered or selected footprint gets a fill. */
+.map-footprint {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  border: 1px solid rgb(0 64 124 / 85%);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* A hovering/focused result row highlights the footprint it belongs to. */
+.map-footprint.is-preview {
+  border-width: 2px;
+  border-color: var(--zh-darkblue);
+  background: rgb(0 96 176 / 26%);
+}
+
+/* The selected record already has the strong dashed .map-extent on top; the
+   footprint underneath just tells the same story with the rest of the set. */
+.map-footprint.is-selected {
+  border-style: dashed;
+  border-color: var(--zh-black);
+  background: rgb(0 64 124 / 14%);
+}
+
+/* Inline switch inside the map hint sentence. */
+.app-map__hintlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--zh-color-accent-dark);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.app-map__hintlink:hover {
+  color: var(--zh-black);
+  text-decoration-thickness: 2px;
+}
+
+.app-map__hintlink:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: 2px;
+  border-radius: var(--zh-radius);
+}
+
+.app-map__hintlink[aria-pressed='true'] {
+  color: var(--zh-black);
+  font-weight: 600;
+}
