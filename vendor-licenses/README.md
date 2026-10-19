@@ -7,4 +7,4 @@ files collected from the other bundled browser packages.
   That revision is the npm release's `gitHead`.
 - `lerc@3.0.0`: Apache-2.0, declared in its package and `LercDecode.js` header.
   Full licence copied from <https://github.com/Esri/lerc/blob/master/LICENSE>;
-  the build also includes the release's Esri copyright and contributor names.
+  trailing whitespace is normalized. The build also includes the release's Esri copyright and contributor names.
