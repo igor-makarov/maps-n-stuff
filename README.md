@@ -34,6 +34,8 @@ The Worker’s internal deployment name stays `zurich-maps` to retain the existi
 
 See [the source registry](public/data/sources.json), [data-source documentation](docs/data-sources.md), and [rights and credits](NOTICE.md). The border data is GPL-3.0-or-later; application code is MIT.
 
+The [global catalogue audit](docs/global-catalogue-audit.md) records integration routes, rights restrictions and real georeferencing requirements for all 50 entries in OldMapsOnline's public partner directory. Its [research registry](data/catalogue-source-audit.json) is separate from the deployed source list; prospective providers have not been imported or cleared wholesale.
+
 ## Shurik
 
 The four Shurik members are **stopped** while the model quota is unavailable. Brief changes no longer resume them automatically. Their saved state and manual stop/resume workflows remain available; no automatic restart is scheduled for tomorrow. The original brief is [PROMPT.md](PROMPT.md).

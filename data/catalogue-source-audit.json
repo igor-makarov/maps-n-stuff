@@ -1,0 +1,2149 @@
+{
+  "schemaVersion": 1,
+  "researchDate": "2026-10-19",
+  "purpose": "Research inventory for global catalogue expansion. Not a production source allowlist or blanket copyright clearance.",
+  "scope": {
+    "directoryUrl": "https://www.oldmapsonline.org/en/community/partners",
+    "publicEntries": 50,
+    "namedEntries": 49,
+    "unnamedEntries": 1,
+    "completeOldMapsOnlineInventory": false,
+    "note": "OldMapsOnline advertises 70+ partners; this public directory cannot establish exhaustive current coverage. Reported counts are unverified."
+  },
+  "defaultPolicy": {
+    "commercialCompatibilityAssumed": true,
+    "requireRecordLevelImageRights": true,
+    "requireMetadataReuseEvidence": true,
+    "requireGeoreferencingReuseEvidence": true,
+    "requireHostingOrRedistributionEvidence": true,
+    "requirePixelToGroundTransform": true,
+    "bboxOrPlacePinIsSufficient": false,
+    "unknownRights": "pending",
+    "noncommercial": "conditional-excluded-under-default-policy",
+    "noDerivatives": "no-automatic-warp-publication",
+    "noGeoreferencing": "georeferencing-work-queue"
+  },
+  "sources": [
+    {
+      "id": "nls",
+      "name": "National Library of Scotland, Maps of Scotland",
+      "homepage": "https://maps.nls.uk/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 9,
+        "reportedMaps": 172587,
+        "countVerified": false,
+        "notes": [
+          "Directory repeats 172,587 across unrelated institutions; do not trust or aggregate this reported count."
+        ]
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 1,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "open-license-subset",
+        "note": "Documented CC BY 4.0 for eligible map images; collection exceptions apply. Check the particular map, metadata dataset and tile/API terms.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-native-services",
+        "note": "Provider georeferenced mosaics/WMTS; IIIF plus matching reusable annotations for other sheets.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.nls.uk/tools-for-research/copyright/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://data.nls.uk/data/map-spatial-data/living-with-machines-railspace-building/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://maps.nls.uk/view/188871162",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Obtain a permitted metadata/WMTS feed; verify each collection's rights and service access before a viewport pilot."
+    },
+    {
+      "id": "usgs-htmc",
+      "name": "USGS Historical Topographic Maps",
+      "homepage": "https://ngmdb.usgs.gov/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 11,
+        "reportedMaps": 170653,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 1,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "USGS-produced historical topographic maps are public domain. Preserve notices and exclude unrelated or modern third-party exceptions.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-native-products",
+        "note": "HTMC native georeferenced GeoTIFF/GeoPDF, with CRS and raster transformation. TopoView footprints alone are insufficient.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.usgs.gov/programs/national-geospatial-program/historical-topographic-maps-preserving-past",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Verify the current official index fields/pagination and product URLs, then import HTMC metadata and inspect GeoTIFF georeferencing."
+    },
+    {
+      "id": "cuzk",
+      "name": "Land Survey Office Czech Republic",
+      "homepage": "https://cuzk.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 13,
+        "reportedMaps": 172587,
+        "countVerified": false,
+        "notes": [
+          "Directory repeats 172,587 across unrelated institutions; do not trust or aggregate this reported count."
+        ]
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "Modern cadastral open-data grants were found; they must not be inferred to cover all historical archival scans.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "Inspect the archival catalogue and historical WMS/GeoTIFF layers; no reusable per-item historical transform export was verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://geoportal.cuzk.cz/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://ags.cuzk.gov.cz/archiv",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Find the specific historical product licence and documented export/service; current cadastral licensing is insufficient evidence."
+    },
+    {
+      "id": "david-rumsey",
+      "name": "The David Rumsey Map Collection",
+      "homepage": "https://www.davidrumsey.com/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 15,
+        "reportedMaps": 41280,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "conditional-noncommercial",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "noncommercial-default",
+        "note": "Collection permission page links CC BY-NC-SA 3.0; some images have no download permission. Per-item exceptions require explicit evidence.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "IIIF routes and Georeferencer viewing exist; use matching Allmaps CC0 annotations or a permitted provider warp export, never a MapRank bbox.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.davidrumsey.com/about/copyright-and-permissions",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Resolve commercial-use scope or an explicit compatible item/collection grant, plus annotation/export and hosting permission."
+    },
+    {
+      "id": "charles-university",
+      "name": "Charles University in Prague, The Map Collection",
+      "homepage": "https://natur.cuni.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 17,
+        "reportedMaps": 14987,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "The collection includes copyrighted material offered through a restricted e-prezencka service; online availability is not a reuse grant.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "TEMAP documents georeferencing work; exportable reusable transforms were not verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://natur.cuni.cz/en/geography/departments-and-work-places/map-collection/catalog-and-database",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://natur.cuni.cz/en/geography/departments-and-work-places/map-collection/about-the-collection/news/10016-map-collection-now-provides-an-e-prezencka-service",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://web.natur.cuni.cz/gis/temap/index.php/georeference/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Identify an open subset, its metadata feed and licensed warp/annotation export; exclude restricted reader-only scans."
+    },
+    {
+      "id": "kartverket",
+      "name": "Kartverket",
+      "homepage": "https://kartverket.no/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 19,
+        "reportedMaps": 12383,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 1,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "open-license-subset",
+        "note": "Official free-product terms use CC BY 4.0. Check external layers, the individual historical product and service limits.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-native-services",
+        "note": "Historical county-map WMS; available GeoTIFFs. Some historical scans remain unaligned.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.kartverket.no/api-og-data/vilkar-for-bruk",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.kartverket.no/om-kartverket/historie/historiske-kart",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.kartverket.no/om-kartverket/historie/bestille-historiske-kart/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://data.norge.no/nb/data-services/9df7ef15-51ad-3bc3-880e-7719f18b7593/historiske-kart-wms",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Verify historical service capabilities and a permitted catalogue feed; include aligned products and queue unaligned scans."
+    },
+    {
+      "id": "nypl",
+      "name": "New York Public Library, Map Divison",
+      "homepage": "https://digitalcollections.nypl.org/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 21,
+        "reportedMaps": 6943,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Review the particular image's rights/advisory. Do not infer that all NYPL holdings are public domain everywhere.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Current Digital Collections release history includes Allmaps. Legacy Map Warper was archived after updates stopped in April 2021.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.nypl.org/digital-research/projects/map-warper",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/NYPL/digital-collections/releases",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Join public IIIF images to current annotations; verify rights and any archived warp-data redistribution licence separately."
+    },
+    {
+      "id": "leiden",
+      "name": "Leiden University",
+      "homepage": "https://www.universiteitleiden.nl/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 23,
+        "reportedMaps": 6599,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Public IIIF services exist, but rights must come from each historical-map manifest/record. No blanket map-image licence established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Allmaps publishes institutional IIIF routes; matching GCP/mask annotations or a provider export are still required.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://lab.library.universiteitleiden.nl/iiif-docs/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://lab.library.universiteitleiden.nl/iiif-docs/services/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Enumerate permitted map manifests, collect image rights and match actual annotations by image/canvas identifier."
+    },
+    {
+      "id": "slub",
+      "name": "Saxon State and University Library Dresden (SLUB)",
+      "homepage": "https://www.slub-dresden.de/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 25,
+        "reportedMaps": 5693,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "open-license-subset",
+        "note": "Item-dependent terms include CC BY-SA 4.0 and rights-reserved material; only compatible items qualify.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-native-services",
+        "note": "Virtual Map Forum contains a georeferenced subset; official code documents its georeferencing service.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.slub-dresden.de/entdecken/karten",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://nutzungshinweis.slub-dresden.de/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/slub/slub_web_kartenforum",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/slub/kartenforum_georeference",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Verify stable supported map/warp endpoints and item licences; preserve ShareAlike on adapted imagery."
+    },
+    {
+      "id": "bern",
+      "name": "University Library of Bern",
+      "homepage": "https://www.ub.unibe.ch/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 27,
+        "reportedMaps": 5143,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "Current e-rara seed has item-level PDM statements; this does not cover every Bern holding.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Existing catalogue coordinates are bounding boxes, not image alignment. Require actual GCP/mask annotations or provider georeferenced products.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.e-rara.ch/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Expand the permitted e-rara harvest without Swiss selection caps, retain rights and obtain/create actual georeferencing."
+    },
+    {
+      "id": "british-library",
+      "name": "The British Library, Map Library",
+      "homepage": "https://www.bl.uk/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 29,
+        "reportedMaps": 4910,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Official terms describe a mix of third-party copyright, library copyright, public-domain and CC material.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Georeferencer workflow and IIIF collection routes exist; a current reusable bulk alignment export was not verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.bl.uk/terms",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Identify the particular open map release and current image service; obtain a permitted annotation/warp export."
+    },
+    {
+      "id": "moravian-library",
+      "name": "Moravian Library, Mollova mapová sbírka",
+      "homepage": "https://mzk.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 31,
+        "reportedMaps": 4004,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No collection-wide compatible reuse grant established for Moll/Kramerius image and metadata export.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Institution describes georeferencing; public map collection is documented, but reusable exported transformations were not verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://mapy.mzk.cz/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.mzk.cz/en/node/297",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Inspect per-item rights and supported catalogue/IIIF access; obtain licensed transforms or georeference cleared scans."
+    },
+    {
+      "id": "national-technical-museum-cz",
+      "name": "Národní technické muzeum",
+      "homepage": "https://www.ntm.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 33,
+        "reportedMaps": 3215,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible map-image or metadata bulk grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the actual digitized-map collection, item rights and authorized georeferencing export."
+    },
+    {
+      "id": "geoportost",
+      "name": "GeoPortOst",
+      "homepage": "https://geoportost.ios-regensburg.de/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 35,
+        "reportedMaps": 3018,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Official project description includes copyrighted born-digital maps alongside retrodigitized maps.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "The project describes georeferenced maps, but no permissively licensed per-item warp export was verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://leibniz-ios.de/en/research/third-party-projects/geoportost",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Inspect catalogue licences and permitted image/warp services; exclude copyrighted items without a compatible grant."
+    },
+    {
+      "id": "zb-zurich",
+      "name": "Zentralbibliothek Zürich",
+      "homepage": "https://www.zb.uzh.ch/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 37,
+        "reportedMaps": 2508,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "Current e-rara seed has item-level PDM statements; assess other holdings separately.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "e-rara catalogue extents are not scan georectification.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.e-rara.ch/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Join or create actual GCP/mask georeferencing for cleared images; remove Swiss-only selection rules in the global adapter."
+    },
+    {
+      "id": "muzeum-brnenska",
+      "name": "Muzeum Brněnska",
+      "homepage": "https://www.muzeumbrnenska.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 39,
+        "reportedMaps": 2381,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible image/metadata reuse grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Locate the digitized collection and establish record-level rights, bulk access and transform provenance."
+    },
+    {
+      "id": "utrecht",
+      "name": "Utrecht University Library, Special Collections",
+      "homepage": "https://www.uu.nl/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 41,
+        "reportedMaps": 2259,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No historical-map collection grant established. The library's scientific-repository CC BY page concerns research works, not automatically these scans.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Institutional IIIF examples appear in the Allmaps list; only matched GCP/mask annotations qualify.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://libguides.library.uu.nl/special-material/maps-and-atlases",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Verify map-specific rights and harvest policy, then match image/canvas IDs to actual annotations."
+    },
+    {
+      "id": "kbr",
+      "name": "Royal Library of Belgium map collection",
+      "homepage": "https://www.kbr.be/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 43,
+        "reportedMaps": 1814,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible grant verified for the map subset; partner/platform membership is insufficient.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "Investigate KBR/Cartesius holdings, supported image services and reusable transformations.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Establish item rights and an authorized metadata plus alignment feed from the holding institution."
+    },
+    {
+      "id": "harvard",
+      "name": "Harvard Library, Harvard Map Collection",
+      "homepage": "https://library.harvard.edu/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 45,
+        "reportedMaps": 1788,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Geospatial collections include public-domain older maps and other material; check each dataset's access/rights terms.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-native-products",
+        "note": "Harvard Geospatial Library provides georeferenced scanned maps for GIS download.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://library.harvard.edu/collections/geospatial-and-mapping-data",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://library.harvard.edu/services-tools/harvard-geospatial-library",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://mapping.share.library.harvard.edu/tutorials/data-curation/accessing-maps-for-georeferencing/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Harvest public geospatial records with licensed raster/download references, inspect CRS and exclude restricted datasets."
+    },
+    {
+      "id": "trebon-archive",
+      "name": "Státní oblastní archiv v Třeboni",
+      "homepage": "https://www.ceskearchivy.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 47,
+        "reportedMaps": 1441,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible bulk metadata, scan or alignment grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Locate the actual historical-map records and distinguish archive viewing access from licensed scan/warp reuse."
+    },
+    {
+      "id": "zamrsk-archive",
+      "name": "Státní oblastní archiv v Zámrsku",
+      "homepage": "https://vychodoceskearchivy.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 49,
+        "reportedMaps": 1186,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible bulk metadata, scan or alignment grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the regional archive map feed, individual reproduction rights and authorized alignment exports."
+    },
+    {
+      "id": "eth-library",
+      "name": "ETH-Bibliothek Map Collection",
+      "homepage": "https://library.ethz.ch/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 51,
+        "reportedMaps": 1131,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "Current e-rara seed has item-level PDM statements; assess the rest of the collection separately.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "e-rara extents locate a record but do not align its pixels.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.e-rara.ch/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Expand e-rara discovery globally and require a real annotation or native transform for each published overlay."
+    },
+    {
+      "id": "historical-institute-cz",
+      "name": "Historický ústav Akademie věd České Republiky",
+      "homepage": "https://www.hiu.cas.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 53,
+        "reportedMaps": 172587,
+        "countVerified": false,
+        "notes": [
+          "Directory repeats 172,587 across unrelated institutions; do not trust or aggregate this reported count."
+        ]
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the actual cartographic collection and obtain its rights statements and alignment/feed documentation."
+    },
+    {
+      "id": "plzen-archive",
+      "name": "Státní oblastní archiv v Plzni",
+      "homepage": "https://www.soaplzen.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 55,
+        "reportedMaps": 1092,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Find the archive's map catalogue and supported export; clear scans and georeferencing separately."
+    },
+    {
+      "id": "leventhal",
+      "name": "Norman B. Leventhal Map Center at the Boston Public Library",
+      "homepage": "https://www.leventhalmap.org/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 57,
+        "reportedMaps": 844,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 1,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "Public-domain originals may be reused without extra scan restrictions. Partner holdings require separate institutional review.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Officially documented Allmaps integration and Atlascope; use actual matching annotations/approved native products.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.leventhalmap.org/collections/permissions/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.leventhalmap.org/articles/new-features-for-georeferencing-in-lmec-collections/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Enumerate permitted JSON/IIIF records, verify item rights and annotation matches, retain holding institution and required credit."
+    },
+    {
+      "id": "state-library-nsw",
+      "name": "State Library New South Wales",
+      "homepage": "https://www.sl.nsw.gov.au/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 59,
+        "reportedMaps": 838,
+        "countVerified": false,
+        "notes": [
+          "Directory erroneously links to www.nls.uk; homepage corrected to State Library of NSW."
+        ]
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Official copyright guidance distinguishes out-of-copyright items from images licensed only for library viewing.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified; inspect institutional IIIF/Georeferencer products.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.sl.nsw.gov.au/copyright",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://guides.sl.nsw.gov.au/maps/copies",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Use the real NSW institution, not the directory's Scottish link; establish item rights and reusable image-alignment export."
+    },
+    {
+      "id": "bordeaux-montaigne",
+      "name": "Bordeaux Montaigne University",
+      "homepage": "https://www.u-bordeaux-montaigne.fr/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 61,
+        "reportedMaps": 745,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "1886 terms permit commercial and noncommercial reuse of PDM-marked images; unmarked items need review. The database is separately protected.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Historical maps are digitized; reusable per-map alignment export was not verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://1886.u-bordeaux-montaigne.fr/s/1886/page/reutilisation",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://1886.u-bordeaux-montaigne.fr/s/1886/page/apropos",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Obtain a permitted metadata feed, filter PDM items and obtain/create reusable GCP/mask alignments."
+    },
+    {
+      "id": "icgc",
+      "name": "Institut Cartogràfic i Geològic de Catalunya",
+      "homepage": "https://www.icgc.cat/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 63,
+        "reportedMaps": 717,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "CC BY terms for current ICGC mapping products must not be inferred for all Cartoteca historical scans.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Allmaps collection list documents Cartoteca IIIF examples; reuse needs an actual matching annotation or native historical layer.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://cartotecadigital.icgc.cat/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Read Cartoteca item rights and supported feed policy, then match images to verified alignments."
+    },
+    {
+      "id": "dutch-national-archives",
+      "name": "Dutch National Archives",
+      "homepage": "https://www.nationaalarchief.nl/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 65,
+        "reportedMaps": 693,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "public-domain-subset",
+        "note": "Official scan reuse applies to downloadable images marked Public Domain or CC0. Some metadata inventories are exceptions to open data.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "possible-allmaps-join",
+        "note": "Institutional IIIF routes and Georeferencer project exist; matching reusable GCP/mask data or a licensed warp export still required.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.nationaalarchief.nl/en/research/terms-of-use-for-scans-of-documents-maps-and-photos",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.nationaalarchief.nl/onderzoeken/open-data/archiefinventarissen-digitale-objecten-en-scans-van-archieven",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Harvest permitted EAD/IIIF data, check the download/right markings, and acquire actual reusable alignment data."
+    },
+    {
+      "id": "darmstadt-ulb",
+      "name": "Technische Universität Darmstadt, University and State Library (ULB)",
+      "homepage": "https://www.ulb.tu-darmstadt.de/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 67,
+        "reportedMaps": 442,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No blanket compatible scan/metadata grant established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "The library publishes Georeferencer instructions; no current licensed bulk alignment export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.ulb.tu-darmstadt.de/media/ulb/alter_webauftritt/spezialabteilungen/georeferenzierung/Anleitung_ULB_Georeferencer_2016_05_10.pdf",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Inspect current item rights and image endpoints, then secure a permitted transform export; do not reuse a third-party derivative service as rights evidence."
+    },
+    {
+      "id": "ujep",
+      "name": "Univerzita Jana Evangelisty Purkyně v Ústí nad Labem",
+      "homepage": "https://www.ujep.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 69,
+        "reportedMaps": 431,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the actual university map collection, rights statements and authorized catalogue/alignment data."
+    },
+    {
+      "id": "masaryk",
+      "name": "Masarykova univerzita",
+      "homepage": "https://www.muni.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 71,
+        "reportedMaps": 230,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify historical-map holdings and their licence, image API and transform export."
+    },
+    {
+      "id": "prague-municipal-library",
+      "name": "Městská knihovna v Praze",
+      "homepage": "https://www.mlp.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 73,
+        "reportedMaps": 196,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Inspect the digital map collection's item rights and obtain or create a permitted georeferenced subset."
+    },
+    {
+      "id": "vorarlberg",
+      "name": "Vorarlberger Landesrepositorium",
+      "homepage": "https://pid.volare.vorarlberg.at/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 75,
+        "reportedMaps": 136,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "candidate-open-subset",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "open-license-subset",
+        "note": "Some historical-map records show CC BY 4.0; other objects have no licence. No collection-wide grant inferred.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable bulk alignment export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://pid.volare.vorarlberg.at/suche/?facets=&ofset=120&q=%22Sammlung%3A+Historische+Landkarten%22",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Verify the individual record and image licence, permitted harvest and georeference export; reject unlicensed objects."
+    },
+    {
+      "id": "manchester",
+      "name": "University of Manchester Map Library",
+      "homepage": "https://www.library.manchester.ac.uk/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 77,
+        "reportedMaps": 115,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "conditional-noncommercial",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "noncommercial-default",
+        "note": "Official digital-collection licensing states CC BY-NC-SA 4.0; commercial licensing is a separate route.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Digital collection access does not establish a reusable warp export; inspect provider annotations/exports.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.library.manchester.ac.uk/services/digitisation-services/copyright-and-licensing/index.htm",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.library.manchester.ac.uk/resources/search-resources/digital-collections/help-and-support/index.htm",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Resolve commercial scope or obtain a distinct compatible grant and verify exportable georeferencing."
+    },
+    {
+      "id": "ritsumeikan-arc",
+      "name": "Art Research Center, Ritsumeikan University",
+      "homepage": "https://en.ritsumei.ac.jp/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 79,
+        "reportedMaps": 94,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "ARC map holdings and underlying contributors require collection-specific permission checks; no blanket compatible scan grant established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Institution describes ARC Map Portal and Map Warper work; reusable alignment and image rights remain unverified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.arc.ritsumei.ac.jp/j/news/pc/arcijac-activities/index_3.html",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Identify map contributors and item terms, then verify a licensed Map Warper/IIIF georeferencing export."
+    },
+    {
+      "id": "wisconsin-historical-society",
+      "name": "Wisconsin Historical Society",
+      "homepage": "https://www.wisconsinhistory.org/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 81,
+        "reportedMaps": 79,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "permission-needed",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "permission-required",
+        "note": "Published map-collection/site terms require permission for republication/public use; do not assume that every historical scan is cleared.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.wisconsinhistory.org/research/explore-our-collections/collection-overviews/maps-atlases/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Establish a compatible permission/grant for the intended reuse plus licensed alignment data before importing imagery."
+    },
+    {
+      "id": "ucla",
+      "name": "UCLA Library",
+      "homepage": "https://www.library.ucla.edu/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 83,
+        "reportedMaps": 79,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "UCLA provides collection-specific rights guidance; no map-image blanket grant established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://guides.library.ucla.edu/c.php?g=1423298&p=10570712",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Inspect the map collection's item rights, supported metadata/IIIF services and reusable annotations or native transforms."
+    },
+    {
+      "id": "jaromer-museum",
+      "name": "Městské muzeum v Jaroměři",
+      "homepage": "https://www.muzeumjaromer.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 85,
+        "reportedMaps": 62,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the precise historical-map collection and original image rights, then acquire or create reusable georeferencing."
+    },
+    {
+      "id": "colombia-national-library",
+      "name": "Biblioteca Nacional de Colombia",
+      "homepage": "https://www.bibliotecanacional.gov.co/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 87,
+        "reportedMaps": 58,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 2,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "BNC image policy says rights vary and protected works require rightsholder authorization; public-domain items may qualify.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "Mapoteca projects exist; reusable per-item alignment export not verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.bibliotecanacionaldigital.gov.co/servicios-virtuales/uso-imagenes-recursos",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        },
+        {
+          "url": "https://www.bibliotecanacional.gov.co/es-co/colecciones/biblioteca-digital/mapoteca",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Identify permitted Mapoteca records/images and obtain georeferencing exports or create GCP/mask annotations for cleared items."
+    },
+    {
+      "id": "national-technical-library-cz",
+      "name": "Národní technická knihovna",
+      "homepage": "https://www.techlib.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 89,
+        "reportedMaps": 50,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify map holdings and published item-level rights; verify supported metadata and image-alignment access."
+    },
+    {
+      "id": "west-bohemian-museum",
+      "name": "Západočeské muzeum v Plzni",
+      "homepage": "https://www.zcm.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 91,
+        "reportedMaps": 40,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Locate the digitized map holdings, separate custody from copyright, and obtain a permitted alignment export."
+    },
+    {
+      "id": "colonial-portuguese-maps",
+      "name": "Colonial Portuguese maps of Cape Verde, São Tomé and Príncipe, Angola, East Timor",
+      "homepage": "https://gpixel.org/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 93,
+        "reportedMaps": 40,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "Directory points to gpixel.org; actual holding institution, scan rights and bulk licence not established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify original institutions and stable record/image IDs first, then check their rights and georeferencing rather than copying an intermediary."
+    },
+    {
+      "id": "olomouc-library",
+      "name": "Vědecká knihovna v Olomouci",
+      "homepage": "https://www.vkol.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 95,
+        "reportedMaps": 31,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Locate historical-map digital records, check image and metadata permissions and identify reusable alignment data."
+    },
+    {
+      "id": "north-carolina-digital-heritage",
+      "name": "North Carolina Digital Heritage Center",
+      "homepage": "https://library.unc.edu/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 97,
+        "reportedMaps": 10,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "DigitalNC is an aggregator of holding institutions; no common map-image reuse grant established.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify original contributing institutions and item rights; establish an authorized feed and real GCP/native georeferencing."
+    },
+    {
+      "id": "hong-kong-historic-maps",
+      "name": "Hong Kong Historic Maps",
+      "homepage": "https://www.hkmaps.hk/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 99,
+        "reportedMaps": 7,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "mixed",
+        "note": "Homepage describes personal use and refers some government maps to OGL v3.0; this is not blanket permission for all images or hosted tiles.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "documented-service-no-export-verified",
+        "note": "Site displays aligned maps, but no reusable bulk transformations or service entitlement were verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.hkmaps.hk/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Trace each original map source and applicable grant; obtain permitted georeferencing/hosting access rather than scrape the viewer."
+    },
+    {
+      "id": "great-river-arts",
+      "name": "Great River Arts",
+      "homepage": "https://great-river-arts.myshopify.com/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 101,
+        "reportedMaps": 5,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "A retail collection is listed; no open map-image, metadata or warp grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Establish explicit compatible rights and usable georeferencing before including contemporary artist/retail imagery."
+    },
+    {
+      "id": "trier",
+      "name": "University of Trier (unnamed directory entry)",
+      "homepage": "https://www.uni-trier.de/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 103,
+        "reportedMaps": 4,
+        "countVerified": false,
+        "notes": [
+          "Unnamed entry; university identity inferred from link target www.uni-trier.de, exact collection not confirmed."
+        ]
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "Partner name is absent in the directory; link destination identifies the university only. Exact collection and reuse rights unverified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [
+        {
+          "url": "https://www.uni-trier.de/",
+          "scope": "Provider-level research route; verify applicable record/collection before import."
+        }
+      ],
+      "nextAction": "Confirm the intended collection and identity before any metadata/imagery import; do not infer the four items from unrelated Trier archives."
+    },
+    {
+      "id": "vugtk",
+      "name": "Výzkumný ústav geodetický, topografický a kartografický",
+      "homepage": "https://www.vugtk.cz/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 104,
+        "reportedMaps": 1,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible scan, metadata bulk or transformation grant verified.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the exact digitized map and original rights, and obtain a reusable georeferencing record or native product."
+    },
+    {
+      "id": "zurich-state-archive",
+      "name": "Staatsarchiv des Kantons Zürich",
+      "homepage": "https://www.zh.ch/",
+      "directory": {
+        "url": "https://www.oldmapsonline.org/en/community/partners",
+        "linkId": 106,
+        "reportedMaps": 1,
+        "countVerified": false,
+        "notes": []
+      },
+      "assessment": "needs-review",
+      "priority": 3,
+      "globalAdapterImplemented": false,
+      "metadata": {
+        "status": "harvest-permission-and-schema-review-required",
+        "note": "Provider discovery/IIIF availability does not establish permission to redistribute a substantial metadata database."
+      },
+      "images": {
+        "status": "unknown",
+        "note": "No compatible grant established for the particular directory map; do not infer all archive imagery shares cantonal open-data terms.",
+        "recordLevelEvidenceRequired": true
+      },
+      "georeferencing": {
+        "status": "not-verified",
+        "note": "No reusable pixel-to-ground export verified.",
+        "usableTransformationRequired": true
+      },
+      "hosting": {
+        "status": "provider-service-or-redistribution-check-required",
+        "note": "Image reuse rights do not automatically grant unlimited traffic to institutional tile/IIIF servers."
+      },
+      "evidence": [],
+      "nextAction": "Identify the exact archival item, its rights statement and reusable transformation; retain archive identifier and credit."
+    }
+  ],
+  "crossCollectionRoutes": [
+    {
+      "id": "allmaps",
+      "role": "CC0 georeferencing join; does not license image pixels or institutional catalogue metadata",
+      "homepage": "https://allmaps.org/",
+      "bulkFiles": [
+        "https://files.allmaps.org/maps.ndjson",
+        "https://files.allmaps.org/maps.json",
+        "https://files.allmaps.org/annotations.json",
+        "https://files.allmaps.org/maps.geojson",
+        "https://files.allmaps.org/maps.geojsonl"
+      ],
+      "imageRightsInherited": false,
+      "liveBulkDownloadVerified": false,
+      "sourceRevision": "a60fd5857d02881eb2e7f3cefdddbbfa46cecb7f",
+      "evidence": [
+        "https://allmaps.org/",
+        "https://allmaps.org/iiif-partnership",
+        "https://github.com/allmaps/allmaps/tree/a60fd5857d02881eb2e7f3cefdddbbfa46cecb7f",
+        "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml"
+      ]
+    },
+    {
+      "id": "oldmapsonline-licensed-export",
+      "role": "Potential exact-index route; agreement and technical availability unverified",
+      "openBulkLicenceVerified": false,
+      "evidence": [
+        "https://www.oldmapsonline.org/en/terms",
+        "https://www.oldmapsonline.org/en/help/georeferencer/how-can-i-download-the-metadata",
+        "https://www.oldmapsonline.org/en/help/georeferencer/batch-download-of-georeferenced-maps"
+      ]
+    }
+  ],
+  "existingAdditionalSources": [
+    {
+      "id": "library-of-congress",
+      "name": "Library of Congress",
+      "directoryEntryInThisSnapshot": false,
+      "existingRecords": 8,
+      "georeferencedOverlays": 0,
+      "note": "Current selected scans have approximate place anchors, not image warps. Verify each rights advisory and obtain/create actual georeferencing; do not assume every LoC-held work is a US-government work.",
+      "evidence": [
+        "https://www.loc.gov/legal/security-copyright-and-privacy/understanding-copyright/",
+        "https://github.com/allmaps/iiif-map-collections/blob/main/iiif-map-collections.yml"
+      ]
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo",
+      "directoryEntryInThisSnapshot": false,
+      "existingRecords": 27,
+      "nativeGeoreferencedRecords": 27,
+      "overlayRegistryLayers": 12,
+      "note": "Existing native WMTS editions; see deployed source registry and data-source documentation for exact layers and attribution."
+    }
+  ],
+  "verificationLimits": [
+    "Research used public primary pages, indexed primary text and official repositories; live API schemas, bulk files, IIIF pixels and tile alignment were not validated for prospective sources.",
+    "Network access to primary collection hosts was unavailable in the execution environment; no endpoint, rights or coverage status is inferred from an inaccessible response.",
+    "No providers contacted, paid access purchased or catalogue/imagery imported by this audit.",
+    "Every entry needs per-record clearance, transform validation and a live render check before publication."
+  ]
+}
