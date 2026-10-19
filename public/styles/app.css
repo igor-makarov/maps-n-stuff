@@ -114,6 +114,11 @@
   margin-bottom: var(--zh-size-large);
 }
 
+/* The facts list only appears on phones, where the hero strip is hidden. */
+.zh-facts--about {
+  display: none;
+}
+
 .app-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1042,15 +1047,18 @@ body.app-compare--open {
     display: inline;
   }
   .zh-header__main {
-    padding-block: var(--zh-size-small-regular);
+    padding-block: var(--zh-size-tiny);
     gap: var(--zh-size-tiny);
   }
+  .zh-header__bar-inner {
+    padding-block: 2px;
+  }
   .app-main {
-    padding-block: var(--zh-size-small-regular) 0;
+    padding-block: var(--zh-size-tiny) 0;
   }
   .app-intro {
-    padding: var(--zh-size-small-regular) var(--zh-size-regular);
-    margin-bottom: var(--zh-size-small-regular);
+    padding: var(--zh-size-tiny) var(--zh-size-regular);
+    margin-bottom: var(--zh-size-tiny);
   }
   /* Cantonal type curve for h1 at the smallest breakpoint ($fontSizeCurves
      huge/tiny = 28px) — the 32px base is meant for ≥400px. */
@@ -1083,6 +1091,16 @@ body.app-compare--open {
     gap: var(--zh-size-small-regular) var(--zh-size-regular);
     padding-bottom: 4px;
   }
+  /* On a phone the *hero* strip is removed: the same figures now stand in the
+     two-column list inside “Über das Projekt” (#about-facts, filled from the
+     same data path in main.js), so the first screen belongs to the map. */
+  .app-intro > .zh-facts {
+    display: none;
+  }
+  .zh-facts--about {
+    display: grid;
+    margin-bottom: var(--zh-size-small-regular);
+  }
   .zh-facts > li {
     min-width: 0;
   }
@@ -1104,6 +1122,7 @@ body.app-compare--open {
   .app-toolbar {
     padding: var(--zh-size-tiny) var(--zh-size-small-regular);
     gap: var(--zh-size-tiny);
+    margin-bottom: var(--zh-size-tiny);
   }
   .app-toolbar__group {
     flex-wrap: wrap;
@@ -1135,6 +1154,15 @@ body.app-compare--open {
   #place-quick > *,
   .zh-quickranges > * {
     flex: 0 0 auto;
+  }
+}
+
+/* Below the cantonal 400 px breakpoint the brand claim goes as well: the name
+   stays, and the claim repeats the page title while costing a line above the
+   map. The claim remains in the document title and the meta description. */
+@media (max-width: 399px) {
+  .zh-brand__claim {
+    display: none;
   }
 }
 

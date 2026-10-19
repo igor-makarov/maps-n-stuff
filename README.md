@@ -83,7 +83,13 @@ What works today (verified with `wrangler dev` + headless Chromium):
   result controls are on the first screen at desktop sizes (measured: map starts
   at 612 px of a 900 px viewport), with a “Direkt zur Karte” link, a keyboard
   route to every map action and the cantonal “Nach oben” control once the page
-  is scrolled;
+  is scrolled; below 600 px the hero hands its stock figures to “Über das
+  Projekt” (same data, `#about-facts`) so the map still starts on the first phone
+  screen (measured at 390×844: map top 609 px with 235 px of map visible, before
+  722 px / 122 px);
+- the seed's own provenance is visible in the app: “Quellen und Rechte” lists
+  every provider with attribution, rights, homepage and OAI-PMH endpoint and
+  states the harvest date (`Datenstand`, read from `records.json.generatedAt`);
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `base`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in

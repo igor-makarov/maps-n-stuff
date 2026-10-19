@@ -64,6 +64,13 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   `atm-heading--bordered`; content panels use a 4 px colour bar on the left
   (`--zh-size-mini`, `$sizeMini`) and the 4 px spacing rhythm, mirroring the
   canton's chapter-number indentation (`$chapterNumberMinWidth: 36px`).
+- **Phone step (app decision)**: below 600 px the hero band hands its
+  “Zahlen und Fakten” strip to the “Über das Projekt” card (`#about-facts`, the
+  same values rendered from the same data in `main.js`), and below the cantonal
+  400 px breakpoint the brand claim is hidden — the name stays. Both keep the
+  map on the first phone screen without dropping information from the page
+  (measured 390×844: map top 722 → 609 px, visible map 122 → 235 px; harness
+  check “phone map-first …”).
 - **Form controls**: 2 px black borders, official input scales 72 / 60 / 48 px
   (`form_input.scss`: `$targetInputHeight` 72, `$targetMediumInputHeight` 60,
   `$targetSmallInputHeight` 48), labels in InterBlack at 14 px, 2 px input

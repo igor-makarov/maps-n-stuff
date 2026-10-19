@@ -1986,6 +1986,36 @@ try {
     heading.size === '28px' && /zh-heading--1/.test(heading.classes),
     JSON.stringify(heading),
   );
+
+  // Phone map-first: below 600 px the hero gives its stock figures to the
+  // “Über das Projekt” card (#about-facts, filled from the same data), so the
+  // map itself starts on the first phone screen instead of behind a facts strip
+  // (maps-1, iteration 7-16). Measured before the change: map top 722 px of an
+  // 844 px screen → 122 px of map; now 609 px → 235 px.
+  const phoneFirstScreen = await cdp.eval(`(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    const map = document.querySelector('#map')?.getBoundingClientRect();
+    const aboutFacts = document.querySelector('#about-facts');
+    const heroFacts = document.querySelector('#intro-facts');
+    return {
+      mapTop: map ? Math.round(map.top + window.scrollY) : -1,
+      mapVisible: map ? Math.round(Math.min(window.innerHeight - map.top, map.height)) : 0,
+      aboutFacts: aboutFacts ? aboutFacts.querySelectorAll('li').length : 0,
+      aboutFactsVisible: aboutFacts ? getComputedStyle(aboutFacts).display !== 'none' : false,
+      heroFactsHidden: heroFacts ? getComputedStyle(heroFacts).display === 'none' : false,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  })()`);
+  check(
+    'phone map-first: the map starts on the first screen and the stock figures stay in “Über das Projekt”',
+    phoneFirstScreen.mapVisible > 180 &&
+      phoneFirstScreen.aboutFacts >= 4 &&
+      phoneFirstScreen.aboutFactsVisible &&
+      phoneFirstScreen.heroFactsHidden &&
+      phoneFirstScreen.overflow === 0,
+    JSON.stringify(phoneFirstScreen),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '03d-mobile-mapfirst.png')).then(() => report.screenshots.push('03d-mobile-mapfirst.png'));
   await cdp.send('Emulation.clearDeviceMetricsOverride');
 
   /* --- 8g. view switch: map-only / list-only stay inside their boxes ---- */
