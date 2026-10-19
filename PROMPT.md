@@ -1,13 +1,29 @@
-# Build an OldMapsOnline experience with Canton Zürich design
+# Build a global historical atlas in English
 
-Build a working, polished web application that recreates the core experience of
-https://www.oldmapsonline.org/ using the official **Canton Zürich (Kanton Zürich)**
-design style guide. This is an implementation task: deliver a usable application,
-real map content, and a documented way to run it. **Build and deliver it as a
-Cloudflare Workers site.** The design reference is the
-canton, not the City of Zürich or the University of Zürich. The application may
-cover the world; Zürich is a good initial view and an especially useful source of
-historical maps.
+**Priority correction from the user, 2026-10-19:** the current German, Zürich-first
+site is the wrong product direction. Build a global English-language historical
+atlas comparable in experience to https://www.oldmapsonline.org/en, including
+its **History / TimeMap-style map of changing historical borders**. The Canton
+Zürich design system is a visual reference for typography, spacing, hierarchy,
+and restrained interaction styling. It is not the product's identity, language,
+geographic scope, logo, or default destination.
+
+This correction supersedes older coordination decisions, German UI expectations,
+Swiss-only defaults, and tests that encode that interpretation. Preserve useful
+existing functionality, but prioritize correcting the actual product over adding
+more polish to the previous direction. Deliver a usable **Cloudflare Workers**
+application, with these three required outcomes:
+
+1. **Global and English:** English interface throughout, a worldwide initial map,
+   global basemap and place search, and archival content spanning continents.
+2. **Original identity:** choose a coherent English product name and original
+   atlas-themed logo together. Remove the current canton-like shield/diagonal
+   blue-and-white flag mark from the header and favicon. Do not use or approximate
+   the canton coat of arms, lion, flag, government logo, or official branding.
+3. **Historical borders:** a prominent, working world-history map with a year
+   selector/timeline that changes actual territorial polygons and labels over time.
+   The existing scan browser, IIIF viewer, and map-sheet footprints do not satisfy
+   this requirement. This feature is required, not an optional later enhancement.
 
 ## Four agents, one shared result
 
@@ -44,11 +60,12 @@ precise blocker and preserve the work for the next iteration.
 
 ## Research the experience and use original sources
 
-Inspect OldMapsOnline to understand its actual information architecture and
-interactions: finding places on a map, browsing historical maps, filtering by
-time, examining a map's details, and following through to its collection. Use a
-browser and screenshots when available. Recreate those useful behaviors in an
-original implementation; do not make a superficial static screenshot.
+Inspect both the original's **Maps** and **History** experiences, including
+https://www.oldmapsonline.org/en/history and its linked TimeMap view. Understand
+how the world map, selected year, changing political territories, region labels,
+place search, archival maps, details, and original collection links fit together.
+Use a browser and screenshots when available. Recreate useful behavior in an
+original implementation; the archive-map browser alone is incomplete.
 
 **Go to the original sources instead of just scraping OldMapsOnline.** Follow
 collection credits and outbound links to the holding library, archive, museum,
@@ -57,21 +74,14 @@ image services, OAI-PMH, WMS/WMTS, official downloads, and licensed open dataset
 Use the aggregator for discovery and UX research rather than as the application's
 data backend. Do not depend on undocumented private aggregator endpoints.
 
-Useful starting points to investigate and verify:
-
-- ZB Zürich's map collections:
-  https://www.zb.uzh.ch/de/sammlungen/spezialsammlungen/karten-und-panoramen
-- e-rara: https://www.e-rara.ch/ and ZB's interface catalogue:
-  https://data.zb.uzh.ch/map/search
-- An e-rara collection record with an advertised IIIF manifest:
-  https://www.e-rara.ch/zuz/content/titleinfo/22142031
-  and https://www.e-rara.ch/i3f/v20/22142031/manifest
-- swisstopo's official geoservices:
-  https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata
-  and https://www.swisstopo.admin.ch/en/digital-maps
-- The Swiss federal map viewer and its linked service documentation:
-  https://map.geo.admin.ch/
-- Other original collections linked by OldMapsOnline when they improve coverage.
+Original archival sources to investigate include the Library of Congress
+(https://www.loc.gov/maps/), BnF Gallica (https://gallica.bnf.fr/), the National
+Library of Scotland (https://maps.nls.uk/), the David Rumsey Map Collection
+(https://www.davidrumsey.com/), and the global material already available through
+e-rara (https://www.e-rara.ch/). Follow their documented APIs, IIIF services,
+collection records, and reuse terms. Existing e-rara and swisstopo material can
+remain as part of the collection, but Swiss institutions must not define the
+product's geographic coverage or search capability.
 
 Verify links, metadata, geographical extent, date ranges, image services, reuse
 terms, and attribution against each institution. Keep a source registry describing
@@ -82,7 +92,50 @@ bounded fetching, and polite requests. Handle CORS and outages deliberately; if 
 server adapter is needed, restrict it to known upstreams. Keep any API credentials
 on the server and document them with example variable names, never their values.
 
-## Apply the actual Canton Zürich design system
+## Deliver the missing historical-borders map
+
+Research the original data publishers, not scraped TimeMap tiles or undocumented
+private aggregator endpoints. Candidate primary sources to evaluate directly:
+
+- André Ourednik's historical world boundaries:
+  https://github.com/aourednik/historical-basemaps . The repository publishes a
+  year/snapshot index, GeoJSON polygons, names, and border-precision metadata.
+  Read its license, credits, methodology, and coverage before integrating it.
+- CShapes, published by ETH International Conflict Research:
+  https://icr.ethz.ch/data/cshapes/ . It provides dated country/territory boundaries
+  for a defined modern period; verify its coverage and noncommercial/share-alike
+  terms rather than assuming it covers antiquity or has unrestricted reuse.
+- OpenHistoricalMap: https://www.openhistoricalmap.org/ . Follow its original
+  data/API documentation, temporal tags, attribution, and coverage information.
+
+Select suitable, reusable sources yourselves and build a reproducible pipeline
+that records provenance, upstream revision, license/credit, available dates,
+precision, and any simplification. Bundle or serve usable data with the Workers
+app; do not leave a research note or a link in place of a functioning feature.
+
+The history map must:
+
+- Work at world/continent scale, with discoverable History/Borders navigation,
+  a global initial view, a labeled year control, and temporal territorial polygons
+  that actually change when the year changes. Include polity/region labels and
+  clickable details with source information where the dataset supports them.
+  Integrate the chosen source's full usable year/snapshot index, not just a few
+  hard-coded demonstration years or polygons.
+- Handle historical snapshots versus continuous validity ranges honestly. If a
+  selected date uses a nearby snapshot, visibly identify the represented date;
+  do not fabricate intermediate borders or pretend modern borders are historical.
+- Support early as well as modern periods when supported by the selected sources,
+  with correct BCE/CE controls where applicable. Cover multiple continents,
+  show the actual available range and gaps, and distinguish approximate or
+  disputed boundaries using the source's information. Do not claim complete
+  worldwide coverage for every year when the data does not provide it.
+- Keep historical borders distinct from raster scans, modern basemap borders,
+  and archival map-sheet extents. An old map image with modern country outlines
+  underneath is not the missing historical-borders feature.
+- Share the selected mode/year/view in the URL, work on mobile and with keyboard
+  input, preserve map usability, and provide informative loading/error states.
+
+## Use Zürich as a restrained design reference
 
 Read the official guidance and its linked implementation resources:
 
@@ -95,13 +148,13 @@ Read the official guidance and its linked implementation resources:
 - Corporate design:
   https://www.zh.ch/de/politik-staat/kanton/kantonale-verwaltung/corporatedesign.html
 
-Derive and document the real typography, color tokens, spacing, grid, characteristic
-indentation, navigation, buttons, form controls, and focus states from these
-primary sources. A generic blue-and-white theme is insufficient. Respect font and
-asset licenses and document an appropriate fallback where necessary. Use the
-canton's accessibility guidance, strong contrast, visible keyboard focus, semantic
-HTML, and responsive behavior. Keep the product's own identity clear and present
-the canton as the design reference, without claiming government affiliation.
+Use the reference's clear typography, spacing, grid, alignment, readable forms,
+restrained colors, and accessible interaction states to inform an original atlas.
+Do not reproduce a government website or its heraldry. Respect font and asset
+licenses, keep strong contrast and visible focus, and use semantic responsive
+HTML. Move any design-source credit into a concise About/credits area; the header
+and primary experience should present the atlas, not a canton-government design
+disclaimer. Internal CSS names and existing deployment identifiers can remain.
 
 ## Product expectations
 
@@ -121,10 +174,19 @@ and deploy command). Validate the source locally, but do not deploy from the swa
 or obtain or expose Cloudflare deployment credentials. Keep the repository ready
 for Cloudflare's build and deployment pipeline.
 
-Prioritize a complete vertical slice early, then expand and polish it:
+Prioritize the three correction outcomes above, preserving and adapting useful
+work already delivered. In addition to the required historical-borders view:
 
-- A real interactive pan/zoom map and place search, with results linked to the
-  current geography and clear selected-item behavior.
+- A real global interactive pan/zoom basemap and **worldwide place search**.
+  The existing swisstopo-only SearchServer and Swiss tile defaults are insufficient.
+  Test cities outside Switzerland and Europe, including Cairo, Tokyo, Mexico City,
+  and São Paulo. Use documented services with attribution, appropriate caching,
+  and working behavior outside the Swiss tile extent.
+- **English UI end to end:** page language, English product name, navigation,
+  placeholders, buttons, labels, filters, dates/numbers, tooltips, accessibility
+  text, errors, loading/empty states, viewer controls, and social metadata. Keep
+  archival titles and source quotations in their original languages where needed;
+  those are metadata, not a reason to leave the app's interface in German.
 - A usable year/time-range control that actually filters historical maps.
 - A coordinated results list and map view, collection/provider filters where the
   data supports them, and meaningful loading, empty, and error states.
@@ -149,6 +211,15 @@ source, and mobile/keyboard use. Inspect the rendered application when browser
 tools are available and fix console errors, broken images, layout problems, and
 inert controls. Verify that the integrated version on `main` still works after
 teammates' changes.
+
+Add meaningful regression coverage for English chrome, the original logo/favicon,
+global initial extent, worldwide search, worldwide basemap coverage, and historical
+border changes at several verified dates across multiple continents. Demonstrate
+a real change in visible territorial features/geometry, not just a year label.
+Check one early date and one modern date when the chosen dataset supports them,
+and test unsupported dates honestly. Update old German/Swiss-first test expectations
+to the corrected product scope while preserving behavioral coverage. Screenshots
+of the landing view and History view should make this correction obvious.
 
 Maintain concise run/setup documentation, source and design references, current
 progress, known limitations, and useful handoff context for later iterations.
