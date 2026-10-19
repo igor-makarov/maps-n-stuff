@@ -5,7 +5,7 @@
   "branch": "maps-n-stuff-1",
   "defaultBranch": "main",
   "supervisor": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
-  "status": "running",
+  "status": "stopped",
   "generation": 1,
   "next": 120,
   "engine": {
@@ -39,7 +39,7 @@
   "source": "690832220411ae3e03610a7c077b696b8b51b56a",
   "sourceRef": null,
   "createdAt": "2026-10-19T20:22:18.477Z",
-  "lastDispatchAt": "2026-10-19T21:49:03.037Z",
+  "lastDispatchAt": null,
   "checkpoint": {
     "workCommit": "690832220411ae3e03610a7c077b696b8b51b56a",
     "generation": 1,
@@ -650,5 +650,6 @@
       "iteration": 120
     }
   ],
-  "lastRunId": "39330347292"
+  "lastRunId": "39330347292",
+  "stoppedAt": "2026-10-19T21:49:35.151Z"
 }
