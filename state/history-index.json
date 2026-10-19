@@ -632,5 +632,13 @@
     "maxEntryId": 433,
     "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-2:7-67\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Stream ended without finish_reason\"}",
     "transcript": "complete"
+  },
+  {
+    "id": "7-68",
+    "outcome": "interrupted",
+    "runId": "39202002975",
+    "journalId": "7-68",
+    "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
+    "transcript": "unavailable"
   }
 ]
