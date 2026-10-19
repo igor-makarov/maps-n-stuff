@@ -45,26 +45,45 @@ function cacheFile(url, as) {
   return new URL(`./${hash}.${as === 'json' ? 'json' : 'txt'}`, CACHE_DIR);
 }
 
-async function get(url, { as = 'text', timeout = 25000 } = {}) {
+async function get(url, { as = 'text', timeout = 25000, attempts = 3 } = {}) {
   const file = cacheFile(url, as);
   if (OFFLINE) {
     const cached = await readFile(file, 'utf8');
     return as === 'json' ? JSON.parse(cached) : cached;
   }
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeout);
-  try {
-    const res = await fetch(url, {
-      headers: { 'user-agent': UA, accept: as === 'json' ? 'application/json' : '*/*' },
-      signal: ctrl.signal,
-    });
-    if (!res.ok) throw new Error(`${res.status} ${url}`);
-    const body = as === 'json' ? await res.json() : await res.text();
-    await mkdir(CACHE_DIR, { recursive: true });
-    await writeFile(file, as === 'json' ? JSON.stringify(body) : body);
-    return body;
-  } finally {
-    clearTimeout(timer);
+  for (let attempt = 1; ; attempt += 1) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeout);
+    try {
+      const res = await fetch(url, {
+        headers: { 'user-agent': UA, accept: as === 'json' ? 'application/json' : '*/*' },
+        signal: ctrl.signal,
+      });
+      if (!res.ok) {
+        // e-rara's DOI landing pages throttle bursts (429) and sometimes answer 5xx;
+        // a retry with backoff turns a transient outage into a slower fetch instead of
+        // aborting the whole harvest (verify-endpoints.mjs has retried since 7-23).
+        if ((res.status === 429 || res.status >= 500) && attempt < attempts) {
+          await sleep(attempt * 1500);
+          continue;
+        }
+        throw new Error(`${res.status} ${url}`);
+      }
+      const body = as === 'json' ? await res.json() : await res.text();
+      await mkdir(CACHE_DIR, { recursive: true });
+      await writeFile(file, as === 'json' ? JSON.stringify(body) : body);
+      return body;
+    } catch (err) {
+      const transient =
+        err.name !== 'AbortError' && !/^\d{3} /.test(err.message || '') && attempt < attempts;
+      if (transient) {
+        await sleep(attempt * 1500);
+        continue;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 }
 
@@ -245,10 +264,13 @@ function parseDepictedYears(meta, candidate, publicationYear) {
  */
 async function canonicalViewer(doi, titleId) {
   if (!doi) return null;
-  const html = await get(doi, { as: 'text', timeout: 20000 });
-  const m = html.match(/og:url"\s+content="https?:\/\/www\.e-rara\.ch\/([a-z0-9_]+)\/(\d+)"/);
-  if (!m || m[2] !== String(titleId)) return null;
-  return { corpus: m[1], id: m[2], viewerUrl: `https://www.e-rara.ch/${m[1]}/content/zoom/${m[2]}` };
+  const resolved = await resolveDoiTitle(doi);
+  if (!resolved || resolved.titleId !== String(titleId)) return null;
+  return {
+    corpus: resolved.corpus,
+    id: resolved.titleId,
+    viewerUrl: `https://www.e-rara.ch/${resolved.corpus}/content/zoom/${resolved.titleId}`,
+  };
 }
 
 /**
@@ -457,6 +479,137 @@ async function sruPlanRecord(candidate, options) {
   // Same gates as every other set: a map with an upstream publication year.
   if (!oai.isMap || !oai.year) return null;
   return manifestRecord({ ...oai, corpus: candidate.corpus }, options);
+}
+
+/**
+ * swisscovery — the Zentralbibliothek Zürich's own catalogue (Alma SRU).
+ *
+ * The library's data map documents the endpoint and its indexes
+ * (https://data.zb.uzh.ch/map/books/data-map-der-zentralbibliothek-zurich/page/alma-sru).
+ * The `alma.genre_form` index answers the catalogue's own genre headings, so its
+ * Altkarte holdings can be searched directly instead of hoping that a title or
+ * keyword word appears; that is how the pre-1700 Zürich city views and cantonal
+ * maps the e-rara keyword index does not surface are found (the 1588 “Contrafactur
+ * der Statt Zürich”, the 1715 “Delineation der Statt Zürich”, the 1741 “Delineatio
+ * Pagi Tigurini”, the 1795 “Karte vom Canton Zürich”, …).
+ *
+ * Discovery only, exactly like the e-rara SRU channel: a hit must state an e-rara
+ * DOI, and the DOI landing page states the canonical corpus and IIIF title id in
+ * `og:url`; the record itself is then built from that title's IIIF manifest. No
+ * title, date or coordinate is taken from the search response, and no record is
+ * guessed from a search hit.
+ */
+const ALMA_SRU_ENDPOINT = 'https://uzb.swisscovery.ch/view/sru/41SLSP_UZB';
+
+/** The catalogue caps one SRU page at 50 records, even when more are requested. */
+const ALMA_PAGE = 50;
+
+export function almaSruUrl(cql, start = 1) {
+  return (
+    `${ALMA_SRU_ENDPOINT}?version=1.1&operation=searchRetrieve&query=${encodeURIComponent(cql)}` +
+    `&startRecord=${start}&maximumRecords=${ALMA_PAGE}&recordSchema=marcxml`
+  );
+}
+
+/**
+ * A MARC 034 coordinate reading → degrees.
+ *
+ * MARC states degrees-minutes-seconds with a hemisphere letter (“E0083200” =
+ * 8°32′00″, “W0245400” = −24°54′00″); the catalogue also writes plain decimals in
+ * some records, which are passed through. Anything else is null, never a guess.
+ */
+export function parseMarcCoordinate(value) {
+  const text = String(value || '').trim();
+  const dms = text.match(/^([NSEW])(\d{3})(\d{2})(\d{2})$/);
+  if (dms) {
+    const degrees = Number(dms[2]) + Number(dms[3]) / 60 + Number(dms[4]) / 3600;
+    return dms[1] === 'W' || dms[1] === 'S' ? -degrees : degrees;
+  }
+  if (text === '' || !/^[+-]?\d+(\.\d+)?$/.test(text)) return null;
+  return Number(text);
+}
+
+/**
+ * One swisscovery MARCXML record → the discovery shape the Alma channel gates on.
+ * `coordinates` is the catalogue's own MARC 034 box; it only decides whether a
+ * candidate is worth a manifest request — the record's extent still comes from the
+ * manifest's stated `Kartendaten`, never from this box.
+ */
+export function parseAlmaRecord(chunk) {
+  const subfields = (tag, code) => {
+    const out = [];
+    for (const field of chunk.matchAll(
+      new RegExp(`<datafield[^>]*\\stag="${tag}"[^>]*>([\\s\\S]*?)</datafield>`, 'g'),
+    )) {
+      for (const sub of field[1].matchAll(
+        new RegExp(`<subfield code="${code}">([^<]*)</subfield>`, 'g'),
+      )) {
+        out.push(decode(sub[1]));
+      }
+    }
+    return out;
+  };
+  const control = (tag) =>
+    (chunk.match(new RegExp(`<controlfield tag="${tag}">([^<]*)</controlfield>`)) || [])[1] || '';
+  const doi = subfields('024', 'a').find((v) => /^10\.3931\/e-rara-\d+$/.test(v)) || null;
+  const west = parseMarcCoordinate(subfields('034', 'd')[0]);
+  const east = parseMarcCoordinate(subfields('034', 'e')[0]);
+  const north = parseMarcCoordinate(subfields('034', 'f')[0]);
+  const south = parseMarcCoordinate(subfields('034', 'g')[0]);
+  const coordinates =
+    [west, east, north, south].every((v) => v !== null) ? { west, east, north, south } : null;
+  const genres = subfields('655', 'a');
+  const statedYear = subfields('264', 'c')
+    .map((v) => v.match(/(1[4-9]\d{2}|20\d{2})/))
+    .find(Boolean);
+  return {
+    doi,
+    title: subfields('245', 'a')[0] || '',
+    year: Number(statedYear?.[1]) || parseYear(control('008').slice(7, 11)) || null,
+    creators: [...subfields('100', 'a'), ...subfields('700', 'a')].filter(Boolean),
+    isMap: genres.some((g) => /^(Altkarte|Karte|Vogelschaukarte)$/i.test(g)),
+    coordinates,
+    signature: subfields('AVA', 'd')[0] || null,
+  };
+}
+
+async function almaSearch(cql, maxRecords = 250) {
+  const hits = [];
+  for (let start = 1; start <= maxRecords; start += ALMA_PAGE) {
+    const xml = await get(almaSruUrl(cql, start));
+    const chunks = [...xml.matchAll(/<record[^>]*>([\s\S]*?)<\/record>/g)].map((m) => m[1]);
+    if (!chunks.length) break;
+    for (const chunk of chunks) {
+      const hit = parseAlmaRecord(chunk);
+      if (hit) hits.push(hit);
+    }
+    if (chunks.length < ALMA_PAGE) break;
+    await sleep(150);
+  }
+  return hits;
+}
+
+/**
+ * An e-rara DOI → the canonical corpus + IIIF title id, as the platform's own DOI
+ * landing page states it (`og:url` = `https://www.e-rara.ch/<corpus>/<titleId>`).
+ * Nothing is constructed: a landing page that does not state it yields null and the
+ * candidate is skipped.
+ */
+async function resolveDoiTitle(doiUrl) {
+  const html = await get(doiUrl, { as: 'text', timeout: 20000 });
+  const m = html.match(/og:url"\s+content="https?:\/\/www\.e-rara\.ch\/([a-z0-9_]+)\/(\d+)"/);
+  return m ? { corpus: m[1], titleId: m[2] } : null;
+}
+
+/** An Alma SRU hit → a real e-rara record, built from its IIIF manifest. */
+async function almaRecord(hit, options) {
+  if (!hit.doi) return null;
+  const resolved = await resolveDoiTitle(`https://www.e-rara.ch/doi/${hit.doi}`);
+  if (!resolved) return null;
+  return manifestRecord(
+    { ...hit, ...resolved, doi: `https://www.e-rara.ch/doi/${hit.doi}`, rights: 'PDM 1.0' },
+    options,
+  );
 }
 
 async function pool(items, limit, fn) {
@@ -916,6 +1069,39 @@ const SRU_SEARCHES = {
   },
 };
 
+/**
+ * swisscovery/Alma SRU discovery (Zentralbibliothek Zürich catalogue).
+ *
+ * The library's own catalogue indexes the genre heading `Altkarte` directly, so it
+ * reaches the Altkarte material that the e-rara keyword index does not answer —
+ * the 1588/1595 city views, the 1715 “Delineation der Statt Zürich”, the 1741
+ * “Delineatio Pagi Tigurini”, the 1795 “Karte vom Canton Zürich”. Probed on
+ * 2026-10-19: the query states **211** hits, 123 of them with a stated year and a
+ * MARC 034 box whose centre lies inside the canton window. The channel is
+ * discovery only: the record itself is built from the e-rara IIIF manifest the DOI
+ * landing page resolves to (see `almaRecord`).
+ */
+const ALMA_SEARCHES = {
+  zurichAltkarten: {
+    id: 'zurich-altkarten-zb',
+    name: 'Altkarten der Stadt und des Kantons Zürich (Katalog der Zentralbibliothek)',
+    query: 'alma.genre_form=Altkarte and alma.all=e-rara and alma.all=Zürich',
+    rule:
+      'swisscovery/Alma SRU discovery, one query over the ZB catalogue\'s own genre heading ' +
+      '(`alma.genre_form=Altkarte` and the keyword Zürich, 211 hits): a hit must state an e-rara DOI, ' +
+      'a publication year and a MARC 034 extent, its DOI landing page must state the canonical corpus ' +
+      'and IIIF title id, and the record is then built from its IIIF manifest like every other e-rara ' +
+      'record (stated holding institution and Kartendaten extent); the centre of the stated extent must ' +
+      'lie inside the canton window; records already kept by another channel are skipped by DOI, one ' +
+      'entry per title and year, oldest first with at most two records per publication decade — the set ' +
+      'fills the pre-1700 Zürich gap (city views and cantonal maps) that the e-rara keyword index does ' +
+      'not surface',
+    candidateCap: 100,
+    recordCap: 36,
+    perDecade: 2,
+  },
+};
+
 async function main() {
   const [
     zuz,
@@ -928,6 +1114,7 @@ async function main() {
     cityHitLists,
     worldHitLists,
     zurichWindow,
+    almaHits,
   ] = await Promise.all([
     oaiRecords('zuz', 32),
     oaiRecords('landkarten', 30),
@@ -939,6 +1126,7 @@ async function main() {
     Promise.all(SRU_SEARCHES.zurichCityPlans.queries.map((cql) => sruSearch(cql, 100))),
     Promise.all(SRU_SEARCHES.worldOverview.queries.map((cql) => sruSearch(cql, 100))),
     zurichCantonWindow(),
+    almaSearch(ALMA_SEARCHES.zurichAltkarten.query, 250),
   ]);
   const regionHits = regionHitLists.flat();
   const cityHits = cityHitLists.flat();
@@ -952,6 +1140,10 @@ async function main() {
       `(${SRU_SEARCHES.zurichCityPlans.queries.length} queries), ${worldHits.length} overview hits ` +
       `(${SRU_SEARCHES.worldOverview.queries.length} queries); canton window ` +
       (zurichWindow ? JSON.stringify(zurichWindow) : 'UNAVAILABLE (set skipped)'),
+  );
+  console.log(
+    `Alma: ${almaHits.length} swisscovery Altkarte+Zürich hits ` +
+      `(${almaHits.filter((h) => h.doi).length} with an e-rara DOI)`,
   );
 
   const zuzMaps = zuz.map(parseOai).filter((r) => r.isMap && r.titleId && r.year);
@@ -1341,6 +1533,46 @@ async function main() {
       `(${worldHitsPooled.filter((r) => r.extent && isWorldOverview(r)).length} passed the area gate)`,
   });
 
+  // --- swisscovery (ZB catalogue) Alma SRU: the pre-1700 Zürich gap --------
+  // The e-rara keyword index only answers the values it happens to index; the
+  // library's own catalogue exposes its `Altkarte` genre heading directly. Discovery
+  // only: the DOI landing page names the corpus and IIIF title id, the manifest
+  // builds the record. DOI pages are fetched 3 at a time with the shared 180 ms
+  // pause, and a record already kept by another channel (same DOI) is skipped so no
+  // request is spent twice.
+  const keptDois = new Set(
+    [
+      ...zbRecords,
+      ...ethRecords,
+      ...geneveRecords,
+      ...museRecords,
+      ...zurichPlanRecords,
+      ...zurichRegionRecords,
+      ...zurichCityRecords,
+      ...worldRecords,
+    ]
+      .map((r) => (String(r.recordUrl || '').match(/(10\.3931\/e-rara-\d+)/) || [])[1])
+      .filter(Boolean),
+  );
+  const almaCandidates = [];
+  for (const hit of almaHits) {
+    if (!hit.doi || keptDois.has(hit.doi)) continue;
+    if (!hit.isMap || !hit.year || !hit.coordinates) continue;
+    keptDois.add(hit.doi);
+    almaCandidates.push(hit);
+  }
+  almaCandidates.sort((a, b) => a.year - b.year || a.title.localeCompare(b.title, 'de'));
+  const almaHitsPooled = zurichWindow
+    ? await pool(almaCandidates.slice(0, ALMA_SEARCHES.zurichAltkarten.candidateCap), 3, (c) =>
+        almaRecord(c, { sourceCollection: ALMA_SEARCHES.zurichAltkarten.name, maxYear: 1930 }),
+      )
+    : [];
+  const almaRecords = selectSru(almaHitsPooled, {
+    cap: ALMA_SEARCHES.zurichAltkarten.recordCap,
+    perDecade: ALMA_SEARCHES.zurichAltkarten.perDecade,
+    label: `ZB-catalogue Altkarten of ${almaCandidates.length} candidates`,
+  });
+
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
   const records = [
@@ -1352,6 +1584,7 @@ async function main() {
     ...zurichRegionRecords,
     ...zurichCityRecords,
     ...worldRecords,
+    ...almaRecords,
     ...overlays,
   ].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
@@ -1378,6 +1611,7 @@ async function main() {
               ...zurichPlanRecords,
               ...zurichRegionRecords,
               ...zurichCityRecords,
+              ...almaRecords,
             ].map((r) => r.institution),
           ),
         ].sort((a, b) => a.localeCompare(b, 'de')),
@@ -1458,10 +1692,22 @@ async function main() {
               `${worldRecords.length} records kept — the second coverage area, outside the canton ` +
               'window by rule',
           },
+          {
+            id: ALMA_SEARCHES.zurichAltkarten.id,
+            name: ALMA_SEARCHES.zurichAltkarten.name,
+            // An actual harvested record from this search, not a guessed page.
+            record: almaRecords[0]?.recordUrl ?? almaSruUrl(ALMA_SEARCHES.zurichAltkarten.query),
+            discovery: almaSruUrl(ALMA_SEARCHES.zurichAltkarten.query),
+            note:
+              `swisscovery/Alma SRU discovery (${ALMA_SEARCHES.zurichAltkarten.query}): ` +
+              `${almaCandidates.length} candidates with a stated year, e-rara DOI and MARC 034 extent, ` +
+              `${almaRecords.length} records kept`,
+          },
         ],
         endpoints: {
           oai: 'https://www.e-rara.ch/oai',
           sru: SRU_ENDPOINT,
+          almaSru: ALMA_SRU_ENDPOINT,
           iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
           iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}',
           thumbnail: 'IIIF thumbnail from the manifest',
@@ -1470,7 +1716,7 @@ async function main() {
         attribution: 'e-rara.ch / holding institution, CC0 metadata and PDM imagery',
         terms: 'https://www.e-rara.ch/terms',
         retrievalDate: RETRIEVED,
-        apiHosts: ['www.e-rara.ch'],
+        apiHosts: ['www.e-rara.ch', 'uzb.swisscovery.ch'],
         api: {
           oaiPmh:
             'https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} ' +
@@ -1481,6 +1727,10 @@ async function main() {
             'https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query={cql}&startRecord={n}' +
             '&maximumRecords=100&recordSchema=mods (CQL indexes: dc.title, dc.subject, dc.creator; MODS ' +
             'records carry <vl:id>, <vl:prefix> and <coordinates>)',
+          almaSru:
+            'https://uzb.swisscovery.ch/view/sru/41SLSP_UZB?version=1.1&operation=searchRetrieve' +
+            '&query={cql}&startRecord={n}&maximumRecords=50&recordSchema=marcxml (MARC 001/008/024/034/' +
+            '245/264/655; the ZB data map documents the Alma SRU indexes — alma.genre_form, alma.all, …)',
           iiifPresentation: 'https://www.e-rara.ch/i3f/v20/{titleId}/manifest',
           iiifImage: 'https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg',
           docs: 'https://www.e-rara.ch/',
@@ -1562,6 +1812,9 @@ async function main() {
       'overview material the sorted OAI paging does not reach, each hit ' +
       'confirmed by OAI GetRecord and its manifest: the Zürich sets keep only records whose stated extent centre lies inside the canton ' +
       'of Zürich\'s window, the overview set only records whose centre lies outside it and whose extent spans at least 5°; ' +
+      'swisscovery/Alma SRU 1.1 (MARCXML, the ZB Zürich catalogue) for its Altkarte genre heading, a discovery ' +
+      'channel only: every hit is resolved through its e-rara DOI landing page to the canonical IIIF title and then ' +
+      'built from the manifest like every other record; ' +
       'swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
       'editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is ' +
       'invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. ' +
@@ -1646,6 +1899,13 @@ async function main() {
           'Zürich sets; without the window the set is skipped)',
         rule: SRU_SEARCHES.worldOverview.rule,
       },
+      [ALMA_SEARCHES.zurichAltkarten.id]: {
+        query: ALMA_SEARCHES.zurichAltkarten.query,
+        considered: almaCandidates.length,
+        kept: almaRecords.length,
+        cantonWindow: zurichWindow,
+        rule: ALMA_SEARCHES.zurichAltkarten.rule,
+      },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
         kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length,
@@ -1689,6 +1949,7 @@ async function main() {
     `Built ${zbRecords.length} ZB maps, ${ethRecords.length} landkarten, ${geneveRecords.length} Genf, ${museRecords.length} Weltkarten, ` +
       `${zurichPlanRecords.length} Zürich plans, ${zurichRegionRecords.length} Zürich region, ` +
       `${zurichCityRecords.length} Zürich city plans, ${worldRecords.length} Übersichtskarten ausserhalb, ` +
+      `${almaRecords.length} ZB-Altkarten, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +
