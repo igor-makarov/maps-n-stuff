@@ -628,5 +628,15 @@
     "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
     "recovery": "diagnostics/recovery/39205261632-1.json",
     "transcript": "unavailable"
+  },
+  {
+    "id": "8-68",
+    "outcome": "agent_failure",
+    "runId": "39207943978",
+    "journalId": "8-68",
+    "minEntryId": 7,
+    "maxEntryId": 127,
+    "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-1:8-68\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Request timed out.\"}",
+    "transcript": "complete"
   }
 ]

@@ -5,12 +5,36 @@
   "generation": 8,
   "iteration": 68,
   "startedAt": "2026-10-19T06:06:09.722Z",
-  "outcome": "running",
+  "outcome": "agent_failure",
   "journalId": "8-68",
   "source": "e0fbc8baab14c83de0ba782eb9f1a670b8285a4f",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "e0fbc8baab14c83de0ba782eb9f1a670b8285a4f"
+  "workCommit": "ac468d13299eef006360ef9c41bb07d28100cd05",
+  "finishedAt": "2026-10-19T06:12:57.034Z",
+  "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-1:8-68\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Request timed out.\"}",
+  "usage": {
+    "models": {
+      "opencode-go/deepseek-v4.1-flash": {
+        "input": 205672,
+        "output": 10705,
+        "cacheRead": 891264,
+        "cacheWrite": 0,
+        "reasoning": 7796,
+        "totalTokens": 1107641,
+        "cost": {
+          "input": 0.030850799999999994,
+          "output": 0.006423,
+          "cacheRead": 0.0026737919999999995,
+          "cacheWrite": 0,
+          "total": 0.03994759199999999
+        }
+      }
+    },
+    "tools": {}
+  },
+  "minEntryId": 7,
+  "maxEntryId": 127
 }
