@@ -23,7 +23,7 @@ swisstopo layers are now one click (or one URL parameter) away.
 | The control: `#base-layer-switch` under the map (inside the existing keyboard control row `ul.app-map__skip`) with one `aria-pressed` chip per layer, `role="group"` + `aria-labelledby` a visible “Grundkarte” label, built by `map.js` from `BASE_LAYERS` so control and renderer cannot drift apart. The map badge now credits the layer in use (`© swisstopo – Landeskarte (grau)`), and one sentence in the map hint says where to switch. | `map.js`, `index.html`, `app.css` |
 | Shareable state `?base=grau` (absent = the colour default). `store.js`: `base` + `PARAM.base` + the `string` type + one `sanitise` line (`/^[a-z0-9-]{1,24}$/`; a hand-edited value never reaches the map). Replace-only history key, like `ov`/`view`/`sort` — it is a view option, not a search step. | `store.js` (maps-1, additive, flagged) |
 | `tests/map.test.mjs`: 4 new cases — every documented layer has a unique short key + official `ch.swisstopo.*` id, an OGD tile template with all three placeholders, `maxZoom` ≤ 18 and a `© swisstopo` credit; `baseLayerFor()` resolves `grau`/`luftbild`/`farbe`, tolerates `'  GRAU '` and falls back for `''`/junk/objects/layer ids; each layer renders its own tile URL without leftover placeholders; `?base=` survives `sanitise`/`stateToQuery` (and an invalid shape does not). | tests (132/132 with maps-3's new sheet-jump test) |
-| Harness section **8o** (5 checks): the three chips, their accessible names, the labelled group and loaded default tiles; clicking “grau” loads real grey WMTS tiles (`pixelkarte-grau/…/3857/12/2143/1433.jpeg`, `naturalWidth > 0`), writes `base=grau`, credits it, drops the old tiles and leaves the tile/marker grid identical; a shared `?base=luftbild` link opens on SWISSIMAGE; `Enter` on the focused “farbig” chip switches back and removes `base=`; 390 px keeps the three chips inside the page. Screenshot `09-grundkarte.png`. | `browser-check.mjs` (maps-3, additive, flagged) |
+| Harness section **8p** (5 checks): the three chips, their accessible names, the labelled group and loaded default tiles; clicking “grau” loads real grey WMTS tiles (`pixelkarte-grau/…/3857/12/2143/1433.jpeg`, `naturalWidth > 0`), writes `base=grau`, credits it, drops the old tiles and leaves the tile/marker grid identical; a shared `?base=luftbild` link opens on SWISSIMAGE; `Enter` on the focused “farbig” chip switches back and removes `base=`; 390 px keeps the three chips inside the page. Screenshot `09-grundkarte.png`. | `browser-check.mjs` (maps-3, additive, flagged) |
 
 **Upstream evidence (fetched on this runner, 2026-10-19):**
 `https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml` → 200 (1.7 MB);
@@ -35,19 +35,37 @@ and `…/ch.swisstopo.swissimage/default/current/3857/12/2143/1432.jpeg` → 200
 
 ### Integration
 
-`main` moved twice while this was building (maps-0's city ground/site plans,
-maps-3's “Blatt” jump + thumbnail lazy loading). Rebased over both; the conflict
-in `docs/run.md` was resolved by keeping their facts (115 checks, the sheet jump)
-and adding mine, the status board row is mine as before, and no teammate check or
-fact was dropped. Harness count on the merged tree: **120/120**.
+`main` moved four times while this was building (maps-0's city ground/site plans,
+maps-3's “Blatt” jump + thumbnail lazy loading + the “Kartenebene” toggle,
+maps-0's 21 outside-the-canton overview maps → **140 records**). Rebased over all
+of them; both conflicts in `docs/run.md` were resolved by keeping the teammates'
+facts (118 checks, the sheet jump, the Kartenebene toggle) and adding mine, and
+the status board row is mine as before — no teammate check or fact was dropped.
+
+The newest data broke two harness assumptions, both repaired here (flagged to
+maps-3, whose file it is):
+
+- “a point outside every footprint …” hard-coded Berlin. Two of the new overview
+  maps cover Berlin, so the check was red even though the product was right. The
+  point is now **derived from the seed**: `uncoveredPoint` scans a 4° grid for a
+  cell no committed extent covers (it found 62°, −178°) and the check name prints
+  the point it used, so a growing corpus cannot make it lie.
+- The sheet-jump check compared the option label for exact equality
+  (`Blatt 20 von 33`); since the seed's largest work is the 65-sheet canton map
+  and `sheetOptionLabel()` appends the upstream canvas label when it carries extra
+  information (“Blatt 20 von 65 – 15”), it is now compared by prefix.
+
+Harness count on the merged tree: **123/123**.
 
 ### Verified (rebased tree, this runner, `wrangler dev` on 127.0.0.1:8787)
 
-- `npm run check` ✓ — validation (119 records), **132/132** `node --test`,
-  `wrangler deploy --dry-run` (30 asset files, 28.76 KiB Worker).
-- `node scripts/browser-check.mjs` → **120/120** (115 before this iteration +
-  section 8o), including the whole legacy suite (deep zoom, touch, compare,
-  history, footprints, point filter, contrast, degraded upstream, 320/390 px).
+- `npm run check` ✓ — validation (**140** records after maps-0's second coverage
+  area), **132/132** `node --test`, `wrangler deploy --dry-run` (30 asset files,
+  28.76 KiB Worker).
+- `node scripts/browser-check.mjs` → **123/123** (118 before this iteration +
+  section 8p, after the two repairs above), including the whole legacy suite
+  (deep zoom, touch, compare, history, footprints, point filter, contrast,
+  degraded upstream, 320/390 px).
 - Manual CDP probes: default page loads 12 `pixelkarte-farbe` tiles; `?base=grau`
   loads the grey one with the badge `© swisstopo – Landeskarte (grau)`; clicking
   through all three layers never logs a console error and never requests a tile
@@ -73,12 +91,17 @@ fact was dropped. Harness count on the merged tree: **120/120**.
   a renamed `pixelkarte-grau`/`swissimage` layer would only show up in the browser
   harness. Two more tile URLs (grau + swissimage at the Zürich tile) in that list
   would make the online check catch it first.
-- **→ maps-3**: section 8o is in your harness file (after 8n, before the console
-  hygiene block) and `tests/map.test.mjs` gained 4 cases for the pure layer
-  resolution — both additive, nothing else touched. Two notes: the check details
-  print only summary fields (the grid/marker transforms are compared but not
-  dumped), and the “grau” check asserts tile *loading* (`naturalWidth > 0`), so it
-  needs the runner's network access like the other upstream checks.
+- **→ maps-3**: section **8p** is in your harness file (map.js's chips run last,
+  before the console hygiene block; I renumbered mine to 8p because your “8o. large
+  works” section came first) and `tests/map.test.mjs` gained 4 cases for the pure
+  layer resolution — both additive. Two repairs inside your file, both flagged
+  above under Integration: the uncovered point of the point-filter empty state is
+  now derived from the seed (Berlin is covered by two of maps-0's new overview
+  maps), and the sheet-jump option label is compared by prefix (it carries the
+  upstream canvas label as a suffix). Please reword/verify both. Notes: the new
+  check details print only summary fields (grid/marker transforms are compared but
+  not dumped), and the “grau” check asserts tile *loading* (`naturalWidth > 0`),
+  so it needs the runner's network access like the other upstream checks.
 - **→ all**: the shared gate stays `npm run check` + `node scripts/browser-check.mjs`
   (**120/120** now). URL state gained `base` (replace-only, documented in
   `store.js`/`docs/run.md`); nothing else changed in the store contract.

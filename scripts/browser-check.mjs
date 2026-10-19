@@ -317,6 +317,26 @@ try {
   /* no index: the affected checks fall back to reading the DOM */
 }
 
+/**
+ * A point that no committed record's documented extent covers — the honest
+ * “nothing here” for the point-filter empty state. Derived from the seed instead
+ * of hard-coded: the overview maps added in iteration 7-16 cover large parts of
+ * Europe, so a fixed “outside” point (Berlin was one for a while) stops being
+ * outside as soon as the data grows.
+ */
+const uncoveredPoint = (() => {
+  const boxes = [...recordIndex.values()].map((record) => record.extent).filter(Boolean);
+  if (boxes.length === 0) return { lat: 52.52, lon: 13.405 };
+  for (let lat = 62; lat >= -54; lat -= 4) {
+    for (let lon = -178; lon <= 178; lon += 4) {
+      const covered = boxes.some((b) => lon >= b.west && lon <= b.east && lat >= b.south && lat <= b.north);
+      if (!covered) return { lat, lon };
+    }
+  }
+  return { lat: -58, lon: -178 };
+})();
+const uncoveredAt = `${uncoveredPoint.lat.toFixed(4)}%2C${uncoveredPoint.lon.toFixed(4)}`;
+
 const { chrome, userDataDir, info, target } = await launchChrome();
 const ws = new WebSocket(target);
 await new Promise((resolve, reject) => {
@@ -1341,9 +1361,11 @@ try {
   }
 
   /* --- 8o. large works: jump to a sheet, thumbnails only where they show --- */
-  // The seed holds one 33-sheet canton map. Sheet 20 of 33 is 19 “Blatt ›”
-  // clicks away, and the strip used to request all 33 thumbnails while showing
-  // about ten — both are what this section measures.
+  // The seed's largest digitised work (65 sheets since iteration 7-16). Sheet 20
+  // is 19 “Blatt ›” clicks away, and the strip used to request every thumbnail
+  // while showing about ten — both are what this section measures. The option
+  // label may carry the upstream canvas label as a suffix, so it is compared by
+  // prefix (maps-2 repaired this stale expectation after the data grew).
   const bigWork = [...recordIndex.values()]
     .filter((record) => record.iiifManifest && (record.canvasCount ?? 0) > 12)
     .sort((a, b) => (b.canvasCount ?? 0) - (a.canvasCount ?? 0))[0] ?? null;
@@ -1382,11 +1404,11 @@ try {
       };
     })()`);
     check(
-      'a 33-sheet work gets a “Blatt” jump control and announces the open sheet',
+      'a large work gets a “Blatt” jump control and announces the open sheet',
       largeJump.visible === true &&
         largeJump.options === bigTotal &&
         largeJump.value === '20' &&
-        largeJump.option20 === `Blatt 20 von ${bigTotal}` &&
+        largeJump.option20.startsWith(`Blatt 20 von ${bigTotal}`) &&
         largeJump.label === `Blatt 20 von ${bigTotal}` &&
         largeJump.active === '19' &&
         announced === `Blatt 20 von ${bigTotal} geladen.`,
@@ -2068,7 +2090,7 @@ try {
   );
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
-  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=52.5200%2C13.4050` });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&at=${uncoveredAt}` });
   let emptyPoint = null;
   try {
     emptyPoint = await cdp.waitFor(
@@ -2092,7 +2114,7 @@ try {
   await sleep(500);
   const afterPointRemove = await cdp.eval(`({ rows: document.querySelectorAll('#result-list > *').length, at: new URLSearchParams(location.search).get('at') })`);
   check(
-    'a point outside every footprint says so and can be removed on its own',
+    `a point outside every footprint says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon})`,
     Boolean(emptyPoint) && emptyPoint.rows === 0 && emptyPoint.empty && pointRemove === true && afterPointRemove.rows > 0 && !afterPointRemove.at,
     `${JSON.stringify(emptyPoint)} remove=${pointRemove} ${JSON.stringify(afterPointRemove)}`,
   );
@@ -2618,7 +2640,7 @@ try {
     `"${String(keywordEmpty).slice(0, 120)}"`,
   );
 
-  /* --- 8o. Grundkarte: farbig / grau / Luftbild ------------------------- */
+  /* --- 8p. Grundkarte (base map): farbig / grau / Luftbild -------------- */
   // The map offers the three documented swisstopo WMTS base layers. The chips
   // are built by map.js from BASE_LAYERS, so this section checks the real
   // tiles, the attribution, the shared URL state and the keyboard route.
