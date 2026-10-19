@@ -3089,6 +3089,39 @@ try {
     `"${String(keywordEmpty).slice(0, 120)}"`,
   );
 
+  // The spelling a Swiss keyboard produces has to find the catalogue's
+  // spelling: before 2026-10-19 “Zuerich” returned an empty list while
+  // “Zürich” returned the whole canton (folding in records.js, maps-2). The
+  // three spellings must agree exactly — same rows, same count line — and the
+  // keyword box is left empty for the sections that follow.
+  const spelling = await cdp.eval(`(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const box = document.querySelector('#text-filter');
+    const type = async (value) => {
+      box.focus();
+      box.value = value;
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+      await sleep(700);
+      return { rows: document.querySelectorAll('#result-list > *').length, count: document.querySelector('#result-count')?.textContent || '' };
+    };
+    const umlaut = await type('Zürich');
+    const digraph = await type('Zuerich');
+    const plain = await type('Zurich');
+    box.value = '';
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(500);
+    return { umlaut, digraph, plain, cleared: document.querySelectorAll('#result-list > *').length };
+  })()`);
+  check(
+    '“Zuerich”, “Zurich” and “Zürich” find the same records (umlaut folding)',
+    spelling.umlaut.rows > 0 &&
+      spelling.digraph.rows === spelling.umlaut.rows &&
+      spelling.plain.rows === spelling.umlaut.rows &&
+      /^Zuerich$/i.test((spelling.digraph.count.match(/„(.+?)“/) || [])[1] || '') &&
+      spelling.cleared > spelling.umlaut.rows,
+    `${spelling.umlaut.rows} / ${spelling.digraph.rows} / ${spelling.plain.rows} rows · cleared ${spelling.cleared}`,
+  );
+
   /* --- 8q. Grundkarte (base map): farbig / grau / Luftbild -------------- */
   // The map offers the three documented swisstopo WMTS base layers. The chips
   // are built by map.js from BASE_LAYERS, so this section checks the real

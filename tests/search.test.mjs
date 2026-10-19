@@ -89,3 +89,70 @@ test('the offer is honest: its count equals the number of matching committed rec
     else assert.equal(suggestion.count, matches.length, `${query}: count vs. matches`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Spelling: “Zuerich” must find “Zürich” (7-19, maps-2)
+ * ------------------------------------------------------------------ */
+
+test('the ASCII transcription of an umlaut finds the umlaut spelling (and vice versa)', () => {
+  const count = (query) => records.filter((record) => matchesQuery(record, query)).length;
+  const umlaut = count('Zürich');
+  assert.ok(umlaut > 0, 'the committed seed names Zürich');
+  // Before the folding, “Zuerich” found 0 of the 138 records that “Zürich”
+  // finds; a Swiss keyboard types the digraph, so the box was unusable for it.
+  assert.equal(count('Zuerich'), umlaut);
+  assert.equal(count('zuerich'), umlaut);
+  // …and the plain form without the umlaut at all.
+  assert.equal(count('Zurich'), umlaut);
+  assert.equal(count('ZÜRICH'), umlaut);
+  // A compound name folded the same way, not just the bare place name.
+  assert.equal(count('Zuerichsee'), count('Zürichsee'));
+  assert.ok(count('Zürichsee') > 0);
+});
+
+test('diacritics outside German fold the same way', () => {
+  const count = (query) => records.filter((record) => matchesQuery(record, query)).length;
+  assert.ok(count('Genève') > 0, 'the seed carries a Genève record');
+  assert.equal(count('Geneve'), count('Genève'));
+  assert.equal(count('geneve'), count('Genève'));
+});
+
+test('ß folds to ss, so either spelling finds the other', () => {
+  const record = {
+    id: 'e-rara:999',
+    title: 'Grosse Karte des Kantons Zürich',
+    creators: ['Murer, Jos'],
+    providerId: 'e-rara',
+    institution: 'Zentralbibliothek Zürich',
+    rights: 'Public Domain Mark',
+    recordUrl: 'https://www.e-rara.ch/doi/10.3931/e-rara-999',
+    thumbnail: 'https://www.e-rara.ch/i3f/v20/999/full/304/0/default.jpg',
+    yearStart: 1600,
+    yearEnd: 1600,
+  };
+  assert.ok(matchesQuery(record, 'grosse'));
+  assert.ok(matchesQuery(record, 'große'), 'the ß spelling must find the ss spelling');
+  assert.ok(matchesQuery(record, 'zuerich'));
+  // Folding widens the *spelling*, never the meaning: an unrelated word still
+  // matches nothing.
+  assert.ok(!matchesQuery(record, 'basel'));
+  assert.ok(!matchesQuery(record, 'grossraum'));
+});
+
+test('mixed spellings inside one multi-token query still have to match together', () => {
+  const hits = records.filter((record) => matchesQuery(record, 'wildkarte zuerich'));
+  assert.ok(hits.length > 0, '“Wildkarte” + “Zürich” in one query');
+  assert.ok(hits.every((record) => matchesQuery(record, 'Zürich')));
+  assert.equal(records.filter((record) => matchesQuery(record, 'wildkarte zzz')).length, 0);
+});
+
+test('the “Karten zum Stichwort …” offer counts the folded search honestly', () => {
+  const state = { from: 1500, to: 2025, q: '', provider: '', type: '', collection: '', at: '', viewport: '' };
+  for (const query of ['Zuerich', 'Zürichsee', 'Geneve']) {
+    const suggestion = datasetSuggestion(records, query, state);
+    const rows = filterRecords({ ...state, q: query }, records).length;
+    assert.ok(rows > 0, `${query}: expected matches in the committed seed`);
+    assert.equal(suggestion.count, rows, `${query}: the offer must not promise a different count`);
+    assert.equal(suggestion.query, query, `${query}: the offer applies what was typed`);
+  }
+});
