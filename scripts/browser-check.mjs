@@ -1904,6 +1904,179 @@ try {
   );
   await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
 
+  /* --- 8l. “Ausschnitte”: the documented footprints of the filtered set ---- */
+  // The visual answer to “which maps claim to cover this place?”. The layer is
+  // outline-only and purely decorative (pointer-events off, aria-hidden), so the
+  // checks look at geometry and the honest status line, not at pixels.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'footprint page' });
+  await sleep(700);
+  const extentBefore = await cdp.eval(`(() => {
+    const chip = document.querySelector('.app-map__skip [data-map-cmd="extents"]');
+    return {
+      exists: Boolean(chip),
+      pressed: chip?.getAttribute('aria-pressed'),
+      label: chip?.textContent || '',
+      boxes: document.querySelectorAll('.map-footprint').length,
+      status: document.querySelector('#map-extent-count')?.textContent || '',
+      inlineLink: Boolean(document.querySelector('.app-map__hintlink[data-map-cmd="extents"]')),
+    };
+  })()`);
+  await cdp.click('.app-map__skip [data-map-cmd="extents"]');
+  let extentOn = null;
+  try {
+    extentOn = await cdp.waitFor(
+      `(() => {
+        const boxes = [...document.querySelectorAll('.map-footprint')];
+        if (boxes.length === 0) return '';
+        const map = document.querySelector('#map').getBoundingClientRect();
+        // Boxes are kept for a 64 px margin around the container (no edge
+        // flicker while panning), so “near” is the honest test, not “inside”.
+        const near = boxes.filter((b) => { const r = b.getBoundingClientRect(); return r.right > map.left - 80 && r.left < map.right + 80 && r.bottom > map.top - 80 && r.top < map.bottom + 80; }).length;
+        const intersects = boxes.filter((b) => { const r = b.getBoundingClientRect(); return r.right > map.left && r.left < map.right && r.bottom > map.top && r.top < map.bottom; }).length;
+        const chip = document.querySelector('.app-map__skip [data-map-cmd="extents"]');
+        return {
+          url: location.search,
+          pressed: chip?.getAttribute('aria-pressed'),
+          label: chip?.textContent || '',
+          boxes: boxes.length,
+          near,
+          intersects,
+          layerInsideMap: document.querySelector('.map-layer--footprints')?.parentElement?.id === 'map',
+          status: document.querySelector('#map-extent-count')?.textContent || '',
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      })()`,
+      { label: 'footprints drawn', timeout: 8_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the “Ausschnitte” switch draws the documented footprints and shares them in the URL',
+    Boolean(extentBefore.exists && extentBefore.inlineLink && extentBefore.pressed === 'false' && extentBefore.boxes === 0 && extentBefore.status === '') &&
+      Boolean(extentOn) &&
+      extentOn.url.includes('ex=1') &&
+      extentOn.pressed === 'true' &&
+      /ausblenden/.test(extentOn.label) &&
+      extentOn.boxes > 0 &&
+      extentOn.near === extentOn.boxes &&
+      extentOn.intersects > 0 &&
+      extentOn.layerInsideMap &&
+      /dokumentiertem Ausmass/.test(extentOn.status) &&
+      extentOn.overflow <= 1,
+    `before ${JSON.stringify(extentBefore)} -> ${JSON.stringify(extentOn)}`,
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '08-footprints.png')).then(() => report.screenshots.push('08-footprints.png'));
+
+  // A shared link must restore the layer, and with a point filter the drawn
+  // rectangles have to contain the crosshair — that is the question the layer
+  // exists to answer.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&ex=1&at=47.3769,8.5417` });
+  await cdp.waitFor(`document.querySelectorAll('.map-footprint').length > 0`, { label: 'shared footprint link', timeout: 10_000 });
+  await sleep(500);
+  const extentShared = await cdp.eval(`(() => {
+    const point = document.querySelector('.map-point');
+    if (!point) return null;
+    const p = point.getBoundingClientRect();
+    const cx = p.left + p.width / 2, cy = p.top + p.height / 2;
+    const covering = [...document.querySelectorAll('.map-footprint')].filter((b) => {
+      const r = b.getBoundingClientRect();
+      return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    }).length;
+    const chip = document.querySelector('.app-map__skip [data-map-cmd="extents"]');
+    return {
+      url: location.search,
+      boxes: document.querySelectorAll('.map-footprint').length,
+      covering,
+      pressed: chip?.getAttribute('aria-pressed'),
+      rows: document.querySelectorAll('#result-list > *').length,
+    };
+  })()`);
+  check(
+    'a shared link restores the footprints, and they cover the filtered point',
+    Boolean(extentShared) && extentShared.pressed === 'true' && extentShared.covering > 0 && extentShared.boxes >= extentShared.covering && extentShared.url.includes('ex=1'),
+    JSON.stringify(extentShared),
+  );
+
+  // Hovering a result row highlights the footprint that belongs to it, the same
+  // cross-highlight the markers and list rows already share.
+  // Hover a row whose footprint is actually drawn (a record outside the current
+  // view has no rectangle, so the first row is not a safe choice).
+  const extentPreview = await cdp.eval(`(() => {
+    const drawn = new Set([...document.querySelectorAll('.map-footprint')].flatMap((b) => (b.dataset.recordIds || '').split(' ')));
+    const row = [...document.querySelectorAll('#result-list button.zh-result')].find((b) => drawn.has(b.dataset.recordId));
+    if (!row) return null;
+    row.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+    return row.dataset.recordId;
+  })()`);
+  await sleep(300);
+  const extentPreviewState = await cdp.eval(`(() => ({
+    highlighted: document.querySelectorAll('.map-footprint.is-preview').length,
+    rows: document.querySelectorAll('#result-list button.zh-result.is-preview').length,
+  }))()`);
+  check(
+    'hovering a result row highlights its documented footprint',
+    Boolean(extentPreview) && extentPreviewState.highlighted === 1 && extentPreviewState.rows === 1,
+    `${extentPreview} -> ${JSON.stringify(extentPreviewState)}`,
+  );
+
+  // The inline switch in the map hint toggles the same state, and switching the
+  // layer off removes the rectangles again (nothing inert, no stale URL key).
+  await cdp.eval(`document.querySelector('.app-map__hintlink[data-map-cmd="extents"]').focus(); true`);
+  // A native <button> is activated by the browser's default action, which needs
+  // the full key sequence (rawKeyDown + char + keyUp). The shared `pressKey`
+  // sends keyDown/keyUp only — enough for JS keydown handlers, not for this.
+  const enterKey = { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 };
+  await cdp.send('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...enterKey });
+  await cdp.send('Input.dispatchKeyEvent', { type: 'char', text: '\r', unmodifiedText: '\r', ...enterKey });
+  await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', ...enterKey });
+  await sleep(600);
+  const extentOff = await cdp.eval(`({
+    url: location.search,
+    boxes: document.querySelectorAll('.map-footprint').length,
+    status: document.querySelector('#map-extent-count')?.textContent || '',
+    chipPressed: document.querySelector('.app-map__skip [data-map-cmd="extents"]')?.getAttribute('aria-pressed'),
+  })`);
+  check(
+    'the inline switch (keyboard) turns the footprint layer off again',
+    !extentOff.url.includes('ex=') && extentOff.boxes === 0 && extentOff.status === '' && extentOff.chipPressed === 'false',
+    JSON.stringify(extentOff),
+  );
+
+  // Phone: the switch is reachable at the cantonal 390 px breakpoint and the
+  // rectangles stay clipped to the map box (no page overflow, nothing painted
+  // above the map).
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true, screenWidth: 390, screenHeight: 844 });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900&ex=1` });
+  await cdp.waitFor(`document.querySelectorAll('.map-footprint').length > 0`, { label: 'footprints on a phone', timeout: 10_000 });
+  await sleep(600);
+  const extentMobile = await cdp.eval(`(() => {
+    const map = document.querySelector('#map').getBoundingClientRect();
+    const boxes = [...document.querySelectorAll('.map-footprint')];
+    const escaped = boxes.filter((b) => {
+      const r = b.getBoundingClientRect();
+      return r.right > map.right + 1 || r.left < map.left - 1 || r.bottom > map.bottom + 1 || r.top < map.top - 1;
+    }).length; // painting is clipped by the container; the rect itself may extend
+    const chip = document.querySelector('.app-map__skip [data-map-cmd="extents"]');
+    return {
+      boxes: boxes.length,
+      chipVisible: chip ? chip.getBoundingClientRect().width > 0 : false,
+      chipPressed: chip?.getAttribute('aria-pressed'),
+      statusVisible: (document.querySelector('#map-extent-count')?.getBoundingClientRect().width || 0) > 0,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      escaped,
+      clip: getComputedStyle(document.querySelector('#map')).overflow,
+    };
+  })()`);
+  check(
+    '390 px: the footprint switch is reachable and the layer stays clipped to the map',
+    extentMobile.boxes > 0 && extentMobile.chipVisible && extentMobile.chipPressed === 'true' && extentMobile.statusVisible && extentMobile.overflow <= 1 && extentMobile.clip === 'hidden',
+    JSON.stringify(extentMobile),
+  );
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900 });
+
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
