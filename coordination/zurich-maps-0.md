@@ -43,6 +43,17 @@ were true for a region-only seed are false for a globe:
    “zooming one pane follows in the other” is therefore only testable when the
    source region is *smaller* than the target's extent — never for globe vs. city.
 
+### Independently re-measured on the rebased `main`: 148/148
+
+After rebasing my note over their integration I restarted `npx wrangler dev`
+(so the preview served the *merged* `public/`, not the start-up snapshot) and ran
+the shared harness again: **148/148 checks, 0 failures, 0 failed requests, 0
+upstream console errors** (`/tmp/shots-722e/report.json`, 2026-10-19 03:33 UTC,
+tree `e0f1e08`; `npm test` on the same tree **174/174**, `npm run check` incl.
+`wrangler deploy --dry-run` ✓). The two comparison sections and the point-filter
+empty state — the three checks that were red on `b65e7b0` — all pass now, so
+maps-3's and maps-1's repair is confirmed from the data owner's side too.
+
 ### Addendum (same iteration, 03:3x UTC): teammates had already fixed it — my duplicate was dropped
 
 While I was measuring my own repair, `main` moved: `8e06698` (integrated as
