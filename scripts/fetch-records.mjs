@@ -25,6 +25,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 
 const UA = 'Kartenzeit/1.0 (Canton-Zurich design study; contact: project maintainers)';
 const args = process.argv.slice(2);
@@ -140,29 +141,49 @@ function parseYear(value) {
   return m ? Number(m[1]) : null;
 }
 
-/** Parse "(E 8°31'-E 8°41'/N 47°43'-N 47°38')" into a WGS84 bbox. */
-function parseBbox(kartendaten) {
+/**
+ * A `Kartendaten` extent → `{ west, south, east, north }` in WGS84 degrees, or null.
+ *
+ * The catalogue states four labelled corners, e.g.
+ * `(E 8°32'-E 8°58'/N 47°22'-N 47°42')` or
+ * `(W 81°33' - W 34°45' / N 12°30' - S 56°05')`. The hemisphere letter of **every**
+ * corner is read now: until iteration 7-21 the second longitude and latitude were
+ * read as if they always were E/N, so
+ *
+ *   - a map stated `(W 25°00'-E 60°00' …)` — the 1787 “Neue Karte von Europa” — got
+ *     an extent starting at 25°E instead of 25°W (six seed records were affected,
+ *     all of them Europe maps reaching into the Atlantic), and
+ *   - a map reaching into the western or southern hemisphere was dropped entirely,
+ *     because no second `N` existed to read (every Südamerika sheet).
+ *
+ * Some records state arc-seconds; the extent keeps the stated minute, which is the
+ * resolution the map view uses (the value is the catalogue's, never an invented one).
+ *
+ * A longitude pair that only makes sense across the date line
+ * (`(E 155°-W 165° …)`, the 1781 Russian discoveries map) cannot be expressed as a
+ * west/east box, so the record keeps no extent instead of a guessed one; a pair that
+ * really covers the whole globe (`(W 180°-E 180° …)`) is kept.
+ */
+export function parseBbox(kartendaten) {
   if (!kartendaten) return null;
-  const dms = (dir, deg, min) => {
-    const v = Number(deg) + (min ? Number(min) / 60 : 0);
-    return dir === 'W' || dir === 'S' ? -v : v;
+  // Every labelled degree reading in the string, in the order the catalogue states it.
+  const corners = [...kartendaten.matchAll(/([EWNS])\s*(\d{1,3})\s*[°º]\s*(?:(\d{1,2})\s*['′’])?/g)];
+  if (corners.length !== 4) return null;
+  const value = (m) => {
+    const v = Number(m[2]) + Number(m[3] || 0) / 60;
+    return m[1] === 'W' || m[1] === 'S' ? -v : v;
   };
-  const parts = {
-    west: kartendaten.match(/[EW]\s*(\d+)[°º](?:\s*(\d+)\s*['′’])?/),
-    north: kartendaten.match(/N\s*(\d+)[°º](?:\s*(\d+)\s*['′’])?/),
-  };
-  const east = [...kartendaten.matchAll(/[EW]\s*(\d+)[°º](?:\s*(\d+)\s*['′’])?/g)][1];
-  const south = [...kartendaten.matchAll(/N\s*(\d+)[°º](?:\s*(\d+)\s*['′’])?/g)][1];
-  if (!parts.west || !east || !parts.north || !south) return null;
+  const lons = corners.filter((m) => m[1] === 'E' || m[1] === 'W').map(value);
+  const lats = corners.filter((m) => m[1] === 'N' || m[1] === 'S').map(value);
+  if (lons.length !== 2 || lats.length !== 2) return null;
+  const globe = lons.includes(-180) && lons.includes(180);
+  if (!globe && Math.max(...lons) - Math.min(...lons) > 180) return null; // date-line crossing
   const bbox = {
-    west: dms('E', parts.west[1], parts.west[2]),
-    east: dms('E', east[1], east[2]),
-    north: dms('N', parts.north[1], parts.north[2]),
-    south: dms('N', south[1], south[2]),
+    west: Math.min(...lons),
+    east: Math.max(...lons),
+    south: Math.min(...lats),
+    north: Math.max(...lats),
   };
-  // Some records state north/south in the opposite order; normalise only the pair
-  // that the upstream text clearly labels, never invent coordinates.
-  if (bbox.south > bbox.north) [bbox.south, bbox.north] = [bbox.north, bbox.south];
   if (![bbox.west, bbox.east, bbox.south, bbox.north].every(Number.isFinite)) return null;
   if (bbox.west >= bbox.east || bbox.south >= bbox.north) return null;
   return bbox;
@@ -818,6 +839,22 @@ const SRU_SEARCHES = {
    * the most records with a stated extent are pooled; the German-language subject
    * heading is the catalogue's own (`Oesterreich-Ungarn`, not `Österreich`), and
    * `Preussen` was dropped because its sheets are also `Deutschland` hits.
+   *
+   * 2026-10-19 (iteration 7-21): eleven more region keywords were probed because
+   * the first pool was almost entirely European — “the world set” was a
+   * Europe-and-the-world set. Usable candidates (map genre + stated year + MODS
+   * coordinates, i.e. the same evidence the harvest gates ask for): Südamerika
+   * 6 hits / 5 usable (Peru 1903, Argentina–Chile 1898, Süd-Amerika 1890, the 1751
+   * Quito meridian map, one without a parseable year), Palästina 4/4 (1841, 1864,
+   * 1892, 1912), Türkei 3/2 (Kleinasien 1910; the 1850 Aegypten–Syrien–Kleinasien
+   * sheet is also a Syrien hit), Indien 1/1 (Alt-Indien 1853), Nordamerika 1/1
+   * (the 1763 seven-years-war sheets), Russland 2/1 (the 1781 Russian discoveries
+   * map), Syrien 1/1, Japan 1/1 (“Karten zu Japan” 1903 — `China` and `Ostasien`
+   * answer the same work, so only one of the three is queried). Aegypten,
+   * Australien, Vereinigte Staaten, Mexiko, Kanada, Persien and Brasilien (1 hit,
+   * no coordinates) answer no usable candidate; Aegypten answers none at all. The
+   * productive keywords are pooled, so the set carries a genuine world spread
+   * instead of a European one.
    */
   worldOverview: {
     id: 'weltuebersichten',
@@ -835,6 +872,14 @@ const SRU_SEARCHES = {
       'dc.subject=Oesterreich-Ungarn and dc.title=Karte',
       'dc.subject=Spanien and dc.title=Karte',
       'dc.subject=Grossbritannien and dc.title=Karte',
+      'dc.subject=Südamerika and dc.title=Karte',
+      'dc.subject=Palästina and dc.title=Karte',
+      'dc.subject=Türkei and dc.title=Karte',
+      'dc.subject=Indien and dc.title=Karte',
+      'dc.subject=Nordamerika and dc.title=Karte',
+      'dc.subject=Russland and dc.title=Karte',
+      'dc.subject=Syrien and dc.title=Karte',
+      'dc.subject=Japan and dc.title=Karte',
     ],
     rule:
       'same gates as the other SRU sets (map genre, stated year, stated MODS coordinates, OAI ' +
@@ -845,7 +890,8 @@ const SRU_SEARCHES = {
       'sheet; one entry per title and year, at most three records per publication decade. The ' +
       'pool is round-robined over the queries so a keyword that answers many hits (Deutschland) ' +
       'cannot crowd out the others, and a per-query quota of 7 bounds each keyword; the ' +
-      'continent/world keywords and the country keywords are pooled together (7-20)',
+      'continent/world, country and region keywords are pooled together (7-21: 20 queries, incl. ' +
+      'the non-European Südamerika, Palästina, Türkei, Indien, Nordamerika, Russland, Syrien, Japan)',
     candidateCap: 170,
     recordCap: 40,
     perQueryQuota: 7,
@@ -947,10 +993,24 @@ async function main() {
   const zb = await pool(zuzCandidates.slice(0, 72), 3, (c) =>
     manifestRecord(c, { sourceCollection: 'Karte des Kantons Zürich 1:25 000 (Wildkarte)', maxYear: 1900 }),
   );
-  // Keep one entry per sheet, preferring the earliest edition, at most 26 sheets.
+  // The `zuz` OAI set is the library's whole digitised corpus, not only the Wildkarte
+  // series, so the collection name below is only true for the 1:25 000 sheets. A
+  // candidate that is a map but not a sheet of that series (the 1546–1590 cosmography
+  // volumes, whose whole-globe Kartendaten extent only became parseable in iteration
+  // 7-21) would be miscredited to the Wildkarte series and would push the newest real
+  // sheets out of the 26-sheet selection. It is left out, and the skip is stated in
+  // `records.json.selection` — giving those volumes their own collection entry is the
+  // honest way to add them.
+  const WILDKARTE_SERIES = /^Karte des Kantons Zürich im Masstab von 1:25 ?000/i;
+  const zbNotWildkarte = [];
   const bySheet = new Map();
+  // Keep one entry per sheet, preferring the earliest edition, at most 26 sheets.
   for (const r of zb.sort((a, b) => a.yearStart - b.yearStart)) {
     if (!r.extent) continue;
+    if (!WILDKARTE_SERIES.test(r.title)) {
+      zbNotWildkarte.push({ id: r.id, title: r.title, year: r.yearStart });
+      continue;
+    }
     const key = r.sheet || r.id;
     if (bySheet.has(key)) continue;
     if (bySheet.size >= 26) continue;
@@ -1235,8 +1295,8 @@ async function main() {
   // the window the set is skipped like the Zürich sets (nothing is placed by
   // guesswork).
   //
-  // The twelve queries answer very different numbers of hits (Deutschland 62,
-  // Europa 30, Italien 20, …; probed 7-20), so the pooled candidates are
+  // The twenty queries answer very different numbers of hits (Deutschland 62,
+  // Europa 30, Italien 20, …; probed 7-20 and 7-21), so the pooled candidates are
   // round-robined across the query groups and every query has its own quota: a
   // keyword that happens to answer many sheets cannot crowd the other countries
   // out of the set. `worldGroupOf` maps a built record back to the query that
@@ -1510,7 +1570,12 @@ async function main() {
       'e-rara:zuz': {
         considered: zuzMaps.length,
         kept: zbRecords.length,
-        rule: 'maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox',
+        notWildkarte: zbNotWildkarte,
+        rule:
+          'maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox; only sheets of ' +
+          'the 1:25 000 Wildkarte series (title-anchored) are kept, because the collection is that series — the set is ' +
+          'the library\'s whole corpus, so other maps it holds (e.g. the 1546–1590 cosmography volumes) are listed in ' +
+          '`notWildkarte` instead of being miscredited to the series',
       },
       'e-rara:landkarten': {
         considered: landCandidates.length,
@@ -1640,7 +1705,12 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run the harvest when this file is the entry point: `parseBbox` and
+// `parseWmtsCapabilities` are imported by the unit tests, which must never touch
+// the network or write the seed.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

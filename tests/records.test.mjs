@@ -207,3 +207,73 @@ test('loadRecords reads the shipped seed file and validates it', async () => {
   assert.equal(result.records.length, raw.records.length);
   assert.ok(result.generatedAt);
 });
+
+/**
+ * `Kartendaten` → extent. The catalogue states four labelled corners; the
+ * hemisphere letter of every corner decides the sign (a wrong reading put six
+ * committed Europe maps at 25°E instead of 25°W until iteration 7-21 and dropped
+ * every map that reaches into the western or southern hemisphere).
+ */
+test('parseBbox reads the hemisphere of every stated corner', async () => {
+  const { parseBbox } = await import('../scripts/fetch-records.mjs');
+  const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} != ${b}`);
+
+  // The common Zürich-region form, with the latitude pair stated north-first.
+  const zurich = parseBbox("1:25 000 (E 8°49'-E 9°00'/N 47°26'-N 47°21')");
+  close(zurich.west, 8.816666666666666);
+  close(zurich.east, 9);
+  close(zurich.south, 47.35);
+  close(zurich.north, 47.43333333333333);
+
+  // West of Greenwich: west must be negative, and east too when it is stated W.
+  const atlantic = parseBbox("[Ca. 1:12 000 000] (W 25°00'-E 60°00'/N 73°00'-N 25°00')");
+  close(atlantic.west, -25);
+  close(atlantic.east, 60);
+  close(atlantic.south, 25);
+  close(atlantic.north, 73);
+
+  // Southern + western hemisphere (the Südamerika sheets), N 12°30' - S 56°05'.
+  const southAmerica = parseBbox("1:13 000 000 (W 81°33' - W 34°45' / N 12°30' - S 56°05')");
+  close(southAmerica.west, -81.55);
+  close(southAmerica.east, -34.75);
+  close(southAmerica.south, -56.083333333333336);
+  close(southAmerica.north, 12.5);
+
+  const allSouth = parseBbox("1:4 000 000 (W 76°00'-W 65°00'/S 22°00'-S 56°00')");
+  close(allSouth.west, -76);
+  close(allSouth.east, -65);
+  close(allSouth.south, -56);
+  close(allSouth.north, -22);
+
+  // Arc-seconds are stated upstream but not carried into the extent (minute resolution).
+  const seconds = parseBbox('1:5 000 (E 8°28\'35"-E 8°35\'14"/N 47°24\'34"-N 47°19\'54")');
+  close(seconds.west, 8.466666666666667);
+  close(seconds.east, 8.583333333333334);
+
+  // A whole-globe pair is a real bbox; a date-line crossing is not expressible.
+  const globe = parseBbox('[Ca. 1:100 000 000] (W 180°-E 180°/N 80°-S 70°)');
+  close(globe.west, -180);
+  close(globe.east, 180);
+  close(globe.south, -70);
+  close(globe.north, 80);
+  assert.equal(parseBbox('circa 1:8 000 000 (E 155°-W 165°/N 70°-N 50°)'), null);
+
+  // Scale-only or incomplete statements never produce coordinates.
+  assert.equal(parseBbox('Echelle 1:200 000'), null);
+  assert.equal(parseBbox('[Echelle non déterminée]'), null);
+  assert.equal(parseBbox('1:500 000 (E 8°-N 47°)'), null);
+  assert.equal(parseBbox(''), null);
+  assert.equal(parseBbox(null), null);
+});
+
+test('every committed extent is a finite, correctly ordered WGS84 box', async () => {
+  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  for (const record of records.records) {
+    if (!record.extent) continue;
+    const { west, east, south, north } = record.extent;
+    assert.ok([west, east, south, north].every(Number.isFinite), `${record.id}: non-finite extent`);
+    assert.ok(west >= -180 && east <= 180, `${record.id}: longitude outside WGS84`);
+    assert.ok(south >= -90 && north <= 90, `${record.id}: latitude outside WGS84`);
+    assert.ok(west < east && south < north, `${record.id}: invalid extent order`);
+  }
+});
