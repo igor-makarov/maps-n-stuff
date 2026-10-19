@@ -2,9 +2,6 @@ name: Update Shurik brief
 run-name: Update all four agents with the latest project brief
 
 on:
-  push:
-    branches: [main]
-    paths: [PROMPT.md]
   workflow_dispatch:
 
 permissions:
