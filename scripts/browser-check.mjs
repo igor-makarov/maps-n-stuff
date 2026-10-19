@@ -211,9 +211,26 @@ class CDP {
     return this.eval(`document.querySelector(${JSON.stringify(selector)}).value`);
   }
 
-  async pressKey(key, { code, keyCode } = {}) {
-    const map = { ArrowRight: { code: 'ArrowRight', keyCode: 39 }, ArrowLeft: { code: 'ArrowLeft', keyCode: 37 }, Enter: { code: 'Enter', keyCode: 13 }, Escape: { code: 'Escape', keyCode: 27 }, Home: { code: 'Home', keyCode: 36 } };
-    const info = { code: code ?? map[key]?.code, windowsVirtualKeyCode: keyCode ?? map[key]?.keyCode };
+  /**
+   * Dispatch one key press.
+   *
+   * `Enter` and `Space` are sent as the full rawKeyDown + char + keyUp
+   * sequence, because only that sequence triggers the browser's *default*
+   * action — activating the focused native `<button>` (or submitting a form).
+   * A plain keyDown/keyUp pair reaches JS `keydown` handlers but leaves a real
+   * button unclicked (verified while adding the footprint switch check). Use
+   * `{ native: false }` for the short pair and for keys that only JS handles.
+   */
+  async pressKey(key, { code, keyCode, native = key === 'Enter' || key === ' ' } = {}) {
+    const map = { ArrowRight: { code: 'ArrowRight', keyCode: 39 }, ArrowLeft: { code: 'ArrowLeft', keyCode: 37 }, ArrowDown: { code: 'ArrowDown', keyCode: 40 }, Enter: { code: 'Enter', keyCode: 13 }, Escape: { code: 'Escape', keyCode: 27 }, Home: { code: 'Home', keyCode: 36 }, ' ': { code: 'Space', keyCode: 32 } };
+    const info = { code: code ?? map[key]?.code, windowsVirtualKeyCode: keyCode ?? map[key]?.keyCode, nativeVirtualKeyCode: keyCode ?? map[key]?.keyCode };
+    if (native) {
+      const text = key === 'Enter' ? '\r' : ' ';
+      await this.send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key, ...info });
+      await this.send('Input.dispatchKeyEvent', { type: 'char', text, unmodifiedText: text, key, ...info });
+      await this.send('Input.dispatchKeyEvent', { type: 'keyUp', key, ...info });
+      return;
+    }
     await this.send('Input.dispatchKeyEvent', { type: 'keyDown', key, ...info });
     await this.send('Input.dispatchKeyEvent', { type: 'keyUp', key, ...info });
   }
@@ -2080,13 +2097,9 @@ try {
   // The inline switch in the map hint toggles the same state, and switching the
   // layer off removes the rectangles again (nothing inert, no stale URL key).
   await cdp.eval(`document.querySelector('.app-map__hintlink[data-map-cmd="extents"]').focus(); true`);
-  // A native <button> is activated by the browser's default action, which needs
-  // the full key sequence (rawKeyDown + char + keyUp). The shared `pressKey`
-  // sends keyDown/keyUp only — enough for JS keydown handlers, not for this.
-  const enterKey = { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 };
-  await cdp.send('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...enterKey });
-  await cdp.send('Input.dispatchKeyEvent', { type: 'char', text: '\r', unmodifiedText: '\r', ...enterKey });
-  await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', ...enterKey });
+  // A native <button> is activated by the browser's default action, so this
+  // needs the full key sequence — `pressKey` sends it for Enter/Space.
+  await cdp.pressKey('Enter');
   await sleep(600);
   const extentOff = await cdp.eval(`({
     url: location.search,

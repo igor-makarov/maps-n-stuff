@@ -793,7 +793,6 @@ export function init(ctx) {
   // when the sidebar (or a shared ?cmp= link) changes it.
   ctx.store.subscribe((state, changed) => {
     if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
-    if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
     // A hand-edited or reloaded `vv` (or a cleared one) drives the open viewer;
     // the viewer ignores a value that matches what is already on screen, so the
     // debounced write-back from the viewer cannot loop back into it.
