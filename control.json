@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "stateStorage": "control",
+  "id": "maps-n-stuff-0",
+  "branch": "maps-n-stuff-0",
+  "defaultBranch": "main",
+  "supervisor": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
+  "status": "running",
+  "generation": 1,
+  "next": 1,
+  "engine": {
+    "repository": "igor-makarov/shurik",
+    "ref": "v2"
+  },
+  "workflow": "shurik.yml",
+  "layoutVersion": 1,
+  "prompt": "PROMPT.md",
+  "swarm": {
+    "id": "maps-n-stuff",
+    "index": 0,
+    "agents": 4
+  },
+  "checkpointSeconds": 0,
+  "checkpointPaths": [],
+  "owner": null,
+  "deadline": null,
+  "seconds": 1800,
+  "waitSeconds": 0,
+  "nextRunAt": null,
+  "provider": "opencode-go",
+  "model": "deepseek-v4.1-flash",
+  "reasoning": "max",
+  "createPr": false,
+  "source": "690832220411ae3e03610a7c077b696b8b51b56a",
+  "sourceRef": null,
+  "createdAt": "2026-10-19T20:22:07.167Z",
+  "lastDispatchAt": null,
+  "checkpoint": {
+    "workCommit": "690832220411ae3e03610a7c077b696b8b51b56a",
+    "generation": 1,
+    "sequence": "initialize",
+    "runId": null,
+    "at": "2026-10-19T20:22:07.390Z"
+  }
+}
