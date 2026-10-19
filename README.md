@@ -20,7 +20,11 @@ What works today (verified with `wrangler dev` + headless Chromium):
   (Zeitreise 1850–2021, Siegfriedkarte 1870–1949, Dufourkarte, SWISSIMAGE Zeitreise
   aerial imagery 1946–2020) including edition slider, opacity and attribution;
 - place search against the swisstopo search service (proxied and edge-cached by the
-  Worker) with keyboard-operable suggestions and “quick pick” places;
+  Worker) with keyboard-operable suggestions and “quick pick” places; the same box
+  also searches the records themselves (“Karten zum Stichwort …”: title, creator,
+  series, institution, shelfmark, imprint), so typing a series or a library name
+  finds maps instead of fuzzy place names — the count it offers is the count the
+  result list will show, and a query without matches says so honestly;
 - **browse the maps that cover a place**: a click on the map (or the map-centre
   button, or `P` with the map focused) filters the list to records whose
   documented footprint contains that point; after a place search a

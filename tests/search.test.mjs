@@ -7,12 +7,18 @@
  * from `recordCenter()`, which falls back to the documented extent. A null
  * coordinate used to crash `choose()` with "Cannot read properties of null
  * (reading 'toFixed')" and never opened the record.
+ *
+ * The box also offers the record keyword search (“Karten zum Stichwort …”):
+ * `datasetSuggestion()` runs the same filter pipeline, so its count is what the
+ * result list will really show — and a query without matches yields nothing
+ * instead of an empty promise.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { fallbackSuggestions } from '../public/app/search.js';
+import { datasetSuggestion, fallbackSuggestions } from '../public/app/search.js';
+import { filterRecords, matchesQuery } from '../public/app/records.js';
 
 const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8')).records;
 
@@ -44,4 +50,42 @@ test('fallback suggestions are bounded, truncated and empty on no match', () => 
   const long = fallbackSuggestions(records, '', 1)[0];
   assert.ok(long.label.length <= 80);
   assert.deepEqual(fallbackSuggestions(records, 'zzz-kein-treffer-zzz'), []);
+});
+
+test('the record search suggestion counts exactly the rows the filter will show', () => {
+  const state = { from: 1500, to: 2025, q: '', provider: '', type: '', collection: '', at: '', viewport: '' };
+  const suggestion = datasetSuggestion(records, 'Siegfriedkarte', state);
+  const expected = filterRecords({ ...state, q: 'Siegfriedkarte' }, records).length;
+  assert.ok(expected > 0, 'the committed seed names the Siegfriedkarte');
+  assert.equal(suggestion.count, expected);
+  assert.equal(suggestion.kind, 'dataset');
+  assert.equal(suggestion.query, 'Siegfriedkarte');
+  assert.match(suggestion.label, /Karten zum Stichwort „Siegfriedkarte“/);
+  assert.equal(suggestion.origin, expected === 1 ? '1 Datensatz' : `${expected} Datensätze`);
+});
+
+test('the record search suggestion respects the time filter in its count', () => {
+  const wide = datasetSuggestion(records, 'Siegfriedkarte', { from: 1500, to: 2025 });
+  const narrow = datasetSuggestion(records, 'Siegfriedkarte', { from: 1870, to: 1880 });
+  assert.ok(wide.count > narrow.count, `${wide.count} should be more than ${narrow.count}`);
+  assert.equal(narrow.count, filterRecords({ from: 1870, to: 1880, q: 'Siegfriedkarte' }, records).length);
+  // The period the series does not cover at all yields no promise at all.
+  assert.equal(datasetSuggestion(records, 'Siegfriedkarte', { from: 1800, to: 1850 }), null);
+});
+
+test('no matches means no suggestion, and short queries are ignored', () => {
+  assert.equal(datasetSuggestion(records, 'zzz-kein-treffer-zzz'), null);
+  assert.equal(datasetSuggestion(records, 'x'), null);
+  assert.equal(datasetSuggestion(records, ''), null);
+  assert.equal(datasetSuggestion(records, undefined), null);
+});
+
+test('the offer is honest: its count equals the number of matching committed records', () => {
+  const state = { from: 1500, to: 2025 };
+  for (const query of ['Zürich', 'Wildkarte', 'Zentralbibliothek', '4 Lb 06']) {
+    const suggestion = datasetSuggestion(records, query, state);
+    const matches = records.filter((record) => matchesQuery(record, query));
+    if (suggestion === null) assert.equal(matches.length, 0, `${query}: no suggestion but ${matches.length} matches`);
+    else assert.equal(suggestion.count, matches.length, `${query}: count vs. matches`);
+  }
 });

@@ -7,7 +7,7 @@ search, results). Files: `public/app/map.js`, `public/app/search.js`,
 
 ## Landed on `main` this iteration
 
-**“Ausschnitte”: the documented footprints of the filtered records** (commits
+**1. “Ausschnitte”: the documented footprints of the filtered records** (commits
 `ef27ce1`, `80161b4`). The point filter answered “which maps cover this place?”
 in the list while the map only showed the crosshair; the new layer draws the
 published extent of every filtered record as an outline, so the answer is
@@ -22,6 +22,24 @@ visible on the map — the step OldMapsOnline shows with footprint rectangles.
 | `tests/map.test.mjs`: 6 new cases — projection against `lonToTileX`/`latToTileY` (and the view centre inside a covering footprint), records without/invalid extents counted but not drawn, off-view margin, inverted bounds, dedupe + sort order, cap keeps the largest. | tests (109/109 with maps-0's) |
 | Harness section **8l** (5 checks): off by default + honest empty status; the chip draws footprints, writes `ex=1`, keeps every rectangle inside/near the map box with no page overflow; a shared `?ex=1&at=…` link restores the layer and **every drawn rectangle contains the crosshair**; hovering a row whose footprint is drawn highlights exactly one footprint; the inline switch activates from the keyboard; 390 px: switch reachable, layer clipped to the map. Screenshot `08-footprints.png`. | `browser-check.mjs` (maps-3's file) |
 
+**2. “Karten zum Stichwort …”: the search box finds records, not only places.**
+Typing `Siegfriedkarte`, a library name or a shelfmark into the big box used to
+return fuzzy gazetteer noise (`Zeughof`, `Sackhof`, …) and no way to reach the
+maps. `datasetSuggestion()` (pure, exported) now appends one suggestion built
+from the committed seed: “Karten zum Stichwort „Siegfriedkarte“ · 4 Datensätze”.
+Choosing it applies the existing keyword filter (`?q=`), syncs the sidebar field
+and states in the status line how many rows the filter really leaves; the count
+uses the **same filter pipeline** (time, provider, type, collection) so the offer
+cannot overpromise, and no match means no suggestion. With the gazetteer down the
+suggestion joins the title fallback, so the box stays useful in an outage.
+
+| Content | Files |
+| --- | --- |
+| `datasetSuggestion(records, query, state)` — count via `filterRecords(state + q)`, `null` on no match or a query shorter than two characters. Places stay first, the record search is the last item (so a real place remains the default Enter choice) and the only one when no place matches. | `search.js` |
+| `choose()` handles `kind: 'dataset'`: applies `q`, re-counts with the live filters and reports “Kartensuche: n Datensätze zum Stichwort …” (or the honest “kein Datensatz im aktuellen Zeitraum”). Status line rewritten as `statusText()`: places found + record matches, or “Kein Ort und kein Titeltreffer gefunden.” | `search.js` |
+| `tests/search.test.mjs`: 4 new cases — count equals the committed matches, the time filter changes it (and a period the series does not cover yields no suggestion at all), queries without a match and queries shorter than two characters are ignored, and the count matches `matchesQuery` for four real queries. | tests (113/113) |
+| Harness section **8m** (3 checks): the offer appears for “Siegfriedkarte” with the honest status; choosing it writes `?q=`, filters the list (87 → 4), syncs the sidebar field and hides the list; an unmatched query answers “Kein Ort und kein Titeltreffer gefunden.” with no suggestions and no raw error text. | `browser-check.mjs` (maps-3's file) |
+
 ### Integration
 
 `main` moved three times while this was building (maps-1's “Nach oben”, maps-0's
@@ -35,9 +53,12 @@ rectangles contain the crosshair.
 
 - `npm run check` ✓ — validation (109 records), **109/109** `node --test`,
   `wrangler deploy --dry-run` (30 asset files, 28.76 KiB Worker).
-- `node scripts/browser-check.mjs` → **95/95** on the integrated tree (90 before
+- `node scripts/browser-check.mjs` → **98/98** on the integrated tree (90 before
   this iteration), including every legacy check (deep zoom, touch, compare,
-  fullscreen, degraded upstream, contrast, 320/390 px layouts).
+  fullscreen, degraded upstream, contrast, 320/390 px layouts). One run before
+  that was 97/98: the red check was my own harness assertion (a doubled backslash
+  in `\d+`), the product state printed next to it was correct — fixed, then the
+  whole suite re-run green.
 
 ## Messages
 

@@ -37,6 +37,30 @@ export function fallbackSuggestions(records, query, limit = 6) {
   });
 }
 
+/**
+ * “Search the records too”: the big box is a place search, but a visitor who
+ * types a title, a series, a library or a shelfmark expects map results — the
+ * OldMapsOnline behaviour. This pure helper turns the query into ONE suggestion
+ * that applies the existing keyword filter; the count is what the visitor will
+ * actually see, because it runs the same filter pipeline with the current time,
+ * provider, type and collection filters. Nothing is invented: zero matches means
+ * no suggestion.
+ */
+export function datasetSuggestion(records, query, state = {}) {
+  const text = String(query || '').trim();
+  if (text.length < MIN_CHARS) return null;
+  const count = filterRecords({ ...state, q: text }, records ?? []).length;
+  if (count === 0) return null;
+  const label = text.length > 60 ? `${text.slice(0, 57)}…` : text;
+  return {
+    kind: 'dataset',
+    query: text,
+    count,
+    label: `Karten zum Stichwort „${label}“`,
+    origin: count === 1 ? '1 Datensatz' : `${count} Datensätze`,
+  };
+}
+
 export function init(ctx) {
   const form = qs('#place-search');
   const input = qs('#place-input');
@@ -128,7 +152,6 @@ export function init(ctx) {
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
   }
-
   function uniquePlaces(items) {
     const seen = new Set();
     return items.filter((item) => {
@@ -185,6 +208,22 @@ export function init(ctx) {
   }
 
   function choose(place, { zoom } = {}) {
+    // “Karten zum Stichwort …”: the search box offers the same keyword filter the
+    // sidebar uses. Nothing is opened; the result list and the map follow the
+    // store, and the status line states how many rows the filter really leaves.
+    if (place?.kind === 'dataset') {
+      ctx.store.update({ q: place.query });
+      const left = filterRecords({ ...ctx.store.getState(), q: place.query }, ctx.data.records).length;
+      setStatus(
+        status,
+        left === 0
+          ? `Kein Datensatz zum Stichwort „${place.query}“ im aktuellen Zeitraum.`
+          : `Kartensuche: ${left} Datensätze zum Stichwort „${place.query}“ – die Liste ist entsprechend gefiltert.`,
+      );
+      input.value = place.query;
+      close();
+      return;
+    }
     const targetZoom = zoom ?? zoomForBbox(place.bbox) ?? 12;
     const hasPoint = Number.isFinite(place.lat) && Number.isFinite(place.lon);
     chosenPlace = { label: place.label, lat: place.lat, lon: place.lon, bbox: place.bbox ?? null };
@@ -252,6 +291,9 @@ export function init(ctx) {
     state.controller = new AbortController();
     setStatus(status, 'Orte werden gesucht …');
     form.setAttribute('aria-busy', 'true');
+    // The record search always joins the list (last, so a real place stays the
+    // default choice); it is the only suggestion when no place matches.
+    const records = datasetSuggestion(ctx.data.records, query, ctx.store.getState());
     try {
       const res = await fetch(`/api/search/places?q=${encodeURIComponent(query)}&limit=8`, { signal: state.controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -259,25 +301,41 @@ export function init(ctx) {
       const items = (data.results ?? []).filter((item) => item.lat !== null && item.lon !== null);
       if (items.length === 0) {
         const local = localFallback(query);
-        open(local, 'lokal');
-        setStatus(status, local.length > 0 ? 'Kein Ort gefunden – Titelvorschläge aus den Datensätzen:' : 'Kein Ort und kein Titeltreffer gefunden.');
+        const combined = records ? [records, ...local] : local;
+        open(combined, 'lokal');
+        setStatus(status, statusText([], records, local));
         return;
       }
-      open(items, data.source ?? 'swisstopo');
-      setStatus(status, `${items.length} Ortsvorschläge (swisstopo). Mit ↓/↑ wählen, Enter bestätigen.`);
+      open(records ? [...items, records] : items, data.source ?? 'swisstopo');
+      setStatus(status, statusText(items, records, []));
     } catch (err) {
       if (err?.name === 'AbortError') return;
       const local = localFallback(query);
-      open(local, 'lokal');
+      const combined = records ? [records, ...local] : local;
+      open(combined, 'lokal');
       setStatus(
         status,
-        local.length > 0
+        local.length > 0 || records
           ? `Ortssuche nicht erreichbar (${errorReason(err)}) – Vorschläge aus den Datensätzen.`
           : `Ortssuche derzeit nicht erreichbar (${errorReason(err)}).`,
       );
     } finally {
       form.setAttribute('aria-busy', 'false');
     }
+  }
+
+  /**
+   * One honest sentence about what the list offers: places found, record matches,
+   * or neither. Counts come from the suggestions that are really shown.
+   */
+  function statusText(places, records, local) {
+    if (places.length === 0 && !records && local.length === 0) return 'Kein Ort und kein Titeltreffer gefunden.';
+    const parts = [];
+    if (places.length > 0) parts.push(`${places.length} Ortsvorschläge (swisstopo)`);
+    else parts.push('Kein Ortsvorschlag');
+    if (records) parts.push(`${records.origin} zu „${records.query}“`);
+    else if (local.length > 0) parts.push(`${local.length} Titelvorschläge aus dem Bestand`);
+    return `${parts.join(' · ')}. Mit ↓/↑ wählen, Enter bestätigen.`;
   }
 
   const onInput = debounce(() => {

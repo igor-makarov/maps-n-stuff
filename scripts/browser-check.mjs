@@ -2287,6 +2287,75 @@ try {
     `typed “Zürich” -> ${searchTyped.rows} rows, one “back” -> ${searchUndone.rows} rows, q=${JSON.stringify(searchUndone.q)}`,
   );
 
+  /* --- 8n. the search box also finds records (title, series, library) ----- */
+  // The box is a place search, but a visitor who types a series or a library
+  // expects map results (the OldMapsOnline behaviour). The record suggestion is
+  // built from the committed seed and applies the sidebar keyword filter.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'keyword search page' });
+  await sleep(600);
+  const rowsBeforeKeyword = await cdp.eval(`document.querySelectorAll('#result-list > *').length`);
+  await cdp.typeInto('#place-input', 'Siegfriedkarte');
+  let keywordOffer = null;
+  try {
+    keywordOffer = await cdp.waitFor(
+      `(() => {
+        const items = [...document.querySelectorAll('#place-suggestions li button')];
+        const item = items.find((b) => /Karten zum Stichwort/.test(b.textContent));
+        return item ? { text: item.textContent, items: items.length, status: document.querySelector('#place-status')?.textContent || '' } : '';
+      })()`,
+      { label: 'record search suggestion', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the place box also offers the records that match the typed words',
+    Boolean(keywordOffer) && /Siegfriedkarte/.test(keywordOffer.text) && /Datensätze/.test(keywordOffer.text) && /Ortsvorschläge|Kein Ortsvorschlag/.test(keywordOffer.status),
+    JSON.stringify(keywordOffer),
+  );
+
+  // Choosing it applies the keyword filter (no invented result): the list, the
+  // count line, the sidebar field and the URL all agree.
+  await cdp.eval(`[...document.querySelectorAll('#place-suggestions li button')].find((b) => /Karten zum Stichwort/.test(b.textContent))?.click(); true`);
+  await sleep(800);
+  const keywordApplied = await cdp.eval(`({
+    url: location.search,
+    rows: document.querySelectorAll('#result-list > *').length,
+    count: document.querySelector('#result-count')?.textContent || '',
+    keywordField: document.querySelector('#text-filter')?.value || '',
+    status: document.querySelector('#place-status')?.textContent || '',
+    listHidden: document.querySelector('#place-suggestions')?.hidden,
+  })`);
+  check(
+    'choosing it filters the records and keeps the search shareable',
+    keywordApplied.url.includes('q=Siegfriedkarte') &&
+      keywordApplied.rows > 0 &&
+      keywordApplied.rows < rowsBeforeKeyword &&
+      keywordApplied.keywordField === 'Siegfriedkarte' &&
+      /Kartensuche: \d+ Datensätze/.test(keywordApplied.status) &&
+      keywordApplied.listHidden === true,
+    `${rowsBeforeKeyword} rows before -> ${JSON.stringify(keywordApplied)}`,
+  );
+
+  // A query without a place and without a title match says so — never a silent
+  // empty list and never a raw developer string.
+  await cdp.typeInto('#place-input', 'Xqzwv');
+  let keywordEmpty = null;
+  try {
+    keywordEmpty = await cdp.waitFor(
+      `(() => { const text = document.querySelector('#place-status')?.textContent || ''; const items = document.querySelectorAll('#place-suggestions li').length; return /kein Titeltreffer/.test(text) && items === 0 ? text : ''; })()`,
+      { label: 'honest no-match search status', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'a search without any match says so instead of listing noise',
+    Boolean(keywordEmpty) && !/Failed to fetch|undefined|null/.test(keywordEmpty),
+    `"${String(keywordEmpty).slice(0, 120)}"`,
+  );
+
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
