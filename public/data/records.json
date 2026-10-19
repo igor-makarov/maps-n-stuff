@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-18T23:39:02.237Z",
+  "generatedAt": "2026-10-19T00:03:37.077Z",
   "retrieved": "2026-10-18",
   "generator": "scripts/fetch-records.mjs",
-  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 (CQL via dc.title/dc.subject) for the Zürich plan material the sorted OAI paging does not reach, each hit confirmed by OAI GetRecord and its manifest; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date or coordinate is invented. Regenerate with: node scripts/fetch-records.mjs --out public/data",
+  "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 (CQL via dc.title/dc.subject) for the Zürich plan and Zürich-region material the sorted OAI paging does not reach, each hit confirmed by OAI GetRecord and its manifest, and only kept when the centre of its stated extent lies inside the canton of Zürich's window; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. Regenerate with: node scripts/fetch-records.mjs --out public/data",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
@@ -22,7 +22,7 @@
     "e-rara:museecarto": {
       "considered": 53,
       "kept": 0,
-      "rule": "map records of the set, oldest first, requires a stated Kartendaten bbox and a holding institution named by the manifest"
+      "rule": "map records of the set, oldest first, requires a stated Kartendaten bbox and a holding library stated by the manifest or by its catalogue corpus"
     },
     "e-rara:sru-zurich-plans": {
       "queries": [
@@ -39,6 +39,23 @@
       },
       "cantonWindowSource": "swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): the centre of the record's own stated extent must lie inside it",
       "rule": "map genre, a stated year and a stated MODS coordinates statement in the SRU record, then confirmed by OAI GetRecord and a IIIF manifest that states the holding institution and a Kartendaten extent; one entry per title and year, oldest first"
+    },
+    "e-rara:sru-zurich-region": {
+      "queries": [
+        "dc.title=Umgebung and dc.subject=Zürich",
+        "dc.subject=Zürichsee",
+        "dc.title=Stadtplan and dc.subject=Zürich"
+      ],
+      "considered": 24,
+      "kept": 11,
+      "cantonWindow": {
+        "west": 8.35184,
+        "south": 47.1557,
+        "east": 8.995768,
+        "north": 47.697043
+      },
+      "cantonWindowSource": "swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): the centre of the record's own stated extent must lie inside it",
+      "rule": "same gates as the Zürich plan set (map genre, stated year, stated MODS coordinates, OAI GetRecord + IIIF manifest with a stated holding institution and Kartendaten extent), the centre of the stated extent must lie inside the canton window, titles already kept by another set are skipped, one entry per title and year, oldest first with at most three records per publication decade so one productive decade cannot crowd out the range"
     },
     "swisstopo:zeitreise": {
       "considered": 178,
@@ -103,6 +120,40 @@
       "imprint": "[Zürich] : [D. Herrliberger], [1754]"
     },
     {
+      "id": "e-rara:29328703",
+      "title": "Helvetia orientalis - Pläne und Prospekte (Zürich): 30. Prospectus unius partis lacus Tigurini, prope vicum Küsnacht",
+      "yearStart": 1766,
+      "yearEnd": 1766,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Probst, Georg Balthasar"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29328704/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29328703/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.56667,
+        "east": 8.6,
+        "north": 47.35,
+        "south": 47.3
+      },
+      "geo": {
+        "lat": 47.325,
+        "lon": 8.58333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29328704",
+      "shelfmark": "MUE Ryh 3223 : 30",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29328703",
+      "imprint": "A.V. [Augsburg] : Georg Balthasar Probst excud., [zwischen 1766 und 1790]"
+    },
+    {
       "id": "e-rara:8751536",
       "title": "Plan einer Action, die den 18. Aug. 1766 von dem Militarischen Collegio zu Beendigung Ihrer Exercitien mit Zuzug Frejwilliger Liebhaber exequirt worden",
       "yearStart": 1768,
@@ -135,6 +186,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751536",
       "imprint": "[Zürich] : [Militarische Gesellschaft], 1768"
+    },
+    {
+      "id": "e-rara:29363658",
+      "title": "Helvetia miscellanea: 20-22. Le lac de Zürich avec ses environs",
+      "yearStart": 1780,
+      "yearEnd": 1780,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hofmeister, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-119175",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29362537/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29363658/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.48333,
+        "east": 8.88333,
+        "north": 47.4,
+        "south": 47.23333
+      },
+      "geo": {
+        "lat": 47.31667,
+        "lon": 8.68333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29362537",
+      "shelfmark": "MUE Ryh 3210 : 20-22",
+      "canvasCount": 3,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29363658",
+      "imprint": "[Zürich] : [Johannes Hofmeister], [zwischen 1780 und 1800]"
     },
     {
       "id": "e-rara:7203621",
@@ -2674,6 +2759,108 @@
       "imprint": "Zürich : Naturforschende Gesellschaft ; Winterthur : Wurster, Randegger & Cie., 1871"
     },
     {
+      "id": "e-rara:29084068",
+      "title": "Uebersichtsplan der Stadt Zürich nebst Umgebung",
+      "yearStart": 1875,
+      "yearEnd": 1875,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-113014",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29084069/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29084068/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.56667,
+        "north": 47.38333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.36666,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29084069",
+      "shelfmark": "Rar KS 530",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/29084068",
+      "imprint": "[Zürich] : Orell Füssli & Co., 1875"
+    },
+    {
+      "id": "e-rara:7186911",
+      "title": "Uebersichtsplan der Stadt Zürich nebst Umgebung",
+      "yearStart": 1876,
+      "yearEnd": 1876,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-22992",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7186913/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7186911/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.58333,
+        "north": 47.4,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.55
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7186913",
+      "shelfmark": "Rar KS 558",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7186911",
+      "imprint": "Zürich : Orell Füssli & Co., 1876"
+    },
+    {
+      "id": "e-rara:7193186",
+      "title": "Uebersichtsplan der Stadt Zürich und Umgebung",
+      "yearStart": 1879,
+      "yearEnd": 1879,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23033",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7193188/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7193186/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.46667,
+        "east": 8.58333,
+        "north": 47.4,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.35833,
+        "lon": 8.525
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7193188",
+      "shelfmark": "Rar KS 561",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7193186",
+      "imprint": "Zürich : Technisches Bureau, 1879"
+    },
+    {
       "id": "swisstopo:siegfried-1880",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1880",
       "yearStart": 1880,
@@ -2706,6 +2893,40 @@
         "east": 11.47757,
         "north": 48.230651
       }
+    },
+    {
+      "id": "e-rara:6505470",
+      "title": "Uebersichtsplan der Stadt Zürich & Umgebung",
+      "yearStart": 1881,
+      "yearEnd": 1881,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hofer, J. J."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20934",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6505472/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6505470/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.56667,
+        "north": 47.38333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.36666,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6505472",
+      "shelfmark": "K 213066",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505470",
+      "imprint": "Zürich : Caesar Schmidt, [1881?]"
     },
     {
       "id": "swisstopo:zeitreise-18831231",
@@ -2812,6 +3033,40 @@
       "editionDate": "1895-12-31"
     },
     {
+      "id": "e-rara:28104598",
+      "title": "H. Kümmerly's Spezialkarte des Zürichsee's mit Umgebung",
+      "yearStart": 1896,
+      "yearEnd": 1896,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Kümmerly, Hermann"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-101768",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/28104601/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28104598/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.46667,
+        "east": 8.96667,
+        "north": 47.45,
+        "south": 47.11667
+      },
+      "geo": {
+        "lat": 47.28334,
+        "lon": 8.71667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/28104600",
+      "shelfmark": "Rar K 652",
+      "canvasCount": 3,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28104598",
+      "imprint": "Bern : Geographischer Karten-Verlag H. Kümmerly & Frey u. A. Francke vorm. Schmid & Francke, [zwischen 1896 und 1913]"
+    },
+    {
       "id": "swisstopo:siegfried-1900",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1900",
       "yearStart": 1900,
@@ -2844,6 +3099,74 @@
         "east": 11.47757,
         "north": 48.230651
       }
+    },
+    {
+      "id": "e-rara:28226210",
+      "title": "Kurvenplan des untern Zürichseebeckens",
+      "yearStart": 1908,
+      "yearEnd": 1908,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-102411",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/28226211/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28226210/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.5,
+        "east": 8.58333,
+        "north": 47.43333,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/28226211",
+      "shelfmark": "K 107120",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28226210",
+      "imprint": "Zürich ; (Zürich: Hofer 1908.) : Wasserversorgung der Stadt Zürich, 1908"
+    },
+    {
+      "id": "e-rara:29507659",
+      "title": "Turbenthal, geologische Untersuchungen in der Umgebung von Winterthur",
+      "yearStart": 1908,
+      "yearEnd": 1908,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weber, Julius"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-122115",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29507660/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29507659/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.76667,
+        "east": 8.86667,
+        "north": 47.48333,
+        "south": 47.45
+      },
+      "geo": {
+        "lat": 47.46667,
+        "lon": 8.81667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29507660",
+      "shelfmark": "K 401011 a",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/29507659",
+      "imprint": "Winterthur : Kartographia Winterthur A.G., 1908"
     },
     {
       "id": "swisstopo:siegfried-1910",
@@ -2913,6 +3236,74 @@
         "north": 48.230651
       },
       "editionDate": "1910-12-31"
+    },
+    {
+      "id": "e-rara:28548743",
+      "title": "Die Randmoränen der letzen Vergletscherung in der Umgebung von Zürich",
+      "yearStart": 1919,
+      "yearEnd": 1919,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Heim, Albert"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-104725",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/28548745/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28548743/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.2,
+        "east": 8.93333,
+        "north": 47.73333,
+        "south": 47.08333
+      },
+      "geo": {
+        "lat": 47.40833,
+        "lon": 8.56667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/28548744",
+      "shelfmark": "K 611092",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28548743",
+      "imprint": "Leipzig : Verlag von Chr. Herm. Tauchnitz, 1919-1922"
+    },
+    {
+      "id": "e-rara:27620068",
+      "title": "Stadtplan von Winterthur vom Jahre 1755",
+      "yearStart": 1919,
+      "yearEnd": 1919,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Isler, Alexander"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-99209",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/27620070/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/27620068/manifest",
+      "type": "map",
+      "collection": "Zürich und Umgebung (Kanton, Stadt und See)",
+      "extent": {
+        "west": 8.7,
+        "east": 8.73333,
+        "north": 47.51667,
+        "south": 47.48333
+      },
+      "geo": {
+        "lat": 47.5,
+        "lon": 8.71666
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/27620070",
+      "shelfmark": "KS 98",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/27620068",
+      "imprint": "Winterthur : Kartographia Winterthur A.G., 1919"
     },
     {
       "id": "swisstopo:siegfried-1920",

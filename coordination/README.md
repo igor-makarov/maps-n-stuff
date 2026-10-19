@@ -90,13 +90,13 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 ## Status board
 
-| Member | Owns | Status (iteration 7-13) |
+| Member | Owns | Status (integrated tree, iteration 7-15) |
 |--------|------|-------------------------|
-| zurich-maps-0 | worker proxy, records seed + source registry | ✅ 80 records from e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH maps, 1 Genf), 27 swisstopo overlay editions, `docs/data-sources.md` + registry |
-| zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell, canton design tokens/components, URL-backed store, comparison view + device-local Merkliste, Workers config + run book, 192 KiB unused vendor payload removed |
-| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram |
-| zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + sheet strip, tests (94) and the CDP harness (72 checks); detail→time hand-off |
+| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **109 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, 18 Zürich plans + 11 Zürich-region maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window and per-decade selection rules, holding library never defaulted, `docs/data-sources.md` + `sources.json` registry |
+| zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell, canton design tokens/components (48 px controls), URL-backed store, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed |
+| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram, point filter (`at=`) |
+| zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen, honest degraded-upstream states, series navigation; 101 unit tests and the 90-check CDP harness |
 
-Integration gate as of iteration 7-13: `npm run check` (validation + 94 unit
-tests + `wrangler deploy --dry-run`) and `node scripts/browser-check.mjs`
-**72/72** against `npx wrangler dev`.
+Integration gate as of iteration 7-15 (verified on this runner, 109-record seed):
+`npm run check` (validation + **101** unit tests + `wrangler deploy --dry-run`) and
+`node scripts/browser-check.mjs` **90/90** against `npx wrangler dev`.

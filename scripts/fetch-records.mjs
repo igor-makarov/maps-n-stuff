@@ -230,7 +230,26 @@ async function canonicalViewer(doi, titleId) {
   return { corpus: m[1], id: m[2], viewerUrl: `https://www.e-rara.ch/${m[1]}/content/zoom/${m[2]}` };
 }
 
-async function manifestRecord(candidate, { sourceCollection, maxYear, requireInstitution = false }) {
+/**
+ * Holding library per e-rara corpus, as the platform itself states it.
+ *
+ * Used *only* when a manifest omits `Besitzende Institution` — and only for a
+ * corpus that the catalogue states verbatim (`<vl:prefix>` of an SRU hit, the
+ * `setSpec` of an OAI set, or the `og:url` of the DOI landing page). A corpus we
+ * cannot name is not guessed: such a record is dropped and listed in
+ * `records.json.skipped` instead of being attributed to the wrong library.
+ */
+const CORPUS_INSTITUTION = {
+  zuz: 'Zentralbibliothek Zürich',
+  zut: 'ETH-Bibliothek Zürich',
+  bes_1: 'Universitätsbibliothek Bern',
+  gep_r: 'Bibliothèque de Genève',
+};
+
+/** Records dropped because no library could be named for them (evidence, not silence). */
+const unstatedInstitution = [];
+
+async function manifestRecord(candidate, { sourceCollection, maxYear }) {
   const manifestUrl = `https://www.e-rara.ch/i3f/v20/${candidate.titleId}/manifest`;
   const manifest = await get(manifestUrl, { as: 'json', timeout: 40000 });
   const meta = metaMap(manifest);
@@ -251,12 +270,44 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
   const shelfmark = institutionField.includes(',')
     ? institutionField.slice(institutionField.indexOf(',') + 1).trim()
     : '';
-  // Some sets hold works from several libraries; never guess the holding library.
-  if (requireInstitution && !institution) return null;
+  const title = label || candidate.title;
   const thumb = manifest.thumbnail?.['@id'];
   if (!thumb) return null;
+  // The library's own deep-zoom viewer. SRU-discovered candidates carry the
+  // holding corpus verbatim in the catalogue record (`vl:prefix`); otherwise the
+  // corpus is read from the DOI landing page `og:url`, which also verifies the id
+  // against the manifest. It is never constructed from a guess — and when the
+  // manifest does not name the holding library, the same stated corpus is the
+  // only allowed fallback (never a default library).
+  let corpus = candidate.corpus || null;
+  let viewerUrl = corpus ? `https://www.e-rara.ch/${corpus}/content/zoom/${candidate.titleId}` : null;
+  if (!corpus) {
+    try {
+      const canonical = await canonicalViewer(candidate.doi, candidate.titleId);
+      if (canonical) {
+        corpus = canonical.corpus;
+        viewerUrl = canonical.viewerUrl;
+      }
+    } catch {
+      /* stay without viewerUrl: the UI derives a working link from the manifest id */
+    }
+  }
+  // The `zuz` OAI set is Zentralbibliothek Zürich's own set, so its records are
+  // in that corpus even when the manifest omits the field. For every other
+  // record the library must be stated — by the manifest or by the corpus.
+  const stated = institution || (candidate.zuz ? CORPUS_INSTITUTION.zuz : '');
+  const attributed = stated || CORPUS_INSTITUTION[corpus] || '';
+  if (!attributed) {
+    unstatedInstitution.push({
+      id: `e-rara:${candidate.titleId}`,
+      title,
+      reason:
+        'no holding library stated: the manifest has no "Besitzende Institution" and the ' +
+        'catalogue corpus is unknown or unnamed — dropped instead of guessing a library',
+    });
+    return null;
+  }
   const sheet = label.includes(':') ? label.slice(label.lastIndexOf(':') + 1).trim() : null;
-  const title = label || candidate.title;
   const record = {
     id: `e-rara:${candidate.titleId}`,
     title,
@@ -266,7 +317,7 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
     depictedYearEnd: depicted?.depictedYearEnd ?? null,
     creators: candidate.creators.length ? candidate.creators : [],
     providerId: 'e-rara',
-    institution: institution || (candidate.zuz ? 'Zentralbibliothek Zürich' : 'ETH-Bibliothek Zürich'),
+    institution: attributed,
     rights: candidate.rights || 'PDM 1.0',
     recordUrl: candidate.doi || `https://www.e-rara.ch/zuz/content/titleinfo/${candidate.titleId}`,
     thumbnail: thumb,
@@ -288,20 +339,7 @@ async function manifestRecord(candidate, { sourceCollection, maxYear, requireIns
   if (depicted) record.depictedSource = depicted.depictedSource;
   if (shelfmark) record.shelfmark = shelfmark;
   if (canvases.length) record.canvasCount = canvases.length;
-  // The library's own deep-zoom viewer. SRU-discovered candidates carry the
-  // holding corpus verbatim in the catalogue record (`vl:prefix`); otherwise the
-  // corpus is read from the DOI landing page `og:url`, which also verifies the id
-  // against the manifest. It is never constructed from a guess.
-  if (candidate.corpus) {
-    record.viewerUrl = `https://www.e-rara.ch/${candidate.corpus}/content/zoom/${candidate.titleId}`;
-  } else {
-    try {
-      const canonical = await canonicalViewer(candidate.doi, candidate.titleId);
-      if (canonical) record.viewerUrl = canonical.viewerUrl;
-    } catch {
-      /* stay without viewerUrl: the UI derives a working link from the manifest id */
-    }
-  }
+  if (viewerUrl) record.viewerUrl = viewerUrl;
   if (sheet && candidate.zuz) record.sheet = sheet;
   if (imprint) record.imprint = imprint;
   return record;
@@ -735,24 +773,50 @@ const SRU_SEARCHES = {
       'map genre, a stated year and a stated MODS coordinates statement in the SRU record, ' +
       'then confirmed by OAI GetRecord and a IIIF manifest that states the holding institution ' +
       'and a Kartendaten extent; one entry per title and year, oldest first',
+    candidateCap: 44,
+    recordCap: 18,
+  },
+  zurichRegion: {
+    id: 'zurich-region',
+    name: 'Zürich und Umgebung (Kanton, Stadt und See)',
+    // The same discovery mechanism with the vocabulary the catalogue actually uses
+    // for the surrounding area: “Umgebung” titles, the Zürichsee keyword, and
+    // “Stadtplan”. `dc.title=Ansicht` (facade views) and `dc.title=Vogelschau`
+    // were probed and yield no map with a stated extent, so they are not queried.
+    queries: [
+      'dc.title=Umgebung and dc.subject=Zürich',
+      'dc.subject=Zürichsee',
+      'dc.title=Stadtplan and dc.subject=Zürich',
+    ],
+    rule:
+      'same gates as the Zürich plan set (map genre, stated year, stated MODS coordinates, ' +
+      'OAI GetRecord + IIIF manifest with a stated holding institution and Kartendaten extent), ' +
+      'the centre of the stated extent must lie inside the canton window, titles already kept by ' +
+      'another set are skipped, one entry per title and year, oldest first with at most three ' +
+      'records per publication decade so one productive decade cannot crowd out the range',
+    candidateCap: 40,
+    recordCap: 16,
   },
 };
 
 async function main() {
-  const [zuz, land, geneva, muse, planHits, karteHits, zurichWindow] = await Promise.all([
+  const [zuz, land, geneva, muse, planHits, karteHits, regionHitLists, zurichWindow] = await Promise.all([
     oaiRecords('zuz', 32),
     oaiRecords('landkarten', 12),
     oaiRecords('cartesgeneve', 6),
     oaiRecords('museecarto', 6),
     sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
     sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
+    Promise.all(SRU_SEARCHES.zurichRegion.queries.map((cql) => sruSearch(cql, 100))),
     zurichCantonWindow(),
   ]);
+  const regionHits = regionHitLists.flat();
   console.log(
     `OAI: ${zuz.length} ZB records, ${land.length} landkarten, ${geneva.length} cartesgeneve, ${muse.length} museecarto`,
   );
   console.log(
-    `SRU: ${planHits.length} + ${karteHits.length} Zürich plan hits; canton window ` +
+    `SRU: ${planHits.length} + ${karteHits.length} Zürich plan hits, ${regionHits.length} region hits ` +
+      `(${SRU_SEARCHES.zurichRegion.queries.length} queries); canton window ` +
       (zurichWindow ? JSON.stringify(zurichWindow) : 'UNAVAILABLE (set skipped)'),
   );
 
@@ -838,7 +902,6 @@ async function main() {
       await pool(museCandidates.slice(0, 20), 3, (c) =>
         manifestRecord(c, {
           sourceCollection: 'Weltkarten aus dem Musée cartographique',
-          requireInstitution: true,
         }),
       )
     ).filter((r) => r.extent),
@@ -860,7 +923,7 @@ async function main() {
   }
   sruCandidates.sort((a, b) => a.year - b.year);
   const zurichPlanHits = zurichWindow
-    ? await pool(sruCandidates.slice(0, 44), 3, (c) =>
+    ? await pool(sruCandidates.slice(0, SRU_SEARCHES.zurichPlans.candidateCap), 3, (c) =>
         sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichPlans.name, maxYear: 1930 }),
       )
     : [];
@@ -882,9 +945,52 @@ async function main() {
     if (planSeen.has(key)) continue;
     planSeen.add(key);
     zurichPlanRecords.push(r);
-    if (zurichPlanRecords.length >= 18) break;
+    if (zurichPlanRecords.length >= SRU_SEARCHES.zurichPlans.recordCap) break;
   }
   console.log(`SRU kept ${zurichPlanRecords.length} Zürich plans of ${sruCandidates.length} candidates`);
+
+  // --- SRU-discovered Zürich region (Umgebung, Stadtplan, Zürichsee) --------
+  // Same discovery path as the plans, with the vocabulary of the surrounding area.
+  // The canton window and the title/year dedupe are shared with the plan set, so a
+  // sheet that both searches find is kept once (and an off-topic keyword hit such as
+  // a map of Riga that happens to be tagged “Stadtplan … Zürich” cannot slip in).
+  const regionCandidates = [];
+  for (const hit of regionHits) {
+    const id = `e-rara:${hit.titleId}`;
+    if (sruSeen.has(id)) continue;
+    if (!hit.isMap || !hit.year || !hit.coordinates) continue;
+    sruSeen.add(id);
+    regionCandidates.push(hit);
+  }
+  regionCandidates.sort((a, b) => a.year - b.year);
+  const zurichRegionHits = zurichWindow
+    ? await pool(regionCandidates.slice(0, SRU_SEARCHES.zurichRegion.candidateCap), 3, (c) =>
+        sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichRegion.name, maxYear: 1930 }),
+      )
+    : [];
+  const zurichRegionRecords = [];
+  // “Umgebung”/“Zürichsee” material clusters in a few decades (Zürich's city
+  // surveys of the 1880s–1900s). Keeping the oldest 16 would therefore push the
+  // 20th century out of the selection again, so the rule is deterministic but
+  // spread: oldest first, at most three records per publication decade.
+  const perDecade = new Map();
+  for (const r of zurichRegionHits
+    .filter(Boolean)
+    .filter((r) => r.extent && inZurich(r))
+    .sort((a, b) => a.yearStart - b.yearStart)) {
+    const key = `${r.title}|${r.yearStart}`;
+    if (planSeen.has(key)) continue;
+    const decade = Math.floor(r.yearStart / 10) * 10;
+    if ((perDecade.get(decade) || 0) >= 3) continue;
+    planSeen.add(key);
+    perDecade.set(decade, (perDecade.get(decade) || 0) + 1);
+    zurichRegionRecords.push(r);
+    if (zurichRegionRecords.length >= SRU_SEARCHES.zurichRegion.recordCap) break;
+  }
+  console.log(
+    `SRU kept ${zurichRegionRecords.length} Zürich region records of ${regionCandidates.length} candidates` +
+      (unstatedInstitution.length ? `; ${unstatedInstitution.length} dropped for an unstated library` : ''),
+  );
 
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
@@ -894,6 +1000,7 @@ async function main() {
     ...geneveRecords,
     ...museRecords,
     ...zurichPlanRecords,
+    ...zurichRegionRecords,
     ...overlays,
   ].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
@@ -946,7 +1053,8 @@ async function main() {
             note:
               `probing ${museCandidates.length} map candidates yields ${museRecords.length} records: ` +
               'no manifest of this set states a "Kartendaten" extent, and its works come from several ' +
-              'libraries, so a record would also need the holding institution named by the manifest',
+              'libraries, so a record would also need the holding library stated by the manifest or by ' +
+              'its catalogue corpus',
           },
           {
             id: SRU_SEARCHES.zurichPlans.id,
@@ -957,6 +1065,17 @@ async function main() {
             note:
               `SRU/CQL discovery (${SRU_SEARCHES.zurichPlans.queries.join(' | ')}): ` +
               `${sruCandidates.length} candidates with a stated extent, ${zurichPlanRecords.length} records kept`,
+          },
+          {
+            id: SRU_SEARCHES.zurichRegion.id,
+            name: SRU_SEARCHES.zurichRegion.name,
+            // An actual harvested record from this search, not a guessed page.
+            record: zurichRegionRecords[0]?.recordUrl ?? SRU_SEARCHES.zurichRegion.queries[0],
+            discovery: SRU_SEARCHES.zurichRegion.queries.map((q) => sruUrl(q)).join(' | '),
+            note:
+              `SRU/CQL discovery (${SRU_SEARCHES.zurichRegion.queries.join(' | ')}): ` +
+              `${regionCandidates.length} candidates with a stated extent, ` +
+              `${zurichRegionRecords.length} records kept`,
           },
         ],
         endpoints: {
@@ -1058,10 +1177,12 @@ async function main() {
       'Presentation 2.0 manifest per title for ' +
       'verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
       'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 ' +
-      '(CQL via dc.title/dc.subject) for the Zürich plan material the sorted OAI paging does not reach, each hit ' +
-      'confirmed by OAI GetRecord and its manifest; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
-      'editions and for the comparison layers in overlays.json. No title, date or coordinate is ' +
-      'invented. Regenerate with: node scripts/fetch-records.mjs --out public/data',
+      '(CQL via dc.title/dc.subject) for the Zürich plan and Zürich-region material the sorted OAI paging does not reach, each hit ' +
+      'confirmed by OAI GetRecord and its manifest, and only kept when the centre of its stated extent lies inside the canton ' +
+      'of Zürich\'s window; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
+      'editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is ' +
+      'invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. ' +
+      'Regenerate with: node scripts/fetch-records.mjs --out public/data',
     selection: {
       'e-rara:zuz': {
         considered: zuzMaps.length,
@@ -1081,7 +1202,7 @@ async function main() {
       'e-rara:museecarto': {
         considered: museCandidates.length,
         kept: museRecords.length,
-        rule: 'map records of the set, oldest first, requires a stated Kartendaten bbox and a holding institution named by the manifest',
+        rule: 'map records of the set, oldest first, requires a stated Kartendaten bbox and a holding library stated by the manifest or by its catalogue corpus',
       },
       'e-rara:sru-zurich-plans': {
         queries: SRU_SEARCHES.zurichPlans.queries,
@@ -1092,6 +1213,16 @@ async function main() {
           'swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): ' +
           'the centre of the record\'s own stated extent must lie inside it',
         rule: SRU_SEARCHES.zurichPlans.rule,
+      },
+      'e-rara:sru-zurich-region': {
+        queries: SRU_SEARCHES.zurichRegion.queries,
+        considered: regionCandidates.length,
+        kept: zurichRegionRecords.length,
+        cantonWindow: zurichWindow,
+        cantonWindowSource:
+          'swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): ' +
+          'the centre of the record\'s own stated extent must lie inside it',
+        rule: SRU_SEARCHES.zurichRegion.rule,
       },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
@@ -1114,7 +1245,7 @@ async function main() {
         rule: 'the dedicated SWISSIMAGE 1946 historical aerial layer',
       },
     },
-    skipped: overlaySkipped,
+    skipped: [...overlaySkipped, ...unstatedInstitution],
     records,
   };
   sources.generatedBy = 'scripts/fetch-records.mjs';
@@ -1134,6 +1265,7 @@ async function main() {
 
   console.log(
     `Built ${zbRecords.length} ZB maps, ${ethRecords.length} landkarten, ${geneveRecords.length} Genf, ${museRecords.length} Weltkarten, ` +
+      `${zurichPlanRecords.length} Zürich plans, ${zurichRegionRecords.length} Zürich region, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +

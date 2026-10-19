@@ -38,7 +38,7 @@
           "id": "museecarto",
           "name": "Weltkarten aus dem Musée cartographique (e-rara-Set museecarto)",
           "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
-          "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding institution named by the manifest"
+          "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding library stated by the manifest or by its catalogue corpus"
         },
         {
           "id": "zurich-plaene",
@@ -46,6 +46,13 @@
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 18 records kept"
+        },
+        {
+          "id": "zurich-region",
+          "name": "Zürich und Umgebung (Kanton, Stadt und See)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DUmgebung%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DZ%C3%BCrichsee&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DStadtplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Zürich | dc.subject=Zürichsee | dc.title=Stadtplan and dc.subject=Zürich): 24 candidates with a stated extent, 11 records kept"
         }
       ],
       "endpoints": {
@@ -133,5 +140,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-18T23:39:02.237Z"
+  "generatedAt": "2026-10-19T00:03:37.078Z"
 }
