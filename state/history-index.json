@@ -601,5 +601,13 @@
     "maxEntryId": 521,
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "7-65",
+    "outcome": "interrupted",
+    "runId": "39202355825",
+    "journalId": "7-65",
+    "error": "Actions run ended before final publication (unknown); recovered from latest committed checkpoint.",
+    "transcript": "unavailable"
   }
 ]
