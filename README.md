@@ -51,6 +51,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   region, an impossible value is dropped and “Ganzes Blatt” clears it), a link to
   the library's own viewer and a prominent
   link to the original record — plus “use this sheet's period as the time filter”;
+  a work with more than twelve sheets (the seed holds a 33-sheet canton map) also
+  gets a “Blatt” select for the direct jump to any sheet, and the sheet strip only
+  fetches the thumbnails that come into view;
   when the image service is unreachable the panel says so in plain German and keeps
   the metadata, the thumbnail and the provider link (verified by a check that blocks
   the upstream on purpose); a “Weitere Karten dieser Sammlung” list leads from one
