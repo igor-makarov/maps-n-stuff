@@ -52,7 +52,13 @@ What works today (verified with `wrangler dev` + headless Chromium):
   historical comparison layers; the air photo is the modern reference for them.
   Switching keeps the view (pan/zoom, markers, footprints) exactly where it was
   and the map badge always credits the layer in use (`© swisstopo`);
-- coordinated result list ↔ map selection, list/map/split view switch;
+- coordinated result list ↔ map selection, list/map/split view switch: a pin (or a
+  point pile) selected on the map brings its own row into view in the desktop split
+  layout — the sticky map column stays on screen — and marks it for a moment, while
+  the same click on a phone deliberately leaves the page where the visitor is;
+  every map/marker/footprint/histogram state that the app communicates with a
+  background colour also has a border or outline under `forced-colors` (Windows
+  high contrast), so a selected pin, row or decade stays recognisable there;
 - detail panel with publication vs depicted dates, institution, shelfmark, rights,
   an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
   navigation, real fullscreen) whose visible cut-out is shareable (`?vv=x,y,w,h`,

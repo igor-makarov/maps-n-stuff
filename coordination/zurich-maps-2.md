@@ -1,5 +1,83 @@
 # zurich-maps-2 status
 
+Iteration 7-20 (2026-10-19, ~04:5x–05:5x UTC). Member `zurich-maps-2` (map,
+search, results). Files: `public/app/results.js`, `tests/reveal.test.mjs` (new),
+`public/styles/app.css` (maps-1's — one appended block, flagged below),
+`scripts/browser-check.mjs` (maps-3's — one new section, flagged below),
+`docs/run.md` + `coordination/README.md` + `README.md` (counts/one bullet only).
+
+## Landed on `main` this iteration
+
+**A map selection now reveals its own row, and both selection states survive
+Windows high contrast.** Both were the open items in my 7-19 “Next” list; both
+are gaps a visitor meets on the seed as it is (199 records, ~167 rows).
+
+| Content | Files |
+| --- | --- |
+| `revealScrollDelta(row, view, {top, bottom, gap})` (new, exported, pure) computes how far the window must scroll to put a row inside the readable band, or 0 when it already is; a row taller than the band is aligned to its top (the title is what identifies it). 7 unit cases in `tests/reveal.test.mjs` — below/above the band, exactly at its edges, deep insets, an empty band, a taller-than-band row, missing rectangles, whole pixels. | `results.js`, `tests/reveal.test.mjs` |
+| `revealRow(id)` runs on `record:selected` when the source is **not** the list: it scrolls the row into the band (`behavior: 'instant'`, not the canton stylesheet's smooth scroll, so a long jump is not still travelling when the next interaction starts) and marks it with `.is-revealed` for 2.2 s. Deliberately no `scrollIntoView`: that scrolls every ancestor, including the page, which is what pushed the multi-sheet strip out of the panel viewport in maps-3's `detail.js` fix. | `results.js` |
+| It is limited to the **desktop split layout** (`min-width: 1024px`): there `.app-mapwrap` is sticky, so the page can move while the map stays in view. On a phone the same scroll would carry the visitor away from the pin they just used — the harness check asserts the phone page does not move at all. A selection made *in* the list never moves the page (the row is already where the visitor is looking), and a selection from the detail panel's “related sheets” list only moves when that record is in the current list. | `results.js` |
+| `@media (forced-colors: active)` block (appended at the end of `app.css`, ~110 lines incl. comments): the states the app communicates with `background-color` — selected pin, previewed pin, cluster, selected/previewed result row, the selected record's dashed extent, the point crosshair, footprints, “is-brushing”/empty/selected decade bars — get system-colour fills (`ButtonFace`, `ButtonText`, `ButtonBorder`, `CanvasText`, `Highlight`, `HighlightText`) **plus** outlines and border widths, which the mode keeps. The empty-decade bar relies on `opacity` (not replaced by the mode) instead of `GrayText`, which some palettes resolve to the canvas colour. | `app.css` (maps-1's; additive, flagged) |
+| Harness section **8h2/8h3**, three new checks (**143 → 146**): (1) the desktop reveal — the row of the lowest-index pin is parked *above* the viewport on purpose, the pin is then clicked with a real mouse event (no `scrollIntoView`, the page position is the thing under test), and the row must end inside the band, marked, `aria-current`, left of the detail drawer and with the sticky map still on screen; (2) the 390 px counter-check — the same click selects the record and the page must not move (`scrollY` unchanged, no reveal mark); (3) `Emulation.setEmulatedMedia` with `forced-colors: active` compares a selected pin/row/decade with an unselected one and requires a *different* state (Highlight fill/outline, double border). Screenshots `13-map-reveal.png`, `13b-forced-colors.png`. | `browser-check.mjs` (maps-3's; see Messages) |
+
+### Verified on the integrated tree (this runner, 2026-10-19)
+
+- `npm run check` → validation ✓ (199 records, 12 overlays, generated
+  2026-10-19T02:24:42Z), **170/170** `node --test` (163 + my 7), `wrangler deploy
+  --dry-run` ✓ (31 asset files, 28.76 KiB Worker).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots-720c`
+  → **146/146** on the tree rebased over maps-0's `bc026cd` (the re-selected world
+  set). Measured reveal: `scrollY 2916 → 2660`, row top 16 / bottom 204 in a
+  900 px viewport, `is-revealed`, `aria-current="true"`, `coveredByPanel: false`,
+  `mapVisible: true`; phone: `scrollY 0 → 0`, `sel` set, no reveal mark. No
+  uncaught console errors, no failed requests, 11 same-origin API calls.
+- Forced-colors values as measured (Chrome's emulated palette): selected row
+  `3px double` + `8px` left border + 1px outline in `rgba(5, 0, 73, 0.8)`
+  (= `Highlight`) vs an unselected row's `1px solid` + `4px` left; selected pin
+  `Highlight` fill with a `3px solid` outline vs the unselected pin's `ButtonFace`
+  fill; selected decade bar `Highlight` vs an unselected bar's `ButtonText`.
+- A first full harness run on the pre-rebase tree was **146/146** as well
+  (`/tmp/shots-720b/`), so the new checks are not seed-dependent.
+
+## Messages
+
+- **→ maps-1**: `public/styles/app.css` gained one appended block at the very end
+  (the `.zh-result.is-revealed` mark + the `forced-colors` section) and one
+  earlier consideration: I did **not** make the reveal a `scroll-behavior: smooth`
+  scroll, because your stylesheet enables smooth scrolling globally and the check
+  would then have to wait for a long animation. If you prefer a softer jump,
+  the change is one word in `results.js` (`behavior: 'instant'`) — but please keep
+  the phone rule, it is the part that matters.
+- **→ maps-1**: `README.md` feature bullet extended (one bullet, inside your
+  list) and `docs/run.md`'s harness row updated (143 → 146 checks + the new
+  clauses); `coordination/README.md` board line is mine. Revert freely if you
+  prefer different wording.
+- **→ maps-3**: one new section in `scripts/browser-check.mjs` between the sticky
+  map check (8h) and “no placeholder values” (8i): three checks, two screenshots,
+  no `Emulation.setEmulatedMedia` left behind (cleared with `features: []`), and
+  the device metrics it sets are 1440×900 at the end. Please re-word or split as
+  you like — the forced-colors check in particular is a set of computed-style
+  comparisons, which is the strongest evidence an emulation can give.
+- **→ maps-0**: nothing needed from the data layer; the reveal reads only
+  `state.filtered` and the row's `data-record-id`, and the forced-colors block is
+  CSS. Your `bc026cd` re-selection of the world set changed which records the
+  reveal lands on but no check of mine hard-codes a record id.
+- **→ all**: the reveal is the one behaviour change that can move the page during
+  another member's checks — it only ever fires on a `record:selected` whose source
+  is not `list`, and only at ≥1024 px. If a future check clicks a pin and then
+  asserts an absolute `scrollY`, that check is the one to adjust, not the feature.
+
+## Next (my area, if the loop continues)
+
+- Screen-reader pass over the reveal: announce “row N selected” in the list's
+  `role="status"` line when the selection came from the map, so a reader user who
+  never looks at the row still learns that the list moved with them.
+- The histogram's forced-colors treatment could use one visual check at a
+  *brushed* range (the `.is-brushing` outline is emitted but only asserted
+  indirectly today).
+- Point piles still open a list rather than a fan-out; with the reveal in place a
+  pile row now also lands in the list — worth a screenshot for the docs.
+
 Iteration 7-19 (2026-10-19, ~03:4x–04:3x UTC). Member `zurich-maps-2` (map,
 search, results). Files: `public/app/records.js` (maps-0's — additive, flagged
 below), `tests/search.test.mjs` (mine), `scripts/browser-check.mjs` (maps-3's —
