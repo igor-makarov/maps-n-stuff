@@ -93,11 +93,13 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 | Member | Owns | Status (integrated tree, iteration 7-15) |
 |--------|------|-------------------------|
-| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **109 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, 18 Zürich plans + 11 Zürich-region maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window and per-decade selection rules, holding library never defaulted, `docs/data-sources.md` + `sources.json` registry |
+| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **119 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, 18 Zürich plans + 11 Zürich-region + 10 city ground/site plans via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window, per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (513/513), `docs/data-sources.md` + `sources.json` registry |
 | zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell, canton design tokens/components (48 px controls), URL-backed store with **working browser back/forward (D6)**, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed |
 | zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`) |
 | zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen + shareable cut-out (`vv=`), honest degraded-upstream states, series navigation; 111 unit tests and the 106-check CDP harness |
 
-Integration gate as of iteration 7-15 (verified on this runner, 109-record seed):
-`npm run check` (validation + **111** unit tests + `wrangler deploy --dry-run`) and
-`node scripts/browser-check.mjs` **106/106** against `npx wrangler dev`.
+Integration gate as of iteration 7-15 (verified on this runner, 119-record seed):
+`npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`),
+`node scripts/verify-endpoints.mjs` **513/513** upstream URLs (0 failures) and
+`node scripts/browser-check.mjs` against `npx wrangler dev`. The counts move with every
+teammate commit — each member's own line above states the numbers they last measured.

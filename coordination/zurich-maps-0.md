@@ -41,6 +41,34 @@ are **not** queried: neither yields a map record with a stated extent.
 - Title/year dedupe is shared with the plans set, so a sheet both searches find is
   kept once (e.g. the 1871 “Plan von Zürich und Umgebung” in both `zut` and `zuz`).
 
+**Follow-up (same iteration, second harvest): a third SRU set for the city plans.**
+Two more catalogue questions — `dc.title=Grundriss and dc.subject=Zürich` (32 hits)
+and `dc.title=Situationsplan and dc.subject=Zürich` (16 hits) — answer the city's own
+ground and site plans, so they became their own set “Grundrisse und
+Situationspläne der Stadt Zürich” (cap 14, ≤ 3/decade): **10 records, 1696–1890** —
+the 1696 and 1705 fortress ground plans, the 1800 “Grundriss der Stadt Zürich und
+der umliegenden Gegend” (ZB plus the copy bound in a Bern `Helvetia` volume), the
+1826 Schwamendingen forest plan, the 1838 city plan, the 1847 Altstetten site plan
+and the 1881 exhibition/quay and 1890 tramway Situationspläne. Off-topic keyword
+hits of `Grundriss` (Murten lake, Bischofszell, a cantonal hospital farm) are removed
+by the same canton window and extent gates. Why a third set instead of more queries
+in the region set: a 1705 fortress plan and a 1838 city plan are the same kind of
+one-sheet object and inside one set would displace each other's decade under the
+3-per-decade rule.
+
+**The duplicate tie-break is now documented.** The catalogue lists many sheets in
+both `zuz` (ZB Zürich) and `zut` (ETH), so the survivor used to be “whichever the
+search returned first”. Candidates are now ordered by year → `zuz` first → catalogue
+id, which is why nine records of the seed changed corpus (e.g. the 1:25 000 canton
+map is now the ZB copy with **35 sheets** instead of ETH's 33, and the 1852/1858/
+1867 plans are ZB copies). Same titles and years, same upstream metadata, but the
+cantonal library — the design reference's own — holds them now. Copies whose
+*catalogued titles differ* (the Bern volume copies) stay as separate records: they
+are separate upstream items with their own shelfmark and DOI.
+
+Seed after both harvests: **119 records** = 92 e-rara (ZB 51, ETH 35, UB Bern 5,
+Genève 1) + 27 swisstopo overlays, 10 collection facets, e-rara span **1696–1919**.
+
 ### 2. Holding library is never defaulted any more (latent honesty bug)
 
 `manifestRecord` used to fall back to `candidate.zuz ? 'Zentralbibliothek Zürich' :
@@ -60,30 +88,34 @@ wrong a credit the day an upstream omits the field.
 
 ### Numbers after this change (committed seed)
 
-109 records = 82 e-rara (26 ZB Wildkarte sheets, 26 `landkarten`, 18 plans, 11 region,
-1 Genf) + 27 swisstopo overlay editions; 8 collection facets; 82 shelfmarks;
-82 viewer URLs; 27 with a documented depicted period; publication years 1754–2021.
+119 records = 92 e-rara (26 ZB Wildkarte sheets, 26 `landkarten`, 18 plans, 11 region,
+10 city plans, 1 Genf) + 27 swisstopo overlay editions; 10 collection facets;
+92 shelfmarks; 92 viewer URLs; 27 with a documented depicted period; publication
+years 1696–2021 (e-rara 1696–1919).
 
 ### Verified on this runner
 
-- `node scripts/fetch-records.mjs --out public/data` — cold-ish refresh (67 s, most
-  responses still cached from the interrupted first run), 262 upstream requests.
+- `node scripts/fetch-records.mjs --out public/data` — two refreshes this iteration
+  (67 s and 76 s warm, most responses already cached), ~300 upstream requests.
 - `npm run harvest:offline` **reproduces every committed byte** of `records.json`,
   `sources.json`, `overlays.json` (all three MATCH after dropping `generatedAt`),
   so the new queries and the institution rule replay without network access.
-- `npm test` **101/101** and `npm run check` ✓ (`wrangler deploy --dry-run`: 30 asset
-  files, 28.76 KiB Worker, `env.ASSETS` only).
-- `node scripts/browser-check.mjs` against `npx wrangler dev` → **90/90**, including
-  the degraded-upstream, point-filter, compare and multi-sheet sections; no console
-  errors, no failed requests.
+- `npm run check` ✓ at every step. Final integrated tree (after rebasing over
+  maps-1's back/forward store work `7fa8c07`, maps-2's “Karten zum Stichwort” +
+  footprint layer and maps-3's shareable cut-out `vv=`): **127/127** unit tests and
+  `wrangler deploy --dry-run` (30 asset files, 28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs` against `npx wrangler dev` → **109/109** on that
+  integrated tree with the 119-record seed; no console errors, no failed requests,
+  and the collection facet now offers 10 real series.
 - Every new record re-probed upstream: `recordUrl` (DOI), `viewerUrl`, `thumbnail`
   and `iiifManifest` all 200 for the sampled records, PDM 1.0 matches the upstream
   `dc:rights`, and each manifest's `Kartendaten` bbox is the record's `extent`.
 
 ### Messages
 
-- **→ all**: the seed is `109` records; the UI count is data-driven, but any copy,
-  screenshot or check that hardcodes 98/80/89/90 numbers needs the new value.
+- **→ all**: the seed is `119` records (10 collection facets); the UI count is
+  data-driven, but any copy, screenshot or check that hardcodes 98/109/80/90 numbers
+  needs the new value.
 - **→ maps-1**: two small additive edits in your files, both flagged here —
   `public/index.html` (the keyword label now reads “Stichwort in Titel, Urheber
   oder Sammlung”, placeholder “z. B. Rhein, Wildkarte, Dufour”), and `package.json`
@@ -92,9 +124,10 @@ wrong a credit the day an upstream omits the field.
 - **→ maps-2**: the new region records are small city extents and one canton-wide
   sheet (1896 Zürichsee, 1919 Randmoränen), so the clustering you added is what keeps
   the default view readable; the new collection appears in the facet automatically.
-- **→ maps-3**: one more record with a **3-sheet** manifest (1780 “Le lac de Zürich”)
-  and two 2-sheet records (1919 Randmoränen, 1908 …) — the sheet strip keeps working
-  (checked in the 90/90 run); the 33-sheet canton map is still the extreme case.
+- **→ maps-3**: the new records include 3-sheet works (1780 “Le lac de Zürich”, 1804
+  “Plan de la ville et des environs de Zürich”, 1896 Kümmerly) and 2-sheet ones (1908,
+  1919) — the strip keeps working (95/95 run). The extreme case is now the **35-sheet**
+  ZB copy of the 1:25 000 canton map (was 33 sheets, ETH copy).
 - **→ maps-1**: `public/data/**` counts changed only; no shell/token/wrangler change
   was needed. `docs/data-sources.md` + `README.md` updated by me.
 
@@ -122,9 +155,13 @@ User-Agent, summarises per kind and exits non-zero on any non-200 (`--json`,
 `--offline`, `--limit` supported). Deliberately **not** part of `npm run check`, so
 the gate stays hermetic and fast.
 
-Result on the committed 109-record seed (2026-10-19): **463 distinct URLs, 0
-failures** — record 109/109, thumbnail 109/109, viewer 82/82, manifest 82/82,
-image-service 81/81. That re-proves the older records' links too, not only the new
+Result on the committed **119-record** seed (2026-10-19, re-run after the third SRU
+set): **513 distinct URLs, 0 failures** — record 119/119, thumbnail 119/119, viewer
+92/92, manifest 92/92, image-service 91/91.
+
+The rebase kept both sides: maps-2's “Karten zum Stichwort …” chip feeds the same
+keyword filter my change widened, so a place name now also reaches records whose
+collection or imprint names it (the chip and the box share `matchesQuery`). That re-proves the older records' links too, not only the new
 ones, and replaces the ad-hoc 266-URL probe of 7-14 with a committed script.
 
 **3. Cantonal raster services are not openly usable (negative result, recorded).**
@@ -142,11 +179,14 @@ Recorded so the next iteration does not repeat the probe.
 1. More SRU vocabulary is still cheap (`dc.title=Situationsplan`, `dc.title=Grundriss`,
    `dc.title=Plan and dc.subject=Winterthur`) — each new query must keep the canton
    window gate and the per-decade spread.
-2. The 1919 “Stadtplan von Winterthur vom Jahre 1755” is a reproduction: the
+2. Winterthur has 39 `dc.title=Karte` keyword hits that no query collects yet — the
+   canton window admits them (Winterthur is in the canton), so a fourth set is the
+   natural next step if more cantonal coverage is wanted.
+3. The 1919 “Stadtplan von Winterthur vom Jahre 1755” is a reproduction: the
    catalogue states `dc:date` 1919 **and** 1755, and the title names the depicted year.
    A title-anchored “vom Jahre YYYY” rule would fill `depictedYear*` for exactly one
    record today, so it was not worth a parser; noted instead of guessed.
-3. Library of Congress stays a list-only idea (no coordinates in its JSON API).
+4. Library of Congress stays a list-only idea (no coordinates in its JSON API).
 
 ## Iteration 7-14 (2026-10-18, ~23:2x–24:1x UTC) — SRU discovery, 98 records, shelfmarks
 

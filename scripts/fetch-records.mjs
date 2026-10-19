@@ -797,26 +797,48 @@ const SRU_SEARCHES = {
     candidateCap: 40,
     recordCap: 16,
   },
+  zurichCityPlans: {
+    id: 'zurich-stadtplaene',
+    name: 'Grundrisse und Situationspläne der Stadt Zürich',
+    // “Grundriss” is the catalogue's word for the city ground plans (1696, 1705,
+    // 1800, 1838 …) and “Situationsplan” for the site plans; both are queried with
+    // the Zürich keyword. `dc.title=Grundriss` alone also answers lake and forest
+    // plans (Murten, Schwamendingen, Bischofszell, a cantonal hospital farm) — all
+    // of them are either outside the canton window or fail the extent gate.
+    queries: ['dc.title=Grundriss and dc.subject=Zürich', 'dc.title=Situationsplan and dc.subject=Zürich'],
+    rule:
+      'same gates as the other SRU sets, the centre of the stated extent must lie inside the ' +
+      'canton window, one entry per title and year, oldest first with at most three records per ' +
+      'publication decade — a third set on purpose: a 1705 fortress plan and a 1838 city plan are ' +
+      'the same kind of “small area, one sheet” object and would otherwise displace each other ' +
+      'inside one decade of a single set',
+    candidateCap: 45,
+    recordCap: 14,
+  },
 };
 
 async function main() {
-  const [zuz, land, geneva, muse, planHits, karteHits, regionHitLists, zurichWindow] = await Promise.all([
-    oaiRecords('zuz', 32),
-    oaiRecords('landkarten', 12),
-    oaiRecords('cartesgeneve', 6),
-    oaiRecords('museecarto', 6),
-    sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
-    sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
-    Promise.all(SRU_SEARCHES.zurichRegion.queries.map((cql) => sruSearch(cql, 100))),
-    zurichCantonWindow(),
-  ]);
+  const [zuz, land, geneva, muse, planHits, karteHits, regionHitLists, cityHitLists, zurichWindow] =
+    await Promise.all([
+      oaiRecords('zuz', 32),
+      oaiRecords('landkarten', 12),
+      oaiRecords('cartesgeneve', 6),
+      oaiRecords('museecarto', 6),
+      sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
+      sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
+      Promise.all(SRU_SEARCHES.zurichRegion.queries.map((cql) => sruSearch(cql, 100))),
+      Promise.all(SRU_SEARCHES.zurichCityPlans.queries.map((cql) => sruSearch(cql, 100))),
+      zurichCantonWindow(),
+    ]);
   const regionHits = regionHitLists.flat();
+  const cityHits = cityHitLists.flat();
   console.log(
     `OAI: ${zuz.length} ZB records, ${land.length} landkarten, ${geneva.length} cartesgeneve, ${muse.length} museecarto`,
   );
   console.log(
     `SRU: ${planHits.length} + ${karteHits.length} Zürich plan hits, ${regionHits.length} region hits ` +
-      `(${SRU_SEARCHES.zurichRegion.queries.length} queries); canton window ` +
+      `(${SRU_SEARCHES.zurichRegion.queries.length} queries), ${cityHits.length} city-plan hits ` +
+      `(${SRU_SEARCHES.zurichCityPlans.queries.length} queries); canton window ` +
       (zurichWindow ? JSON.stringify(zurichWindow) : 'UNAVAILABLE (set skipped)'),
   );
 
@@ -913,15 +935,38 @@ async function main() {
   // OAI sets (unsorted ingest order) do not surface, and every hit is then built
   // from its OAI record and IIIF manifest like any other record.
   const sruSeen = new Set([...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords].map((r) => r.id));
-  const sruCandidates = [];
-  for (const hit of [...planHits, ...karteHits]) {
-    const id = `e-rara:${hit.titleId}`;
-    if (sruSeen.has(id)) continue;
-    if (!hit.isMap || !hit.year || !hit.coordinates) continue;
-    sruSeen.add(id);
-    sruCandidates.push(hit);
+  /**
+   * Candidate order: oldest first, and for the same year the copy the
+   * Zentralbibliothek Zürich holds (`zuz`, the canton's central library the
+   * design reference belongs to) before the ETH-Bibliothek copy, then the lowest
+   * catalogue id. The catalogue often lists the same sheet in several corpora, so
+   * without this rule the surviving duplicate would be whichever the search
+   * happened to return first — an arbitrary outcome, not a documented one.
+   */
+  const byYearThenCantonLibrary = (a, b) =>
+    a.year - b.year ||
+    (a.corpus === 'zuz' ? 0 : 1) - (b.corpus === 'zuz' ? 0 : 1) ||
+    String(a.titleId).localeCompare(String(b.titleId));
+
+  /**
+   * Candidates for one SRU set: the gates that are answered by the search result
+   * itself (map genre, stated year, stated MODS coordinates) and "not already
+   * considered by an earlier set" — a candidate without them never costs a
+   * manifest request.
+   */
+  function collectSruCandidates(hits) {
+    const list = [];
+    for (const hit of hits) {
+      const id = `e-rara:${hit.titleId}`;
+      if (sruSeen.has(id)) continue;
+      if (!hit.isMap || !hit.year || !hit.coordinates) continue;
+      sruSeen.add(id);
+      list.push(hit);
+    }
+    return list.sort(byYearThenCantonLibrary);
   }
-  sruCandidates.sort((a, b) => a.year - b.year);
+
+  const sruCandidates = collectSruCandidates([...planHits, ...karteHits]);
   const zurichPlanHits = zurichWindow
     ? await pool(sruCandidates.slice(0, SRU_SEARCHES.zurichPlans.candidateCap), 3, (c) =>
         sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichPlans.name, maxYear: 1930 }),
@@ -934,63 +979,74 @@ async function main() {
     r.geo?.lon <= zurichWindow.east &&
     r.geo?.lat >= zurichWindow.south &&
     r.geo?.lat <= zurichWindow.north;
-  // One entry per title and year (duplicate copies of the same edition), oldest first.
+
+  // One entry per title and year across *all* SRU sets: the catalogue often holds
+  // the same edition in several corpora, and a sheet two searches find is kept once.
   const planSeen = new Set();
-  const zurichPlanRecords = [];
-  for (const r of zurichPlanHits
-    .filter(Boolean)
-    .filter((r) => r.extent && inZurich(r))
-    .sort((a, b) => a.yearStart - b.yearStart)) {
-    const key = `${r.title}|${r.yearStart}`;
-    if (planSeen.has(key)) continue;
-    planSeen.add(key);
-    zurichPlanRecords.push(r);
-    if (zurichPlanRecords.length >= SRU_SEARCHES.zurichPlans.recordCap) break;
+
+  /**
+   * Shared selection for every SRU set: oldest first, one entry per title and
+   * year, optionally at most `perDecade` records per publication decade (so one
+   * productive decade cannot crowd the rest of the range out of the selection).
+   */
+  function selectSru(pooled, { cap, perDecade = 0, label }) {
+    const chosen = [];
+    const decades = new Map();
+    for (const r of pooled
+      .filter(Boolean)
+      .filter((r) => r.extent && inZurich(r))
+      .sort((a, b) => a.yearStart - b.yearStart)) {
+      const key = `${r.title}|${r.yearStart}`;
+      if (planSeen.has(key)) continue;
+      const decade = Math.floor(r.yearStart / 10) * 10;
+      if (perDecade && (decades.get(decade) || 0) >= perDecade) continue;
+      planSeen.add(key);
+      decades.set(decade, (decades.get(decade) || 0) + 1);
+      chosen.push(r);
+      if (chosen.length >= cap) break;
+    }
+    console.log(`SRU kept ${chosen.length} ${label}`);
+    return chosen;
   }
-  console.log(`SRU kept ${zurichPlanRecords.length} Zürich plans of ${sruCandidates.length} candidates`);
+
+  const zurichPlanRecords = selectSru(zurichPlanHits, {
+    cap: SRU_SEARCHES.zurichPlans.recordCap,
+    label: `Zürich plans of ${sruCandidates.length} candidates`,
+  });
 
   // --- SRU-discovered Zürich region (Umgebung, Stadtplan, Zürichsee) --------
   // Same discovery path as the plans, with the vocabulary of the surrounding area.
   // The canton window and the title/year dedupe are shared with the plan set, so a
   // sheet that both searches find is kept once (and an off-topic keyword hit such as
   // a map of Riga that happens to be tagged “Stadtplan … Zürich” cannot slip in).
-  const regionCandidates = [];
-  for (const hit of regionHits) {
-    const id = `e-rara:${hit.titleId}`;
-    if (sruSeen.has(id)) continue;
-    if (!hit.isMap || !hit.year || !hit.coordinates) continue;
-    sruSeen.add(id);
-    regionCandidates.push(hit);
-  }
-  regionCandidates.sort((a, b) => a.year - b.year);
+  const regionCandidates = collectSruCandidates(regionHits);
   const zurichRegionHits = zurichWindow
     ? await pool(regionCandidates.slice(0, SRU_SEARCHES.zurichRegion.candidateCap), 3, (c) =>
         sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichRegion.name, maxYear: 1930 }),
       )
     : [];
-  const zurichRegionRecords = [];
   // “Umgebung”/“Zürichsee” material clusters in a few decades (Zürich's city
-  // surveys of the 1880s–1900s). Keeping the oldest 16 would therefore push the
-  // 20th century out of the selection again, so the rule is deterministic but
-  // spread: oldest first, at most three records per publication decade.
-  const perDecade = new Map();
-  for (const r of zurichRegionHits
-    .filter(Boolean)
-    .filter((r) => r.extent && inZurich(r))
-    .sort((a, b) => a.yearStart - b.yearStart)) {
-    const key = `${r.title}|${r.yearStart}`;
-    if (planSeen.has(key)) continue;
-    const decade = Math.floor(r.yearStart / 10) * 10;
-    if ((perDecade.get(decade) || 0) >= 3) continue;
-    planSeen.add(key);
-    perDecade.set(decade, (perDecade.get(decade) || 0) + 1);
-    zurichRegionRecords.push(r);
-    if (zurichRegionRecords.length >= SRU_SEARCHES.zurichRegion.recordCap) break;
-  }
-  console.log(
-    `SRU kept ${zurichRegionRecords.length} Zürich region records of ${regionCandidates.length} candidates` +
-      (unstatedInstitution.length ? `; ${unstatedInstitution.length} dropped for an unstated library` : ''),
-  );
+  // surveys of the 1880s–1900s), so the selection spreads: three per decade.
+  const zurichRegionRecords = selectSru(zurichRegionHits, {
+    cap: SRU_SEARCHES.zurichRegion.recordCap,
+    perDecade: 3,
+    label:
+      `Zürich region records of ${regionCandidates.length} candidates` +
+      (unstatedInstitution.length ? ` (${unstatedInstitution.length} dropped for an unstated library)` : ''),
+  });
+
+  // --- SRU-discovered city ground plans and site plans ----------------------
+  const cityCandidates = collectSruCandidates(cityHits);
+  const zurichCityHits = zurichWindow
+    ? await pool(cityCandidates.slice(0, SRU_SEARCHES.zurichCityPlans.candidateCap), 3, (c) =>
+        sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.zurichCityPlans.name, maxYear: 1930 }),
+      )
+    : [];
+  const zurichCityRecords = selectSru(zurichCityHits, {
+    cap: SRU_SEARCHES.zurichCityPlans.recordCap,
+    perDecade: 3,
+    label: `Zürich city-plan records of ${cityCandidates.length} candidates`,
+  });
 
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
@@ -1001,6 +1057,7 @@ async function main() {
     ...museRecords,
     ...zurichPlanRecords,
     ...zurichRegionRecords,
+    ...zurichCityRecords,
     ...overlays,
   ].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
@@ -1065,6 +1122,17 @@ async function main() {
             note:
               `SRU/CQL discovery (${SRU_SEARCHES.zurichPlans.queries.join(' | ')}): ` +
               `${sruCandidates.length} candidates with a stated extent, ${zurichPlanRecords.length} records kept`,
+          },
+          {
+            id: SRU_SEARCHES.zurichCityPlans.id,
+            name: SRU_SEARCHES.zurichCityPlans.name,
+            // An actual harvested record from this search, not a guessed page.
+            record: zurichCityRecords[0]?.recordUrl ?? SRU_SEARCHES.zurichCityPlans.queries[0],
+            discovery: SRU_SEARCHES.zurichCityPlans.queries.map((q) => sruUrl(q)).join(' | '),
+            note:
+              `SRU/CQL discovery (${SRU_SEARCHES.zurichCityPlans.queries.join(' | ')}): ` +
+              `${cityCandidates.length} candidates with a stated extent, ` +
+              `${zurichCityRecords.length} records kept`,
           },
           {
             id: SRU_SEARCHES.zurichRegion.id,
@@ -1177,7 +1245,7 @@ async function main() {
       'Presentation 2.0 manifest per title for ' +
       'verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
       'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 ' +
-      '(CQL via dc.title/dc.subject) for the Zürich plan and Zürich-region material the sorted OAI paging does not reach, each hit ' +
+      '(CQL via dc.title/dc.subject) for the Zürich plan, Zürich-region and Zürich city-plan material the sorted OAI paging does not reach, each hit ' +
       'confirmed by OAI GetRecord and its manifest, and only kept when the centre of its stated extent lies inside the canton ' +
       'of Zürich\'s window; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
       'editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is ' +
@@ -1224,6 +1292,16 @@ async function main() {
           'the centre of the record\'s own stated extent must lie inside it',
         rule: SRU_SEARCHES.zurichRegion.rule,
       },
+      'e-rara:sru-zurich-city-plans': {
+        queries: SRU_SEARCHES.zurichCityPlans.queries,
+        considered: cityCandidates.length,
+        kept: zurichCityRecords.length,
+        cantonWindow: zurichWindow,
+        cantonWindowSource:
+          'swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): ' +
+          'the centre of the record\'s own stated extent must lie inside it',
+        rule: SRU_SEARCHES.zurichCityPlans.rule,
+      },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
         kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length,
@@ -1266,6 +1344,7 @@ async function main() {
   console.log(
     `Built ${zbRecords.length} ZB maps, ${ethRecords.length} landkarten, ${geneveRecords.length} Genf, ${museRecords.length} Weltkarten, ` +
       `${zurichPlanRecords.length} Zürich plans, ${zurichRegionRecords.length} Zürich region, ` +
+      `${zurichCityRecords.length} Zürich city plans, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +

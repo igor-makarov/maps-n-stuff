@@ -101,21 +101,24 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 109 records (82 e-rara maps — 26 ZB Zürich
+Known limitations: the seed set holds 119 records (92 e-rara maps — 26 ZB Zürich
 Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 18 Zürich plans and
 canton maps found through the catalogue's SRU search (1852 “Plan der Stadt Zürich
 nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 canton maps),
 11 further Zürich-region maps from three more SRU questions (18th-century lake
 prospects, the 1875–1881 Übersichtspläne, the 1896 Zürichsee map, 1908/1919
-sheets), 1 map from the Bibliothèque de Genève — plus 27 georeferenced swisstopo
-overlay editions; the UI states the real count and `records.json.selection`
+sheets) and 10 city ground and site plans (the 1696/1705 fortress plans, the 1800
+and 1838 city plans, the 1881 quay and 1890 tramway situations), 1 map from the
+Bibliothèque de Genève — plus 27 georeferenced swisstopo overlay editions; the UI
+states the real count and `records.json.selection`
 documents the rule per set, including the `museecarto` set that is probed but
 yields no record because its manifests state no extent, the SRU sets whose
 candidates must have the centre of their stated extent inside the canton of
-Zürich's bounding box as swisstopo's gazetteer states it, and the rule that a
+Zürich's bounding box as swisstopo's gazetteer states it, the documented tie-break
+that prefers the Zentralbibliothek Zürich copy of a sheet, and the rule that a
 record whose holding library is stated by neither the manifest nor the catalogue
 corpus is dropped and listed in `skipped` instead of being attributed.
-One of the records is a 33-sheet digitised canton map, so the viewer's sheet strip
+One of the records is a 35-sheet digitised canton map, so the viewer's sheet strip
 can now hold many sheets. The map
 implementation in `public/app/map.js` is our own; no third-party map library is
 bundled. Without network access the tiles
