@@ -1395,6 +1395,87 @@ try {
     `${compareClosed ? 'closed' : 'still open'} -> ${JSON.stringify(sharedCompare)}`,
   );
 
+  /* --- 8c3. the cut-outs are shareable state of their own (cvv) --------- */
+  const comparePaneSelector = '#compare-view-body .app-viewer__image';
+  const readyPanes = `(() => {
+    const panes = [...document.querySelectorAll('#compare-view-body .app-compare__pane')];
+    return panes.length === 2 && panes.every((pane) => pane.querySelector('[data-compare-stage]')?.dataset.state === 'ready');
+  })()`;
+  const resetButtons = `[...document.querySelectorAll('#compare-view-body [data-compare-reset]')].map((button) => ({ text: button.textContent, disabled: button.disabled }))`;
+  await cdp.click('#compare-open');
+  await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view from a shared list', timeout: 10_000 });
+  await cdp.waitFor(readyPanes, { label: 'panes ready for the cut-out check', timeout: 60_000 }).catch(() => null);
+
+  const resetBefore = await cdp.eval(resetButtons);
+  const paneOneBefore = await cdp.eval(`document.querySelectorAll('${comparePaneSelector}')[0]?.src || ''`);
+  await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+  await cdp.pressKey('+', { keyCode: 187 });
+  await cdp.pressKey('+', { keyCode: 187 });
+  const zoomedPane = await waitForComparePane(
+    0,
+    `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout) && pane.src !== ${JSON.stringify(paneOneBefore)}`,
+    40_000,
+  ).catch(() => null);
+  // The viewer reports its region debounced (400 ms), and the URL write after it.
+  const cutout = await cdp
+    .waitFor(
+      `(() => {
+        const value = new URLSearchParams(location.search).get('cvv') || '';
+        const img = document.querySelectorAll('${comparePaneSelector}')[0];
+        const region = (img?.src || '').split('/').find((part) => /^\\d+,\\d+,\\d+,\\d+$/.test(part)) || '';
+        return value && region ? { value, region, readout: document.querySelectorAll('[data-compare-readout]')[0]?.textContent || '' } : null;
+      })()`,
+      { label: 'the pane cut-out lands in cvv', timeout: 10_000 },
+    )
+    .catch(() => null);
+  check(
+    'zooming a comparison pane writes that pane’s own cut-out as shareable state (cvv)',
+    resetBefore.length === 2 &&
+      resetBefore.every((button) => button.disabled && /Ganzes Blatt/.test(button.text)) &&
+      Boolean(cutout) &&
+      (cutout?.value ?? '').split(';').includes(`${pinnedIds[0]}@${cutout?.region}`),
+    `reset buttons ${JSON.stringify(resetBefore)} · cvv "${cutout?.value ?? 'none'}" vs its own request ${cutout?.region ?? 'none'} (${zoomedPane?.readout ?? 'no readout'})`,
+  );
+
+  await cdp.click('#compare-view-body [data-compare-reset="0"]');
+  const afterReset = await cdp
+    .waitFor(
+      `(() => {
+        const readouts = [...document.querySelectorAll('[data-compare-readout]')].map((node) => node.textContent || '');
+        const buttons = ${resetButtons};
+        const cvv = new URLSearchParams(location.search).get('cvv') || '';
+        return readouts.length === 2 && readouts.every((text) => /Gesamtansicht/.test(text)) && cvv === '' && buttons.every((button) => button.disabled)
+          ? { readouts, cvv, disabled: buttons.map((button) => button.disabled) }
+          : null;
+      })()`,
+      { label: 'panes back on the whole sheet', timeout: 20_000 },
+    )
+    .catch(() => null);
+  check(
+    'each comparison pane can go back to the whole sheet, and the link drops the cut-out',
+    Boolean(afterReset),
+    afterReset ? `${afterReset.readouts[0]} · cvv "${afterReset.cvv}" · disabled ${JSON.stringify(afterReset.disabled)}` : 'the panes stayed on a cut-out',
+  );
+
+  const sharedCutout = cutout?.value ?? '';
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(pinnedIds.join(','))}&cvv=${encodeURIComponent(sharedCutout)}` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'shared cut-out link' });
+  await sleep(500);
+  await cdp.click('#compare-open');
+  await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view for the shared cut-out', timeout: 10_000 });
+  const restoredOwn = await waitForComparePane(0, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+  const restoredOther = await waitForComparePane(1, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+  const restoredUrl = await cdp.eval(`new URLSearchParams(location.search).get('cvv') || ''`);
+  await cdp.screenshot(path.join(OUT_DIR, '11c-compare-cutout.png')).then(() => report.screenshots.push('11c-compare-cutout.png'));
+  check(
+    'a shared comparison link reopens that cut-out in its own pane and, coupled, in the other',
+    Boolean(restoredOwn && restoredOther) &&
+      restoredOwn.src.includes(`${cutout?.region}`) &&
+      restoredUrl.includes(`${pinnedIds[0]}@${cutout?.region}`) &&
+      restoredUrl.includes(`${pinnedIds[1]}@`),
+    `pane 1 ${restoredOwn?.readout ?? 'no cut-out'} · pane 2 ${restoredOther?.readout ?? 'no cut-out'} · link cvv "${restoredUrl}"`,
+  );
+
   /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
   const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
   if (multiSheet) {
@@ -3130,6 +3211,39 @@ try {
     'a search without any match says so instead of listing noise',
     Boolean(keywordEmpty) && !/Failed to fetch|undefined|null/.test(keywordEmpty),
     `"${String(keywordEmpty).slice(0, 120)}"`,
+  );
+
+  // The spelling a Swiss keyboard produces has to find the catalogue's
+  // spelling: before 2026-10-19 “Zuerich” returned an empty list while
+  // “Zürich” returned the whole canton (folding in records.js, maps-2). The
+  // three spellings must agree exactly — same rows, same count line — and the
+  // keyword box is left empty for the sections that follow.
+  const spelling = await cdp.eval(`(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const box = document.querySelector('#text-filter');
+    const type = async (value) => {
+      box.focus();
+      box.value = value;
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+      await sleep(700);
+      return { rows: document.querySelectorAll('#result-list > *').length, count: document.querySelector('#result-count')?.textContent || '' };
+    };
+    const umlaut = await type('Zürich');
+    const digraph = await type('Zuerich');
+    const plain = await type('Zurich');
+    box.value = '';
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(500);
+    return { umlaut, digraph, plain, cleared: document.querySelectorAll('#result-list > *').length };
+  })()`);
+  check(
+    '“Zuerich”, “Zurich” and “Zürich” find the same records (umlaut folding)',
+    spelling.umlaut.rows > 0 &&
+      spelling.digraph.rows === spelling.umlaut.rows &&
+      spelling.plain.rows === spelling.umlaut.rows &&
+      /^Zuerich$/i.test((spelling.digraph.count.match(/„(.+?)“/) || [])[1] || '') &&
+      spelling.cleared > spelling.umlaut.rows,
+    `${spelling.umlaut.rows} / ${spelling.digraph.rows} / ${spelling.plain.rows} rows · cleared ${spelling.cleared}`,
   );
 
   /* --- 8q. Grundkarte (base map): farbig / grau / Luftbild -------------- */

@@ -107,13 +107,62 @@ export function titleText(record) {
     .toLowerCase();
 }
 
+/**
+ * Fold one spelling of a name onto the other so the box finds both.
+ *
+ * Swiss names are written with or without diacritics, and the German
+ * transcription of an umlaut is what most keyboards produce: a visitor types
+ * “Zuerich”, “Zurich” or “Zürich”, and the catalogue says whichever it says.
+ * Two foldings are needed, because neither is a superset of the other:
+ *
+ *   foldDigraph('Zürich')  -> 'zuerich'   (ä→ae, ö→oe, ü→ue, ß→ss)
+ *   foldPlain('Zürich')    -> 'zurich'    (diacritics dropped)
+ *   foldPlain('Zuerich')   -> 'zuerich'   (the typed “ue” is literal)
+ *
+ * A token matches when it matches in *either* folding: “Zuerich” finds
+ * “Zürich” through the digraph form, “Zurich” finds it through the plain
+ * form, and “Genève” ↔ “Geneve” works through the plain form too. Anything
+ * else the catalogue states about a record keeps matching exactly as before.
+ */
+export function foldDigraph(text) {
+  return String(text ?? '')
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss');
+}
+
+export function foldPlain(text) {
+  return String(text ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}+/gu, '');
+}
+
+const foldedTextCache = new WeakMap();
+
+/** The two folded spellings of a record's searchable text (computed once). */
+function foldedText(record) {
+  let entry = foldedTextCache.get(record);
+  if (!entry) {
+    const text = titleText(record);
+    entry = { digraph: foldPlain(foldDigraph(text)), plain: foldPlain(text) };
+    foldedTextCache.set(record, entry);
+  }
+  return entry;
+}
+
 export function matchesQuery(record, query) {
-  const needle = String(query || '').trim().toLowerCase();
+  const needle = String(query || '').trim();
   if (!needle) return true;
-  const haystack = titleText(record);
+  const haystack = foldedText(record);
   return needle
     .split(/\s+/)
-    .every((token) => haystack.includes(token));
+    .every((token) => {
+      const digraph = foldPlain(foldDigraph(token));
+      return digraph.length > 0 && (haystack.digraph.includes(digraph) || haystack.plain.includes(foldPlain(token)));
+    });
 }
 
 export function overlapsRange(record, from, to) {

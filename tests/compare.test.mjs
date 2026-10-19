@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { PARAM, STATE_DEFAULTS, readStateFromUrl, sanitise, stateToQuery } from '../public/app/store.js';
+import { formatCompareViews, parseCompareViews } from '../public/app/iiif.js';
 
 test('cmp keeps real record ids (provider:value) intact', () => {
   const ids = ['e-rara:6507640', 'swisstopo:zeitreise-18441231'];
@@ -37,6 +38,45 @@ test('cmp round-trips through the shareable URL', () => {
 test('an empty compare list stays out of the URL', () => {
   assert.equal(new URLSearchParams(stateToQuery(STATE_DEFAULTS)).has(PARAM.cmp), false);
   assert.equal(readStateFromUrl('?cmp=').cmp, '');
+});
+
+/**
+ * `cvv` carries the cut-outs of the comparison panes (`id@x,y,w,h`, maps-3).
+ * It is hand-editable like every other parameter and must agree with the codec
+ * the comparison view writes (`formatCompareViews`/`parseCompareViews`).
+ */
+test('cvv keeps one region per pinned record and drops everything else', () => {
+  const good = 'e-rara:8602401@1160,2395,1487,824;e-rara:8751735@10,20,30,40';
+  const state = sanitise({ ...STATE_DEFAULTS, cvv: good });
+  assert.equal(state.cvv, good, 'real ids and regions survive sanitising');
+  assert.equal(state.cvv, formatCompareViews([...parseCompareViews(good)]), 'the store keeps exactly what the codec writes');
+
+  const junk = sanitise({
+    ...STATE_DEFAULTS,
+    cvv: '<img src=x onerror=1>@1,2,3,4;;  ,@1,2,3,4;e-rara:1@-1,2,3,4;e-rara:1@1,2,3,4,5;e-rara:2@1,2,3,4',
+  });
+  assert.equal(junk.cvv, 'e-rara:2@1,2,3,4');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, cvv: 'e-rara:1@' }).cvv, '');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, cvv: ['e-rara:1', '1,2,3,4'] }).cvv, '', 'an array never becomes a region list');
+});
+
+test('cvv keeps at most the four comparison panes and round-trips through the URL', () => {
+  const many = Array.from({ length: 7 }, (_, i) => `e-rara:${i + 1}@${i + 1},20,30,40`).join(';');
+  const state = sanitise({ ...STATE_DEFAULTS, cvv: many });
+  assert.equal(state.cvv.split(';').length, 4);
+
+  const query = stateToQuery({ ...STATE_DEFAULTS, cmp: 'e-rara:1,e-rara:2', cvv: 'e-rara:1@10,20,30,40;e-rara:2@50,60,70,80' });
+  assert.equal(new URLSearchParams(query).get(PARAM.cvv), 'e-rara:1@10,20,30,40;e-rara:2@50,60,70,80');
+  assert.equal(readStateFromUrl(`?${query}`).cvv, 'e-rara:1@10,20,30,40;e-rara:2@50,60,70,80');
+  assert.equal(new URLSearchParams(stateToQuery(STATE_DEFAULTS)).has(PARAM.cvv), false, 'no cut-outs, no parameter');
+  assert.equal(readStateFromUrl('?cvv=').cvv, '');
+});
+
+test('the comparison view restores, writes back and resets its cut-outs', async () => {
+  const source = await readFile(new URL('../public/app/compare.js', import.meta.url), 'utf8');
+  assert.match(source, /parseCompareViews\(ctx\.store\.getState\(\)\.cvv\)/, "each pane restores the link's cut-out");
+  assert.match(source, /update\(\{ cvv: value \}\)/, 'a view change is written back as the shareable cvv value');
+  assert.match(source, /'data-compare-reset'/, 'each viewer pane carries its own “Ganzes Blatt” reset');
 });
 
 test('the compare module is wired into the shell as an optional module', async () => {

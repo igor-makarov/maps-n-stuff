@@ -45,7 +45,7 @@ New harness check “the phone lead ends as a complete sentence at 390 and 320 p
 (short variant visible, long one hidden, `scrollHeight === clientHeight`, text
 ends on a full stop, no overflow). Harness: **139 checks**.
 
-### 2. Tooling repair (D7): an upstream outage is evidence, not a failure
+### 2. Tooling repair (D8): an upstream outage is evidence, not a failure
 
 The first full harness run of this iteration was **138/139**: the only failure
 was the console-hygiene check, with 42 browser log entries
@@ -57,7 +57,7 @@ retries, the run book documents them). The app had degraded exactly as designed
 `net::ERR_(CONNECTION|NAME|TIMED_OUT|…)_` entries for **external** origins into
 `report.upstreamConsoleErrors` (kept as evidence, printed as an ℹ line), while
 our own origin, our own exceptions and the deliberate `ERR_BLOCKED_BY_CLIENT`
-assertions still fail. Recorded as decision **D7** in `coordination/README.md`;
+assertions still fail. Recorded as decision **D8** in `coordination/README.md` (maps-3 had already claimed D7 for the comparison panes’ shareable cut-outs, which is why this is D8);
 `docs/run.md` troubleshooting has the reader-facing version. Re-run: **139/139**.
 
 ### 3. Evidence (this runner, 2026-10-19)
@@ -67,7 +67,7 @@ assertions still fail. Recorded as decision **D7** in `coordination/README.md`;
 - `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **139/139**
   (first run 138/139, failure explained above; screenshots + `report.json`).
 - `README.md`, `docs/design-system.md`, `docs/run.md` describe the phone lead
-  variant and the D7 classification; the Cloudflare build settings section is
+  variant and the D8 classification; the Cloudflare build settings section is
   unchanged and still current.
 - Scratch probe (not committed): `/tmp/measure-phone.mjs`.
 
