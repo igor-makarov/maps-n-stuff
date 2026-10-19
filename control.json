@@ -22,7 +22,12 @@
   },
   "checkpointSeconds": 0,
   "checkpointPaths": [],
-  "owner": null,
+  "owner": {
+    "runId": "39213558498",
+    "generation": 8,
+    "iteration": 135,
+    "claimedAt": "2026-10-19T07:03:54.643Z"
+  },
   "deadline": null,
   "seconds": 1800,
   "waitSeconds": 0,
