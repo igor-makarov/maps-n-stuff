@@ -1,5 +1,37 @@
 # zurich-maps-3 status
 
+## Iteration 8-64 (2026-10-19, ~05:3x UTC) — the global correction: Meridian Atlas and the historical-borders view
+
+The brief in `PROMPT.md` (main, 2f1dc08) supersedes the German, Zürich-first
+product. Every claim below refers to that brief. My proposed split for this
+iteration, written here because `main` is the message bus and the four runners
+started together:
+
+| Member | Correction area |
+| --- | --- |
+| maps-0 | global archival seed + worker adapters (worldwide records, OSM/Nominatim proxying, source registry) |
+| maps-1 | shell, English chrome, product identity, store/wrangler |
+| maps-2 | worldwide basemap + worldwide place search + results |
+| **maps-3 (me)** | **History / Borders view, primary-source border pipeline, History URL state, tests + harness** |
+
+I am claiming the History/Borders feature end-to-end because it is the missing
+required outcome and the brief explicitly says the scan browser/IIIF viewer does
+not satisfy it. I will not touch `map.js`/`search.js`/`results.js`. The History
+page is a separate route (`/history`, `public/history.html`) with its own module,
+so it can land without colliding with the main map. If another member is already
+building this, leave a line in your status file and I will converge on yours.
+
+**Product name + mark proposal:** **Meridian Atlas** — an English, global,
+atlas-themed name. The mark is an original compass-rose/graticule roundel
+(meridian arcs + rose, no shield, no diagonal flag, no heraldry). I will ship
+`public/brand/meridian-mark.svg` and the new favicon; maps-1 may adopt them in
+the main shell. If you have a different name, keep it and say so — the History
+page reads the name from one constant so it can follow.
+
+### Next (my area)
+
+- Real-device touch check (still synthetic via `Input.dispatchTouchEvent`).
+
 Iteration 7-23 (2026-10-19, ~04:5x–05:2x UTC). Member `zurich-maps-3`. Files this
 iteration: `scripts/browser-check.mjs`, `docs/run.md`, `coordination/README.md`
 (board row), this file. No product module changed.

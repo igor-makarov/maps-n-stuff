@@ -1,5 +1,59 @@
 # zurich-maps-2 status
 
+Iteration 8-69 (2026-10-19, ~05:3x UTC onward). Member `zurich-maps-2` (map, search,
+results). **Lane claimed on the bus (D14): the historical-borders map (pipeline +
+renderer) and the global basemap + worldwide place search.**
+
+## Claim, first (so nobody builds it twice)
+
+The brief's redirect (main `2f1dc08`) turns the product into a **global English
+historical atlas**. My lane for this iteration, written into `coordination/README.md`
+as D14:
+
+1. **Historical borders (the missing feature).** A reproducible pipeline
+   (`scripts/fetch-history.mjs`) that fetches **aourednik/historical-basemaps**
+   GeoJSON snapshots at a pinned upstream revision, simplifies them for
+   world/continent scale, and bundles them under `public/data/history/` with an
+   index that records upstream revision, licence (GPL-3.0), available years,
+   feature counts, precision classes and the simplification actually applied.
+   Plus the renderer (`public/app/history.js`): a world map whose **actual
+   territorial polygons change with the year control**, polity labels, clickable
+   details with source information, honest “nearest snapshot” reporting and
+   honest gaps — separate from raster scans and from modern basemap borders.
+1b. **Convergence with maps-3 (`1c56218`).** maps-3 claimed the History view
+   end-to-end (its own route + renderer + History URL state). I accept that and
+   take the **data half**, which is the part their renderer needs and which I have
+   already measured: `scripts/fetch-history.mjs` writes `public/data/history/index.json`
+   plus one `world_<year>.json` per snapshot, with the upstream revision, licence,
+   available years, per-year feature counts, precision classes and the
+   simplification actually applied recorded in the index. **Frozen schema for the
+   renderer** (maps-3 may consume it directly):
+
+   ```jsonc
+   // public/data/history/index.json
+   { "source": {...upstream, licence, revision, retrievedAt, method...},
+     "years": [ { "year": 1492, "ce": 1492, "file": "world_1492.json",
+                  "features": 1480, "points": 28392, "toleranceDeg": 0.08,
+                  "precision": {"1": 900, "2": 300, "3": 280}, "bbox": [w,s,e,n] } ],
+     "excluded": [ { "year": -123000, "reason": "..." } ] }
+   // public/data/history/world_<year>.json  (year<0 = BCE, plain negative number)
+   { "year": 1492, "features": [ { "n": "Spain", "s": "Spain", "p": null, "b": 2,
+                                   "r": [[lon100,lat100,lon100,lat100, ...], ...] } ] }
+   ```
+
+   Coordinates are integers in hundredths of a degree (signed; longitude first),
+   rings closed implicitly, several rings per feature = MultiPolygon. Field
+   meanings: `n` NAME, `s` SUBJECTO (the colour/authority key), `p` PARTOF,
+   `b` BORDERPRECISION (1 approximate … 3 international law).
+2. **Global basemap + worldwide place search**: the swisstopo-only defaults go;
+   the default view is the world, the basemap is global, and place search answers
+   for Cairo, Tokyo, Mexico City, São Paulo … (Nominatim through the Worker's
+   allowlist, with attribution and caching).
+
+Brand name/logo (maps-1), global archival sources (maps-0) and harness/test
+coverage (maps-3) stay with their owners; I will not rename or re-skin the shell.
+
+
 Iteration 7-22 (2026-10-19, ~03:1x–04:xx UTC). Member `zurich-maps-2` (map,
 search, results). Files this iteration: `scripts/browser-check.mjs` (maps-3's —
 three data-caused repairs, flagged below), `public/app/compare.js` and
