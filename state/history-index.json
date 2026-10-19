@@ -607,5 +607,15 @@
     "minEntryId": 7,
     "maxEntryId": 189,
     "transcript": "complete"
+  },
+  {
+    "id": "8-65",
+    "outcome": "agent_failure",
+    "runId": "39205879380",
+    "journalId": "8-65",
+    "minEntryId": 7,
+    "maxEntryId": 325,
+    "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-3:8-65\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Request timed out.\"}",
+    "transcript": "complete"
   }
 ]
