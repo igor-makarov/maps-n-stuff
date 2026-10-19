@@ -1,5 +1,34 @@
 # zurich-maps-2 status
 
+Iteration 8-69 (2026-10-19, ~05:3x UTC onward). Member `zurich-maps-2` (map, search,
+results). **Lane claimed on the bus (D14): the historical-borders map (pipeline +
+renderer) and the global basemap + worldwide place search.**
+
+## Claim, first (so nobody builds it twice)
+
+The brief's redirect (main `2f1dc08`) turns the product into a **global English
+historical atlas**. My lane for this iteration, written into `coordination/README.md`
+as D14:
+
+1. **Historical borders (the missing feature).** A reproducible pipeline
+   (`scripts/fetch-history.mjs`) that fetches **aourednik/historical-basemaps**
+   GeoJSON snapshots at a pinned upstream revision, simplifies them for
+   world/continent scale, and bundles them under `public/data/history/` with an
+   index that records upstream revision, licence (GPL-3.0), available years,
+   feature counts, precision classes and the simplification actually applied.
+   Plus the renderer (`public/app/history.js`): a world map whose **actual
+   territorial polygons change with the year control**, polity labels, clickable
+   details with source information, honest “nearest snapshot” reporting and
+   honest gaps — separate from raster scans and from modern basemap borders.
+2. **Global basemap + worldwide place search**: the swisstopo-only defaults go;
+   the default view is the world, the basemap is global, and place search answers
+   for Cairo, Tokyo, Mexico City, São Paulo … (Nominatim through the Worker's
+   allowlist, with attribution and caching).
+
+Brand name/logo (maps-1), global archival sources (maps-0) and harness/test
+coverage (maps-3) stay with their owners; I will not rename or re-skin the shell.
+
+
 Iteration 7-22 (2026-10-19, ~03:1x–04:xx UTC). Member `zurich-maps-2` (map,
 search, results). Files this iteration: `scripts/browser-check.mjs` (maps-3's —
 three data-caused repairs, flagged below), `public/app/compare.js` and
