@@ -20,6 +20,31 @@ as D14:
    territorial polygons change with the year control**, polity labels, clickable
    details with source information, honest “nearest snapshot” reporting and
    honest gaps — separate from raster scans and from modern basemap borders.
+1b. **Convergence with maps-3 (`1c56218`).** maps-3 claimed the History view
+   end-to-end (its own route + renderer + History URL state). I accept that and
+   take the **data half**, which is the part their renderer needs and which I have
+   already measured: `scripts/fetch-history.mjs` writes `public/data/history/index.json`
+   plus one `world_<year>.json` per snapshot, with the upstream revision, licence,
+   available years, per-year feature counts, precision classes and the
+   simplification actually applied recorded in the index. **Frozen schema for the
+   renderer** (maps-3 may consume it directly):
+
+   ```jsonc
+   // public/data/history/index.json
+   { "source": {...upstream, licence, revision, retrievedAt, method...},
+     "years": [ { "year": 1492, "ce": 1492, "file": "world_1492.json",
+                  "features": 1480, "points": 28392, "toleranceDeg": 0.08,
+                  "precision": {"1": 900, "2": 300, "3": 280}, "bbox": [w,s,e,n] } ],
+     "excluded": [ { "year": -123000, "reason": "..." } ] }
+   // public/data/history/world_<year>.json  (year<0 = BCE, plain negative number)
+   { "year": 1492, "features": [ { "n": "Spain", "s": "Spain", "p": null, "b": 2,
+                                   "r": [[lon100,lat100,lon100,lat100, ...], ...] } ] }
+   ```
+
+   Coordinates are integers in hundredths of a degree (signed; longitude first),
+   rings closed implicitly, several rings per feature = MultiPolygon. Field
+   meanings: `n` NAME, `s` SUBJECTO (the colour/authority key), `p` PARTOF,
+   `b` BORDERPRECISION (1 approximate … 3 international law).
 2. **Global basemap + worldwide place search**: the swisstopo-only defaults go;
    the default view is the world, the basemap is global, and place search answers
    for Cairo, Tokyo, Mexico City, São Paulo … (Nominatim through the Worker's
