@@ -3340,6 +3340,41 @@ try {
       `"${String(searchStatus).slice(0, 150)}" · ${localSuggestions} local suggestions`,
     );
 
+    // The seed itself is one file: when it cannot be fetched, the results area
+    // must say so in plain German, drop its aria-busy flag, stop claiming to
+    // load and keep the raw browser string out of the UI (maps-1, 7-17).
+    await cdp.send('Network.setBlockedURLs', { urls: ['*/data/records.json'] });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+    let seedOutage = null;
+    try {
+      seedOutage = await cdp.waitFor(
+        `(() => {
+          const state = document.querySelector('#results-state');
+          if (!state || state.hidden || !/konnten nicht geladen werden/.test(state.textContent)) return '';
+          return {
+            text: state.textContent.replace(/\\s+/g, ' ').trim(),
+            count: (document.querySelector('#result-count')?.textContent || '').trim(),
+            busy: document.querySelector('#result-list')?.getAttribute('aria-busy') ?? null,
+            loadingHidden: document.querySelector('#results-loading')?.hidden ?? null,
+            rawLeak: /Failed to fetch|NetworkError|undefined|\\.json/.test(state.textContent.replace('/data/records.json', '')),
+          };
+        })()`,
+        { label: 'seed outage state', timeout: 15_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'an unreachable seed says so in plain German and stops claiming to load',
+      Boolean(seedOutage) &&
+        seedOutage.count === 'Bestand nicht geladen' &&
+        seedOutage.busy === 'false' &&
+        seedOutage.loadingHidden === true &&
+        seedOutage.rawLeak === false,
+      JSON.stringify(seedOutage).slice(0, 220),
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '07b-seed-outage.png')).then(() => report.screenshots.push('07b-seed-outage.png'));
+
     // …and the app must recover on its own once the upstream answers again.
     await cdp.send('Network.setBlockedURLs', { urls: [] });
     await cdp.send('Page.navigate', { url: `${BASE_URL}/` });

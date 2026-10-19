@@ -119,6 +119,24 @@
   display: none;
 }
 
+/* Loading state of the results area (markup in index.html, ended by main.js).
+   Cantonal state block with the loading-circle spinner next to the text, so a
+   slow seed does not look like an empty result list. */
+.zh-state--loading {
+  display: flex;
+  gap: var(--zh-size-small-regular);
+  align-items: flex-start;
+  margin-bottom: var(--zh-size-regular);
+}
+
+.zh-state--loading .zh-state__title {
+  margin-bottom: var(--zh-size-mini);
+}
+
+.zh-state--loading .zh-hint {
+  margin-bottom: 0;
+}
+
 .app-toolbar {
   display: flex;
   flex-wrap: wrap;

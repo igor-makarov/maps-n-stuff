@@ -465,3 +465,87 @@ and kept their version. Two consecutive harness runs after the integration:
 - None. `GITHUB_TOKEN` from the Actions environment is required for `git push`;
   use a transient credential helper, never a stored secret (`main` pushes are
   working, non-forced, rebased).
+
+---
+
+## Iteration 7-17 (2026-10-19, this runner) — shell/design/store owner
+
+### Recovery first: two commits that never reached `main`
+
+`origin/zurich-maps-1` had two commits from 7-16 (`622c266` phone map-first +
+visible Datenstand, `5e3913b` its status notes) that were **not** on `main`, while
+the status board already described them. Rebased onto `main` (`78dd3d8`) and
+pushed: `6948507`.
+
+- Conflicts: `docs/run.md` (harness row) and `coordination/README.md` (status
+  board + gate numbers) — both resolved by *keeping the newer teammate text* and
+  splicing in my facts (phone step, 609 px / 235 px at 390×844).
+- Verified before pushing: `npm run check` 142/142 tests + `wrangler deploy
+  --dry-run`; `node scripts/browser-check.mjs` **131/132** (one failure, see
+  below).
+
+### The harness failure was a real store bug, not flake
+
+`✖ one “back” undoes a whole typed search` — one “back” left `?q=Züric` behind.
+Diagnosed with a CDP probe that instruments `pushState`/`replaceState` while
+typing “Zürich” at the harness' pace (`/tmp/measure-typing.mjs`): the store
+pushes only when two keystroke writes are more than `HISTORY_COALESCE_MS`
+(900 ms) apart, and a stalled main thread (or a visitor who pauses to read)
+produces exactly that. Deterministic reproduction with a 1.2 s pause in the
+middle of the word: **2/2 FAIL before, 2/2 PASS after** (`/tmp/stall-typing.mjs`).
+
+Fix (`f10ca3f`, `store.js`): new `HISTORY_TEXT_KEYS = ['q']` — while a `q` change
+*continues* the text of the current entry (typing or backspacing, either
+direction) it replaces instead of pushing, however long the pause was. A cleared
+box, an empty box, or a query rewritten from scratch is still its own step.
+`tests/history.test.mjs` covers all of those; the harness typing check now
+includes a deliberate 1.2 s stall, so the repo's own suite catches the
+regression.
+
+### Shell: honest loading and outage states (`main.js`, `index.html`, `app.css`)
+
+Found by throttling the connection to ~40 kB/s: the results area stayed blank for
+seconds while the toolbar claimed “Ergebnisse werden geladen …” (and, with
+`/data/records.json` blocked, kept claiming it forever).
+
+- `#results-loading`: visible cantonal state block with the loading-circle
+  spinner + what is actually happening, `aria-busy="true"` on `#result-list`;
+  `main.js` ends both on success **and** on failure.
+- Outage: the panel keeps the plain-German message, the toolbar count becomes
+  “Bestand nicht geladen”, and the raw browser string (“Failed to fetch”) moved
+  to the console and the `title` attribute instead of the visible text.
+- Harness: new check “an unreachable seed says so in plain German and stops
+  claiming to load” (blocks `*/data/records.json`, then the existing recovery
+  check re-loads). **133/133** checks, 143 unit tests, dry-run green.
+
+### Visual pass (screenshots from the harness + own captures)
+
+- The hero lead was clamped to three lines on a 1440 px screen and ended
+  mid-sentence (“… die historischen Kartenwerke…”), which reads like a defect.
+  The band now carries one complete sentence; the provenance sentence still
+  stands verbatim in “Über das Projekt” and the provider tags sit in the band.
+- Checked: map-only view (tiles complete — the harness screenshot is simply
+  taken mid-load), comparison view (pane metadata, coupling hint, per-pane
+  original links), detail panel (IIIF preview, actions, citation), 320/390 px.
+- Measured 768×1024 (tablet): map top 775 px, 249 px of map visible — the hero
+  keeps its facts strip there, which is fine.
+
+### Open (for whoever has time)
+
+- 320 px: the header still eats ~500 of 640 px (brand + search + quick picks +
+  two-row toolbar), so the map starts below the fold there. Mainstream phone
+  widths (360–430) are done.
+- The filter panel's histogram/year area is visually empty while the seed loads
+  (results.js, maps-2); the shell now says “Bestand wird geladen …” and marks the
+  list busy, but the chart itself has no placeholder.
+- `results.js` writes `#result-count`; the shell only takes it over in the outage
+  case. If maps-2 prefers, the loading text could move into a `records:loaded`
+  handler there instead.
+
+### Evidence (this runner, 2026-10-19)
+
+- `npm ci` ✓ · `npm run check` → validation ✓, **143/143** `node --test`,
+  `wrangler deploy --dry-run` ✓ (28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs` → **133/133** against `npx wrangler dev`.
+- Probes (kept out of the repo, in `/tmp`): `measure-typing.mjs`,
+  `stall-typing.mjs`, `loading-state.mjs`, `shot-views.mjs`.

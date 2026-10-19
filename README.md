@@ -87,6 +87,14 @@ What works today (verified with `wrangler dev` + headless Chromium):
   Projekt” (same data, `#about-facts`) so the map still starts on the first phone
   screen (measured at 390×844: map top 609 px with 235 px of map visible, before
   722 px / 122 px);
+- honest loading and outage states: the results area starts with a visible
+  “Bestand wird geladen …” block (cantonal spinner) and `aria-busy` on the list,
+  both cleared when the seed arrives — measured with a throttled connection
+  (~40 kB/s: the block is on screen for seconds instead of a blank panel); if
+  `/data/records.json` cannot be fetched, the panel says so in plain German, the
+  toolbar count reads “Bestand nicht geladen” instead of pretending to load, and
+  the raw browser string stays in the console (`title` attribute) — the browser
+  check blocks the seed file on purpose to keep it that way;
 - the seed's own provenance is visible in the app: “Quellen und Rechte” lists
   every provider with attribution, rights, homepage and OAI-PMH endpoint and
   states the harvest date (`Datenstand`, read from `records.json.generatedAt`);
@@ -99,8 +107,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   **browser's back and forward buttons work**: a search, a filter or a selected
   record is a history step, while panning the map and dragging the year control
   only replace the current entry (a typed search is one step, not one per
-  keystroke), and the app's own start-up corrections never consume a step — so
-  “back” walks the exploration instead of leaving the site;
+  keystroke, and a pause in the middle of a query does not split it either), and
+  the app's own start-up corrections never consume a step — so “back” walks the
+  exploration instead of leaving the site;
 
 ```sh
 npm install
