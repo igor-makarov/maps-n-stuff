@@ -1,5 +1,86 @@
 # zurich-maps-0 status
 
+## Iteration 7-23 (2026-10-19, ~03:4x UTC) — the cold harvest and the whole endpoint set are re-verified
+
+No product or data change this iteration: three verifications of the integrated
+`main` (`9deeed5`) on a runner that started with **no `.cache/fetch/` at all**, then
+the measured numbers written into the docs I own. The seed and the worker stay
+byte-identical to the committed ones.
+
+### 1. A cold `npm run harvest` reproduces the committed seed (the 7-21 open item)
+
+The runner had no cache directory (`.cache` did not exist before the run).
+`npm run harvest` then fetched everything from e-rara and swisstopo — **1153 cached
+upstream responses, 19 MB** — and printed exactly the committed selection:
+
+```
+OAI: 320 ZB records, 300 landkarten, 60 cartesgeneve, 54 museecarto
+SRU: 104 + 63 Zürich plan hits, 72 region hits (3 queries), 48 city-plan hits (2 queries), 206 overview hits (20 queries)
+SRU kept 47 Zürich plans of 92 candidates / 11 Zürich region of 24 / 10 city plans of 35 / 35 overview outside the canton of 133 (55 passed the area gate)
+Built 26 ZB, 56 landkarten, 1 Genf, 0 Weltkarten, 47 Zürich plans, 11 region, 10 city plans, 35 Übersichtskarten, 13 Zeitreise, 9 Siegfried, 4 SWISSIMAGE (213 records, 12 layers)
+```
+
+`git diff public/data` afterwards was **three files with exactly one changed line
+(`generatedAt`) each** — no record, extent, collection or overlay drifted. Then
+`npm run harvest:offline` replayed the same cache and again matched apart from the
+timestamp. The committed files were restored (`git checkout -- public/data`), so
+the repo keeps its original `Datenstand` rather than a timestamp-only churn
+commit. This closes the “cold harvest not possible in the runner's budget” item
+from 7-15/7-21: the world set included, the documented rules — not a lucky cache —
+are what produces the 213 records.
+
+### 2. Every URL the data promises answers 200 — 984/984, no retry needed
+
+`node scripts/verify-endpoints.mjs --json /tmp/shots-723/endpoints-213.json` (default
+`--concurrency 4 --retries 2`), 2026-10-19, on the 213-record seed:
+
+| Kind | Result |
+| --- | --- |
+| original record (DOI landing page / `map.geo.admin.ch` viewer) | 213/213 |
+| thumbnail (IIIF `/full/304/` / WMTS tile) | 213/213 |
+| library viewer (`/content/zoom/<id>`) | 186/186 |
+| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 186/186 |
+| IIIF image service (`…/info.json`) | 186/186 |
+
+**0 non-200, 0 retries** — the earlier 169-record measurement was 756 URLs with 23
+retries, so the world set's new DOI and image URLs are healthy too. The old
+transient-5xx note stays valid (the landing pages throttle under load); it just did
+not trigger this time. This replaces the 756-URL row in `docs/run.md` and the
+corresponding block in `docs/data-sources.md`.
+
+### 3. Baseline on the integrated tree
+
+- `npm run check` ✓ — validation, **174/174** `node --test`, `wrangler deploy --dry-run` (31 asset files, 28.76 KiB Worker, `env.ASSETS` only).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots-723`
+  against a fresh `npx wrangler dev` on this clone: **148/148 checks**, 0 app
+  console errors, 0 failed requests, 0 upstream console errors — i.e. the shared
+  harness is green on the pushed `main` including the world set and the two
+  teammates' repairs from 7-22.
+
+### Messages
+
+- **→ maps-1:** two small measured edits in your `docs/run.md` rows
+  (`npm run harvest` and `npm run verify:endpoints`) — revert or reword freely;
+  `README.md` needed no change (no count moved).
+- **→ all:** the seed is unchanged at **213 records / 2 providers / 12 comparison
+  layers**, and it is now proven reproducible from a cold cache. Any doc sentence
+  quoting 756 URLs is stale; the current measurement is **984 URLs, 0 failures**.
+- **→ maps-3:** the harness count stayed **148/148** on this runner after your
+  7-22 repairs; the “Next” you noted (`[data-compare-coverage="outside"]` for the
+  degenerate pair) is the one check the count does not cover yet.
+
+### Next (my area)
+
+1. The world set’s `perDecade` is 3 and the pool is 133 candidates with 55 passing
+   the area gate; `recordCap` 40 has room. Raising it to 4 (7-20's note) is the
+   cheapest way to widen the overview set, but it needs a harvest **and** a fresh
+   harness run — do it only with the budget for both.
+2. More non-European keywords are still cheap to probe (`dc.subject=China`,
+   `Kanada`, `Mexiko`, `Brasilien`, `Persien`…), each pooled into the same round
+   robin; the country spread is currently Europe-heavy in the later decades.
+3. Winterthur remains a documented negative (39 `dc.title=Karte` hits → 2
+   off-topic records) — do not re-run that probe without new evidence.
+
 ## Iteration 7-22 (2026-10-19, ~03:1x UTC) — `main` is red: my 7-21 extents, measured
 
 No product commit this iteration yet; this entry is evidence first, because the
