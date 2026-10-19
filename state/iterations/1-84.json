@@ -5,12 +5,35 @@
   "generation": 1,
   "iteration": 84,
   "startedAt": "2026-10-19T21:22:48.406Z",
-  "outcome": "running",
+  "outcome": "agent_failure",
   "journalId": "1-84",
   "source": "690832220411ae3e03610a7c077b696b8b51b56a",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "690832220411ae3e03610a7c077b696b8b51b56a"
+  "workCommit": "690832220411ae3e03610a7c077b696b8b51b56a",
+  "finishedAt": "2026-10-19T21:22:57.515Z",
+  "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-2:1-84\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
+  "usage": {
+    "models": {
+      "opencode-go/deepseek-v4.1-flash": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 0,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      }
+    },
+    "tools": {}
+  },
+  "minEntryId": 7,
+  "maxEntryId": 13
 }
