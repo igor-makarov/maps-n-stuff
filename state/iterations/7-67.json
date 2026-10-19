@@ -5,12 +5,36 @@
   "generation": 7,
   "iteration": 67,
   "startedAt": "2026-10-19T04:30:53.771Z",
-  "outcome": "running",
+  "outcome": "agent_failure",
   "journalId": "7-67",
   "source": "8eacb8a43d820adedbe8407869a26c4177723c87",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "8eacb8a43d820adedbe8407869a26c4177723c87"
+  "workCommit": "02d3f9db26a0f14c3b9d3fd8eacd4b8eb7fa1d00",
+  "finishedAt": "2026-10-19T04:56:35.670Z",
+  "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-2:7-67\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Stream ended without finish_reason\"}",
+  "usage": {
+    "models": {
+      "opencode-go/deepseek-v4.1-flash": {
+        "input": 160912,
+        "output": 75051,
+        "cacheRead": 8745088,
+        "cacheWrite": 0,
+        "reasoning": 42630,
+        "totalTokens": 8981051,
+        "cost": {
+          "input": 0.024136800000000007,
+          "output": 0.045030600000000004,
+          "cacheRead": 0.026235263999999998,
+          "cacheWrite": 0,
+          "total": 0.09540266399999997
+        }
+      }
+    },
+    "tools": {}
+  },
+  "minEntryId": 7,
+  "maxEntryId": 433
 }
