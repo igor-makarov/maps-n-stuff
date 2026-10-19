@@ -20,8 +20,8 @@ one of the two spellings of every umlaut name in the catalogue.
 | `foldDigraph()` (ä→ae, ö→oe, ü→ue, ß→ss) and `foldPlain()` (NFD + strip combining marks, so ü→u, è→e) are new exports. `matchesQuery()` now tests each token against **both** folded forms of the record's own text — `titleText()` is unchanged and the folded pair is cached per record in a `WeakMap`, so a keystroke still costs one pass over 169 strings. Both forms are needed because neither is a superset: `foldDigraph('Zürich') = 'zuerich'` catches the typed digraph, `foldPlain('Zürich') = 'zurich'` catches the typed plain form, and `foldPlain` also gives Genève ↔ Geneve. Folding widens the *spelling* only: `basel` and `zzz-kein-treffer` still match nothing (`tests/search.test.mjs` asserts both). | `records.js` (maps-0's file; see Messages) |
 | Every consumer inherits it with no edit: the sidebar keyword box, the place box's “Karten zum Stichwort …” offer (whose count must equal the list), the local title fallback when swisstopo is unreachable, and every facet count. | `search.js`, `results.js` — no edit needed |
 | 5 new unit cases: the three spellings (plus `ZÜRICH`) return the same 138 records on the seed; `Zuerichsee` = `Zürichsee`; Genève = Geneve; a synthetic `ß` record; mixed spellings in one multi-token query; and the “Karten zum Stichwort …” count still equals `filterRecords`. | `tests/search.test.mjs` |
-| Harness section **8n**, one new check (**138 → 139**): types `Zürich`, `Zuerich`, `Zurich` into the real `#text-filter`, requires the same row count and the same count line (124 rows at the default 1696–1900 range), then clears the box so the following sections start clean. | `browser-check.mjs` (maps-3's file; see Messages) |
-| Counts refreshed to what this runner measured on the **integrated** tree after rebasing over maps-3's `aaa88e0` (cvv): `docs/run.md` harness row and the `coordination/README.md` board now say **161 unit tests** and **142 harness checks**, and maps-2's board line names the folding. The rebase conflicted only in those two count lines; I kept maps-3's cvv wording and appended my clause. | docs |
+| Harness section **8n**, one new check (**138 → 139**): types `Zürich`, `Zuerich`, `Zurich` into the real `#text-filter`, requires the same row count and the same count line (124 rows at the default 1696–1900 range on the then-169-record seed), then clears the box so the following sections start clean. | `browser-check.mjs` (maps-3's file; see Messages) |
+| Counts refreshed to what this runner measured on the **integrated** tree after rebasing over maps-3's `aaa88e0` (cvv): `docs/run.md` harness row and the `coordination/README.md` board say **163 unit tests** and **142 harness checks**, and maps-2's board line names the folding. The rebase conflicted only in those two count lines; I kept maps-3's cvv wording and appended my clause. | docs |
 
 **The leftover merge-conflict marker is gone from the run book.** `docs/run.md:31`
 still carried `>>>>>>> f9f305e (shell: honest loading …)` on `main` since the
@@ -31,12 +31,26 @@ maps-1's `434ba19` had just fixed the same line (plus a blank line) — no
 duplicate history, and `git grep '^<<<<<<<'` / `'^>>>>>>>'` over the whole tree
 now returns nothing.
 
+**The map no longer drops pins silently past 300 records.** `renderMarkers()`
+used `state.filtered.slice(0, 300)` — invisible at 169 records, but the seed has
+grown by ~30 records per iteration, and past 300 the map would have drawn a
+subset with no hint that it did. `markerPoints(records, zoom)` (new, pure,
+exported) now turns **every** record with a documented point-or-extent centre
+into a pin, in list order (the pin number and its aria-label repeat the list's
+“Nr.”), and counts the records with no documented position at all (`unplaced`).
+The status line appends “· N ohne dokumentierten Standort.” only when that count
+is non-zero, so the seed's wording is byte-identical. No cap is needed: the DOM
+is bounded by `clusterByCell` (one node per 56 px cell) and by clipping to the
+viewport. 2 unit cases (320 synthetic records come back whole; the published
+point wins over the extent centre, the unplaceable record is counted and its list
+position is not reused; `undefined` input is empty).
+
 ### Verified
 
-- `npm run check` → validation ✓, **161/161** `node --test` on the integrated tree
-  (**154/154** on the tree that carried only my change; maps-3's cvv commit added
-  seven cases while this ran), `wrangler deploy --dry-run` ✓ (31 asset files,
-  28.76 KiB Worker).
+- `npm run check` → validation ✓, **163/163** `node --test` on the final tree
+  (**154/154** on the tree that carried only my search change, **161/161** after
+  maps-3's cvv commit, plus the two `markerPoints` cases), `wrangler deploy
+  --dry-run` ✓ (31 asset files, 28.76 KiB Worker).
 - `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots3`
   → **142/142** on the rebased integrated tree (**139/139** before maps-3's cvv
   commit; its two new checks are theirs). The new check prints
@@ -50,6 +64,9 @@ now returns nothing.
   box resolves `Zuerich` to swisstopo's “Zürich (ZH)” as well; no console errors.
 - The dev server served the new `records.js` after the edit (`foldDigraph` ×4 in
   `/app/records.js`) and the harness ran against that tree.
+- **After maps-0's `b9eb0cd` (199 records)** the equality still holds on the
+  integrated seed: `Zürich` = `Zuerich` = `Zurich` = **168**, `Zürichsee` =
+  `Zuerichsee` = 2, `Geneve` = `Genève` = 3, and `npm run check` is 163/163.
 
 ## Messages
 
@@ -79,11 +96,6 @@ now returns nothing.
 
 ## Next (my area, if the loop continues)
 
-- `map.js` still slices the filtered set at `300` records before pinning
-  (`state.filtered.slice(0, 300)`), silently — harmless at 169, a correctness
-  hole once maps-0's seed passes 300. Replace the slice with the clustering that
-  already bounds the DOM, and state the “no placeable extent” count honestly
-  (0 records today, so a fixture-driven unit test).
 - Reveal the selected row in the list when the selection came from a pin
   (`record:selected` with `source: 'map'`), without moving the page on a deep
   link.

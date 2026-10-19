@@ -97,20 +97,17 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 | Member | Owns | Status (integrated tree, 2026-10-19) |
 |--------|------|-------------------------|
-| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **169 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, **47** Zürich plans + 11 Zürich-region + 10 city ground/site plans + 21 Europe/world overview maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window (mirrored for the world set), per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (756 distinct URLs on 2026-10-19; the script retries transient 429/5xx because e-rara's DOI pages throttle), `docs/data-sources.md` + `sources.json` registry |
+| zurich-maps-0 | worker proxy, records seed + source registry | ✅ **199 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, **56** ETH `landkarten` sheets — the 7-19 widening reads 30 of the set's 2335 records, pools 125 candidates and keeps the union of the oldest 26 and a per-decade spread, so the set now spans **1547–1900** —, **47** Zürich plans + 11 Zürich-region + 10 city ground/site plans + 21 Europe/world overview maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; seed spans **1547–2021**; canton-window (mirrored for the world set), per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (maps-0's line states the last measured count; the script retries transient 429/5xx because e-rara's DOI pages throttle), `docs/data-sources.md` + `sources.json` registry |
 | zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell incl. the **phone step** and honest **loading/seed-outage states** (hero figures move to “Über das Projekt” below 600 px: map top 609 px / 235 px visible at 390×844; the hero lead is a **short complete sentence** on phones — the long wording was clamped mid-word at 320–430 px), visible “Datenstand”, canton design tokens/components (48 px controls), URL-backed store with **working browser back/forward (D6/D6a)**, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed, D8 console classification |
-| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram whose **bars count the filter scope (not the period) and whose drag-brush selects a range**, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`), keyword search that folds the spelling (**“Zuerich” = “Zurich” = “Zürich”**, 124 rows each; ü→ue and ß→ss, plus diacritic-stripped “Genève”/“Geneve”) |
+| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram whose **bars count the filter scope (not the period) and whose drag-brush selects a range**, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`), keyword search that folds the spelling (**“Zuerich” = “Zurich” = “Zürich”**, identical row counts — 168 of the 199 records just measured; ü→ue and ß→ss, plus diacritic-stripped “Genève”/“Geneve”) |
 | zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen + shareable cut-out (`vv=`), thumbnails fetched on demand, “Blatt” jump for large works, the panel’s own layer toggle for georeferenced swisstopo records, honest degraded-upstream states, series navigation; the comparison panes are the same viewer and are **coupled through each record’s documented extent** (`viewToExtent`/`extentToView`, switch `#compare-sync`); their **cut-outs are shareable state of their own** (`cvv=`, one pair per pane, D7) and each pane has its own “Ganzes Blatt”; **161 unit tests** (integrated tree incl. maps-2's spelling folding) and the **142-check** CDP harness (measured on the integrated tree, 2026-10-19) |
 
-Integration gate as of 2026-10-19 (verified on this runner, 169-record seed):
-`npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`),
-`node scripts/browser-check.mjs` against `npx wrangler dev` (**143/143**: maps-2's scoped
-histogram brush, Grundkarte and umlaut folding, maps-3's coupled 390 px comparison,
-cluster behaviour and shareable pane cut-outs (`cvv`), maps-1's phone map-first +
-complete-sentence lead check, deliberate-typing-stall history check and seed-outage
-check) and
-`node scripts/verify:endpoints` for the upstream URLs (maps-0's line states the count it
-last measured; 756 distinct URLs). A fresh clone (`git clone … && npm ci && npm run check`)
-passes on this tree — the Cloudflare build path needs nothing but the repository.
+Integration gate as of 2026-10-19 (verified on this runner, 199-record seed):
+`npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`);
+`node scripts/browser-check.mjs` against `npx wrangler dev` (the count grows with every
+teammate check — maps-3's line and each member's status file state the run they measured);
+and `node scripts/verify:endpoints` for the upstream URLs (maps-0's line states the count
+it last measured). A fresh clone (`git clone … && npm ci && npm run check`) passes on this
+tree — the Cloudflare build path needs nothing but the repository.
 The counts move with every teammate commit — each member's own line above
 states the numbers they last measured.

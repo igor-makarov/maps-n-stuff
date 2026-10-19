@@ -1384,6 +1384,24 @@ body.app-compare--open {
   font-variant-numeric: tabular-nums;
 }
 
+/* The chart gets one column per decade of the *data* range, so the number of
+   columns grows with the seed (49 decades for 1547–2021). At phone widths the
+   6 px minimum plus the 2 px gap no longer fits the page: 49 × 6 px + 48 gaps =
+   390 px, which pushed the whole document to ~420 px and produced a horizontal
+   overflow at 320 px and 390 px (found by the harness, 2026-10-19). Below the
+   first canton breakpoint the columns shrink with the chart instead, so the
+   page keeps its width and the chart stays a brush surface; the arrow-key and
+   Enter path is unchanged. */
+@media (max-width: 599px) {
+  .zh-histogram {
+    gap: 1px;
+  }
+
+  .zh-histogram__bin {
+    min-inline-size: 3px;
+  }
+}
+
 /* ---------- filter panel footer (shell: maps-1) ---------- */
 .app-filters__actions {
   display: flex;

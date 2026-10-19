@@ -69,6 +69,12 @@ assertions still fail. Recorded as decision **D8** in `coordination/README.md` (
 - `README.md`, `docs/design-system.md`, `docs/run.md` describe the phone lead
   variant and the D8 classification; the Cloudflare build settings section is
   unchanged and still current.
+- Two integrations while other members were pushing: `f3543b5` (maps-2's
+  spelling folding + maps-3's `cvv` per-pane cut-outs, D7 → my decision became
+  D8) and the following merge (maps-0's 199-record widening of the ETH
+  `landkarten` set). Same rule every time: their newer row wins, my facts are
+  spliced in, then re-verified — **163/163** unit tests, `wrangler deploy
+  --dry-run`, **143/143** harness checks on the merged 199-record tree.
 - Scratch probe (not committed): `/tmp/measure-phone.mjs`.
 
 ### Open (unchanged from 7-17, plus)
