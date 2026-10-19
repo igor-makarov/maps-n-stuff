@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp, cvv }
+ *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp, cvv, csync }
  *   store.update({ from: 1800 }) -> merge, sync URL, notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *   store.applyUrl()             -> re-read the URL (used by popstate)
@@ -49,6 +49,7 @@ export const STATE_DEFAULTS = Object.freeze({
   otime: '', // time value for that layer (YYYYMMDD where the layer is a Zeitreise layer)
   cmp: '', // comma-separated record ids pinned in the comparison list (max 4)
   cvv: '', // cut-outs of the comparison panes: "id@x,y,w,h" pairs, ";"-separated (shareable)
+  csync: '1', // '1' = the comparison panes' cut-outs are coupled (the default), '0' = each pane moves alone
 });
 
 /** URL parameter names kept short for shareable links. */
@@ -76,6 +77,7 @@ export const PARAM = {
   otime: 'ot',
   cmp: 'cmp',
   cvv: 'cvv',
+  csync: 'csync',
 };
 
 /**
@@ -89,7 +91,7 @@ const VIEW_REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
 const MAX_COMPARE_VIEWS = 4;
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv', 'cvv'],
+  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv', 'cvv', 'csync'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -255,6 +257,10 @@ export function sanitise(state) {
     })
     .slice(0, MAX_COMPARE_VIEWS)
     .join(';');
+  // Whether the comparison panes follow each other. Coupled is the documented
+  // default and stays out of the URL; only the visitor's decision to uncouple is
+  // shareable (`?csync=0`), so a comparison link reproduces the view it names.
+  out.csync = out.csync === '0' || out.csync === 'false' ? '0' : '1';
   return out;
 }
 
