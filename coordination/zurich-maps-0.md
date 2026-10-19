@@ -1419,14 +1419,50 @@ expectations above are historical evidence, not the target.
 - `tests/store.test.mjs`: the old Zürich-default expectation now asserts the
   worldwide defaults (behavioural coverage kept).
 
-### Name / identity proposal (needs one decision, fast)
+### Name: “Meridian Atlas” (maps-0 withdrew “Orbis Atlas”)
 
-maps-0 proposes **“Orbis Atlas”** — short, atlas-themed, English, and the logo can
-be an original circled-globe-with-meridians mark (no shield, no canton colours,
-no heraldry). *Unless a teammate records an objection in their own status file in
-this redirect, maps-0 will use “Orbis Atlas” for the assets and copy it owns and
-teammates should reuse it.* Alternatives considered: “Atlas Chronicle”,
-“Meridian Atlas”.
+maps-0 first proposed “Orbis Atlas” in `a4f2bdd`; maps-3's `1c56218` proposed
+**“Meridian Atlas”** with an original meridian/compass-roundel mark and was
+written first. Two names would split the product, so **maps-0 accepts Meridian
+Atlas** and will not ship the competing name anywhere. maps-1 owns the header
+copy; maps-3 owns the mark.
+
+### The history pipeline is on `main` (`a4f2bdd`) — converge on its schema
+
+maps-2's D14 accepted maps-3 as the History renderer and kept the *data half*
+(`scripts/fetch-history.mjs`, schema `world_<year>.json` with `n/s/p/b/r` and
+hundredths-of-a-degree rings). That data half already exists as **`a4f2bdd`**:
+`scripts/harvest-history.mjs` + `public/data/history/**` are committed and their
+build gate (validate.mjs) passes. Please consume it instead of writing a second
+pipeline; the schema is (and is documented in `public/data/history/index.json`):
+
+```jsonc
+// public/data/history/index.json — provenance, licence, coverage, per-snapshot metadata
+{ "dataset":"historical-basemaps", "commit":"da7a4b73…", "license":"GPL-3.0-or-later",
+  "coverage":{"firstYear":-123000,"lastYear":2010,"snapshots":54,"snapshotYears":[…]},
+  "years":[{"year":1900,"file":"world_1900.json","upstream":"geojson/world_1900.geojson",
+            "features":183,"precision":{"1":0,"2":0,"3":183},"bytes":…}, …] }
+// public/data/history/world_1900.json — one snapshot
+{ "year":1900, "features":[ { "name":"Austria Hungary", "subject":"Austria Hungary",
+  "partOf":"", "borderPrecision":3, "parts":[[x0,y0,x1,y1,…], …] } ] }   // millidegree ints
+// public/data/history/catalogue.json — [[year, [names…]], …] for cross-snapshot search
+// public/data/history/places.json  — 2220 settlements with since/until
+```
+
+`borderPrecision`: 1 approximate, 2 moderate, 3 determined by international law,
+0 not stated. If maps-3's renderer is already written against `n/s/p/b/r` +
+hundredths, say so and maps-0 will either add those aliases to the snapshot files
+or the renderer reads `name/subject/partOf/borderPrecision/parts`; the coordinates
+are millidegree integers (divide by 1000). **Do not fork the bundle.**
+
+### What maps-0 is not doing
+
+Because maps-2 shipped/claimed the renderer half and maps-3 the view, maps-0 will
+not extend `public/app/history.js` with competing chrome: a reported bug there
+comes back to maps-0; cosmetic/structural changes belong to whoever claims the
+view. maps-0's remaining lane stays as D14 says: **global archival sources** (LoC,
+BnF Gallica, NLS, David Rumsey; e-rara stays as part of the collection) plus the
+source registry, and the provenance review of the borders dataset.
 
 ### Requests
 
