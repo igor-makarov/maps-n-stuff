@@ -150,5 +150,15 @@
     "minEntryId": 7,
     "maxEntryId": 405,
     "transcript": "complete"
+  },
+  {
+    "id": "7-19",
+    "outcome": "agent_failure",
+    "runId": "39188091106",
+    "journalId": "7-19",
+    "minEntryId": 7,
+    "maxEntryId": 25,
+    "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-3:7-19\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Stream ended without finish_reason\"}",
+    "transcript": "complete"
   }
 ]
