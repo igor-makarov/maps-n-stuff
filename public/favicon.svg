@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48" role="img" aria-label="Kartenzeit">
+  <!-- Eigene, vereinfachte Signatur in den Kantonsfarben; kein amtliches Logo. -->
+  <path d="M2 2h36v40L20 46 2 42Z" fill="#0070b4" stroke="#00407c" stroke-width="2"/>
+  <path d="M2 33 38 3v13L2 45Z" fill="#fff"/>
+</svg>

@@ -1,0 +1,332 @@
+/*
+ * Detail view + IIIF viewer styles (owner: zurich-maps-3).
+ *
+ * Loaded after zh-components.css/app.css, so it only *adds* the detail-panel
+ * rules the viewer needs; the canton design tokens themselves stay in
+ * zh-tokens.css (owner: zurich-maps-1). Layout follows the canton grid: one
+ * column, generous indentation, black rules, 1px radius, no shadows on text.
+ */
+
+@media (min-width: 840px) {
+  /* A map preview needs more room than a text panel, but stays a side panel. */
+  .app-detail {
+    width: min(760px, 94vw);
+  }
+}
+
+.app-detail__preview-wrap,
+.app-viewer {
+  display: grid;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+/* ---------------------------------------------------------------- viewer */
+
+.app-viewer__stage {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--zh-black-10, #f0f0f0);
+  border: 1px solid var(--zh-black-20, #d9d9d9);
+  height: clamp(240px, 46vh, 520px);
+  touch-action: none; /* drag pans the sheet; the panel scrolls around it */
+  cursor: grab;
+  outline-offset: -3px;
+}
+
+.app-viewer__stage--static {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: auto;
+  cursor: default;
+}
+
+.app-viewer__stage--static img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.app-viewer__stage[data-dragging='true'] {
+  cursor: grabbing;
+}
+
+.app-viewer__stage:focus-visible {
+  outline: 3px solid var(--zh-color-focus, #0070b4);
+  outline-offset: -3px;
+}
+
+.app-viewer__image {
+  position: absolute;
+  user-select: none;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+
+.app-viewer__stage[data-state='loading'] .zh-spinner {
+  display: inline-block;
+  position: absolute;
+  top: var(--zh-size-regular, 16px);
+  left: var(--zh-size-regular, 16px);
+  z-index: 1;
+}
+
+.app-viewer__stage[data-state='ready'] .zh-spinner,
+.app-viewer__stage[data-state='error'] .zh-spinner {
+  display: none;
+}
+
+.app-viewer__stage[data-state='loading'] {
+  cursor: progress;
+}
+
+.app-viewer__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+.app-viewer__controls .zh-button {
+  min-width: 44px; /* touch target */
+}
+
+.app-viewer__readout {
+  font-size: var(--zh-font-tiny, 12px);
+  color: var(--zh-color-text-soft, #666);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-viewer__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+  margin-left: auto;
+}
+
+/* `display: flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__nav[hidden] {
+  display: none;
+}
+
+/*
+ * Direct sheet jump for works with many sheets. The control is only rendered
+ * when the sheet strip no longer fits one row (`JUMP_MIN_SHEETS` in detail.js),
+ * so it never appears next to a two-sheet work; the sizing follows the
+ * cantonal compact step (32 px) used by the sidebar's selects.
+ */
+.app-viewer__jump {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* `display: inline-flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__jump[hidden] {
+  display: none;
+}
+
+/* `zh-select` is full-width for the sidebar form; here it sizes to its content. */
+.app-viewer__jump .zh-select {
+  width: auto;
+  min-height: var(--zh-control-height-small, 32px);
+  max-width: 18rem;
+  font-size: var(--zh-font-tiny, 12px);
+}
+
+.app-viewer__caption {
+  margin: 0;
+  font-size: var(--zh-font-tiny, 12px);
+  color: var(--zh-color-text-soft, #666);
+  line-height: var(--zh-line-medium, 1.3);
+}
+
+.app-viewer__hint {
+  margin: 0;
+  font-size: var(--zh-font-tiny, 12px);
+  color: var(--zh-color-text-soft, #666);
+}
+
+/* ------------------------------------------------------------- sheet strip */
+
+/* One button per sheet of a multi-sheet work, between stage and controls. */
+.app-viewer__sheets {
+  display: flex;
+  gap: var(--zh-size-tiny, 8px);
+  overflow-x: auto;
+  padding: var(--zh-size-tiny, 8px) 0;
+  scrollbar-width: thin;
+}
+
+/* `display: flex` above would otherwise defeat the [hidden] attribute. */
+.app-viewer__sheets[hidden] {
+  display: none;
+}
+
+.app-viewer__sheet {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 0;
+  background: var(--zh-black-5, #f7f7f7);
+  border: 1px solid var(--zh-color-border-strong, #ccc);
+  border-radius: 1px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.app-viewer__sheet img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}
+
+.app-viewer__sheet img[hidden] {
+  display: none;
+}
+
+.app-viewer__sheetnum {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 0 4px;
+  background: var(--zh-black, #000);
+  color: #fff;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-viewer__sheet:hover {
+  border-color: var(--zh-black, #000);
+}
+
+.app-viewer__sheet:focus-visible {
+  outline: 3px solid var(--zh-color-focus, #0070b4);
+  outline-offset: 2px;
+}
+
+.app-viewer__sheet.is-active {
+  border-color: var(--zh-blue, #0070b4);
+  outline: 2px solid var(--zh-blue, #0070b4);
+  outline-offset: -2px;
+}
+
+.app-viewer__fallback {
+  display: grid;
+  gap: var(--zh-size-tiny, 8px);
+  justify-items: start;
+  padding: var(--zh-size-regular, 16px);
+  background: var(--zh-black-10, #f0f0f0);
+  border: 1px solid var(--zh-black-20, #d9d9d9);
+}
+
+.app-viewer__fallback img {
+  max-height: 32vh;
+  max-width: 100%;
+}
+
+/* --------------------------------------------------- related sheets (series) */
+
+/* Chips that lead to the other sheets of the same upstream series. */
+.app-detail__related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny, 8px);
+  margin: 0 0 var(--zh-size-tiny, 8px);
+  padding: 0;
+  list-style: none;
+}
+
+.app-detail__related .zh-button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+
+/* -------------------------------------------------------------- fullscreen */
+
+/* The whole screen belongs to the sheet: neutral dark surround, the stage keeps
+   its own centred layout (the viewer recomputes it on `fullscreenchange`). */
+.app-viewer__stage:fullscreen,
+.app-viewer__stage.is-fullscreen {
+  height: 100vh;
+  width: 100vw;
+  background: var(--zh-black, #000);
+  border: 0;
+  border-radius: 0;
+}
+
+/* A visible way out inside fullscreen: the control row is not on screen there. */
+.app-viewer__stage:fullscreen::after {
+  content: 'Vollbild: Esc beendet die Ansicht';
+  position: absolute;
+  right: var(--zh-size-regular, 16px);
+  bottom: var(--zh-size-regular, 16px);
+  padding: 2px var(--zh-size-tiny, 8px);
+  background: rgb(255 255 255 / 88%);
+  color: var(--zh-black, #000);
+  font-size: var(--zh-font-tiny, 12px);
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .app-viewer__stage {
+    height: clamp(200px, 38vh, 380px);
+  }
+
+  .app-viewer__nav {
+    margin-left: 0;
+  }
+}
+
+/* ------------------------------------------- comparison view (compare.js) */
+
+/*
+ * The comparison pane of a record with a IIIF manifest hosts the same viewer as
+ * the detail panel. Only the frame is restyled: the stage keeps the viewer's
+ * background, focus ring and spinner rules from above.
+ */
+.app-compare__paneimage--viewer {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-viewer__stage--compare {
+  width: 100%;
+  height: clamp(260px, 44vh, 520px);
+}
+
+.app-compare__sync {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny, 8px);
+}
+
+.app-compare__sync .zh-hint {
+  margin: 0;
+  flex: 1 1 260px;
+}
+
+.app-compare__readout:empty {
+  display: none;
+}
+
+@media (min-width: 840px) {
+  /* The coupling switch spans the two comparison columns. */
+  .app-compare__sync {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-viewer__stage--compare {
+    height: clamp(200px, 36vh, 360px);
+  }
+}

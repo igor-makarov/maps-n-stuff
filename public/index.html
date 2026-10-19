@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kartenzeit – Historische Karten entdecken</title>
+    <meta
+      name="description"
+      content="Historische Karten und Atlanten auf einer interaktiven Weltkarte entdecken: nach Ort, Zeitraum und Sammlung filtern, Kartenblätter im IIIF-Viewer ansehen und zum Originaldatensatz der besitzenden Institution springen."
+    />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0070b4" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kartenzeit" />
+    <meta property="og:locale" content="de_CH" />
+    <meta property="og:title" content="Kartenzeit – Historische Karten entdecken" />
+    <meta
+      property="og:description"
+      content="Historische Karten aus echten Sammlungen auf einer interaktiven Karte entdecken: nach Ort, Zeitraum und Sammlung filtern und zum Originaldatensatz der besitzenden Institution springen."
+    />
+    <meta name="twitter:card" content="summary" />
+    <!-- Decompressed IIIF sheets are large; the two text faces are the only
+         render-blocking resources beyond the stylesheets. -->
+    <link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Inter-Black.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="alternate" type="application/json" href="/data/records.json" title="Datensätze (JSON)" />
+    <link rel="stylesheet" href="/styles/zh-tokens.css" />
+    <link rel="stylesheet" href="/styles/zh-base.css" />
+    <link rel="stylesheet" href="/styles/zh-components.css" />
+    <link rel="stylesheet" href="/styles/app.css" />
+    <!-- Detail panel + IIIF viewer styles (module: public/app/detail.js) -->
+    <link rel="stylesheet" href="/styles/detail.css" />
+  </head>
+  <body>
+    <a class="zh-skiplink" href="#main">Direkt zum Inhalt springen</a>
+
+    <header class="zh-header">
+      <div class="zh-header__bar">
+        <div class="zh-shell zh-header__bar-inner">
+          <p class="zh-header__note">
+            <span class="zh-header__note-long">
+              Gestaltung nach dem <a href="https://www.zh.ch/de/webangebote-entwickeln-und-gestalten.html">Designsystem des Kantons Zürich</a>
+              – unabhängiges Projekt, keine Webseite der kantonalen Verwaltung.
+            </span>
+            <span class="zh-header__note-short">
+              Gestaltung nach dem <a href="https://www.zh.ch/de/webangebote-entwickeln-und-gestalten.html">Designsystem des Kantons Zürich</a>
+              · unabhängiges Projekt
+            </span>
+          </p>
+          <nav class="zh-header__meta" aria-label="Projektlinks">
+            <a href="/#about">Über das Projekt</a>
+            <a href="/#sources">Quellen</a>
+            <a href="/api/health">API-Status</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="zh-shell zh-header__main">
+        <a class="zh-brand" href="/" aria-label="Kartenzeit – Startseite">
+          <svg class="zh-brand__mark" viewBox="0 0 40 48" aria-hidden="true" focusable="false">
+            <!-- Eigene, vereinfachte Wappen-Signatur in den Kantonsfarben (Blau/Weiss),
+                 kein amtliches Logo und kein amtliches Wappen. -->
+            <path d="M2 2h36v40L20 46 2 42Z" fill="#0070b4" stroke="#00407c" stroke-width="2" />
+            <path d="M2 33 38 3v13L2 45Z" fill="#fff" />
+          </svg>
+          <span class="zh-brand__text">
+            <span class="zh-brand__name">Kartenzeit</span>
+            <span class="zh-brand__claim">Historische Karten entdecken</span>
+          </span>
+        </a>
+
+        <form class="zh-search" id="place-search" role="search" autocomplete="off" novalidate>
+          <label class="visuallyhidden" for="place-input">Ort suchen</label>
+          <div class="zh-search__field">
+            <input
+              class="zh-input zh-search__input"
+              id="place-input"
+              name="q"
+              type="search"
+              placeholder="Ort suchen, z. B. Zürich, Basel, Genf …"
+              role="combobox"
+              aria-expanded="false"
+              aria-controls="place-suggestions"
+              aria-autocomplete="list"
+              spellcheck="false"
+            />
+            <button class="zh-button" type="submit" id="place-submit">
+              <span class="zh-button__text">Suchen</span>
+            </button>
+          </div>
+          <ul class="zh-suggestions" id="place-suggestions" role="listbox" aria-label="Ortsvorschläge" hidden></ul>
+          <p class="zh-search__status" id="place-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </header>
+
+    <main id="main" class="zh-shell app-main" tabindex="-1">
+      <div class="zh-state zh-state--error" id="app-notices" role="status" hidden></div>
+      <section class="app-intro" aria-labelledby="intro-heading">
+        <h1 class="zh-heading zh-heading--1 zh-heading--bordered" id="intro-heading">
+          Historische Karten aus Archiven und Bibliotheken
+        </h1>
+        <ul class="zh-facts" id="intro-facts" aria-label="Bestand in Zahlen"></ul>
+        <p class="zh-lead">
+          <!-- Deliberately one sentence per variant: the band above the map is
+               clamped on narrow screens, and a paragraph that ends mid-sentence
+               reads like a defect. The phone variant is short enough to end
+               inside the clamp at 320 px; the long provenance sentence
+               (swisstopo layers, e-rara partner libraries) stands verbatim in
+               “Über das Projekt” below, and the provider tags sit right here. -->
+          <span class="app-intro__lead-long">Der Bestand umfasst aktuell <span id="intro-count" data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
+          Sammlungen – mit Kartenvorschau, Zeitfilter, Vergleichsebene und direkter Verlinkung zum Originaldatensatz.</span>
+          <span class="app-intro__lead-short">Der Bestand umfasst <span data-record-count>…</span> Karten und Atlanten aus echten Sammlungen.</span>
+        </p>
+        <p class="app-intro__more">
+          <a class="zh-link" href="#about">
+            <span class="app-intro__more-long">Mehr über Bestand, Quellen und Rechte</span>
+            <span class="app-intro__more-short">Quellen &amp; Rechte</span>
+          </a>
+          <span aria-hidden="true"> · </span>
+          <a class="zh-link" href="#map">
+            <span class="app-intro__more-long">Direkt zur Karte</span>
+            <span class="app-intro__more-short">Zur Karte</span>
+          </a>
+        </p>
+        <ul class="zh-tags" id="intro-tags" aria-label="Datenquellen"></ul>
+      </section>
+
+      <div class="app-toolbar" role="group" aria-label="Ansicht und Sortierung">
+        <div class="app-toolbar__group">
+          <span class="app-toolbar__label" id="result-count">Ergebnisse werden geladen …</span>
+          <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-open" hidden>
+            Vergleich öffnen<span id="compare-open-count"></span>
+          </button>
+        </div>
+        <div class="app-toolbar__group">
+          <span class="zh-label" id="view-label">Ansicht</span>
+          <div class="zh-viewswitch" role="group" aria-labelledby="view-label">
+            <button class="zh-chip" type="button" data-view="split" aria-pressed="true">Liste und Karte</button>
+            <button class="zh-chip" type="button" data-view="list" aria-pressed="false">nur Liste</button>
+            <button class="zh-chip" type="button" data-view="map" aria-pressed="false">nur Karte</button>
+          </div>
+        </div>
+        <div class="app-toolbar__group">
+          <label class="zh-label" for="sort-select">Sortierung</label>
+          <select class="zh-select" id="sort-select">
+            <option value="year-asc">Jahr aufsteigend</option>
+            <option value="year-desc">Jahr absteigend</option>
+            <option value="title">Titel A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <aside class="app-side" aria-label="Filter und Trefferliste">
+          <details class="zh-panel app-filters" open>
+            <summary class="zh-panel__summary">Filter</summary>
+            <div class="zh-panel__body">
+              <div class="zh-field">
+                <label class="zh-label" for="text-filter">Stichwort in Titel, Urheber oder Sammlung</label>
+                <input class="zh-input zh-input--small" id="text-filter" type="search" placeholder="z. B. Rhein, Wildkarte, Dufour" autocomplete="off" />
+              </div>
+
+              <div class="zh-field zh-check-field">
+                <label class="zh-check" for="viewport-filter">
+                  <input type="checkbox" id="viewport-filter" />
+                  <span>nur Treffer im aktuellen Kartenausschnitt</span>
+                </label>
+                <p class="zh-hint" id="viewport-count"></p>
+              </div>
+
+              <fieldset class="zh-fieldset">
+                <legend class="zh-legend">Zeitraum (Publikationsjahr)</legend>
+                <div class="zh-histogram" id="year-histogram" role="toolbar" aria-label="Datensätze je Jahrzehnt – Zeitraum wählen"></div>
+                <p class="zh-histogram__scale" id="year-histogram-scale" aria-hidden="true"></p>
+                <p class="zh-hint" id="year-histogram-hint">Balken: Datensätze je Jahrzehnt (Erscheinungsjahr) im aktuellen Filter ohne Zeitraum. Ziehen wählt einen Zeitraum in Jahrzehnt-Schritten, Klick ein Jahrzehnt; Pfeiltasten wechseln, Enter filtert.</p>
+                <div class="zh-slider" id="year-slider">
+                  <div class="zh-slider__track" aria-hidden="true">
+                    <span class="zh-slider__fill" id="year-fill"></span>
+                  </div>
+                  <div class="zh-slider__inputs">
+                    <div class="zh-field">
+                      <label class="zh-label" for="year-from">von</label>
+                      <input class="zh-input zh-input--small" id="year-from" type="number" inputmode="numeric" step="1" />
+                    </div>
+                    <div class="zh-field">
+                      <label class="zh-label" for="year-to">bis</label>
+                      <input class="zh-input zh-input--small" id="year-to" type="number" inputmode="numeric" step="1" />
+                    </div>
+                  </div>
+                  <div class="zh-quickranges" role="group" aria-label="Schnellauswahl Zeitraum">
+                    <button class="zh-chip" type="button" data-range="all">alle Jahre</button>
+                    <button class="zh-chip" type="button" data-range="1500-1700">1500–1700</button>
+                    <button class="zh-chip" type="button" data-range="1700-1800">1700–1800</button>
+                    <button class="zh-chip" type="button" data-range="1800-1900">1800–1900</button>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="zh-fieldset">
+                <legend class="zh-legend">Sammlung / Anbieter</legend>
+                <div class="zh-checks" id="provider-filters"></div>
+              </fieldset>
+
+              <div class="zh-field">
+                <label class="zh-label" for="collection-filter">Kartenwerk / Sammlung</label>
+                <select class="zh-select" id="collection-filter" aria-describedby="facet-hint">
+                  <option value="">alle Kartenwerke</option>
+                </select>
+                <p class="zh-hint" id="facet-hint"></p>
+              </div>
+
+              <div class="app-filters__actions">
+                <button class="zh-button zh-button--ghost" type="button" id="reset-filters">Alle Filter zurücksetzen</button>
+                <button class="zh-button zh-button--ghost" type="button" id="permalink-copy">
+                  Suchlink kopieren
+                </button>
+              </div>
+              <p class="zh-hint" id="permalink-status" role="status" aria-live="polite">
+                Jede Suche steht in der Adresse; «Suchlink kopieren» legt sie als Link in die Zwischenablage.
+              </p>
+            </div>
+          </details>
+
+          <details class="zh-panel app-filters">
+            <summary class="zh-panel__summary">Kartentyp und Kartenwerke</summary>
+            <div class="zh-panel__body">
+              <fieldset class="zh-fieldset">
+                <legend class="zh-legend">Kartentyp</legend>
+                <div class="zh-checks" id="type-filters"></div>
+              </fieldset>
+
+              <fieldset class="zh-fieldset">
+                <legend class="zh-legend">Historische Kartenwerke (swisstopo)</legend>
+                <label class="zh-label" for="overlay-select">Vergleichsebene</label>
+                <select class="zh-select" id="overlay-select">
+                  <option value="">keine Ebene</option>
+                </select>
+                <div class="zh-field" id="overlay-time-field" hidden>
+                  <label class="zh-label" for="overlay-time">Ausgabe</label>
+                  <input class="zh-input zh-input--small" id="overlay-time" type="range" min="0" max="0" step="1" />
+                  <output class="zh-hint" id="overlay-time-output"></output>
+                </div>
+                <div class="zh-field" id="overlay-opacity-field" hidden>
+                  <label class="zh-label" for="overlay-opacity">Deckkraft der Ebene</label>
+                  <input class="zh-input zh-input--small" id="overlay-opacity" type="range" min="20" max="100" step="5" value="85" />
+                  <output class="zh-hint" id="overlay-opacity-output">85 %</output>
+                </div>
+                <p class="zh-hint" id="overlay-note">
+                  Georeferenzierte Kartenwerke von swisstopo, direkt als Kachelebene über die moderne Grundkarte gelegt.
+                </p>
+              </fieldset>
+            </div>
+          </details>
+
+          <section class="app-results" aria-labelledby="results-heading">
+            <h2 class="zh-heading zh-heading--4" id="results-heading">Treffer</h2>
+            <p class="visuallyhidden" id="results-live" role="status" aria-live="polite"></p>
+            <div class="app-pointfilter" id="point-filter" hidden>
+              <p class="zh-hint" id="point-filter-text"></p>
+              <button class="zh-button zh-button--ghost zh-button--small" type="button" id="point-filter-clear">
+                Punktfilter entfernen
+              </button>
+            </div>
+            <!-- The seed is one JSON file. Until it arrives the list area would
+                 be blank for seconds on a slow connection, so the shell states
+                 what is happening; main.js hides this block (and the aria-busy
+                 flag on the list) when the data arrives, or replaces it with the
+                 error state when the fetch fails. -->
+            <div class="zh-state zh-state--loading" id="results-loading" role="status">
+              <span class="zh-spinner" role="presentation"></span>
+              <span>
+                <span class="zh-state__title">Bestand wird geladen …</span>
+                <span class="zh-hint">
+                  Die Metadaten der Karten stehen als eine Datei in diesem Projekt; die Vorschaubilder lädt der Browser
+                  erst, wenn ein Blatt geöffnet wird.
+                </span>
+              </span>
+            </div>
+            <ol class="app-result-list" id="result-list" aria-busy="true" aria-label="Trefferliste"></ol>
+            <div class="zh-state" id="results-state" hidden></div>
+          </section>
+
+          <details class="zh-panel app-compare" id="compare-panel">
+            <summary class="zh-panel__summary">Vergleich<span id="compare-count"></span></summary>
+            <div class="zh-panel__body">
+              <p class="zh-hint">
+                Bis zu vier Datensätze merken und zwei davon nebeneinanderstellen. Die Liste steht im Link
+                (<code>?cmp=</code>) und wird zusätzlich nur lokal in diesem Browser gemerkt – «Liste leeren»
+                entfernt sie hier und im Link.
+              </p>
+              <div class="app-compare__actions">
+                <button class="zh-button zh-button--small" type="button" id="compare-add">Zuerst einen Datensatz auswählen</button>
+                <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-clear">Liste leeren</button>
+              </div>
+              <ul class="app-compare__list" id="compare-list"></ul>
+              <p class="zh-hint" id="compare-status" role="status" aria-live="polite"></p>
+            </div>
+          </details>
+        </aside>
+
+        <section class="app-mapwrap" aria-labelledby="map-heading">
+          <h2 class="visuallyhidden" id="map-heading">Karte</h2>
+          <div class="app-map" id="map" data-map>
+            <noscript>
+              <p class="zh-state zh-state--error">
+                Die Kartenansicht benötigt JavaScript. Die Trefferliste links bleibt ohne JavaScript ebenfalls leer –
+                die Datensätze sind aber direkt über <code>/data/records.json</code> abrufbar.
+              </p>
+            </noscript>
+          </div>
+          <div class="app-map__fallback" id="map-fallback" hidden></div>
+          <ul class="app-map__skip" aria-label="Kartensteuerung per Tastatur">
+            <li><button class="zh-chip" type="button" data-map-cmd="in">Hineinzoomen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="out">Herauszoomen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="zurich">Zürich zeigen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="fitswitzerland">Schweiz zeigen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="fitresults">Treffer einpassen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="point">Punktfilter (Kartenmitte)</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="extents" aria-pressed="false">Ausschnitte zeigen</button></li>
+            <!-- Grundkarte: the chips are built by map.js from its documented
+                 BASE_LAYERS, so control and renderer cannot drift apart. -->
+            <li class="app-map__skipbase">
+              <span class="app-map__skiplabel" id="base-layer-label">Grundkarte</span>
+              <span class="app-map__skipgroup" id="base-layer-switch" role="group" aria-labelledby="base-layer-label"></span>
+            </li>
+          </ul>
+          <p class="app-map__hint zh-hint">
+            Karte ziehen zum Verschieben, Mausrad oder <kbd>+</kbd>/<kbd>−</kbd> zum Zoomen, Pfeiltasten bewegen die Karte.
+            Ein Klick (oder <kbd>P</kbd>) filtert die Treffer auf den Punkt;
+            <button class="app-map__hintlink" type="button" data-map-cmd="extents" data-map-cmd-label="fixed" aria-pressed="false">„Ausschnitte“</button>
+            zeichnet die dokumentierten Kartengrenzen der gefilterten Treffer.
+            Die Grundkarte (farbig, grau oder Luftbild) wechselt in der Leiste unter der Karte.
+            <span id="map-attribution-extra"></span>
+          </p>
+          <p class="app-map__hint zh-hint" id="map-visible-count" role="status" aria-live="polite"></p>
+          <p class="app-map__hint zh-hint" id="map-extent-count" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+
+      <section class="app-docs" id="about" aria-labelledby="about-heading">
+        <h2 class="zh-heading zh-heading--2 zh-heading--bordered" id="about-heading">Über das Projekt</h2>
+        <div class="app-docs__grid">
+          <article class="zh-card">
+            <h3 class="zh-heading zh-heading--4">Wie gearbeitet wird</h3>
+            <!-- On phones the hero band hides its stock figures to keep the way
+                 to the map short; the same numbers stand here (filled by
+                 main.js, same source). Desktop shows only the hero strip. -->
+            <ul class="zh-facts zh-facts--about" id="about-facts" aria-label="Bestand in Zahlen"></ul>
+            <p>
+              Der Bestand umfasst aktuell <span data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
+              Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte
+              und die historischen Kartenwerke stammen von swisstopo, die Blätter von den e-rara-Partnerbibliotheken
+              (Zentralbibliothek Zürich, ETH-Bibliothek Zürich, Bibliothèque de Genève).
+            </p>
+            <p>
+              Ortsnamen kommen live von der swisstopo-Suche, die historischen Blätter aus dem OAI-PMH- und
+              IIIF-Angebot von e-rara (den Sammlungen der beteiligten Bibliotheken). Jeder Treffer nennt besitzende Institution,
+              Rechtehinweis und Publikationsjahr; das angezeigte Kartenbild kann vom Publikationsjahr abweichen und
+              wird deshalb getrennt ausgewiesen. Die Ebenen «Zeitreise» von swisstopo sind georeferenzierte
+              Rasterkacheln und werden als Vergleichsebene über die Grundkarte gelegt.
+            </p>
+          </article>
+          <article class="zh-card" id="sources">
+            <h3 class="zh-heading zh-heading--4">Quellen und Rechte</h3>
+            <!-- Filled from records.json (`generatedAt`) so the page states
+                 when the seed was last harvested, not just where it came from. -->
+            <p class="zh-hint" id="data-stand" hidden></p>
+            <dl class="zh-deflist" id="source-list"></dl>
+          </article>
+          <article class="zh-card">
+            <h3 class="zh-heading zh-heading--4">Barrierefreiheit und Bedienung</h3>
+            <p>
+              Alle Kartenfunktionen haben Tastatur- und Listen-Alternativen: Zoomen per Schaltfläche, Ergebnisse per
+              Pfeiltasten, Detailansicht mit Fokusfang und <kbd>Esc</kbd>. Ziel ist WCAG 2.2 AA mit sichtbarem
+              Fokus, kräftigen Kontrasten und semantischem HTML.
+            </p>
+            <p>
+              Gestaltung nach dem Designsystem Kanton Zürich. Kartenzeit ist ein unabhängiges Demonstrationsprojekt
+              und steht in keiner Verbindung zur kantonalen Verwaltung.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- “Nach oben” (cantonal `mdl-back2top`): a 48 px circle that appears once
+         the page is scrolled; wired in main.js so it also moves focus. -->
+    <button
+      class="zh-button zh-button--icon app-backtotop"
+      id="back-to-top"
+      type="button"
+      aria-label="Zurück nach oben"
+      hidden
+    >
+      <svg class="zh-button__icon app-backtotop__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M11 19.5V9.1L6.4 13.7 4.7 12 12 4.7l7.3 7.3-1.7 1.7L13 9.1v10.4Z" />
+      </svg>
+    </button>
+
+    <footer class="zh-footer">
+      <div class="zh-shell zh-footer__inner">
+        <p><strong>Kartenzeit</strong> – Open-Source-Demo für historische Karten. Gestaltungsreferenz: Kanton Zürich.</p>
+        <ul class="zh-footer__links">
+          <li><a href="/data/records.json">Datensätze (JSON)</a></li>
+          <li><a href="/data/sources.json">Quellenregister</a></li>
+          <li><a href="/data/overlays.json">Kartenwerke</a></li>
+          <li><a href="https://github.com/igor-makarov/maps-n-stuff">Quellcode</a></li>
+          <li>
+            <a href="https://github.com/igor-makarov/maps-n-stuff/blob/main/NOTICE.md">Rechte, Credits, Lizenzen ↗</a>
+          </li>
+        </ul>
+        <p class="zh-footer__fine">
+          Kartendaten: © swisstopo (Geoservices, OGD). Digitalisate: e-rara-Partnerbibliotheken
+          via e-rara, Public-Domain-Mark sofern beim Datensatz angegeben. Schriften: Inter (SIL Open Font License), Fallback
+          Helvetica/system-ui.
+        </p>
+      </div>
+    </footer>
+
+    <!-- Vergleichsansicht: eigenständiges Modul (public/app/compare.js) -->
+    <section
+      class="app-compare-view"
+      id="compare-view"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="compare-view-title"
+      hidden
+    >
+      <header class="app-compare-view__bar">
+        <h2 class="zh-heading zh-heading--5" id="compare-view-title">Vergleich</h2>
+        <div class="app-compare-view__actions">
+          <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-view-copy">Permalink kopieren</button>
+          <button class="zh-button zh-button--small zh-button--ghost" type="button" id="compare-view-list">Liste bearbeiten</button>
+          <button class="zh-button zh-button--small" type="button" id="compare-view-close">Schliessen (<kbd>Esc</kbd>)</button>
+        </div>
+      </header>
+      <div class="app-compare-view__body" id="compare-view-body"></div>
+    </section>
+
+    <!-- Detailansicht: eigenständiges Modul (public/app/detail.js) -->
+    <aside class="app-detail" id="detail" role="dialog" aria-modal="false" aria-labelledby="detail-title" hidden>
+      <div class="app-detail__inner" id="detail-body"></div>
+    </aside>
+    <div class="app-scrim" id="scrim" hidden></div>
+
+    <!-- Structured data describes the app, not a catalogue of its own: every
+         record is served by /data/records.json with its original source URL. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Kartenzeit",
+        "description": "Historische Karten und Atlanten aus echten Sammlungen auf einer interaktiven Karte entdecken.",
+        "inLanguage": "de-CH",
+        "applicationCategory": "ReferenceApplication",
+        "isAccessibleForFree": true,
+        "isBasedOn": ["https://www.e-rara.ch/", "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata"]
+      }
+    </script>
+
+    <script type="module" src="/app/main.js"></script>
+  </body>
+</html>

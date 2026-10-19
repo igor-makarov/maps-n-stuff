@@ -1,0 +1,1770 @@
+/*!
+ * App layout – Kartenzeit (historical map explorer).
+ * Composition only; visual language comes from the canton tokens/components.
+ */
+
+.app-main {
+  padding-block: var(--zh-size-large) 0;
+}
+
+.app-intro {
+  background: var(--zh-white);
+  border: 1px solid var(--zh-color-border);
+  padding: var(--zh-size-large) var(--zh-size-regular);
+  margin-bottom: var(--zh-size-large);
+}
+
+.app-intro p {
+  margin-bottom: var(--zh-size-small-regular);
+}
+
+/* The “read more” link only matters where the lead paragraph is clamped. */
+.app-intro__more {
+  display: none;
+}
+
+.app-intro__more-short {
+  display: none;
+}
+
+/* The phone lead is a complete sentence of its own: the long one needs 4–8
+   lines at 320–430 px, and a clamp cut it mid-word (measured before the
+   change: scrollHeight 202 px vs 50 px visible at 320 px). */
+.app-intro__lead-short {
+  display: none;
+}
+
+/* Map-first composition: from 840 px (the cantonal `medium` breakpoint, where
+   the shell gets its 16 px gutters and the two-column header) the orientation
+   block becomes a compact band instead of a full-height page. The headline keeps its cantonal 3 px rule
+   across the full width; the stock figures move to the right of the lead
+   paragraph and carry the characteristic 3 px left rule instead of a bottom
+   rule. Only the clamped lead text is truncated — the complete wording stands
+   in “Über das Projekt” (#about), which the “mehr” link targets. */
+@media (min-width: 840px) {
+  .app-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(240px, 4fr);
+    grid-template-areas:
+      'head head'
+      'lead facts'
+      'more tags';
+    gap: var(--zh-size-small-regular) var(--zh-column-gap);
+    align-items: start;
+    padding: var(--zh-size-regular);
+    margin-bottom: var(--zh-size-regular);
+  }
+  .app-intro > .zh-heading--1 {
+    grid-area: head;
+    margin-bottom: 0;
+  }
+  .app-intro > .zh-lead {
+    grid-area: lead;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .app-intro__more {
+    grid-area: more;
+    display: block;
+    margin: 0;
+  }
+  .app-intro > .zh-facts {
+    grid-area: facts;
+    margin: 0;
+    padding: 0 0 0 var(--zh-indent);
+    border-bottom: 0;
+    border-left: var(--zh-rule) solid var(--zh-black);
+    gap: var(--zh-size-small-regular) var(--zh-size-regular);
+  }
+  .app-intro > .zh-tags {
+    grid-area: tags;
+    margin: 0;
+    justify-content: flex-start;
+  }
+}
+
+/* Facts strip: cantonal “chapter number” rhythm — value first, label under it. */
+.zh-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-large);
+  margin: 0 0 var(--zh-size-regular);
+  padding: 0 0 var(--zh-size-small-regular);
+  list-style: none;
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.zh-facts li {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.zh-facts__value {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-medium);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.zh-facts__term {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.zh-check-field {
+  margin-bottom: var(--zh-size-large);
+}
+
+/* The facts list only appears on phones, where the hero strip is hidden. */
+.zh-facts--about {
+  display: none;
+}
+
+/* Loading state of the results area (markup in index.html, ended by main.js).
+   Cantonal state block with the loading-circle spinner next to the text, so a
+   slow seed does not look like an empty result list. */
+.zh-state--loading {
+  display: flex;
+  gap: var(--zh-size-small-regular);
+  align-items: flex-start;
+  margin-bottom: var(--zh-size-regular);
+}
+
+.zh-state--loading .zh-state__title {
+  margin-bottom: var(--zh-size-mini);
+}
+
+.zh-state--loading .zh-hint {
+  margin-bottom: 0;
+}
+
+.app-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular) var(--zh-size-regular);
+  background: var(--zh-black-5);
+  border-top: var(--zh-rule) solid var(--zh-black);
+  margin-bottom: var(--zh-size-regular);
+}
+
+.app-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: var(--zh-size-tiny);
+}
+
+.app-toolbar__label {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-bigger-regular);
+  font-weight: 900;
+}
+
+.app-toolbar .zh-label {
+  margin: 0;
+}
+
+.app-toolbar .zh-select,
+.app-filters .zh-select {
+  min-height: var(--zh-size-big);
+  font-size: var(--zh-font-small);
+}
+
+.app-toolbar .zh-select {
+  width: auto;
+}
+
+/* ---- View switch: list only / map only / split ---- */
+.app-grid {
+  display: grid;
+  gap: var(--zh-column-gap);
+  align-items: start;
+}
+
+/* Single-column layouts (phones and tablets) put the map first: a map explorer
+   whose map sits below a 40-entry result list is unusable on a phone. The DOM
+   order stays list-first for screen readers and the tab order, and the map
+   keeps its own keyboard controls. */
+@media (max-width: 1023px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-mapwrap {
+    order: -1;
+  }
+}
+
+.app-view--map .app-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-view--map .app-side {
+  display: none;
+}
+
+.app-view--map .app-map,
+.app-view--map .app-mapwrap {
+  /* The map container must stay positioned: its tiles, extents and markers are
+     absolutely positioned children (see .map-layer in map.js). A `position:
+     static` override made them escape the box — they painted over the intro
+     and produced ~80 px of horizontal page overflow. */
+  position: relative;
+  top: auto;
+  height: min(78vh, 760px);
+}
+
+/* In map-only view the map is the page: the intro and its facts would push it
+   below the fold again. The toolbar keeps the way back to the other views. */
+.app-view--map .app-intro {
+  display: none;
+}
+
+.app-view--list .app-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.app-view--list .app-mapwrap,
+.app-view--list .app-map__skip,
+.app-view--list .app-map__hint {
+  display: none;
+}
+
+.app-view--list .app-result-list {
+  /* `minmax(320px, …)` overflows the 320 px cantonal breakpoint (the shell has
+     12 px gutters, so only ~296 px remain). `min(320px, 100%)` keeps the
+     multi-column list without a horizontal scrollbar. */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+}
+
+.zh-viewswitch {
+  display: flex;
+  gap: var(--zh-size-mini);
+}
+
+@media (min-width: 1024px) {
+  .app-grid {
+    grid-template-columns: minmax(320px, 5fr) minmax(320px, 7fr);
+  }
+}
+
+.app-side {
+  min-width: 0;
+}
+
+.app-filters {
+  margin-bottom: var(--zh-size-regular);
+}
+
+.zh-slider__track {
+  position: relative;
+  height: var(--zh-size-tiny);
+  background: var(--zh-black-15);
+  margin-bottom: var(--zh-size-small-regular);
+}
+
+.zh-slider__fill {
+  position: absolute;
+  inset-block: 0;
+  background: var(--zh-color-accent);
+  left: 0;
+  right: 0;
+}
+
+.zh-slider__inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--zh-size-small-regular);
+}
+
+.zh-quickranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+  margin-top: var(--zh-size-tiny);
+}
+
+#overlay-time-field {
+  margin-top: var(--zh-size-tiny);
+}
+
+#overlay-time-output {
+  display: block;
+  font-weight: 900;
+}
+
+/* ---- Result list ---- */
+.app-results {
+  min-width: 0;
+}
+
+/* Active point filter (“Karten an diesem Punkt”): a chip row that says what is
+   filtered and offers one clear action, above the result list. */
+.app-pointfilter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny);
+  margin: 0 0 var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+  border: 2px solid var(--zh-color-accent);
+  background: var(--zh-blue-soft);
+}
+
+.app-pointfilter .zh-hint {
+  flex: 1 1 12rem;
+  margin: 0;
+  color: var(--zh-black);
+}
+
+.app-pointfilter .zh-hint strong {
+  font-weight: 900;
+}
+
+.app-result-list {
+  display: grid;
+  gap: var(--zh-size-small-regular);
+  margin: 0 0 var(--zh-size-regular);
+  padding: 0;
+  list-style: none;
+}
+
+.zh-result {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: var(--zh-size-small-regular);
+  width: 100%;
+  padding: var(--zh-size-small-regular);
+  border: 1px solid var(--zh-color-border);
+  border-left: var(--zh-size-mini) solid var(--zh-black-20);
+  border-radius: var(--zh-radius);
+  background: var(--zh-color-surface);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--zh-transition-simple) var(--zh-easing-default),
+    background var(--zh-transition-simple) var(--zh-easing-default);
+}
+
+.zh-result:hover {
+  border-color: var(--zh-black);
+  border-left-color: var(--zh-color-accent);
+}
+
+.zh-result[aria-current='true'],
+.zh-result.is-selected {
+  border-left-color: var(--zh-color-accent);
+  background: var(--zh-blue-soft);
+}
+
+/* Cross-highlight while the matching marker is hovered/focused on the map. */
+.zh-result.is-preview {
+  border-color: var(--zh-blue);
+  border-left-color: var(--zh-blue);
+  background: var(--zh-blue-soft);
+}
+
+.zh-result__thumb {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-color-border);
+}
+
+.zh-result__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--zh-size-mini);
+}
+
+.zh-result__title {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-regular);
+  font-weight: 900;
+  line-height: var(--zh-line-medium);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.zh-result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini) var(--zh-size-tiny);
+  align-items: center;
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+.zh-result__year {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  color: var(--zh-black);
+}
+
+.zh-result__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.zh-result__place {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-color-text-soft);
+}
+
+/* ---- Map ---- */
+.app-mapwrap {
+  min-width: 0;
+}
+
+.app-map {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 320px;
+  overflow: hidden;
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black);
+  touch-action: none;
+  cursor: grab;
+  outline-offset: -3px;
+}
+
+@media (min-width: 1024px) {
+  /* Sticky has to live on the wrapper: its containing block is the tall grid
+     area, while `.app-map` is only as tall as its parent — a sticky element
+     inside a same-height parent scrolls away with the page (the map did). */
+  .app-mapwrap {
+    position: sticky;
+    top: var(--zh-size-regular);
+  }
+  .app-map {
+    height: calc(100vh - 260px);
+    position: relative;
+  }
+}
+
+.app-map:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+}
+
+.app-map.is-dragging {
+  cursor: grabbing;
+}
+
+.map-tile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  will-change: transform;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Opacity is controlled on the whole overlay layer (map.js `overlay:opacity`);
+   a second factor here made the 20–100 % control behave like 17–85 %. */
+.map-overlay-tile {
+  opacity: 1;
+}
+
+.map-controls {
+  position: absolute;
+  top: var(--zh-size-tiny);
+  right: var(--zh-size-tiny);
+  display: flex;
+  flex-direction: column;
+  gap: var(--zh-size-mini);
+}
+
+.map-controls .zh-button {
+  width: var(--zh-control-height);
+  padding: 0;
+}
+
+/* Markers are real buttons with a strong cantonal-blue fill: the earlier white
+   24 px pin blended into the swisstopo base map (which draws its own white
+   junction circles), so the pins were invisible in practice. */
+.map-marker {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  padding: 0;
+  border: 2px solid var(--zh-white);
+  border-radius: 50%;
+  background: var(--zh-blue);
+  color: var(--zh-white);
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--zh-black), 0 2px 5px rgb(0 0 0 / 45%);
+}
+
+.map-marker:hover {
+  background: var(--zh-darkblue);
+  color: var(--zh-white);
+}
+
+.map-marker.is-selected {
+  background: var(--zh-cyan);
+  color: var(--zh-black);
+  z-index: 3;
+  /* The 1.25 scale is part of the inline translate3d() in map.js – a transform
+     here would be overridden by that inline style. */
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-darkblue);
+}
+
+.map-marker.is-preview {
+  background: var(--zh-darkblue);
+  color: var(--zh-white);
+  z-index: 4;
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-cyan);
+}
+
+/* Cluster: one control for overlapping markers at the current zoom. Darker than
+   a single pin so the number reads as “several maps”, not as one record. */
+.map-marker.map-cluster {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  background: var(--zh-darkblue);
+  color: var(--zh-white);
+  font-size: var(--zh-font-tiny);
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--zh-white), 0 0 0 4px var(--zh-darkblue), 0 2px 6px rgb(0 0 0 / 45%);
+}
+
+.map-marker.map-cluster:hover {
+  background: var(--zh-black);
+  color: var(--zh-white);
+}
+
+.map-marker.map-cluster.is-preview {
+  background: var(--zh-cyan);
+  color: var(--zh-black);
+}
+
+.map-marker:focus-visible {
+  outline: 3px solid var(--zh-black);
+  outline-offset: 1px;
+}
+
+/* Hover/focus card for a marker (decorative, aria-hidden). */
+.map-preview {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--zh-size-mini);
+  padding: var(--zh-size-mini);
+  border: 2px solid var(--zh-black);
+  background: var(--zh-white);
+  box-shadow: var(--zh-shadow-card);
+  pointer-events: none;
+}
+
+.map-preview[hidden] {
+  display: none;
+}
+
+.map-preview__thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid var(--zh-color-border);
+  background: var(--zh-black-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--zh-font-large);
+}
+
+.map-preview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.map-preview__year {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+}
+
+.map-preview__title {
+  font-size: var(--zh-font-small);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.map-preview__meta {
+  font-size: var(--zh-font-tiny);
+  color: var(--zh-black-60);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-badge {
+  position: absolute;
+  left: var(--zh-size-tiny);
+  bottom: var(--zh-size-tiny);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+  max-width: calc(100% - var(--zh-size-big));
+}
+
+/* Readability on top of imagery: the attribution tags get a translucent white
+   plate. Solid tags keep their own black fill — otherwise white on white. */
+.map-badge .zh-tag:not(.zh-tag--solid) {
+  background: rgb(255 255 255 / 92%);
+}
+
+/* “Karten an diesem Punkt”: the real, focusable list a point pile opens instead
+   of a zoom that cannot separate its records. Same plate as the hover card, but
+   interactive, scrollable and reachable by keyboard. */
+.map-cluster-list {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: min(420px, calc(100% - 16px));
+  border: 2px solid var(--zh-black);
+  background: var(--zh-white);
+  box-shadow: var(--zh-shadow-card);
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* The list is the one part of the map that must scroll under the pointer: it
+     keeps the wheel (JS guard) and at least vertical touch gestures. */
+  touch-action: pan-y;
+}
+
+.map-cluster-list[hidden] {
+  display: none;
+}
+
+.map-cluster-list:focus-visible {
+  outline: 3px solid var(--zh-black);
+  outline-offset: 1px;
+}
+
+.map-cluster-list__head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-mini);
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border-bottom: var(--zh-rule) solid var(--zh-black);
+  background: var(--zh-white);
+}
+
+.map-cluster-list__title {
+  margin: 0;
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+}
+
+.map-cluster-list__close {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 var(--zh-size-mini);
+  border: 1px solid var(--zh-black);
+  border-radius: var(--zh-radius);
+  background: var(--zh-white);
+  color: var(--zh-black);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.map-cluster-list__close:hover {
+  background: var(--zh-black);
+  color: var(--zh-white);
+}
+
+.map-cluster-list__hint {
+  margin: 0;
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border-bottom: 1px solid var(--zh-color-border);
+  color: var(--zh-black-60);
+  font-size: var(--zh-font-tiny);
+  line-height: 1.4;
+}
+
+.map-cluster-list__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.map-cluster-list__item {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 2px var(--zh-size-mini);
+  width: 100%;
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border: 0;
+  border-bottom: 1px solid var(--zh-color-border);
+  background: var(--zh-white);
+  color: var(--zh-black);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-cluster-list__item:hover {
+  background: var(--zh-black-10);
+}
+
+.map-cluster-list__year {
+  grid-row: span 2;
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+}
+
+.map-cluster-list__name {
+  font-size: var(--zh-font-small);
+  line-height: 1.3;
+}
+
+.map-cluster-list__meta {
+  grid-column: 2;
+  color: var(--zh-black-60);
+  font-size: var(--zh-font-tiny);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-cluster-list__foot {
+  padding: var(--zh-size-mini) var(--zh-size-small);
+}
+
+.map-extent {
+  position: absolute;
+  border: 2px dashed var(--zh-black);
+  background: rgb(0 112 180 / 12%);
+  pointer-events: none;
+}
+
+/* Crosshair for the active point filter (“Karten an diesem Punkt”). */
+.map-point {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 3px solid var(--zh-color-accent);
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--zh-color-accent), var(--zh-color-accent)) center / 2px 100% no-repeat,
+    linear-gradient(var(--zh-color-accent), var(--zh-color-accent)) center / 100% 2px no-repeat,
+    rgb(255 255 255 / 70%);
+  box-shadow: 0 0 0 2px var(--zh-white);
+  pointer-events: none;
+}
+
+.app-map__skip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+  margin: var(--zh-size-tiny) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-map__hint {
+  margin-top: var(--zh-size-mini);
+}
+
+/* ---- Detail panel (aside/dialog) ---- */
+.app-detail {
+  position: fixed;
+  z-index: var(--zh-z-detail);
+  inset: 0;
+  background: var(--zh-white);
+  overflow: auto;
+  border-left: var(--zh-rule) solid var(--zh-black);
+  box-shadow: var(--zh-shadow-card);
+  animation: zh-slide-in var(--zh-transition-default) var(--zh-easing-decelerate);
+}
+
+
+/* Touch: vertical swipes scroll the page, horizontal swipes pan the map. A full
+   height map with `touch-action: none` would trap the scroll on phones. */
+@media (pointer: coarse) {
+  .app-map {
+    height: 56vh;
+    touch-action: pan-y;
+  }
+}
+
+@media (min-width: 840px) {
+  .app-detail {
+    inset: 0 0 0 auto;
+    width: min(560px, 90vw);
+  }
+}
+
+@keyframes zh-slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-detail {
+    animation: none;
+  }
+}
+
+.app-detail__inner {
+  padding: var(--zh-size-large) var(--zh-size-regular) var(--zh-size-small-huge);
+  display: grid;
+  gap: var(--zh-size-small-regular);
+}
+
+.app-detail__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  position: sticky;
+  top: 0;
+  background: var(--zh-white);
+  padding-block: var(--zh-size-mini);
+  border-bottom: 1px solid var(--zh-color-border);
+  z-index: 1;
+}
+
+.app-detail__title {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-large);
+  font-weight: 900;
+  line-height: var(--zh-line-medium);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.app-detail__preview {
+  position: relative;
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black-20);
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.app-detail__preview img {
+  max-height: 46vh;
+  width: auto;
+  display: block;
+}
+
+.app-detail__preview-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zh-size-tiny);
+  justify-content: space-between;
+}
+
+.app-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+}
+
+.app-detail__facts {
+  display: grid;
+  gap: var(--zh-size-mini);
+  font-size: var(--zh-font-small);
+}
+
+.app-detail__facts dt {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--zh-color-text-soft);
+  margin-top: var(--zh-size-tiny);
+}
+
+.app-detail__facts dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.app-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--zh-z-detail) - 1);
+  background: rgb(0 0 0 / 35%);
+}
+
+/* ---- Docs section ---- */
+.app-docs {
+  margin-top: var(--zh-size-small-huge);
+}
+
+.app-docs__grid {
+  display: grid;
+  gap: var(--zh-column-gap);
+}
+
+@media (min-width: 840px) {
+  .app-docs__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Keyboard shortcut list inside the map hint stays readable on small screens. */
+@media (max-width: 599px) {
+  .zh-result {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .zh-result__thumb {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* ---- Compare list and comparison view (public/app/compare.js) ---- */
+.app-compare__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+  margin-bottom: var(--zh-size-small-regular);
+}
+
+.app-compare__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--zh-size-small-regular);
+}
+
+.app-compare__item {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--zh-size-small-regular);
+  align-items: start;
+  padding-bottom: var(--zh-size-small-regular);
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.app-compare__item:last-child {
+  border-bottom: 0;
+}
+
+.app-compare__item--unknown .app-compare__title {
+  color: var(--zh-bordeaux);
+}
+
+.app-compare__thumb,
+.app-compare__placeholder {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black-20);
+}
+
+.app-compare__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--zh-size-mini);
+  font-size: var(--zh-font-mini);
+  color: var(--zh-color-text-soft);
+  text-align: center;
+}
+
+.app-compare__meta {
+  display: grid;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare__title {
+  font-family: var(--zh-font-black);
+  font-weight: 900;
+  line-height: var(--zh-line-medium);
+}
+
+.app-compare__itemactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare__empty {
+  display: block;
+  padding: var(--zh-size-small-regular) 0;
+}
+
+/* Full-screen comparison: two (or more) real previews next to each other. */
+.app-compare-view {
+  position: fixed;
+  inset: 0;
+  z-index: var(--zh-z-detail);
+  background: var(--zh-color-bg);
+  border-top: var(--zh-rule) solid var(--zh-black);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-compare-view__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-tiny);
+  padding: var(--zh-size-small-regular) var(--zh-size-regular);
+  background: var(--zh-white);
+  border-bottom: 1px solid var(--zh-color-border);
+}
+
+.app-compare-view__bar h2 {
+  margin: 0;
+}
+
+.app-compare-view__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-compare-view__body {
+  display: grid;
+  gap: var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+  max-width: var(--zh-max-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+@media (min-width: 840px) {
+  .app-compare-view__body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--zh-column-gap);
+    padding: var(--zh-size-large);
+  }
+}
+
+.app-compare__pane {
+  margin: 0;
+  background: var(--zh-white);
+  border: 1px solid var(--zh-color-border);
+  border-top: var(--zh-rule) solid var(--zh-blue);
+  display: grid;
+  gap: var(--zh-size-small-regular);
+  padding: var(--zh-size-small-regular);
+}
+
+.app-compare__paneimage {
+  background: var(--zh-black-10);
+  border: 1px solid var(--zh-black-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  overflow: auto;
+}
+
+.app-compare__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.app-compare__pane figcaption {
+  display: grid;
+  gap: var(--zh-size-mini);
+}
+
+/* A pane that cannot follow the coupled cut-out says so instead of silently
+   keeping its whole sheet (compare.js: the sheet does not cover the area).
+   Bordeaux is the canton's warning colour; the 4 px left bar is the same
+   indentation the panels use. */
+.app-compare__coverage {
+  border-left: var(--zh-size-mini) solid var(--zh-bordeaux);
+  padding-left: var(--zh-size-small-regular);
+  color: var(--zh-color-text);
+}
+
+.app-compare__pane[data-coverage='outside'] .app-compare__paneimage--viewer,
+.app-compare__pane[data-coverage='partial'] .app-compare__paneimage--viewer {
+  border-color: var(--zh-bordeaux);
+}
+
+.app-compare__pane figcaption h3,
+.app-compare__pane figcaption p {
+  margin: 0;
+}
+
+.app-compare__paneindex {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: var(--zh-font-tiny);
+}
+
+.app-compare__paneactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+  margin-top: var(--zh-size-mini);
+}
+
+body.app-compare--open {
+  overflow: hidden;
+}
+
+.app-compare__box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--zh-size-mini);
+  width: 100%;
+}
+
+.app-compare__item > .app-compare__box {
+  width: 96px;
+}
+
+.app-compare__loading {
+  font-size: var(--zh-font-tiny);
+  text-align: center;
+}
+
+.app-compare__paneimage .app-compare__box {
+  padding: var(--zh-size-mini);
+}
+
+/* Comparison previews keep the whole sheet visible next to its metadata. */
+.app-compare__image {
+  max-height: 62vh;
+  width: auto;
+  object-fit: contain;
+}
+
+/* <kbd> inside a cantonal button keeps the button's colours (the base style
+   gives keyboard keys a light chip look that would go white-on-black). */
+.zh-button kbd {
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+
+/* ---- Small screens: keep the way to the map short ---- */
+.zh-header__note-short {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  /* The long disclaimer lives in the footer and the “Über das Projekt”
+     section; the top bar only needs the design reference on a phone. */
+  .zh-header__note-long {
+    display: none;
+  }
+  .zh-header__note-short {
+    display: inline;
+  }
+  .zh-header__main {
+    padding-block: var(--zh-size-tiny);
+    gap: var(--zh-size-tiny);
+  }
+  .zh-header__bar-inner {
+    padding-block: 2px;
+  }
+  .app-main {
+    padding-block: var(--zh-size-tiny) 0;
+  }
+  .app-intro {
+    padding: var(--zh-size-tiny) var(--zh-size-regular);
+    margin-bottom: var(--zh-size-tiny);
+  }
+  /* Cantonal type curve for h1 at the smallest breakpoint ($fontSizeCurves
+     huge/tiny = 28px) — the 32px base is meant for ≥400px. */
+  .app-intro .zh-heading--1 {
+    font-size: var(--zh-font-small-big);
+    margin-bottom: var(--zh-size-tiny);
+  }
+  /* Orientation text stays readable but does not push the map off the screen:
+     the short variant ends on its own at 320–430 px, so the clamp is a safety
+     net rather than the thing that ends the sentence. The full wording lives
+     in “Über das Projekt” and the result list. */
+  .app-intro__lead-long {
+    display: none;
+  }
+  .app-intro__lead-short {
+    display: inline;
+  }
+  .app-intro .zh-lead {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: var(--zh-size-tiny);
+  }
+  .app-intro__more {
+    display: block;
+    margin: 0 0 var(--zh-size-tiny);
+    font-size: var(--zh-font-small);
+  }
+  .zh-facts {
+    /* Stock figures stay complete but compact: two columns instead of one
+       clipped row. A scrollable row looked broken on a phone (the fourth
+       figure, “IIIF-Bildservice”, was cut mid-word with no scroll affordance),
+       and a single stacked column would push the map far down; two columns are
+       readable at 320 px and cost one short line. */
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--zh-size-small-regular) var(--zh-size-regular);
+    padding-bottom: 4px;
+  }
+  /* On a phone the *hero* strip is removed: the same figures now stand in the
+     two-column list inside “Über das Projekt” (#about-facts, filled from the
+     same data path in main.js), so the first screen belongs to the map. */
+  .app-intro > .zh-facts {
+    display: none;
+  }
+  .zh-facts--about {
+    display: grid;
+    margin-bottom: var(--zh-size-small-regular);
+  }
+  .zh-facts > li {
+    min-width: 0;
+  }
+  /* The source tags repeat verbatim in “Quellen und Rechte” (#source-list), so
+     the smallest breakpoint keeps the way to the map short instead. */
+  #intro-tags {
+    display: none;
+  }
+  .app-intro__more-long {
+    display: none;
+  }
+  .app-intro__more-short {
+    display: inline;
+  }
+  /* Toolbar: keep it to three compact rows on a 320 px phone. The “Ansicht”
+     and “Sortierung” labels stay in the accessibility tree (the chips and the
+     select keep their accessible names) but stop eating horizontal room, so the
+     three view chips fit one row. */
+  .app-toolbar {
+    padding: var(--zh-size-tiny) var(--zh-size-small-regular);
+    gap: var(--zh-size-tiny);
+    margin-bottom: var(--zh-size-tiny);
+  }
+  .app-toolbar__group {
+    flex-wrap: wrap;
+  }
+  .app-toolbar .zh-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .app-toolbar__label {
+    font-size: var(--zh-font-regular);
+  }
+
+  /* Quick picks (search) and quick year ranges stay on one scrollable line
+     instead of wrapping into a tall block above the map. */
+  #place-quick,
+  .zh-quickranges {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 2px;
+  }
+  #place-quick > *,
+  .zh-quickranges > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* Below the cantonal 400 px breakpoint the brand claim goes as well: the name
+   stays, and the claim repeats the page title while costing a line above the
+   map. The claim remains in the document title and the meta description. */
+@media (max-width: 399px) {
+  .zh-brand__claim {
+    display: none;
+  }
+
+  /* ---- very small phones: 320–399 px get the map on the first screen ----
+     Measured at 320×640 before this step: header 242 px + hero 242 px +
+     toolbar 151 px put the map top at 658 px — 0 px of map on screen. Three
+     blocks yield, none of them losing information from the page:
+       · the design-reference note in the black bar (34 px): the same sentence
+         stands verbatim in “Über das Projekt” and the footer names the canton
+         as the design reference, while the nav links next to it stay;
+       · the hero lead and its two links (116 px): the lead is the #about
+         sentence again, and both link targets are in the header nav or on the
+         page (`#about`, `#sources`, `#map`);
+       · the “Schnellauswahl:” caption of the place chips: the group keeps its
+         accessible name (`aria-label` on #place-quick) and the chips get the
+         whole 296 px row, so the last chip is no longer cut in half.
+     Result: map top 507 px, 133 px of map visible at 320×640; at 390×844 the
+     map moves from 609 px to ≈ 460 px (measured after the change, see
+     docs/design-system.md). */
+  .zh-header__note {
+    display: none;
+  }
+
+  .app-intro .zh-lead,
+  .app-intro__more {
+    display: none;
+  }
+
+  #place-quick > .zh-hint {
+    display: none;
+  }
+}
+
+/* ---------- year histogram (module: public/app/results.js, maps-2) ----
+   Bars are real buttons (one per decade) in a toolbar pattern: Tab reaches the
+   chart once, ArrowLeft/Right/Home/End move between decades, Enter filters.
+   Height is the share of the busiest decade, so 0-record decades keep a 2px
+   baseline and stay focusable. */
+.zh-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  block-size: 56px;
+  margin-block: var(--zh-size-tiny) calc(var(--zh-size-tiny) / 2);
+  padding-block-end: 2px;
+  border-block-end: 1px solid var(--zh-color-border-strong);
+}
+
+.zh-histogram__bin {
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-end;
+  min-inline-size: 6px;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  /* The tinted column is what makes the selected decades visible even when the
+     bar of that decade is only 2 px tall (0–2 records). */
+  background: none;
+  cursor: pointer;
+}
+
+.zh-histogram__bin[aria-current='true'] {
+  background: var(--zh-color-bg);
+}
+
+.zh-histogram__bar {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 2px;
+  background: var(--zh-color-accent);
+  opacity: 0.5;
+  border-radius: var(--zh-radius) var(--zh-radius) 0 0;
+  transition: opacity 120ms ease-out;
+}
+
+.zh-histogram__bin:hover .zh-histogram__bar,
+.zh-histogram__bin:focus-visible .zh-histogram__bar {
+  opacity: 1;
+}
+
+.zh-histogram__bin[aria-current='true'] .zh-histogram__bar {
+  opacity: 1;
+  background: var(--zh-color-accent-dark);
+}
+
+.zh-histogram__scale {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--zh-size-tiny);
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-small);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The chart gets one column per decade of the *data* range, so the number of
+   columns grows with the seed (49 decades for 1547–2021). At phone widths the
+   6 px minimum plus the 2 px gap no longer fits the page: 49 × 6 px + 48 gaps =
+   390 px, which pushed the whole document to ~420 px and produced a horizontal
+   overflow at 320 px and 390 px (found by the harness, 2026-10-19). Below the
+   first canton breakpoint the columns shrink with the chart instead, so the
+   page keeps its width and the chart stays a brush surface; the arrow-key and
+   Enter path is unchanged. */
+@media (max-width: 599px) {
+  .zh-histogram {
+    gap: 1px;
+  }
+
+  .zh-histogram__bin {
+    min-inline-size: 3px;
+  }
+}
+
+/* While the seed is loading the chart does not exist yet — results.js builds
+   its bins only after the records arrive — so the “Zeitraum” fieldset showed a
+   56 px empty box above its hint (found by throttling the connection, 7-17).
+   The skeleton is tied to the shell's own loading state : #results-loading is
+   visible and #result-list is busy until the shell ends both. That also ends it
+   in the outage case, where no bins ever come and the error block takes over.
+   Presentational only; a browser without :has() shows the empty box as before. */
+.app-side:has(#result-list[aria-busy='true']) #year-histogram:empty {
+  background-image: repeating-linear-gradient(90deg, var(--zh-color-bg) 0 8px, transparent 8px 12px);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 40%;
+  border-block-end-color: var(--zh-color-border);
+}
+
+.app-side:has(#result-list[aria-busy='true']) #year-histogram:empty::after {
+  content: 'Jahresverteilung lädt …';
+  margin: auto;
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-small);
+}
+
+/* ---------- filter panel footer (shell: maps-1) ---------- */
+.app-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-tiny);
+  margin-bottom: var(--zh-size-tiny);
+}
+
+.app-filters__actions .zh-button {
+  flex: 1 1 auto;
+}
+
+/* ---------- “Nach oben” (shell: maps-1, cantonal `mdl-back2top`) ----------
+   48 px circle ($sizeSmallHuge) fixed to the bottom-right corner, hidden until
+   the page is scrolled (see wireBackToTop in main.js). The offset follows the
+   upstream margin curve: 24 → 32 → 40 → 48 px. */
+.app-backtotop {
+  position: fixed;
+  right: var(--zh-size-large);
+  bottom: var(--zh-size-large);
+  z-index: var(--zh-z-overlay);
+  border-radius: 50%;
+  box-shadow: var(--zh-shadow-card);
+  /* Keep it away from the detail panel (z 1100) and below the compare view. */
+  pointer-events: auto;
+}
+
+.app-backtotop__icon {
+  width: var(--zh-size-large);
+  height: var(--zh-size-large);
+}
+
+@media (min-width: 600px) {
+  .app-backtotop {
+    right: var(--zh-size-big);
+    bottom: var(--zh-size-big);
+  }
+}
+
+@media (min-width: 840px) {
+  .app-backtotop {
+    right: var(--zh-size-bigger-big);
+    bottom: var(--zh-size-bigger-big);
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-backtotop {
+    right: var(--zh-size-small-huge);
+    bottom: var(--zh-size-small-huge);
+  }
+}
+
+/* ---- “Ausschnitte”: documented footprints of the filtered records ----
+   The layer sits above the tiles/overlay and below the markers, the selected
+   extent and the point crosshair. It is purely visual: pointer-events stay off
+   so a map click keeps setting the point filter (the result list is the
+   accessible way to select a record). Colours come from the cantonal palette
+   (--zh-darkblue #00407c).
+
+   Outline only, deliberately: the swisstopo series sheets all state the same
+   Switzerland-wide extent, so per-record fills stacked into a solid blue slab.
+   Identical extents are one rectangle (map.js) and the layer is outline-only:
+   any per-record fill stacks into a solid wash as soon as several filtered
+   maps cover the current view (which is exactly what a point filter produces).
+   Only the hovered or selected footprint gets a fill. */
+.map-footprint {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  border: 1px solid rgb(0 64 124 / 85%);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* A hovering/focused result row highlights the footprint it belongs to. */
+.map-footprint.is-preview {
+  border-width: 2px;
+  border-color: var(--zh-darkblue);
+  background: rgb(0 96 176 / 26%);
+}
+
+/* The selected record already has the strong dashed .map-extent on top; the
+   footprint underneath just tells the same story with the rest of the set. */
+.map-footprint.is-selected {
+  border-style: dashed;
+  border-color: var(--zh-black);
+  background: rgb(0 64 124 / 14%);
+}
+
+/* Inline switch inside the map hint sentence. */
+.app-map__hintlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--zh-color-accent-dark);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.app-map__hintlink:hover {
+  color: var(--zh-black);
+  text-decoration-thickness: 2px;
+}
+
+.app-map__hintlink:focus-visible {
+  outline: 3px solid var(--zh-color-focus);
+  outline-offset: 2px;
+  border-radius: var(--zh-radius);
+}
+
+.app-map__hintlink[aria-pressed='true'] {
+  color: var(--zh-black);
+  font-weight: 600;
+}
+
+/* ---- Grundkarte (base map) switch -------------------------------------
+   Added by maps-2 (map.js) to maps-1's stylesheet; purely additive, cantonal
+   tokens only. The chips sit in the existing keyboard control row under the
+   map (`.app-map__skip`), behind a bold label so the group is self-explaining
+   without a legend. */
+.app-map__skipbase {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-map__skiplabel {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+  color: var(--zh-black);
+}
+
+.app-map__skipgroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+/* ---------- histogram brush (module: public/app/results.js, maps-2) ------
+   Dragging across the decades selects a range in one gesture. `pan-y` keeps the
+   page scrollable on touch while a horizontal drag reaches the chart, and the
+   brushed columns are tinted even when their bar is only 2 px tall. */
+.zh-histogram {
+  touch-action: pan-y;
+}
+
+.zh-histogram__bin {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.zh-histogram__bin.is-brushing {
+  background: var(--zh-neutral-soft);
+}
+
+.zh-histogram__bin.is-brushing .zh-histogram__bar {
+  opacity: 1;
+  background: var(--zh-color-accent-dark);
+}
+
+.zh-histogram__bin.is-empty .zh-histogram__bar {
+  background: var(--zh-color-border-strong);
+  opacity: 0.45;
+}
+
+.zh-histogram__bin.is-empty[aria-current='true'] .zh-histogram__bar {
+  background: var(--zh-color-accent-dark);
+  opacity: 0.6;
+}
+
+/* ---- A row brought into view by a map selection (maps-2) ----
+   Clicking a pin on the map opens the detail panel and now also scrolls the
+   result list to that record (results.js `revealRow`). The brief marking says
+   whose row that is; it is not the selected style (`.zh-result[aria-current]`
+   stays after the mark is gone). */
+.zh-result.is-revealed {
+  outline: 3px solid var(--zh-color-accent-dark);
+  outline-offset: 2px;
+  border-left-color: var(--zh-color-accent-dark);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zh-result.is-revealed {
+    animation: zh-row-reveal 700ms var(--zh-easing-decelerate) 1;
+  }
+}
+
+@keyframes zh-row-reveal {
+  from {
+    background: var(--zh-darkblue-soft);
+  }
+  to {
+    background: var(--zh-color-surface);
+  }
+}
+
+/* ---- Windows high contrast / forced colors (maps-2) ----
+   Forced-colors mode replaces every author colour, so the states the app
+   communicates with `background-color` would disappear: a selected pin, the
+   hovered row, the brushed decade, a footprint and the histogram bars would all
+   look alike. These rules use system colour keywords, the only colours the mode
+   keeps, and prefer borders/outlines over fills so every state stays readable.
+
+   Values are the documented CSS system colours
+   (https://www.w3.org/TR/css-color-4/#css-system-colors), not author colours. */
+@media (forced-colors: active) {
+  /* The map keeps its author colours where they carry meaning (a pin is an
+     annotation on top of the tiles, which the mode leaves alone too). */
+  .map-marker {
+    border: 2px solid ButtonBorder;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  .map-marker.map-cluster {
+    border-width: 3px;
+  }
+
+  /* Selected / previewed / hovered pins: an outline is what survives, because
+     the mode drops the background colour that used to say “selected”. */
+  .map-marker.is-selected,
+  .map-marker[aria-current='true'] {
+    background: Highlight;
+    color: HighlightText;
+    outline: 3px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .map-marker.is-preview {
+    outline: 3px dashed Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Extents and the point crosshair are outline-only drawings in this mode: the
+     translucent fills are dropped, the dashed/solid outline is the information. */
+  .map-extent {
+    border: 3px dashed CanvasText;
+    background: none;
+  }
+
+  .map-point {
+    border: 3px solid CanvasText;
+    background: none;
+  }
+
+  .map-footprint {
+    border: 2px solid CanvasText;
+  }
+
+  .map-footprint.is-preview,
+  .map-footprint.is-selected {
+    border: 3px dashed CanvasText;
+    background: none;
+  }
+
+  /* The selected or previewed row: the mode drops `background` and the
+     accent-coloured left rule, so both states get a border of their own. */
+  .zh-result[aria-current='true'],
+  .zh-result.is-revealed {
+    border: 3px double Highlight;
+    border-left: 8px solid Highlight;
+    outline: 1px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .zh-result.is-preview {
+    border: 3px dashed Highlight;
+  }
+
+  /* Histogram: bars are drawn with `background` only, which the mode would turn
+     into the canvas colour — invisible. System colours keep the chart readable,
+     and the selected/brushed decades keep their Highlight fill. */
+  .zh-histogram__bar {
+    background: ButtonText;
+    opacity: 1;
+  }
+
+  .zh-histogram__bin[aria-current='true'] .zh-histogram__bar,
+  .zh-histogram__bin.is-brushing .zh-histogram__bar {
+    background: Highlight;
+  }
+
+  /* An empty decade keeps its faint bar: a system GrayText can render as the
+     canvas colour in some palettes, so the faintness comes from `opacity`
+     (which the mode does not replace) on the same readable ButtonText. */
+  .zh-histogram__bin.is-empty .zh-histogram__bar {
+    background: ButtonText;
+    opacity: 0.4;
+  }
+
+  .zh-histogram__bin.is-brushing {
+    outline: 1px solid Highlight;
+  }
+}
