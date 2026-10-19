@@ -195,13 +195,51 @@ the sets disjoint:
 - the extent must span **at least 5°** of latitude or longitude — that is what
   makes a sheet an overview map rather than a local one.
 
-Result: 39 candidates with a stated extent → 21 kept, **1787–1915**, held by ZB
-Zürich, ETH-Bibliothek and Universitätsbibliothek Bern (e.g. the 1787
-“Carte générale de l'Europe”, the 1830s–1850s “Erdkarte” plates, 19th-century
-Africa, America and Asia sheets). The set is skipped entirely when the gazetteer
-is unreachable, like the Zürich sets — the window is not optional. A per-query
-quota was probed and rejected: only the Europe query answers many records with a
-stated extent, so a quota would have shrunk the set without adding a continent.
+Result (7-20 harvest): **twelve** SRU questions answer 187 hits, 120 of them
+candidates with a stated year and coordinates, 37 pass the area gate and **21 are
+kept, 1787–1914**, held by ETH-Bibliothek (14), Universitätsbibliothek Bern (6)
+and ZB Zürich (1) — the 1787 “Europa universalis”, the 1788 “India anterior”, the
+1797 “Dania regnum”, the 1795–1805 “Germania universa” post maps, the 1845/1847
+austrian geological overviews, the 1850 Levant coast, the 1860/1900 “General-Karte
+von Italien”, the 1873/1875 coal and geological maps of Austria-Hungary, the 1902
+Hungarian crown-lands map and the 1914 Franco-German and Italian front sheets.
+The set is skipped entirely when the gazetteer is unreachable, like the Zürich
+sets — the window is not optional.
+
+### The world set becomes a country spread (7-20)
+
+The set pooled six continent/world keywords and kept 21 of 39 candidates, so the
+world view outside Switzerland was thin. The same catalogue answers **country
+keywords**, probed on 2026-10-19 with the same SRU query shape — Deutschland 62
+hits, Italien 20, Frankreich 17, Oesterreich-Ungarn 13 (the catalogue's own
+German subject heading; `Österreich` answers nothing), Spanien 7,
+Grossbritannien 4 — while Niederlande (2 hits, its maps span ~3.5° and cannot pass
+the 5° area gate), Preussen (12, but also Deutschland hits), Russland (2),
+Indien/China/Japan (1 each) and Australien (0) were probed and left out; the
+probe numbers are kept in the set's comment. Six country questions were added to
+the six existing ones.
+
+Because Deutschland alone answers a third of the pool, the selection is no longer
+a plain year sort: the pooled candidates are picked **in rounds over the query
+groups** with a **quota of 7 per keyword**, so every keyword contributes its
+earliest kept sheet before a productive keyword offers its next one. The earlier
+“a per-query quota was probed and rejected” note applied to the six-keyword pool,
+where only the Europe query answered many records; with twelve keywords the
+rounds are what keep the country spread. The 5°-span gate, the outside-canton
+window, the one-entry-per-title-and-year rule and the three-per-decade cap are
+unchanged. Harvest output: 187 hits → 120 candidates → 37 pass the area gate →
+21 kept; the seed stays 199 records.
+
+### One plan, two issues — a deliberate near-duplicate (7-20)
+
+A seed-wide audit (same normalised title + year) finds exactly one pair:
+`e-rara:8602422` and `e-rara:8602432`, both “Grundriss der Stadt Zürich und der
+umliegenden Gegend”, 1800, Keller/Lips, ZB Zürich. Both IIIF manifests were read
+side by side on 2026-10-19: they are **two real items** — `3 Lb 05: 1` is the
+coloured issue (20 × 25 cm) and `3 Lb 05: 3` the black-and-white one (21 × 26 cm),
+with different DOIs (`e-rara-26723` / `e-rara-26725`) and image services. The seed
+keeps both on purpose; the catalogue's own copy-level records are what the two
+different e-rara corpora (`landkarten` and the city-plan SRU set) contributed.
 
 ### The ETH set becomes a four-century Swiss survey (7-19)
 

@@ -152,8 +152,9 @@ nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 can
 prospects, the 1875–1881 Übersichtspläne, the 1896 Zürichsee map, 1908/1919
 sheets), 10 city ground and site plans (the 1696/1705 fortress plans, the 1800
 and 1838 city plans, the 1881 quay and 1890 tramway situations), 21 overview maps
-of Europe and the world (1787–1915, extent centre deliberately outside the
-canton, at least 5° of span) and 1 map from the
+of Europe and the world (1787–1914, extent centre deliberately outside the
+canton, at least 5° of span; the 7-20 country keywords add German, Italian,
+Austrian and Franco-German sheets to the continent maps) and 1 map from the
 Bibliothèque de Genève) — plus 27 georeferenced swisstopo overlay editions; the UI
 states the real count and `records.json.selection`
 documents the rule per set, including the `landkarten` window (30 of the set's 2335

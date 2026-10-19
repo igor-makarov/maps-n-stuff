@@ -1,5 +1,80 @@
 # zurich-maps-0 status
 
+## Iteration 7-20 (2026-10-19) — the world set becomes a country spread
+
+Commit `bc026cd` (rebased over maps-1's merge `a182b43`; pushed to `main`). The
+seed stays **199 records**; what changed is the world set's rule and composition.
+
+### What changed in `scripts/fetch-records.mjs` (set `e-rara:weltuebersichten`)
+
+The world set pooled six continent/world keywords (39 candidates → 21 records).
+The same catalogue answers **country keywords**, so six more were added after a
+probe of twelve candidates: Deutschland 62 hits, Italien 20, Frankreich 17,
+Oesterreich-Ungarn 13, Spanien 7, Grossbritannien 4 (kept), while Niederlande (2
+hits, its maps span ~3.5° and cannot pass the 5° area gate), Preussen (12, but its
+sheets are also Deutschland hits), Russland (2), Indien/China/Japan (1 each) and
+Australien (0) were probed and left out — the numbers live in the set's comment.
+
+Because one keyword answers a third of the pool, the selection is no longer a
+plain year sort: `selectSru` gained `quota`/`quotaKey`/`interleave` and the world
+set pools its candidates **in rounds over the twelve query groups with a quota of
+7 per keyword**, so every keyword contributes its earliest kept sheet before a
+productive keyword offers its next one. The 5°-span gate, the outside-canton
+window, one-entry-per-title-and-year and the three-per-decade cap are unchanged;
+the caps are `candidateCap` 170 / `recordCap` 40.
+
+### Measured this iteration (this runner)
+
+- Warm-cache `npm run harvest`: **2m05s**; console: 187 overview hits (12 queries)
+  → 120 candidates → *“SRU kept 21 overview maps outside the canton of 120
+  candidates (37 passed the area gate)”*; seed 199 records, 12 comparison layers.
+- The kept 21 span **1787–1914** (before 1787–1915) and are held by ETH-Bibliothek
+  14, Universitätsbibliothek Bern 6, ZB Zürich 1. Added to the set: the 1795–1805
+  “Germania universa” post maps, the 1847 Austrian geological travel overview, the
+  1860/1900 “(General-)Karte von Italien”, the 1866/1914 Italian and Franco-German
+  war-theatre sheets, the 1875 geological map of Austria-Hungary, the 1902
+  Hungarian crown-lands map. Removed: the 1875/1881/1889/1895/1896/1915 Europe
+  and Alpine sheets whose decades were full.
+- `npm run check` ✓ — validation (199 records, 2 providers, 12 overlays, 27
+  depicted periods), **163/163** `node --test`, `wrangler deploy --dry-run`
+  (28.76 KiB Worker).
+- Integrated-tree CDP harness after rebasing over `a182b43`: **143/143**, no
+  console errors, no failed requests (`/tmp/shots-720b/`). The count is 143, not
+  the 142 in older notes — a teammate check landed in between; `docs/run.md`
+  already states 143, and the board's maps-3 line is refreshed.
+
+### Honest note: the count did not grow
+
+The set keeps 21 records before and after; what changed is the country spread and
+that the rule is now documented and reproducible. The pool is the limit: 37
+records pass the area gate, and the three-per-decade cap binds because the
+candidates cluster in ~7–9 publication decades. A follow-up probe worth doing:
+raising the world set's `perDecade` from 3 to 4 (the affected decades would take a
+fourth sheet, and the cap 40 has room) — deliberately **not** done in this
+iteration because the harvest plus a fresh harness run is the whole budget, and
+an unverified data change would have been worse than the modest gain.
+
+### Messages
+
+- **→ maps-2:** eleven world records were swapped for country sheets (Italy,
+  Austria-Hungary, Germany, France). Nothing inside the canton window changed, so
+  the point filter, histogram, footprint and clustering paths keep their data; the
+  harness (which exercises them) was run on the rebased tree: **143/143**.
+- **→ maps-3:** the harness is **143/143** on the integrated 199-record seed with
+  the new world records (`/tmp/shots-720b/`); `docs/run.md`'s 143 is confirmed. One
+  new unit-test-relevant fact: none — the world records are plain seed records.
+- **→ maps-1:** the README known-limitations sentence is refreshed (world set span
+  **1787–1914**, country keywords); no shell/store/style file was touched.
+- **→ all:** the seed is unchanged at **199 records / 2 providers**; only the
+  world set's composition and its selection rule changed. Any note that says the
+  world set is “six queries” is now stale: it is twelve.
+- **→ all (data audit):** `e-rara:8602422` and `e-rara:8602432` share title, year
+  and extent but are two real items — the coloured (3 Lb 05: 1) and the
+  black-and-white (3 Lb 05: 3) issue of Keller's 1800 “Grundriss der Stadt
+  Zürich”, with different DOIs, shelfmarks and manifests (checked against both
+  IIIF manifests this iteration). The seed keeps both on purpose; they are not a
+  dedupe bug.
+
 ## Iteration 7-18 (2026-10-19, ~01:15–02:0x UTC) — the Zürich plan set keeps every gate-passing candidate
 
 Commit `d29b649` (rebased over maps-2's `242ccb4`; pushed to `main`). Seed
