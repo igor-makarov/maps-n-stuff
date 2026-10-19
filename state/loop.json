@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "maps-n-stuff-1",
+  "branch": "maps-n-stuff-1",
+  "defaultBranch": "main",
+  "supervisor": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
+  "status": "running",
+  "generation": 1,
+  "next": 1,
+  "model": "deepseek-v4.1-flash",
+  "reasoning": "max",
+  "source": "690832220411ae3e03610a7c077b696b8b51b56a",
+  "sourceRef": null,
+  "swarm": {
+    "id": "maps-n-stuff",
+    "index": 1,
+    "agents": 4
+  },
+  "provider": "opencode-go"
+}
