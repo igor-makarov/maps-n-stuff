@@ -1383,3 +1383,98 @@ withdrawn; `coordination/README.md` stays exactly as maps-1 wrote it.
   (`wrangler deploy --dry-run` verification only).
 - Playwright is not installed; `chromium`/`google-chrome` binaries exist, so
   headless screenshots are possible.
+
+## Redirect 2026-10-19 (brief commit `2f1dc08`): global English atlas
+
+The product direction changed: an English-language global historical atlas with
+an original identity, and the OldMapsOnline-style **History / borders** map is a
+required feature, not a later enhancement. Canton Zürich stays a *visual*
+reference only (typography, spacing, restraint). The older German/Swiss-first
+expectations above are historical evidence, not the target.
+
+### Claimed for the redirect (maps-0)
+
+- `scripts/harvest-history.mjs` — the historical-borders pipeline. Primary source
+  `aourednik/historical-basemaps`, pinned at `da7a4b735ecef70aebdc9c73e409d8a2500d50f3`
+  (GPL-3.0-or-later). Downloads through a cache, simplifies with Douglas–Peucker,
+  quantises to integer millidegrees, writes the provenance.
+- `public/data/history/**` — the shipped bundle: `index.json` (provenance,
+  licence, coverage, per-snapshot metadata), 54 snapshots `-123000 … 2010`,
+  `catalogue.json` (names per snapshot for the polity search), `places.json`
+  (2220 settlements with inhabitedSince/Until) and the upstream GPL text.
+- `public/app/history.js` + `public/styles/history.css` — the **Borders through
+  time** view (canvas Web Mercator, graticule background, **no modern basemap
+  under historical borders**), year slider/field/play, nearest-snapshot honesty,
+  labels, click details with the upstream file link, cross-snapshot polity search,
+  keyboard + mobile controls, URL state `?view=history&year=&hv=`.
+- `tests/history-borders.test.mjs`, and the history gate in `scripts/validate.mjs`.
+
+### Small edits to files I do not own (noted per rule 3)
+
+- `public/app/store.js`: `view` may be `'history'`; new keys `year` (History year,
+  negative = BCE) and `hv` (the History view's own `lat,lon,zoom` window, so the
+  archive map's window is not clobbered). **Initial view is now the world**
+  (`lat 20, lon 0, zoom 2`) instead of Zürich, per outcome 1.
+- `public/app/main.js`: one line adds `['history', './history.js']`.
+- `tests/store.test.mjs`: the old Zürich-default expectation now asserts the
+  worldwide defaults (behavioural coverage kept).
+
+### Name: “Meridian Atlas” (maps-0 withdrew “Orbis Atlas”)
+
+maps-0 first proposed “Orbis Atlas” in `a4f2bdd`; maps-3's `1c56218` proposed
+**“Meridian Atlas”** with an original meridian/compass-roundel mark and was
+written first. Two names would split the product, so **maps-0 accepts Meridian
+Atlas** and will not ship the competing name anywhere. maps-1 owns the header
+copy; maps-3 owns the mark.
+
+### The history pipeline is on `main` (`a4f2bdd`) — converge on its schema
+
+maps-2's D14 accepted maps-3 as the History renderer and kept the *data half*
+(`scripts/fetch-history.mjs`, schema `world_<year>.json` with `n/s/p/b/r` and
+hundredths-of-a-degree rings). That data half already exists as **`a4f2bdd`**:
+`scripts/harvest-history.mjs` + `public/data/history/**` are committed and their
+build gate (validate.mjs) passes. Please consume it instead of writing a second
+pipeline; the schema is (and is documented in `public/data/history/index.json`):
+
+```jsonc
+// public/data/history/index.json — provenance, licence, coverage, per-snapshot metadata
+{ "dataset":"historical-basemaps", "commit":"da7a4b73…", "license":"GPL-3.0-or-later",
+  "coverage":{"firstYear":-123000,"lastYear":2010,"snapshots":54,"snapshotYears":[…]},
+  "years":[{"year":1900,"file":"world_1900.json","upstream":"geojson/world_1900.geojson",
+            "features":183,"precision":{"1":0,"2":0,"3":183},"bytes":…}, …] }
+// public/data/history/world_1900.json — one snapshot
+{ "year":1900, "features":[ { "name":"Austria Hungary", "subject":"Austria Hungary",
+  "partOf":"", "borderPrecision":3, "parts":[[x0,y0,x1,y1,…], …] } ] }   // millidegree ints
+// public/data/history/catalogue.json — [[year, [names…]], …] for cross-snapshot search
+// public/data/history/places.json  — 2220 settlements with since/until
+```
+
+`borderPrecision`: 1 approximate, 2 moderate, 3 determined by international law,
+0 not stated. If maps-3's renderer is already written against `n/s/p/b/r` +
+hundredths, say so and maps-0 will either add those aliases to the snapshot files
+or the renderer reads `name/subject/partOf/borderPrecision/parts`; the coordinates
+are millidegree integers (divide by 1000). **Do not fork the bundle.**
+
+### What maps-0 is not doing
+
+Because maps-2 shipped/claimed the renderer half and maps-3 the view, maps-0 will
+not extend `public/app/history.js` with competing chrome: a reported bug there
+comes back to maps-0; cosmetic/structural changes belong to whoever claims the
+view. maps-0's remaining lane stays as D14 says: **global archival sources** (LoC,
+BnF Gallica, NLS, David Rumsey; e-rara stays as part of the collection) plus the
+source registry, and the provenance review of the borders dataset.
+
+### Requests
+
+- **→ maps-1 (shell/identity):** remove the canton shield/diagonal mark from
+  header + favicon; use the English name and the new mark; translate the chrome;
+  the `Borders through time` / `Maps` mode switch is injected by `history.js` into
+  `#main` — keep it working (see `public/styles/history.css`).
+- **→ maps-2 (map/search/results):** a worldwide basemap (the current swisstopo
+  layer ends at the Swiss border) and a worldwide place search (Nominatim or a
+  documented equivalent with attribution); English facets/labels.
+- **→ maps-3 (detail/tests/harness):** English chrome regression checks, the
+  global initial extent, worldwide place queries (Cairo, Tokyo, Mexico City,
+  São Paulo), and the borders view (year change ⇒ geometry change; early + modern
+  dates). The History view is a separate module, so its data tests live in
+  `tests/history-borders.test.mjs` (maps-0).

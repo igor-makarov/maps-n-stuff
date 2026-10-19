@@ -1,13 +1,16 @@
 /**
  * Interactive map: a dependency-free slippy map (Web Mercator, 256 px tiles)
- * fed by swisstopo WMTS geoservices, plus historical comparison layers.
+ * with a **worldwide** default basemap, plus historical comparison layers.
  *
  * Deliberately small and explicit instead of vendoring a whole map library:
- *   - base: Landeskarte (swisstopo `ch.swisstopo.pixelkarte-farbe`)
+ *   - base, worldwide: OpenStreetMap raster tiles (`tile.openstreetmap.org`) —
+ *     the initial view is the whole world, not one canton
+ *   - base, Swiss detail: the swisstopo WMTS layers (Landeskarte colour/grey,
+ *     SWISSIMAGE) where they exist, for comparing Swiss sheets with their ground
  *   - comparison: any layer from /data/overlays.json (Zeitreise, Dufour, Siegfried, …)
  *   - markers: records with a documented point/bbox (public/app/records.js)
  *
- * Keyboard: the container is focusable; arrows pan, +/- zoom, Home = Zürich,
+ * Keyboard: the container is focusable; arrows pan, +/- zoom, Home = the world,
  * End = fit results. The result list is the equivalent accessible interface.
  *
  * Coordination with the result list: hovering/focusing a marker shows a small
@@ -38,42 +41,56 @@ const TILE = 256;
  */
 export const BASE_LAYERS = Object.freeze([
   {
+    key: 'osm',
+    id: 'openstreetmap',
+    title: 'OpenStreetMap (worldwide)',
+    chip: 'World',
+    hint: 'The worldwide OpenStreetMap reference layer — the default view, everywhere on Earth.',
+    maxZoom: 19,
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© OpenStreetMap contributors (ODbL)',
+    global: true,
+  },
+  {
     key: 'farbe',
     id: 'ch.swisstopo.pixelkarte-farbe',
-    title: 'Landeskarte (farbig)',
-    chip: 'farbig',
-    hint: 'Die farbige Landeskarte von swisstopo – die gewohnte Kartenansicht.',
+    title: 'Swiss national map (colour)',
+    chip: 'Swiss map',
+    hint: 'The swisstopo national map — detailed Swiss coverage only; worldwide views use OpenStreetMap.',
     maxZoom: 18,
     urlTemplate:
       'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
     attribution: '© swisstopo – Landeskarte (farbig)',
+    coverage: 'Switzerland',
   },
   {
     key: 'grau',
     id: 'ch.swisstopo.pixelkarte-grau',
-    title: 'Landeskarte (grau)',
-    chip: 'grau',
-    hint: 'Die graue Landeskarte: ein ruhiger Hintergrund für Markierungen, Ausschnitte und historische Ebenen.',
+    title: 'Swiss national map (grey)',
+    chip: 'Swiss grey',
+    hint: 'The grey swisstopo map — a calm Swiss background for markers, footprints and historical layers.',
     maxZoom: 18,
     urlTemplate:
       'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
     attribution: '© swisstopo – Landeskarte (grau)',
+    coverage: 'Switzerland',
   },
   {
     key: 'luftbild',
     id: 'ch.swisstopo.swissimage',
-    title: 'SWISSIMAGE (Luftbild)',
-    chip: 'Luftbild',
-    hint: 'Das aktuelle Luftbild von swisstopo (SWISSIMAGE) – gut zum Vergleich mit alten Karten.',
+    title: 'SWISSIMAGE (aerial)',
+    chip: 'Aerial',
+    hint: 'Current swisstopo aerial imagery for Switzerland — useful next to an old sheet.',
     maxZoom: 18,
     urlTemplate:
       'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
     attribution: '© swisstopo – SWISSIMAGE',
+    coverage: 'Switzerland',
   },
 ]);
 
 /** The base map of a fresh visit — also the fallback for an unknown key. */
-export const DEFAULT_BASE = BASE_LAYERS[0];
+export const DEFAULT_BASE = BASE_LAYERS[0]; // OpenStreetMap: worldwide by default
 
 /** Kept for callers that only need the default layer. */
 export const BASE_LAYER = DEFAULT_BASE;
@@ -89,6 +106,9 @@ export function baseLayerFor(key) {
   return BASE_LAYERS.find((layer) => layer.key === wanted) ?? DEFAULT_BASE;
 }
 
+export const WORLD = { lat: 20, lon: 0, zoom: 2 };
+/** The whole world as a fitBounds() box (used when no result has a position). */
+export const WORLD_BOUNDS = { west: -179.9, east: 179.9, south: -85, north: 85 };
 export const ZURICH = { lat: 47.3769, lon: 8.5417, zoom: 12 };
 export const SWITZERLAND = { west: 5.140242, east: 11.47757, south: 45.398181, north: 48.230651 };
 
@@ -103,13 +123,20 @@ export const tileYToLat = (y, z) => {
   return (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
 };
 
-/** Tile URL from a WMTS template with {TileMatrix}/{TileCol}/{TileRow}/{Time}. */
+/**
+ * Tile URL from a template. Two documented shapes are supported:
+ *  - WMTS (swisstopo): {TileMatrix}/{TileCol}/{TileRow}/{Time}
+ *  - XYZ (OpenStreetMap): {z}/{x}/{y}
+ */
 export function tileUrl(template, { z, x, y, time }) {
   return template
     .replace('{TileMatrix}', String(z))
     .replace('{TileCol}', String(x))
     .replace('{TileRow}', String(y))
-    .replace('{Time}', encodeURIComponent(time ?? 'current'));
+    .replace('{Time}', encodeURIComponent(time ?? 'current'))
+    .replace('{z}', String(z))
+    .replace('{x}', String(x))
+    .replace('{y}', String(y));
 }
 
 /** Grid size (px) used to group markers that would overlap at the current zoom. */
@@ -944,7 +971,7 @@ export function init(ctx) {
   /**
    * The base-map chips are built from BASE_LAYERS, so the control cannot drift
    * from the layers the renderer actually knows. One `aria-pressed` chip is on,
-   * and the accessible name repeats the action: “Grundkarte … wählen”.
+   * and the accessible name repeats the action: “Basemap: <layer>”.
    */
   function syncBaseChips() {
     if (!baseSwitch) return;
@@ -972,7 +999,7 @@ export function init(ctx) {
       chip.setAttribute('aria-pressed', on ? 'true' : 'false');
       // Toggle-button pattern: `aria-pressed` carries the state, so the
       // accessible name only says what the switch controls.
-      chip.setAttribute('aria-label', `Grundkarte: ${layer.title}`);
+      chip.setAttribute('aria-label', `Basemap: ${layer.title}${layer.coverage ? ` (${layer.coverage} only)` : ' (worldwide)'}`);
     }
   }
 
@@ -1246,7 +1273,7 @@ export function init(ctx) {
       '-': () => zoomBy(-1),
       _: () => zoomBy(-1),
       Home: () => {
-        Object.assign(state, { ...ZURICH, zoom: 12 });
+        Object.assign(state, { ...WORLD });
         render();
         push();
       },
@@ -1265,9 +1292,8 @@ export function init(ctx) {
       const cmd = button.dataset.mapCmd;
       if (cmd === 'in') zoomBy(1);
       if (cmd === 'out') zoomBy(-1);
-      if (cmd === 'zurich') {
-        Object.assign(state, { ...ZURICH });
-        state.zoom = 12;
+      if (cmd === 'world' || cmd === 'zurich') {
+        Object.assign(state, { ...WORLD });
         render();
         push();
       }
@@ -1284,7 +1310,7 @@ export function init(ctx) {
     const boxes = state.filtered.map((r) => r.extent).filter(Boolean);
     if (boxes.length === 0) {
       const points = state.filtered.map(recordCenter).filter(Boolean);
-      if (points.length === 0) return SWITZERLAND;
+      if (points.length === 0) return WORLD_BOUNDS;
       return {
         west: Math.min(...points.map((p) => p.lon)) - 0.2,
         east: Math.max(...points.map((p) => p.lon)) + 0.2,

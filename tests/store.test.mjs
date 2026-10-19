@@ -10,11 +10,14 @@ import assert from 'node:assert/strict';
 
 import { PARAM, STATE_DEFAULTS, createBus, createStore, readStateFromUrl, sanitise, stateToQuery } from '../public/app/store.js';
 
-test('defaults describe the documented Zürich initial view', () => {
-  assert.equal(STATE_DEFAULTS.lat, 47.3769);
-  assert.equal(STATE_DEFAULTS.lon, 8.5417);
-  assert.ok(STATE_DEFAULTS.zoom >= 10 && STATE_DEFAULTS.zoom <= 16);
+test('defaults describe the documented worldwide initial view', () => {
+  // Corrected product scope (2026-10-19): the atlas opens on the world, not on
+  // one canton. The old Swiss-first default was removed with the redirect.
+  assert.equal(STATE_DEFAULTS.lat, 20);
+  assert.equal(STATE_DEFAULTS.lon, 0);
+  assert.ok(STATE_DEFAULTS.zoom <= 4, 'the initial zoom must show the whole world');
   assert.equal(STATE_DEFAULTS.selected, '');
+  assert.equal(STATE_DEFAULTS.view, 'split');
 });
 
 test('readStateFromUrl reads the short shareable parameters', () => {

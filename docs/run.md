@@ -25,9 +25,42 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run dry-run` | bundles the Worker and writes the deploy artefact to `dist/` without uploading |
 | `npm run harvest` | re-fetches the seed data (`records.json`, `sources.json`, `overlays.json`) from e-rara/swisstopo. A **cold** run (no `.cache/fetch/` at all, 2026-10-19) cached 1153 upstream responses (19 MB) and reproduced the committed files byte for byte apart from `generatedAt` |
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
+| `npm run harvest:history` | rebuilds the **historical-borders** bundle `public/data/history/` from `aourednik/historical-basemaps` at a pinned commit (GPL-3.0-or-later; provenance, licence and simplification are written into `index.json`). Network run: 54 snapshots + the upstream licence are cached under `.cache/historical-basemaps/`; the script is deterministic for the pinned revision and the cached retrieval date. Measured 2026-10-19: 54 snapshots, 8.3 MiB snapshot data, 2220 places, 12.8 s cold |
+| `npm run harvest:history:offline` | rebuilds the same bundle from `.cache/historical-basemaps/` without network access |
 | `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **984/984 URLs, 0 failures** on the 213-record seed at the default `--concurrency 4 --retries 2` — **no retry was needed**; an earlier 169-record run needed 23 retries at `--concurrency 2`, so the retry default (transient 429/5xx/timeouts, `--retries n`) stays |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
 | `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 155 checks (measured on the integrated tree, 2026-10-19) — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home; thumbnails are fetched as they come into view), the “Blatt” jump control of the seed’s largest work (65 sheets: options, sheet 7 really loaded and centred, 390 px, no control on a 3-sheet work), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare (the decade bars count the other filters but *not* the period, a real mouse drag brushes a range in one gesture with a live preview, one tap still selects a decade; both panes of records with a manifest are real IIIF viewers; `+` in one pane pulls the other to the matching region — coupled through the documented extent — the switch decouples them again, 390 px stacks the panes with the switch still reachable, and the panes' cut-outs are shareable state of their own: a zoom writes `?cvv=<record id>@x,y,w,h` for the pane that really shows that region, “Ganzes Blatt” in a pane returns both coupled panes to the whole sheet and drops the parameter, and a link that names one pane's cut-out reopens exactly that region in that pane and — coupled — the same place in the other; a world sheet next to a distant plan is *not* silently coupled: the pane that cannot show the cut-out keeps its whole sheet, says so (`data-coverage="outside"`), and the link carries only the pane that really shows a region; the coupling switch's own state is shareable too: `?csync=0` reopens the panes decoupled with the honest hint, one Enter on the switch couples them again and removes the parameter from the link, and the dialog keeps Tab focus inside itself (the last control wraps to the first) and returns it to the toolbar button on Escape), the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, the honest empty state of a point with no map in the chosen period — derived from the seed, because the whole-globe sheets answer every point, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, **point piles** (a cluster whose records share one *documented* point — the seed’s six Zürich Stadtpläne — opens a focusable “Karten an diesem Punkt” list instead of a zoom that provably cannot split them: labelled dialog, every record in chronological order, Enter opens that record, Escape returns focus to the pin, its own “Ansicht trotzdem vergrössern” still zooms, and at 390 px the list stays inside the map with tappable rows and no clipped text), the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), the record search inside the place box (“Karten zum Stichwort …” applies the keyword filter, its count matches the list, an unmatched query says so; “Zuerich”, “Zürich” and “zuerich” return the same rows), “Nach oben”, 320 px list layout, map-first layout (desktop/tablet **and** the phone step: at 390×844 the map starts at 483 px so 361 px of it are visible, and at 320×640 the very-small-phone step (< 400 px) puts 133 px of map on the first screen — the stock figures move into “Über das Projekt” under 600 px, and below 400 px the hero hands the lead sentence and its two links to the map while that sentence stays complete in “Über das Projekt”; the “Schnellauswahl:” caption yields so the place chips are no longer cut in half), pin/unpin from the detail panel, the georeferenced WMTS record's own “Kartenebene” toggle (on from the panel: `ov`/`ot` set, sidebar select agrees, real overlay tiles; a second press removes it again), the **Grundkarte switch** (three documented swisstopo layers, default marked, real grey tiles after a click with the old layer's tiles gone and the view unchanged, shared `?base=luftbild` link, Enter on the focused chip, 390 px), the device-local remembered list, “Suchlink kopieren”, **a pin click bringing its own result row into view** (the row is parked out of view above the viewport first, the pin is clicked with a real mouse event, and the row must end up inside the readable band, marked, left of the detail drawer and with the sticky map still on screen; at 390 px the same click must *not* move the page at all, and both cases have to announce the row in the list's `role="status"` line as `Zeile N von M ausgewählt: <Titel>` — with the “the list is scrolled to this row” clause exactly where the page really moved), **forced colors** (`Emulation.setEmulatedMedia` with `forced-colors: active`: the selected pin, the selected row and the selected decade each keep a state that differs from the unselected one — a Highlight fill/outline or a border, not only a background colour; a brushed decade range keeps its Highlight bar and its outline while the pointer is down — the panel is closed first, because its scrim swallows real mouse events), no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service, the place-search API *and* the seed file `/data/records.json` on purpose and asserts that all three fall back to plain German messages, local title suggestions, working provider links and a results area that stops claiming to load (`aria-busy`, visible loading block) — plus the loading state itself on a **throttled** connection (section 8m): `#results-loading` is visible, `#result-list` carries `aria-busy="true"`, and the “Zeitraum” chart shows its “Jahresverteilung lädt …” skeleton (only while loading — the outage path drops it) until the seed arrives. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+## Worldwide basemap and place search (maps-2, redirect 2026-10-19)
+
+The atlas opens on the **whole world** (`store.js` defaults: 20° N, 0° E, zoom 2)
+and the default basemap is **OpenStreetMap** raster tiles
+(`https://tile.openstreetmap.org/{z}/{x}/{y}.png`, XYZ template served by the same
+renderer as the swisstopo WMTS templates). The swisstopo Landeskarte (colour/grey)
+and SWISSIMAGE stay selectable for Swiss detail and are labelled as
+Switzerland-only (`coverage: 'Switzerland'` in `BASE_LAYERS`); they are no longer
+the default and cannot be mistaken for world coverage. Attribution is rendered from
+the active layer (`© OpenStreetMap contributors (ODbL)` / `© swisstopo`).
+
+Place search is **worldwide**: the Worker proxies OpenStreetMap's **Nominatim**
+gazetteer (`https://nominatim.openstreetmap.org/search`) and the Swiss
+swisstopo `SearchServer` remains the fallback. Why a proxy: the Nominatim usage
+policy asks for an identified client, at most one request per second and caching;
+the Worker sends one project User-Agent (`src/worker/allowlist.js`), the query is
+cached for five minutes per identical URL, and the client debounces typing (260 ms).
+Only `/search` is on the allowlist — the Worker cannot be used as a general
+Nominatim client. Response mapping (`src/worker/geocode.js`) turns Nominatim's
+`south,north,west,east` bounding box into the app's `{west,south,east,north}` and
+drops any record without a published latitude/longitude. Attribution:
+`© OpenStreetMap contributors (ODbL 1.0)`.
+
+Verified 2026-10-19 through `npx wrangler dev`:
+`/api/search/places?q=` returned real results for **Cairo** (30.0444, 31.2357),
+**Tokyo Japan** (35.6769, 139.7639), **Mexico City** (19.3208, −99.1515) and
+**São Paulo** (−23.5507, −46.6334), each with a bounding box, `origin`
+(city/state/province/municipality) and the OSM licence string.
+`tests/world-search.test.mjs` covers the mapping, the allowlist, the global
+basemap defaults and the worldwide quick picks.
+
 ## Cloudflare Workers deployment
 
 The repository is a **Workers static-assets site**: `public/` is uploaded as
@@ -215,7 +248,7 @@ code/styles 5 min, data 10 min. Verify locally with
 | `GET /api/records` | the seed records (5 min cache) |
 | `GET /api/layers` | swisstopo overlay descriptors used by the comparison picker |
 | `GET /api/sources` | the source registry shown in the UI |
-| `GET /api/search/places?q=&limit=` | swisstopo `SearchServer` proxy (`type=locations`), 5 min edge cache, query bounded to 2–120 chars, limit ≤ 20 |
+| `GET /api/search/places?q=&limit=` | **worldwide** place search: Nominatim/OpenStreetMap (`/search`, `format=jsonv2`, `accept-language=en`) proxied by the Worker with a 5 min edge cache, query bounded to 2–120 chars, limit ≤ 10; when it fails or finds nothing, the documented Swiss swisstopo `SearchServer` (`type=locations`) answers instead. Response names `source` and `attribution` (maps-2) |
 | `GET /api/fetch?url=` | allowlisted pass-through (e-rara IIIF, swisstopo WMTS/capabilities) with a 1 h edge cache — a *fallback* for clients where the direct CORS call fails |
 
 The allowlist is a literal host + path-prefix list in
@@ -247,6 +280,25 @@ records only describe editions the WMTS service advertises and serves (empty
 tiles are probed and skipped, see `records.json.skipped`). Which records were
 considered and kept per OAI set, and by which rule, is written into
 `records.json.selection`.
+
+### Historical borders (History view)
+
+`scripts/harvest-history.mjs` (owner: zurich-maps-0) rebuilds
+`public/data/history/`: `index.json` (provenance, pinned commit, licence,
+coverage, per-snapshot metadata and simplification parameters),
+`world_<year>.json` per published snapshot (54 of them, `-123000 … 2010`),
+`catalogue.json` (the names per snapshot for the polity search) and `places.json`
+(2220 settlements with `inhabitedSince`/`inhabitedUntil`). The upstream GeoJSON is
+65 MiB; the bundle is 8.5 MiB after Douglas–Peucker simplification (0.05°) and
+quantisation to integer millidegrees. `public/data/history/LICENSE-GPL-3.0.txt`
+travels with the data, and `scripts/validate.mjs` fails the build when an indexed
+snapshot is missing or does not match the size the harvest recorded.
+
+The view never presents a snapshot as a continuous border record: a year between
+two maps is drawn as the nearest snapshot and the interface names the snapshot it
+represents (ties go to the earlier map). Border precision comes from the source
+(`BORDERPRECISION`): 1/0 are drawn dashed, 2/3 solid, and the details panel spells
+the value out.
 
 ## Troubleshooting
 

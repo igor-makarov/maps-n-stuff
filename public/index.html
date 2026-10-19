@@ -71,14 +71,14 @@
         </a>
 
         <form class="zh-search" id="place-search" role="search" autocomplete="off" novalidate>
-          <label class="visuallyhidden" for="place-input">Ort suchen</label>
+          <label class="visuallyhidden" for="place-input">Search for a place</label>
           <div class="zh-search__field">
             <input
               class="zh-input zh-search__input"
               id="place-input"
               name="q"
               type="search"
-              placeholder="Ort suchen, z. B. Zürich, Basel, Genf …"
+              placeholder="Search a place — Cairo, Tokyo, Mexico City …"
               role="combobox"
               aria-expanded="false"
               aria-controls="place-suggestions"
@@ -86,10 +86,10 @@
               spellcheck="false"
             />
             <button class="zh-button" type="submit" id="place-submit">
-              <span class="zh-button__text">Suchen</span>
+              <span class="zh-button__text">Search</span>
             </button>
           </div>
-          <ul class="zh-suggestions" id="place-suggestions" role="listbox" aria-label="Ortsvorschläge" hidden></ul>
+          <ul class="zh-suggestions" id="place-suggestions" role="listbox" aria-label="Place suggestions" hidden></ul>
           <p class="zh-search__status" id="place-status" role="status" aria-live="polite"></p>
         </form>
       </div>
@@ -315,23 +315,23 @@
             <li><button class="zh-chip" type="button" data-map-cmd="in">Hineinzoomen</button></li>
             <li><button class="zh-chip" type="button" data-map-cmd="out">Herauszoomen</button></li>
             <li><button class="zh-chip" type="button" data-map-cmd="zurich">Zürich zeigen</button></li>
-            <li><button class="zh-chip" type="button" data-map-cmd="fitswitzerland">Schweiz zeigen</button></li>
-            <li><button class="zh-chip" type="button" data-map-cmd="fitresults">Treffer einpassen</button></li>
-            <li><button class="zh-chip" type="button" data-map-cmd="point">Punktfilter (Kartenmitte)</button></li>
-            <li><button class="zh-chip" type="button" data-map-cmd="extents" aria-pressed="false">Ausschnitte zeigen</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="world">World view</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="fitresults">Fit results</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="point">Point filter (map centre)</button></li>
+            <li><button class="zh-chip" type="button" data-map-cmd="extents" aria-pressed="false">Show footprints</button></li>
             <!-- Grundkarte: the chips are built by map.js from its documented
                  BASE_LAYERS, so control and renderer cannot drift apart. -->
             <li class="app-map__skipbase">
-              <span class="app-map__skiplabel" id="base-layer-label">Grundkarte</span>
+              <span class="app-map__skiplabel" id="base-layer-label">Basemap</span>
               <span class="app-map__skipgroup" id="base-layer-switch" role="group" aria-labelledby="base-layer-label"></span>
             </li>
           </ul>
           <p class="app-map__hint zh-hint">
-            Karte ziehen zum Verschieben, Mausrad oder <kbd>+</kbd>/<kbd>−</kbd> zum Zoomen, Pfeiltasten bewegen die Karte.
-            Ein Klick (oder <kbd>P</kbd>) filtert die Treffer auf den Punkt;
-            <button class="app-map__hintlink" type="button" data-map-cmd="extents" data-map-cmd-label="fixed" aria-pressed="false">„Ausschnitte“</button>
-            zeichnet die dokumentierten Kartengrenzen der gefilterten Treffer.
-            Die Grundkarte (farbig, grau oder Luftbild) wechselt in der Leiste unter der Karte.
+            Drag the map to pan, use the wheel or <kbd>+</kbd>/<kbd>−</kbd> to zoom, the arrow keys move the map.
+            A click (or <kbd>P</kbd>) filters the results to that point;
+            <button class="app-map__hintlink" type="button" data-map-cmd="extents" data-map-cmd-label="fixed" aria-pressed="false">“Footprints”</button>
+            draws the documented map extents of the filtered records.
+            The basemap switches in the bar under the map.
             <span id="map-attribution-extra"></span>
           </p>
           <p class="app-map__hint zh-hint" id="map-visible-count" role="status" aria-live="polite"></p>

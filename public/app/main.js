@@ -31,6 +31,7 @@ const optionalModules = [
   ['results', './results.js'],
   ['detail', './detail.js'],
   ['compare', './compare.js'],
+  ['history', './history.js'],
 ];
 
 async function initModules() {

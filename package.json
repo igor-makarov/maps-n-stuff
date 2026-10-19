@@ -16,6 +16,8 @@
     "dry-run": "wrangler deploy --dry-run --outdir dist",
     "harvest": "node scripts/fetch-records.mjs --out public/data",
     "harvest:offline": "node scripts/fetch-records.mjs --out public/data --offline",
+    "harvest:history": "node scripts/harvest-history.mjs --out public/data/history",
+    "harvest:history:offline": "node scripts/harvest-history.mjs --out public/data/history --offline",
     "verify:endpoints": "node scripts/verify-endpoints.mjs"
   },
   "devDependencies": {
