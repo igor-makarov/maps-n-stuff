@@ -169,38 +169,53 @@ test('records that share one extent become one rectangle with all their ids', ()
 
 /* ------------------------------------------------------------------ Grundkarte */
 
-test('every documented base map is a real swisstopo WMTS layer with attribution', () => {
-  assert.equal(BASE_LAYERS.length, 3, 'farbig, grau and Luftbild are the documented choice');
+test('the basemap list starts worldwide and labels the Swiss detail layers', () => {
+  assert.equal(BASE_LAYERS.length, 4, 'world, Swiss colour, Swiss grey and aerial are the documented choice');
+  assert.equal(DEFAULT_BASE, BASE_LAYERS[0]);
+  assert.equal(DEFAULT_BASE.key, 'osm');
+  assert.equal(DEFAULT_BASE.global, true, 'the default layer covers the whole world');
+  assert.match(DEFAULT_BASE.urlTemplate, /^https:\/\/tile\.openstreetmap\.org\//);
+  assert.match(DEFAULT_BASE.attribution, /OpenStreetMap/);
+
   const keys = new Set();
   const ids = new Set();
   for (const layer of BASE_LAYERS) {
     assert.match(layer.key, /^[a-z0-9-]{1,24}$/, `URL-safe key: ${layer.key}`);
     assert.ok(!keys.has(layer.key), `unique key: ${layer.key}`);
     keys.add(layer.key);
-    assert.match(layer.id, /^ch\.swisstopo\.[a-z0-9-]+$/, `official layer id: ${layer.id}`);
-    assert.ok(!ids.has(layer.id), `unique id: ${layer.id}`);
-    ids.add(layer.id);
     assert.match(layer.title, /\S/);
     assert.match(layer.chip, /\S/);
     assert.match(layer.hint, /\S/);
-    // The tile template must be the public OGD endpoint and carry every
-    // placeholder `tileUrl()` replaces – a typo would silently request one
-    // endless tile.
-    assert.ok(layer.urlTemplate.startsWith('https://wmts.geo.admin.ch/1.0.0/'), layer.urlTemplate);
-    assert.ok(layer.urlTemplate.includes(`/${layer.id}/`), 'template serves the layer it names');
-    for (const placeholder of ['{TileMatrix}', '{TileCol}', '{TileRow}']) {
-      assert.ok(layer.urlTemplate.includes(placeholder), `${layer.id} needs ${placeholder}`);
+    assert.ok(Number.isInteger(layer.maxZoom) && layer.maxZoom >= 15 && layer.maxZoom <= 19, `${layer.key} maxZoom ${layer.maxZoom}`);
+    assert.ok(layer.urlTemplate.startsWith('https://'), layer.urlTemplate);
+    assert.ok(layer.attribution, `${layer.key} must credit its publisher`);
+    if (layer.global) {
+      assert.equal(layer.coverage, undefined, 'a worldwide layer claims no country limit');
+      assert.ok(layer.urlTemplate.includes('{z}/{x}/{y}'), 'XYZ template');
+      assert.match(layer.attribution, /OpenStreetMap/);
+    } else {
+      assert.equal(layer.coverage, 'Switzerland', 'a Swiss-only layer says so instead of implying world coverage');
+      assert.match(layer.id, /^ch\.swisstopo\.[a-z0-9-]+$/, `official layer id: ${layer.id}`);
+      assert.ok(!ids.has(layer.id), `unique id: ${layer.id}`);
+      ids.add(layer.id);
+      // The tile template must be the public OGD endpoint and carry every
+      // placeholder `tileUrl()` replaces – a typo would silently request one
+      // endless tile.
+      assert.ok(layer.urlTemplate.startsWith('https://wmts.geo.admin.ch/1.0.0/'), layer.urlTemplate);
+      assert.ok(layer.urlTemplate.includes(`/${layer.id}/`), 'template serves the layer it names');
+      for (const placeholder of ['{TileMatrix}', '{TileCol}', '{TileRow}']) {
+        assert.ok(layer.urlTemplate.includes(placeholder), `${layer.id} needs ${placeholder}`);
+      }
+      assert.ok(layer.maxZoom <= 18, 'swisstopo publishes 3857_19 (zoom 0–18); the store clamps the zoom to 18');
+      assert.match(layer.attribution, /^© swisstopo/, `${layer.id} must credit swisstopo`);
     }
-    // swisstopo publishes 3857_19 (zoom 0–18); the store clamps the zoom to 18.
-    assert.ok(Number.isInteger(layer.maxZoom) && layer.maxZoom >= 15 && layer.maxZoom <= 18, `${layer.id} maxZoom ${layer.maxZoom}`);
-    assert.match(layer.attribution, /^© swisstopo/, `${layer.id} must credit swisstopo`);
   }
 });
 
-test('baseLayerFor resolves the URL key and falls back to the default', () => {
+test('baseLayerFor resolves the URL key and falls back to the worldwide default', () => {
   assert.equal(baseLayerFor('grau').id, 'ch.swisstopo.pixelkarte-grau');
   assert.equal(baseLayerFor('luftbild').id, 'ch.swisstopo.swissimage', 'the Luftbild key maps to SWISSIMAGE');
-  assert.equal(baseLayerFor('farbe'), DEFAULT_BASE);
+  assert.equal(baseLayerFor('osm'), DEFAULT_BASE);
   // Empty, unknown, hand-edited or non-string values never break the map.
   for (const junk of ['', '  ', null, undefined, 'FARBE X', 'nope', 'ch.swisstopo.pixelkarte-grau', 42, {}, []]) {
     assert.equal(baseLayerFor(junk), DEFAULT_BASE, `fallback for ${JSON.stringify(junk)}`);
@@ -212,9 +227,13 @@ test('baseLayerFor resolves the URL key and falls back to the default', () => {
 test('each base map renders its own tile URL, without leftovers', () => {
   for (const layer of BASE_LAYERS) {
     const url = tileUrl(layer.urlTemplate, { z: 12, x: 2143, y: 1432 });
-    assert.ok(url.includes(`/${layer.id}/`), url);
-    assert.match(url, /\/12\/2143\/1432\.jpeg$/, url);
     assert.ok(!url.includes('{'), `no placeholder left in ${url}`);
+    if (layer.global) {
+      assert.equal(url, 'https://tile.openstreetmap.org/12/2143/1432.png');
+    } else {
+      assert.ok(url.includes(`/${layer.id}/`), url);
+      assert.match(url, /\/12\/2143\/1432\.jpeg$/, url);
+    }
   }
   assert.notEqual(
     tileUrl(BASE_LAYERS[1].urlTemplate, { z: 12, x: 2143, y: 1432 }),

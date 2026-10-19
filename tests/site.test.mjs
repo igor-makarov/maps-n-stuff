@@ -199,7 +199,12 @@ test('the Worker is not an open proxy and holds no credentials', () => {
   const hosts = [...worker.matchAll(/host:\s*'([^']+)'/g)].map((m) => m[1]);
   assert.ok(hosts.length >= 3);
   for (const host of hosts) {
-    assert.ok(/^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$/.test(host), `unexpected proxy host ${host}`);
+    // The worldwide gazetteer is the one non-Swiss upstream the app talks to;
+    // it is admitted for `/search` only (see src/worker/allowlist.js).
+    assert.ok(
+      /^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$|^nominatim\.openstreetmap\.org$/.test(host),
+      `unexpected proxy host ${host}`,
+    );
   }
   assert.ok(!/oldmapsonline/i.test(worker), 'no aggregator endpoints');
   for (const secret of ['CLOUDFLARE_API_TOKEN', 'CF_API_TOKEN', 'ACCOUNT_ID', 'API_KEY', 'SECRET']) {
