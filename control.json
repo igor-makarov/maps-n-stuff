@@ -7,7 +7,7 @@
   "supervisor": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
   "status": "stopped",
   "generation": 8,
-  "next": 160,
+  "next": 161,
   "engine": {
     "repository": "igor-makarov/shurik",
     "ref": "v2"
@@ -22,12 +22,7 @@
   },
   "checkpointSeconds": 0,
   "checkpointPaths": [],
-  "owner": {
-    "runId": "39215477435",
-    "generation": 8,
-    "iteration": 160,
-    "claimedAt": "2026-10-19T07:22:02.998Z"
-  },
+  "owner": null,
   "deadline": null,
   "seconds": 1800,
   "waitSeconds": 0,
@@ -851,7 +846,7 @@
     }
   ],
   "stoppedAt": "2026-10-19T07:22:12.798Z",
-  "lastRunId": "39215389811",
+  "lastRunId": "39215477435",
   "failureTrail": [
     "39167308483-1",
     "39167614984-1",
