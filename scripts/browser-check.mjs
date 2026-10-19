@@ -1527,6 +1527,100 @@ try {
     `pane 1 ${restoredOwn?.readout ?? 'no cut-out'} · pane 2 ${restoredOther?.readout ?? 'no cut-out'} · link cvv "${restoredUrl}"`,
   );
 
+  /* --- 8c4. the degenerate pair is not coupled silently ---------------- */
+  // The coupling maps a cut-out through the *documented* extents. A world sheet
+  // and a small plan whose boxes never meet have no region in common, and the
+  // honest answer is a pane that keeps its whole sheet and says why — not a
+  // silent no-op, and not a guessed region. The pair is derived from the seed:
+  // each “+” press shrinks both axes by 1.6 (the stage aspect can only shrink
+  // them further), so a plan outside that predicted box cannot meet the cut-out.
+  const centreOf = (box) => ({ lon: (box.west + box.east) / 2, lat: (box.south + box.north) / 2 });
+  const predictedCutout = (record, presses) => {
+    const factor = 1.6 ** presses;
+    const { lon, lat } = centreOf(record.extent);
+    const width = (record.extent.east - record.extent.west) / factor;
+    const height = (record.extent.north - record.extent.south) / factor;
+    return { west: lon - width / 2, east: lon + width / 2, south: lat - height / 2, north: lat + height / 2 };
+  };
+  const seeded = [...recordIndex.values()];
+  const worldSheet =
+    seeded.find((record) => record.iiifManifest && record.extent && spanOf(record) >= 180 && rowOf.has(record.id)) ??
+    seeded.find((record) => record.iiifManifest && record.extent && spanOf(record) >= 180);
+  const cutoutBox = worldSheet ? predictedCutout(worldSheet, 3) : null;
+  const distantPlan = cutoutBox
+    ? seeded.find(
+        (record) =>
+          record.id !== worldSheet.id &&
+          record.iiifManifest &&
+          record.extent &&
+          spanOf(record) > 0 &&
+          spanOf(record) <= 2 &&
+          !overlapOf(record.extent, cutoutBox),
+      )
+    : null;
+  if (!worldSheet || !distantPlan) {
+    check(
+      'a world sheet next to a distant plan: the pane says the cut-out is off its sheet',
+      false,
+      `no such pair in the seed (world: ${worldSheet?.id ?? 'none'}, plan: ${distantPlan?.id ?? 'none'})`,
+    );
+  } else {
+    const degenerateIds = [worldSheet.id, distantPlan.id];
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(degenerateIds.join(','))}` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'degenerate-pair page' });
+    await sleep(500);
+    await cdp.click('#compare-open');
+    await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, {
+      label: 'compare view for the degenerate pair',
+      timeout: 10_000,
+    });
+    await cdp.waitFor(readyPanes, { label: 'degenerate panes ready', timeout: 60_000 }).catch(() => null);
+    const planPaneBefore = await cdp.eval(`document.querySelectorAll('${comparePaneSelector}')[1]?.src || ''`);
+    await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.pressKey('+', { keyCode: 187 });
+    const worldZoomed = await waitForComparePane(0, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+    const uncovered = await cdp
+      .waitFor(
+        `(() => {
+          const pane = document.querySelectorAll('#compare-view-body .app-compare__pane')[1];
+          const note = pane?.querySelector('[data-compare-coverage="1"]');
+          if (!pane || !note || pane.dataset.coverage !== 'outside' || note.hidden) return null;
+          return {
+            coverage: pane.dataset.coverage,
+            note: note.textContent,
+            readout: pane.querySelector('[data-compare-readout]')?.textContent || '',
+            src: pane.querySelector('img')?.src || '',
+            hint: document.querySelector('#compare-sync-hint')?.textContent || '',
+            status: document.querySelector('#compare-status')?.textContent || '',
+          };
+        })()`,
+        { label: 'the plan pane names the uncovered cut-out', timeout: 30_000 },
+      )
+      .catch(() => null);
+    const planPaneAfter = await cdp.eval(`document.querySelectorAll('${comparePaneSelector}')[1]?.src || ''`);
+    // The viewer reports its region on a 400 ms debounce, so the shareable
+    // cut-out lands in the URL *after* the note appears — read it by waiting
+    // for the write instead of once (the same race the `vv` check hit).
+    const degenerateCvv = await cdp
+      .waitFor(`new URLSearchParams(location.search).get('cvv') || ''`, { label: 'the world pane writes its cut-out to cvv', timeout: 10_000 })
+      .catch(() => '');
+    check(
+      'a world sheet next to a distant plan: the pane says the cut-out is off its sheet',
+      Boolean(uncovered) &&
+        /Ausschnitt/.test(worldZoomed?.readout ?? '') &&
+        /Gesamtansicht/.test(uncovered?.readout ?? '') &&
+        /belegt den gezeigten Ausschnitt nicht/.test(uncovered?.note ?? '') &&
+        /ausserhalb der belegten Ausdehnung/.test(uncovered?.hint ?? '') &&
+        planPaneAfter === planPaneBefore &&
+        degenerateCvv.startsWith(`${worldSheet.id}@`) &&
+        !degenerateCvv.includes(distantPlan.id),
+      `Karte 1 ${worldZoomed?.readout ?? 'no cut-out'} · Karte 2 ${uncovered?.readout ?? 'unchanged'} · coverage "${uncovered?.coverage ?? 'none'}" · cvv "${degenerateCvv}" · note “${(uncovered?.note ?? 'absent').slice(0, 52)}…”`,
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '11d-compare-degenerate.png')).then(() => report.screenshots.push('11d-compare-degenerate.png'));
+  }
+
   /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
   const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
   if (multiSheet) {
