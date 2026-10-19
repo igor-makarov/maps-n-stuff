@@ -2,8 +2,10 @@
 
 ## Iteration 7-15 (2026-10-19, ~00:0x–00:4x UTC) — Zürich and its surroundings, 109 records
 
-Same paths (`scripts/fetch-records.mjs`, `public/data/**`, `docs/data-sources.md`,
-`README.md`). No teammate file touched this time (no harness/index/store edit).
+Same paths (`scripts/fetch-records.mjs`, `scripts/verify-endpoints.mjs`, `public/data/**`,
+`public/app/records.js`, `tests/records.test.mjs`, `docs/**`, `README.md`) plus three
+small additive edits in teammates' files (index.html label, package.json script,
+docs/run.md row — all flagged under Messages).
 
 ### 1. A second SRU set: “Zürich und Umgebung (Kanton, Stadt und See)” (11 new records)
 
@@ -82,6 +84,11 @@ wrong a credit the day an upstream omits the field.
 
 - **→ all**: the seed is `109` records; the UI count is data-driven, but any copy,
   screenshot or check that hardcodes 98/80/89/90 numbers needs the new value.
+- **→ maps-1**: two small additive edits in your files, both flagged here —
+  `public/index.html` (the keyword label now reads “Stichwort in Titel, Urheber
+  oder Sammlung”, placeholder “z. B. Rhein, Wildkarte, Dufour”), and `package.json`
+  + `docs/run.md` (`npm run verify:endpoints`). Revert/reword freely; nothing else
+  in the shell, tokens or wrangler config was touched.
 - **→ maps-2**: the new region records are small city extents and one canton-wide
   sheet (1896 Zürichsee, 1919 Randmoränen), so the clustering you added is what keeps
   the default view readable; the new collection appears in the facet automatically.
@@ -90,6 +97,45 @@ wrong a credit the day an upstream omits the field.
   (checked in the 90/90 run); the 33-sheet canton map is still the extreme case.
 - **→ maps-1**: `public/data/**` counts changed only; no shell/token/wrangler change
   was needed. `docs/data-sources.md` + `README.md` updated by me.
+
+### Follow-up in the same iteration
+
+**1. The keyword box now answers the words the app itself shows.** `matchesQuery`
+searched title/creators/institution/shelfmark/publisher only, so a visitor who read
+“Karte des Kantons Zürich 1:25 000 (Wildkarte)” in the collection facet or
+“4 Lb 06: 9” in a citation typed those words and got **0 results**. `records.js`
+(`titleText`) now also covers `collection` and `imprint` — text the dataset itself
+states, nothing derived. Checked in the running app: `?q=Wildkarte` → **26/109**
+rows (exactly the 26 sheets), `?q=Pläne aus Zürich` → 18,
+`?q=Universitätsbibliothek Bern` → 4 (the new Bern records), `?q=Siegfriedkarte` →
+4 in the default range / 9 over 1500–2021, `?q=zusammenfassung` → the honest empty
+state. Two new tests in `tests/records.test.mjs` (103 total) pin the new words and
+the invariant that **every collection name in the committed seed is findable by its
+own keywords**, so a facet rename cannot silently break search.
+
+**2. `npm run verify:endpoints` — the online counterpart of the offline gate.**
+`npm test` runs offline on purpose, so a dead upstream link could survive a refresh
+unnoticed. `scripts/verify-endpoints.mjs` now collects every distinct URL the data
+promises (record, viewer, thumbnail, IIIF manifest, first-canvas image service,
+WMTS preview), probes each once at 4 concurrent requests with a descriptive
+User-Agent, summarises per kind and exits non-zero on any non-200 (`--json`,
+`--offline`, `--limit` supported). Deliberately **not** part of `npm run check`, so
+the gate stays hermetic and fast.
+
+Result on the committed 109-record seed (2026-10-19): **463 distinct URLs, 0
+failures** — record 109/109, thumbnail 109/109, viewer 82/82, manifest 82/82,
+image-service 81/81. That re-proves the older records' links too, not only the new
+ones, and replaces the ad-hoc 266-URL probe of 7-14 with a committed script.
+
+**3. Cantonal raster services are not openly usable (negative result, recorded).**
+I probed the canton's own route for a possible *cantonal* historical-map overlay:
+`maps.zh.ch` (the GIS-Browser) is a JavaScript app with no service links in its
+HTML, `geo.zh.ch` likewise, `data.zh.ch` is an ordinary zh.ch content page, and the
+WMS paths GIS-ZH products usually expose (`wms.zh.ch/OGDZHWMS`,
+`maps.zh.ch/wms/OGDZHWMS`) answer **401 Basic auth**. A credential is neither
+available nor appropriate here, so the overlays stay with swisstopo's documented
+Open Government Data geoservices (WMTS + SearchServer), which `sources.json` cites.
+Recorded so the next iteration does not repeat the probe.
 
 ### Next (my area)
 

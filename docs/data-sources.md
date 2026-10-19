@@ -245,3 +245,29 @@ the Wildkarte sheets (published 1853, surveyed 1843–1851) a depicted-period fi
 would hide the very sheet it came from. `scripts/validate.mjs` enforces the
 invariants: depicted dates come in pairs, never postdate the imprint, and always
 carry `depictedSource`.
+
+## Endpoint verification (online)
+
+`scripts/validate.mjs` and `npm test` are offline by design, so a refresh could
+leave a dead link behind without any check noticing. `npm run verify:endpoints`
+(`scripts/verify-endpoints.mjs`) is the online counterpart: it reads
+`public/data/records.json` and `overlays.json`, collects every distinct URL they
+promise (original record, library viewer, thumbnail, IIIF manifest, first-canvas
+image service, WMTS preview tile), probes each one once with a descriptive
+`User-Agent`, a 20 s timeout and 4 concurrent requests, prints a per-kind summary
+and exits non-zero when anything stops answering 200 (`--json <file>` writes the
+full report, `--offline` only lists the URLs, `--limit n` probes a prefix).
+
+Last full run — **2026-10-19, 463 distinct URLs, 0 failures** on the 109-record
+seed:
+
+| Kind | Result |
+| --- | --- |
+| original record (DOI landing page / `map.geo.admin.ch` viewer) | 109/109 |
+| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 109/109 |
+| library viewer (`…/content/zoom/<id>`) | 82/82 |
+| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 82/82 |
+| IIIF image service (`…/info.json`) | 81/81 |
+
+The script is deliberately *not* part of `npm run check`: the gate stays offline,
+hermetic and fast, and this check needs the network.
