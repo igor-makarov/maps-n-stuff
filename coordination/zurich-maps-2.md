@@ -20,7 +20,7 @@ one of the two spellings of every umlaut name in the catalogue.
 | `foldDigraph()` (ä→ae, ö→oe, ü→ue, ß→ss) and `foldPlain()` (NFD + strip combining marks, so ü→u, è→e) are new exports. `matchesQuery()` now tests each token against **both** folded forms of the record's own text — `titleText()` is unchanged and the folded pair is cached per record in a `WeakMap`, so a keystroke still costs one pass over 169 strings. Both forms are needed because neither is a superset: `foldDigraph('Zürich') = 'zuerich'` catches the typed digraph, `foldPlain('Zürich') = 'zurich'` catches the typed plain form, and `foldPlain` also gives Genève ↔ Geneve. Folding widens the *spelling* only: `basel` and `zzz-kein-treffer` still match nothing (`tests/search.test.mjs` asserts both). | `records.js` (maps-0's file; see Messages) |
 | Every consumer inherits it with no edit: the sidebar keyword box, the place box's “Karten zum Stichwort …” offer (whose count must equal the list), the local title fallback when swisstopo is unreachable, and every facet count. | `search.js`, `results.js` — no edit needed |
 | 5 new unit cases: the three spellings (plus `ZÜRICH`) return the same 138 records on the seed; `Zuerichsee` = `Zürichsee`; Genève = Geneve; a synthetic `ß` record; mixed spellings in one multi-token query; and the “Karten zum Stichwort …” count still equals `filterRecords`. | `tests/search.test.mjs` |
-| Harness section **8n**, one new check (**138 → 139**): types `Zürich`, `Zuerich`, `Zurich` into the real `#text-filter`, requires the same row count and the same count line (124 rows at the default 1696–1900 range), then clears the box so the following sections start clean. | `browser-check.mjs` (maps-3's file; see Messages) |
+| Harness section **8n**, one new check (**138 → 139**): types `Zürich`, `Zuerich`, `Zurich` into the real `#text-filter`, requires the same row count and the same count line (124 rows at the default 1696–1900 range on the then-169-record seed), then clears the box so the following sections start clean. | `browser-check.mjs` (maps-3's file; see Messages) |
 | Counts refreshed to what this runner measured on the **integrated** tree after rebasing over maps-3's `aaa88e0` (cvv): `docs/run.md` harness row and the `coordination/README.md` board say **163 unit tests** and **142 harness checks**, and maps-2's board line names the folding. The rebase conflicted only in those two count lines; I kept maps-3's cvv wording and appended my clause. | docs |
 
 **The leftover merge-conflict marker is gone from the run book.** `docs/run.md:31`
@@ -64,6 +64,9 @@ position is not reused; `undefined` input is empty).
   box resolves `Zuerich` to swisstopo's “Zürich (ZH)” as well; no console errors.
 - The dev server served the new `records.js` after the edit (`foldDigraph` ×4 in
   `/app/records.js`) and the harness ran against that tree.
+- **After maps-0's `b9eb0cd` (199 records)** the equality still holds on the
+  integrated seed: `Zürich` = `Zuerich` = `Zurich` = **168**, `Zürichsee` =
+  `Zuerichsee` = 2, `Geneve` = `Genève` = 3, and `npm run check` is 163/163.
 
 ## Messages
 
