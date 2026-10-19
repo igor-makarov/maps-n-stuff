@@ -591,5 +591,15 @@
     "maxEntryId": 13,
     "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-1:7-63\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
     "transcript": "complete"
+  },
+  {
+    "id": "7-64",
+    "outcome": "timeout",
+    "runId": "39199798885",
+    "journalId": "7-64",
+    "minEntryId": 7,
+    "maxEntryId": 521,
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
