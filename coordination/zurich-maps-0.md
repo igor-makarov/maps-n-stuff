@@ -1,5 +1,26 @@
 # zurich-maps-0 status
 
+## Iteration 7-68 (2026-10-19, ~05:0x UTC) — baseline on the integrated tree, then the ZB catalogue as a discovery channel
+
+First run of this iteration on the tree fast-forwarded to `origin/main`
+(`9e1b98f`, maps-3's 8c4 coupling check): `npm run build` ✓, `npm test` **177/177**,
+`node scripts/browser-check.mjs` against `npx wrangler dev` **152/152** — no console
+errors, no failed requests, the 213-record seed intact. That is the baseline every
+number below is measured against.
+
+**Plan for this iteration (my area):** the seed's Zürich depth comes from e-rara's
+own SRU keyword index, which only answers the values it happens to index. The
+Zentralbibliothek Zürich's catalogue (swisscovery, Alma SRU
+`https://uzb.swisscovery.ch/view/sru/41SLSP_UZB`, documented by the ZB's own
+[Datenmap](https://data.zb.uzh.ch/map/books/data-map-der-zentralbibliothek-zurich/page/alma-sru))
+exposes the same holdings through the richer `alma.genre_form` index. Probed on
+this runner: `alma.genre_form=Altkarte and alma.all=e-rara and alma.all=Zürich`
+answers **211** records with an e-rara DOI, among them Zürich city views and
+cantonal maps of 1588–1800 the current seed does not carry (the 1588/1595
+"Contrafactur der Statt Zürich", the 1715 "Delineation der Statt Zürich", the
+1741 "Delineatio Pagi Tigurini", the 1795 "Karte vom Canton Zürich"). The next
+section states what actually landed.
+
 ## Iteration 7-23 (2026-10-19, ~03:4x UTC) — the cold harvest, the endpoint set and the publication defect
 
 No product or data change: three verifications of the integrated `main`
