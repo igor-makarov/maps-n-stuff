@@ -22,6 +22,7 @@ import {
   panView,
   parseManifest,
   parseViewParam,
+  sheetOptionLabel,
   sheetThumbUrl,
   viewForCanvas,
   zoomPercent,
@@ -29,6 +30,8 @@ import {
 } from './iiif.js';
 
 const FULL_PREVIEW_WIDTH = 1000;
+/** A work with more sheets than this gets the direct “jump to sheet” control. */
+const JUMP_MIN_SHEETS = 12;
 
 export function init(ctx) {
   const panel = qs('#detail');
@@ -42,6 +45,8 @@ export function init(ctx) {
   let page = 0;
   /** @type {ReturnType<typeof createViewer>|null} */
   let viewer = null;
+  /** @type {IntersectionObserver|null} Loads sheet thumbnails that come into view. */
+  let stripObserver = null;
 
   /** `source` records where the selection came from; the viewer behaves the same. */
   function open(record, { keepSheet = false } = {}) {
@@ -71,6 +76,8 @@ export function init(ctx) {
     if (panel.hidden) return;
     viewer?.destroy();
     viewer = null;
+    stripObserver?.disconnect();
+    stripObserver = null;
     page = 0;
     // A closed panel must not leave a sheet number or a viewer region behind in
     // the shared URL.
@@ -294,6 +301,17 @@ export function init(ctx) {
         el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-prev', text: '‹ Blatt' }),
         el('span', { class: 'zh-hint', id: 'page-label', text: 'Blatt 1' }),
         el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-next', text: 'Blatt ›' }),
+        // Direct jump for works whose strip no longer fits on one row (the
+        // 33-sheet canton map): a native select stays keyboard-operable without
+        // turning every sheet into a tab stop of its own.
+        el('span', { class: 'app-viewer__jump', id: 'page-jump-wrap', hidden: true }, [
+          el('label', { class: 'visuallyhidden', for: 'page-jump', text: 'Direkt zu Blatt' }),
+          el('select', {
+            class: 'zh-select',
+            id: 'page-jump',
+            onchange: (event) => gotoPage(Number(event.currentTarget.value) - 1),
+          }),
+        ]),
       ]),
     ]);
 
@@ -468,6 +486,12 @@ export function init(ctx) {
     const next = qs('#page-next');
     if (prev) prev.disabled = page === 0;
     if (next) next.disabled = page === total - 1;
+    // Announce the sheet for screen readers (the visible label alone changes
+    // silently when the viewer swaps the canvas).
+    if (total > 1) {
+      const liveNode = qs('#viewer-status');
+      if (liveNode) liveNode.textContent = `Blatt ${page + 1} von ${total} geladen.`;
+    }
     updateSheetStrip(total);
   }
 
@@ -481,47 +505,83 @@ export function init(ctx) {
     showCanvas();
   }
 
-  /** Build one button per sheet (real thumbnail when the manifest offers one). */
+  /** Build one button per sheet; thumbnails are filled in when they come into view. */
   function renderSheetStrip() {
     const strip = qs('#page-strip');
     if (!strip) return;
+    // A rebuild (another work, another panel opening) drops the old observer.
+    stripObserver?.disconnect();
+    stripObserver = null;
     const canvases = manifest?.canvases ?? [];
     if (canvases.length <= 1) {
       strip.hidden = true;
       strip.replaceChildren();
       return;
     }
-    strip.replaceChildren(
-      ...canvases.map((canvas, index) =>
-        el(
-          'button',
-          {
-            class: 'app-viewer__sheet',
-            type: 'button',
-            'data-sheet': String(index),
-            'aria-label': `Blatt ${index + 1} von ${canvases.length}: ${canvas.label}`,
-            title: canvas.label,
-            onclick: () => gotoPage(index),
-          },
-          [
-            sheetThumbUrl(canvas)
-              ? el('img', {
-                  src: sheetThumbUrl(canvas),
-                  alt: '',
-                  loading: 'lazy',
-                  decoding: 'async',
-                  onerror: (event) => {
-                    event.currentTarget.hidden = true;
-                  },
-                })
-              : null,
-            el('span', { class: 'app-viewer__sheetnum', text: String(index + 1) }),
-          ],
-        ),
-      ),
-    );
+    strip.replaceChildren(...canvases.map((canvas, index) => sheetButton(canvas, index, canvases.length)));
     strip.hidden = false;
+    observeStripThumbs(strip);
     updateSheetStrip(canvases.length);
+  }
+
+  /** One strip button: number always, thumbnail only once it is loaded. */
+  function sheetButton(canvas, index, total) {
+    return el(
+      'button',
+      {
+        class: 'app-viewer__sheet',
+        type: 'button',
+        'data-sheet': String(index),
+        'data-thumb': sheetThumbUrl(canvas),
+        'aria-label': sheetOptionLabel(canvas, index, total),
+        title: canvas.label,
+        onclick: () => gotoPage(index),
+      },
+      [el('span', { class: 'app-viewer__sheetnum', text: String(index + 1) })],
+    );
+  }
+
+  /** Insert a sheet's thumbnail once — the service URL came from the manifest. */
+  function loadSheetThumb(button) {
+    if (!button || button.querySelector('img')) return;
+    const url = button.dataset.thumb;
+    if (!url) return;
+    button.prepend(
+      el('img', {
+        src: url,
+        alt: '',
+        loading: 'lazy',
+        decoding: 'async',
+        onerror: (event) => {
+          event.currentTarget.hidden = true;
+        },
+      }),
+    );
+  }
+
+  /**
+   * Fetch sheet thumbnails only for the buttons a visitor can actually see (plus
+   * one screen of margin). Opening the 33-sheet canton map used to request all 33
+   * 96-px derivatives at once, although a desktop strip shows about ten of them.
+   * A browser without `IntersectionObserver` loads every thumbnail, as before.
+   */
+  function observeStripThumbs(strip) {
+    const buttons = [...strip.querySelectorAll('[data-sheet]')];
+    if (typeof IntersectionObserver !== 'function') {
+      buttons.forEach(loadSheetThumb);
+      return;
+    }
+    stripObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          loadSheetThumb(entry.target);
+          stripObserver?.unobserve(entry.target);
+        }
+      },
+      { root: strip, rootMargin: '300px 0px' },
+    );
+    for (const button of buttons) stripObserver.observe(button);
   }
 
   /**
@@ -556,6 +616,9 @@ export function init(ctx) {
       button.tabIndex = active ? 0 : -1;
       if (active) {
         button.setAttribute('aria-current', 'true');
+        // The visible sheet must show its thumbnail even before the observer has
+        // reported it (a deep link into the middle of a big work).
+        loadSheetThumb(button);
         // Centre the visible sheet *inside the strip*. Deliberately not
         // `scrollIntoView`: that also scrolls every ancestor scroll container, so
         // opening a multi-sheet deep link on a phone pushed the title and the
@@ -566,6 +629,32 @@ export function init(ctx) {
         button.removeAttribute('aria-current');
       }
     }
+    updateSheetJump(total);
+  }
+
+  /**
+   * The “jump to sheet” select for large works: it is only rendered when the
+   * strip no longer fits one row, and its options state the same sheet names the
+   * strip uses (`sheetOptionLabel`), never an invented one.
+   */
+  function updateSheetJump(total) {
+    const wrap = qs('#page-jump-wrap');
+    const jump = qs('#page-jump');
+    if (!wrap || !jump) return;
+    const needed = total > JUMP_MIN_SHEETS;
+    wrap.hidden = !needed;
+    if (!needed) {
+      jump.replaceChildren();
+      return;
+    }
+    if (jump.options.length !== total) {
+      jump.replaceChildren(
+        ...(manifest?.canvases ?? []).map((canvas, index) =>
+          el('option', { value: String(index + 1), text: sheetOptionLabel(canvas, index, total) }),
+        ),
+      );
+    }
+    if (jump.value !== String(page + 1)) jump.value = String(page + 1);
   }
 
   function showPreviewFallback(record, message, rawDetail = '') {

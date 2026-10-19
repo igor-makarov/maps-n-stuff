@@ -198,6 +198,28 @@ export function sheetThumbUrl(canvas, width = 96) {
   return `${String(canvas.service).replace(/\/+$/, '')}/full/${w},/0/default.jpg`;
 }
 
+/**
+ * Name of one sheet in a list of sheets (“Blatt 7 von 33”).
+ *
+ * The upstream canvas label is appended only when it says something the sheet
+ * number does not already say: e-rara states the plain number ("7") for many
+ * works, and "Blatt 7 von 33 – 7" would read like a broken control. Unknown
+ * labels are omitted, never invented.
+ */
+export function sheetOptionLabel(canvas, index, total) {
+  const number = Math.max(0, Math.floor(Number(index) || 0)) + 1;
+  const count = Math.max(number, Math.floor(Number(total) || number));
+  const name = `Blatt ${number} von ${count}`;
+  const label = String(canvas?.label ?? '').trim();
+  if (!label) return name;
+  // e-rara states the plain sheet number as the canvas label — sometimes written
+  // as “[7]” — and repeating it would read like a defect (“Blatt 7 von 33 – [7]”).
+  const plain = label.replace(/[[\]]/g, '').trim();
+  if (!plain || plain === String(number)) return name;
+  if (/^blatt\s*\d+$/i.test(plain)) return name;
+  return `${name} – ${label}`;
+}
+
 /* ------------------------------------------------------------------ view box */
 
 /**

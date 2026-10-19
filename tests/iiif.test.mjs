@@ -25,6 +25,7 @@ import {
   parseViewParam,
   regionRequest,
   serviceId,
+  sheetOptionLabel,
   sheetThumbUrl,
   viewForCanvas,
   zoomPercent,
@@ -221,6 +222,22 @@ test('sheetThumbUrl prefers the manifest thumbnail and derives from the image se
   );
   assert.equal(sheetThumbUrl({ label: 'ohne Bild' }), null, 'no thumbnail and no service -> null, nothing invented');
   assert.equal(sheetThumbUrl(null), null);
+});
+
+test('sheetOptionLabel names a sheet without repeating an upstream number label', () => {
+  assert.equal(sheetOptionLabel({ label: '7' }, 6, 33), 'Blatt 7 von 33');
+  assert.equal(sheetOptionLabel({ label: '[7]' }, 6, 33), 'Blatt 7 von 33', 'e-rara writes the sheet number as “[7]”');
+  assert.equal(sheetOptionLabel({ label: 'Blatt 7' }, 6, 33), 'Blatt 7 von 33', 'the upstream “Blatt n” is the number again');
+  assert.equal(sheetOptionLabel({}, 0, 1), 'Blatt 1 von 1', 'missing label -> the number alone');
+  assert.equal(
+    sheetOptionLabel({ label: 'Situation der Stadt Zürich' }, 2, 3),
+    'Blatt 3 von 3 – Situation der Stadt Zürich',
+    'a real upstream name is appended',
+  );
+  // Defensive: hostile or absent arguments must not produce “Blatt NaN”.
+  assert.equal(sheetOptionLabel(null, 0, 0), 'Blatt 1 von 1');
+  assert.equal(sheetOptionLabel({ label: '   ' }, 1, 'x'), 'Blatt 2 von 2');
+  assert.equal(sheetOptionLabel({ label: 'x' }, -5, -1), 'Blatt 1 von 1 – x');
 });
 
 /* ----------------------------------------------------------------- view box */

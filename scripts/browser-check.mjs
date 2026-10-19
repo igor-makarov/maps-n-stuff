@@ -1340,6 +1340,152 @@ try {
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   }
 
+  /* --- 8o. large works: jump to a sheet, thumbnails only where they show --- */
+  // The seed holds one 33-sheet canton map. Sheet 20 of 33 is 19 “Blatt ›”
+  // clicks away, and the strip used to request all 33 thumbnails while showing
+  // about ten — both are what this section measures.
+  const bigWork = [...recordIndex.values()]
+    .filter((record) => record.iiifManifest && (record.canvasCount ?? 0) > 12)
+    .sort((a, b) => (b.canvasCount ?? 0) - (a.canvasCount ?? 0))[0] ?? null;
+  if (bigWork && multiSheet) {
+    const bigTotal = bigWork.canvasCount;
+
+    // A work with three sheets must stay as it was: no extra control.
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(multiSheet.id)}` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'small work viewer', timeout: 25_000 });
+    const smallJump = await cdp.eval(`(() => ({ hidden: document.querySelector('#page-jump-wrap')?.hidden, options: document.querySelector('#page-jump')?.options.length ?? -1 }))()`);
+    check(
+      'the direct sheet jump stays out of a small work',
+      smallJump.hidden === true && smallJump.options === 0,
+      `${multiSheet.id} (${multiSheet.canvasCount} Blätter) -> ${JSON.stringify(smallJump)}`,
+    );
+
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(bigWork.id)}&sh=20` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'large work viewer', timeout: 30_000 });
+    const announced = await cdp
+      .waitFor(`/^Blatt 20 von ${bigTotal} geladen\\.$/.test(document.querySelector('#viewer-status')?.textContent || '') ? document.querySelector('#viewer-status').textContent : ''`, {
+        label: 'sheet announcement',
+        timeout: 15_000,
+      })
+      .catch(() => '');
+    const largeJump = await cdp.eval(`(() => {
+      const select = document.querySelector('#page-jump');
+      return {
+        visible: document.querySelector('#page-jump-wrap')?.hidden === false,
+        options: select?.options.length ?? -1,
+        value: select?.value ?? '',
+        option20: select?.options[19]?.textContent ?? '',
+        label: document.querySelector('#page-label')?.textContent ?? '',
+        active: document.querySelector('#page-strip [aria-current="true"]')?.dataset.sheet ?? null,
+        thumbnails: document.querySelectorAll('#page-strip img').length,
+        sheets: document.querySelectorAll('#page-strip [data-sheet]').length,
+      };
+    })()`);
+    check(
+      'a 33-sheet work gets a “Blatt” jump control and announces the open sheet',
+      largeJump.visible === true &&
+        largeJump.options === bigTotal &&
+        largeJump.value === '20' &&
+        largeJump.option20 === `Blatt 20 von ${bigTotal}` &&
+        largeJump.label === `Blatt 20 von ${bigTotal}` &&
+        largeJump.active === '19' &&
+        announced === `Blatt 20 von ${bigTotal} geladen.`,
+      `${bigWork.id} (${bigTotal} Blätter) -> ${JSON.stringify(largeJump)} announced "${announced}"`,
+    );
+    check(
+      'opening a large work requests thumbnails only for the sheets in view',
+      largeJump.sheets === bigTotal && largeJump.thumbnails > 0 && largeJump.thumbnails < bigTotal,
+      `sheets=${largeJump.sheets} thumbnails=${largeJump.thumbnails} (of ${bigTotal})`,
+    );
+
+    // Choosing a sheet directly must really swap the canvas, centre the strip and
+    // share the sheet; a reader is told which sheet is on screen.
+    const sheet20Src = await cdp.eval(`document.querySelector('.app-viewer__image')?.src || ''`);
+    await cdp.eval(`(() => { const select = document.querySelector('#page-jump'); select.value = '7'; select.dispatchEvent(new Event('change', { bubbles: true })); return select.value; })()`);
+    let jumpState = null;
+    try {
+      jumpState = await cdp.waitFor(
+        `(() => {
+          const label = document.querySelector('#page-label')?.textContent || '';
+          const sh = new URLSearchParams(location.search).get('sh');
+          const active = document.querySelector('#page-strip [aria-current="true"]');
+          const strip = document.querySelector('#page-strip');
+          const src = document.querySelector('.app-viewer__image')?.src || '';
+          // The viewer swaps the bitmap only when the new region has arrived, so
+          // waiting for the label alone would read the previous sheet's image.
+          if (label !== 'Blatt 7 von ${bigTotal}' || sh !== '7' || active?.dataset.sheet !== '6' || !src || src === ${JSON.stringify(sheet20Src)}) return '';
+          const button = active.getBoundingClientRect();
+          const box = strip.getBoundingClientRect();
+          return {
+            label,
+            sh,
+            active: active.dataset.sheet,
+            value: document.querySelector('#page-jump').value,
+            inStrip: button.left >= box.left - 1 && button.right <= box.right + 1,
+            src,
+          };
+        })()`,
+        { label: 'jump to sheet 7', timeout: 25_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'the jump control opens sheet 7, centres it in the strip and shares ?sh=7',
+      jumpState?.label === `Blatt 7 von ${bigTotal}` &&
+        jumpState?.sh === '7' &&
+        jumpState?.active === '6' &&
+        jumpState?.value === '7' &&
+        jumpState?.inStrip === true &&
+        jumpState?.src &&
+        jumpState.src !== sheet20Src,
+      `${JSON.stringify(jumpState)} (was ${sheet20Src.slice(-40)})`,
+    );
+
+    // Thumbnails are lazy, not missing: scrolling to the last sheet loads its
+    // 96-px derivative then (and only then).
+    const lazyBefore = await cdp.eval(`(() => { const b = document.querySelectorAll('#page-strip [data-sheet]')[${bigTotal - 1}]; return { hasImg: Boolean(b?.querySelector('img')), loaded: document.querySelectorAll('#page-strip img').length }; })()`);
+    await cdp.eval(`(() => { const strip = document.querySelector('#page-strip'); strip.scrollLeft = strip.scrollWidth; return strip.scrollLeft; })()`);
+    let lazyAfter = null;
+    try {
+      lazyAfter = await cdp.waitFor(
+        `(() => { const b = document.querySelectorAll('#page-strip [data-sheet]')[${bigTotal - 1}]; const img = b?.querySelector('img'); return img && img.naturalWidth > 0 ? { loaded: document.querySelectorAll('#page-strip img').length, lastLoaded: true } : ''; })()`,
+        { label: 'thumbnails after scrolling', timeout: 20_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'scrolling the strip loads the thumbnails that come into view',
+      lazyBefore.hasImg === false && lazyAfter?.lastLoaded === true && lazyAfter.loaded > lazyBefore.loaded,
+      `last sheet before ${JSON.stringify(lazyBefore)} -> after ${JSON.stringify(lazyAfter)}`,
+    );
+
+    // The extra control must not push the panel wider than a phone screen.
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(bigWork.id)}&sh=31` });
+    await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'phone large work', timeout: 30_000 });
+    const phoneJump = await cdp.eval(`(() => {
+      const select = document.querySelector('#page-jump');
+      const r = select?.getBoundingClientRect();
+      const panel = document.querySelector('#detail')?.getBoundingClientRect();
+      return {
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        visible: document.querySelector('#page-jump-wrap')?.hidden === false,
+        value: select?.value ?? '',
+        insidePanel: r && panel ? r.left >= panel.left - 1 && r.right <= panel.right + 1 : false,
+        width: Math.round(r?.width ?? 0),
+      };
+    })()`);
+    await cdp.screenshot(path.join(OUT_DIR, '09-large-work-jump.png')).then(() => report.screenshots.push('09-large-work-jump.png'));
+    check(
+      '390 px: the sheet jump stays inside the panel without overflow',
+      phoneJump.overflow <= 1 && phoneJump.visible === true && phoneJump.value === '31' && phoneJump.insidePanel && phoneJump.width > 100,
+      JSON.stringify(phoneJump),
+    );
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  }
+
   /* --- 8f. device-local list + map-first shell -------------------------- */
   // The pinned list is also kept in this browser. A plain page load (no ?cmp=)
   // must bring it back; «Liste leeren» must remove it from the device again.
