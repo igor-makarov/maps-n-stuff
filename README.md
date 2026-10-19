@@ -28,6 +28,15 @@ What works today (verified with `wrangler dev` + headless Chromium):
   results, carries its own “Punktfilter entfernen” action, draws a crosshair on
   the map and is shareable as `at=lat,lon` (a shared point link opens the map on
   that point when the link does not name its own view);
+- **“Ausschnitte”: the documented footprints of the filtered records** drawn as
+  outlines on the map (map chip or the inline switch in the map hint, shareable
+  as `ex=1`). It answers the question the point filter asks — which part of the
+  map does each result claim to cover? Identical extents are one rectangle, a
+  hovered row highlights its own footprint, and a status line states how many
+  filtered cards document an extent at all (never a guessed one). Colour and
+  spacing follow the cantonal palette; the layer is decorative
+  (`aria-hidden`, `pointer-events: none`), so the list stays the accessible
+  interface;
 - publication-year range, collection, type and “only in the current map view”
   filters that drive both the result list and the map markers;
 - coordinated result list ↔ map selection, list/map/split view switch;
@@ -51,7 +60,7 @@ What works today (verified with `wrangler dev` + headless Chromium):
   at 612 px of a 900 px viewport), with a “Direkt zur Karte” link, a keyboard
   route to every map action and the cantonal “Nach oben” control once the page
   is scrolled;
-- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `at`, `place`, `lat`, `lon`,
+- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a
