@@ -141,8 +141,9 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 169 records (142 e-rara maps and atlases — 26 ZB Zürich
-Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 47 Zürich plans and
+Known limitations: the seed set holds 199 records (172 e-rara maps and atlases — 26 ZB Zürich
+Wildkarte sheets, 56 Swiss maps from ETH-Bibliothek holdings (1547–1900, after the
+7-19 widening of the `landkarten` window), 47 Zürich plans and
 canton maps found through the catalogue's SRU search (1852 “Plan der Stadt Zürich
 nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 canton maps),
 11 further Zürich-region maps from three more SRU questions (18th-century lake
@@ -153,7 +154,10 @@ of Europe and the world (1787–1915, extent centre deliberately outside the
 canton, at least 5° of span) and 1 map from the
 Bibliothèque de Genève) — plus 27 georeferenced swisstopo overlay editions; the UI
 states the real count and `records.json.selection`
-documents the rule per set, including the `museecarto` set that is probed but
+documents the rule per set, including the `landkarten` window (30 of the set's 2335
+records are read, 125 candidates are pooled and 56 kept as the union of the oldest
+26 and a per-decade spread, which is what reaches the 16th–18th-century sheets),
+the `museecarto` set that is probed but
 yields no record because its manifests state no extent, the SRU sets whose
 candidates must have the centre of their stated extent inside the canton of
 Zürich's bounding box as swisstopo's gazetteer states it (the world set requires

@@ -867,7 +867,7 @@ async function main() {
     zurichWindow,
   ] = await Promise.all([
     oaiRecords('zuz', 32),
-    oaiRecords('landkarten', 12),
+    oaiRecords('landkarten', 30),
     oaiRecords('cartesgeneve', 6),
     oaiRecords('museecarto', 6),
     sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
@@ -941,7 +941,24 @@ async function main() {
   }
   const zbRecords = [...bySheet.values()];
 
-  /** Dedupe by leading title (the same work often appears in several editions). */
+  /**
+   * Evenly spaced sample of a year-sorted list: the first and the last candidate
+   * are always in it, so a bounded candidate window still spans the set's whole
+   * year range. The `landkarten` set states 2335 records over four centuries; a
+   * plain first-N window would fill the window with one or two decades (that is
+   * exactly how the earlier “oldest 50” window behaved) and the selection would
+   * never see the 16th/17th-century sheets or the later ones.
+   */
+  function spreadWindow(list, count) {
+    if (list.length <= count) return list;
+    const picked = new Set();
+    for (let i = 0; i < count; i++) picked.add(Math.round((i * (list.length - 1)) / (count - 1)));
+    return [...picked].sort((a, b) => a - b).map((i) => list[i]);
+  }
+
+  /**
+   * Dedupe by leading title (the same work often appears in several editions).
+   */
   function keepUnique(list, limit) {
     const seen = new Set();
     const out = [];
@@ -955,10 +972,67 @@ async function main() {
     return out;
   }
 
-  const eth = await pool(landCandidates.slice(0, 50), 3, (c) =>
+  /**
+   * Spread selection for the survey set: at most `perDecade` records per
+   * publication decade, one entry per leading title, oldest first, capped. The
+   * set covers four centuries (16th to 20th), so a count-limited “oldest N”
+   * selection would keep only its first two decades — which is what the earlier
+   * 26-record rule did. The per-decade rule is what makes the set a survey
+   * instead of a pile, and it never hand-picks a title.
+   */
+  function keepSpread(list, { perDecade, cap }) {
+    const seen = new Set();
+    const decades = new Map();
+    const out = [];
+    for (const r of [...list].sort((a, b) => a.yearStart - b.yearStart)) {
+      const key = r.title.slice(0, 60);
+      if (seen.has(key)) continue;
+      const decade = Math.floor(r.yearStart / 10) * 10;
+      const used = decades.get(decade) || 0;
+      if (used >= perDecade) continue;
+      decades.set(decade, used + 1);
+      seen.add(key);
+      out.push(r);
+      if (out.length >= cap) break;
+    }
+    return out;
+  }
+
+  // Candidate window: the 50 oldest candidates of the set's first 12 OAI pages —
+  // the window this set was first harvested with, so the deeper read does not lose
+  // that reach — **plus** an evenly spaced 90-candidate sample of the whole year
+  // range (16th to 20th century), which the old window never reached. Union,
+  // deduplicated by catalogue id.
+  const landBaseline = land
+    .slice(0, 120)
+    .map(parseOai)
+    .filter((r) => r.isMap && r.titleId && r.year)
+    .filter(notASeries)
+    .sort((a, b) => a.year - b.year)
+    .slice(0, 50);
+  const landWindow = [
+    ...new Map(
+      [...landBaseline, ...spreadWindow(landCandidates, 90)].map((c) => [c.titleId, c]),
+    ).values(),
+  ].sort((a, b) => a.year - b.year);
+  const eth = await pool(landWindow, 3, (c) =>
     manifestRecord(c, { sourceCollection: 'Schweizer Landkarten aus vier Jahrhunderten' }),
   );
-  const ethRecords = keepUnique(eth.filter((r) => r.extent), 26);
+  const ethWithExtent = eth.filter((r) => r.extent);
+  // Two documented passes over the same harvested candidates, unioned by id:
+  //  (1) the set's oldest 26 maps — the rule the seed shipped with, so no record
+  //      that a previous seed already published disappears (they are the cantonal
+  //      and regional sheets outside Zürich: Vaud, Aargau, Ticino, Appenzell …);
+  //  (2) a per-decade spread over the evenly spaced window, which is the only way
+  //      the 16th–18th-century Zürich sheets reach the selection at all.
+  const ethRecords = [
+    ...new Map(
+      [
+        ...keepUnique(ethWithExtent, 26),
+        ...keepSpread(ethWithExtent, { perDecade: 3, cap: 44 }),
+      ].map((r) => [r.id, r]),
+    ).values(),
+  ].sort((a, b) => a.yearStart - b.yearStart);
 
   // Slice by count is not enough here: the set spans four centuries and earlier
   // giants push the 19th-century Geneva sheets out of a 14-item window, so the
@@ -1357,8 +1431,19 @@ async function main() {
       },
       'e-rara:landkarten': {
         considered: landCandidates.length,
+        consideredInWindow: landWindow.length,
         kept: ethRecords.length,
-        rule: 'every map of the set that is not a series volume, oldest first, requires a stated Kartendaten bbox',
+        rule:
+          'every map of the set that is not a series volume (the set states 2335 records; the first 30 OAI pages = 300 ' +
+          'records are read); the candidate window is the union of the 50 oldest candidates of the set\'s first 12 OAI ' +
+          'pages (the window this set was first harvested with, so the deeper read does not lose that reach) and 90 ' +
+          'candidates evenly spaced over the year-sorted candidates (so the four centuries are reachable instead of one ' +
+          'decade); requires a stated ' +
+          'Kartendaten bbox, one entry per leading title (60 characters); kept as the union of two documented passes — ' +
+          'the oldest 26 records that pass the gates (the earlier selection rule: the cantonal and regional sheets ' +
+          'outside Zürich) and a ' +
+          'per-decade spread with at most three records per publication decade (cap 44), which is what brings the ' +
+          '16th–18th-century Zürich sheets in',
       },
       'e-rara:cartesgeneve': {
         considered: genevaCandidates.length,

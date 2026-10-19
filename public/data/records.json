@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T01:29:20.659Z",
+  "generatedAt": "2026-10-19T01:57:40.905Z",
   "retrieved": "2026-10-19",
   "generator": "scripts/fetch-records.mjs",
   "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 (CQL via dc.title/dc.subject) for the Zürich plan, Zürich-region, Zürich city-plan and Europe/world overview material the sorted OAI paging does not reach, each hit confirmed by OAI GetRecord and its manifest: the Zürich sets keep only records whose stated extent centre lies inside the canton of Zürich's window, the overview set only records whose centre lies outside it and whose extent spans at least 5°; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. Regenerate with: node scripts/fetch-records.mjs --out public/data",
@@ -10,9 +10,10 @@
       "rule": "maps only, one entry per sheet, publication year ≤ 1900, requires a stated Kartendaten bbox"
     },
     "e-rara:landkarten": {
-      "considered": 89,
-      "kept": 26,
-      "rule": "every map of the set that is not a series volume, oldest first, requires a stated Kartendaten bbox"
+      "considered": 258,
+      "consideredInWindow": 125,
+      "kept": 56,
+      "rule": "every map of the set that is not a series volume (the set states 2335 records; the first 30 OAI pages = 300 records are read); the candidate window is the union of the 50 oldest candidates of the set's first 12 OAI pages (the window this set was first harvested with, so the deeper read does not lose that reach) and 90 candidates evenly spaced over the year-sorted candidates (so the four centuries are reachable instead of one decade); requires a stated Kartendaten bbox, one entry per leading title (60 characters); kept as the union of two documented passes — the oldest 26 records that pass the gates (the earlier selection rule: the cantonal and regional sheets outside Zürich) and a per-decade spread with at most three records per publication decade (cap 44), which is what brings the 16th–18th-century Zürich sheets in"
     },
     "e-rara:cartesgeneve": {
       "considered": 58,
@@ -124,6 +125,74 @@
   ],
   "records": [
     {
+      "id": "e-rara:8562848",
+      "title": "Das Zürychgow",
+      "yearStart": 1547,
+      "yearEnd": 1547,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Stumpf, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26485",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8562850/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8562848/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.05,
+        "east": 9.16667,
+        "north": 47.6,
+        "south": 46.76667
+      },
+      "geo": {
+        "lat": 47.18333,
+        "lon": 8.60834
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8562850",
+      "shelfmark": "3 Kb 02: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8562848",
+      "imprint": "[Zürich] : [Froschauer], [1547?]"
+    },
+    {
+      "id": "e-rara:8602092",
+      "title": "Geographische oder grund-richtige Verzeichnus der schönen Situation der Statt Zürich, ihres Sees und derselbigen Landschafft so um und an dem See gelägen",
+      "yearStart": 1692,
+      "yearEnd": 1692,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Escher, Hans Erhard"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26659",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602094/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602092/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.46667,
+        "east": 8.98333,
+        "north": 47.4,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.275,
+        "lon": 8.725
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602094",
+      "shelfmark": "3 Kh 03: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602092",
+      "imprint": "[Zürich] : [Johann Rudolf Simler], 1692"
+    },
+    {
       "id": "e-rara:8602401",
       "title": "Grundriss der Statt Zürich, und deroselb Fortification",
       "yearStart": 1696,
@@ -158,6 +227,40 @@
       "imprint": "[Zürich] : [Verlag nicht ermittelbar], 1696"
     },
     {
+      "id": "e-rara:8562858",
+      "title": "Zürich Gebiet",
+      "yearStart": 1698,
+      "yearEnd": 1698,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Streulin, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26487",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8562860/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8562858/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.33333,
+        "east": 9.58333,
+        "north": 47.75,
+        "south": 47.16667
+      },
+      "geo": {
+        "lat": 47.45834,
+        "lon": 8.95833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8562860",
+      "shelfmark": "3 Kb 03: 3",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8562858",
+      "imprint": "[Zürich?] : [J.H. Streulin?], 1698"
+    },
+    {
       "id": "e-rara:8751735",
       "title": "Grundriss der Statt Zürich, samt deroselben Fortifications Werken anno 1705",
       "yearStart": 1705,
@@ -190,6 +293,108 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751735",
       "imprint": "[Zürich] : [Verlag nicht ermittelbar], 1705"
+    },
+    {
+      "id": "e-rara:8563105",
+      "title": "Delineatio aller Quartieren der Statt und Landschaft Zürich",
+      "yearStart": 1718,
+      "yearEnd": 1718,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Freytag, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26536",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8563107/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8563105/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.18333,
+        "east": 9.03333,
+        "north": 47.73333,
+        "south": 47.06667
+      },
+      "geo": {
+        "lat": 47.4,
+        "lon": 8.60833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8563107",
+      "shelfmark": "3 Kb 54: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8563105",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], 1718"
+    },
+    {
+      "id": "e-rara:8563122",
+      "title": "Tabula topographica parochiarum synodo Tigurinae obstrictarum opera",
+      "yearStart": 1718,
+      "yearEnd": 1718,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Freytag, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26539",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8563124/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8563122/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.18333,
+        "east": 9.5,
+        "north": 47.73333,
+        "south": 47.06667
+      },
+      "geo": {
+        "lat": 47.4,
+        "lon": 8.84166
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8563124",
+      "shelfmark": "3 Kb 54: 5",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8563122",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], 1718"
+    },
+    {
+      "id": "e-rara:8562868",
+      "title": "Nova et accurata Agri Tigurini cum confiniis tabula geographica",
+      "yearStart": 1738,
+      "yearEnd": 1738,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Freytag, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26489",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8562872/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8562868/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.16667,
+        "east": 9.08333,
+        "north": 47.75,
+        "south": 47.06667
+      },
+      "geo": {
+        "lat": 47.40834,
+        "lon": 8.625
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8562872",
+      "shelfmark": "3 Kb 04: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8562868",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], 1738"
     },
     {
       "id": "e-rara:29362556",
@@ -258,6 +463,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29328703",
       "imprint": "A.V. [Augsburg] : Georg Balthasar Probst excud., [zwischen 1766 und 1790]"
+    },
+    {
+      "id": "e-rara:8562880",
+      "title": "Territorium der Republic Zürich",
+      "yearStart": 1766,
+      "yearEnd": 1766,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hofmeister, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26491",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8562882/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8562880/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.33333,
+        "east": 9.58333,
+        "north": 47.75,
+        "south": 47.16667
+      },
+      "geo": {
+        "lat": 47.45834,
+        "lon": 8.95833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8562882",
+      "shelfmark": "3 Kb 04: 4",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8562880",
+      "imprint": "[Zürich] : [Hofmeister], 1766"
     },
     {
       "id": "e-rara:8751536",
@@ -358,7 +597,6 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/7203623",
       "shelfmark": "Rar KS 99",
       "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203621",
       "imprint": "Genève : chez F. Monty, 1781"
     },
     {
@@ -600,6 +838,40 @@
       "imprint": "Zürich : Militar-Schule in Zürich, 1792"
     },
     {
+      "id": "e-rara:8602097",
+      "title": "Der Zürich-See mit allen seinen Angräntzungen in seiner natürlichen Lage",
+      "yearStart": 1793,
+      "yearEnd": 1793,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Gyger, Hans Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26660",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602099/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602097/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.46667,
+        "east": 8.98333,
+        "north": 47.4,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.275,
+        "lon": 8.725
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602099",
+      "shelfmark": "3 Kh 04: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602097",
+      "imprint": "[Zürich] : [Johannes Hofmeister], 1793"
+    },
+    {
       "id": "e-rara:8751561",
       "title": "Plan der Attaque auf die Brükkenschanz u. das Lager auf der Wollishofer Allment von der Militarischen Gesellschaft mit Zuzug Freywilliger Zürcherscher Landmiliz exequirt den 6. August 1782",
       "yearStart": 1793,
@@ -664,6 +936,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/7246433",
       "shelfmark": "Rar KA 11",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7246431",
       "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
     },
     {
@@ -732,6 +1005,40 @@
       "shelfmark": "Rar KA 11",
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258402",
+      "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
+    },
+    {
+      "id": "e-rara:7258407",
+      "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie de la Valteline et frontière de l'Italie",
+      "yearStart": 1796,
+      "yearEnd": 1796,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Weiss, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23385",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7258409/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7258407/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 9.28333,
+        "east": 10.43333,
+        "north": 46.23333,
+        "south": 45.66667
+      },
+      "geo": {
+        "lat": 45.95,
+        "lon": 9.85833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7258409",
+      "shelfmark": "Rar KA 11",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7258407",
       "imprint": "Aarau : J. R. Meyer, [zwischen 1796 und 1802]"
     },
     {
@@ -871,6 +1178,40 @@
       "imprint": "Aarau : J. R. Meyer, 1797"
     },
     {
+      "id": "e-rara:8602057",
+      "title": "Vorstellung der Gegend zwischen Glattbrugg und Schwerzenbacher-Höfen, und der von Schwammendingen, den 20. August 1786 von dem Militarischen Collegio und freywilligen ab der Landschaft vorgenohmenen Angriffe und Besiznehmung ...",
+      "yearStart": 1797,
+      "yearEnd": 1797,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Meyer, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26652",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602059/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602057/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.55,
+        "east": 8.6,
+        "north": 47.43333,
+        "south": 47.38333
+      },
+      "geo": {
+        "lat": 47.40833,
+        "lon": 8.575
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602059",
+      "shelfmark": "3 Kc 54: 3",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602057",
+      "imprint": "[Zürich] : Herausgegeben von der Militärischen Gesellschaft in Zürich, 1797"
+    },
+    {
       "id": "e-rara:7258367",
       "title": "Sammelband ETH-BIB KS: Atlas Suisse, Partie des Grisons, du haut Rheinthal et ses frontières au gouvernement d'Arlberg et Tyrol",
       "yearStart": 1798,
@@ -973,6 +1314,40 @@
       "imprint": "Aarau : J. R. Meyer, 1798"
     },
     {
+      "id": "e-rara:8715992",
+      "title": "Vorstellung der bey Ober- und Nieder-Affholtern, und des daselbst von dem Militarischen Collegio und Zuzug der Cavallerie Gesellschaft auch freywilligen ab der Landschaft, an Cavallerie, Artillerie, Infanterie und Jaeger den 22ten August 1796 ausgeführten Manouvre",
+      "yearStart": 1798,
+      "yearEnd": 1798,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Meyer, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-27070",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8715994/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8715992/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.48333,
+        "east": 8.51667,
+        "north": 47.41667,
+        "south": 47.4
+      },
+      "geo": {
+        "lat": 47.40834,
+        "lon": 8.5
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8715994",
+      "shelfmark": "3 Le 54: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8715992",
+      "imprint": "Zürich : Militarische Gesellschaft, 1798"
+    },
+    {
       "id": "e-rara:6485160",
       "title": "Carte générale de la Suisse suivant les nouvelles divisions, qui comprennent les ci-devant XIII cantons, leurs alliés et sujets, et forment actuellement la république helvétique une et invisible",
       "yearStart": 1799,
@@ -1005,6 +1380,108 @@
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6485160",
       "imprint": "Basle : Chrétien de Mechel, 1799"
+    },
+    {
+      "id": "e-rara:8602199",
+      "title": "Carte topographique d'une partie du cours de la Limmat",
+      "yearStart": 1799,
+      "yearEnd": 1799,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Dedon, .."
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26679",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602201/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602199/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.33333,
+        "east": 8.55,
+        "north": 47.43333,
+        "south": 47.36667
+      },
+      "geo": {
+        "lat": 47.4,
+        "lon": 8.44167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602201",
+      "shelfmark": "3 Kw 54: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602199",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1799]"
+    },
+    {
+      "id": "e-rara:8645099",
+      "title": "Situations-Plan des Kriegs-Schauplazes allernächst Zürich und der Kette des Albisbergs",
+      "yearStart": 1799,
+      "yearEnd": 1799,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Meyer, Johann Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26890",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8645101/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8645099/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.38333,
+        "east": 8.65,
+        "north": 47.4,
+        "south": 47.18333
+      },
+      "geo": {
+        "lat": 47.29166,
+        "lon": 8.51666
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8645101",
+      "shelfmark": "3 Lb 54: 3",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8645099",
+      "imprint": "[Zürich?] : [Verlag nicht ermittelbar], [1799]"
+    },
+    {
+      "id": "e-rara:8602422",
+      "title": "Grundriss der Stadt Zürich und der umliegenden Gegend",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26723",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602424/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602422/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.58333,
+        "north": 47.4,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.55
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602424",
+      "shelfmark": "3 Lb 05: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602422",
+      "imprint": "[Zürich] : [Orell Füssli & Comp.], [1800]"
     },
     {
       "id": "e-rara:8602432",
@@ -1143,40 +1620,6 @@
       "imprint": "Aarau : J. R. Meyer, 1802"
     },
     {
-      "id": "e-rara:6505450",
-      "title": "Das Zürichgebiet nach Murdochs Entwerfungsart",
-      "yearStart": 1803,
-      "yearEnd": 1803,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "[s.n.]"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20930",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6505452/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6505450/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.35,
-        "east": 9.23333,
-        "north": 47.68333,
-        "south": 47.15
-      },
-      "geo": {
-        "lat": 47.41666,
-        "lon": 8.79167
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6505452",
-      "shelfmark": "Rar K 504",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505450",
-      "imprint": "[Zürich] : [Orell Füssli & Comp.], 1803"
-    },
-    {
       "id": "e-rara:29263472",
       "title": "Helvetia orientalis - nordöstlicher Teil (Zürich): 48. Plan de la ville et des environs de Zürich",
       "yearStart": 1804,
@@ -1245,40 +1688,6 @@
       "imprint": "Zürich : [Verlag nicht ermittelbar], 1804"
     },
     {
-      "id": "e-rara:6484871",
-      "title": "Die Gegend von Goldau, Röthen, Busingen und Lowerz, im Kanton Schwyz",
-      "yearStart": 1807,
-      "yearEnd": 1807,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Zay, Fidel"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20750",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484873/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484871/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.53333,
-        "east": 8.58333,
-        "north": 47.08333,
-        "south": 47.03333
-      },
-      "geo": {
-        "lat": 47.05833,
-        "lon": 8.55833
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6484873",
-      "shelfmark": "Rar KS 363",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484871",
-      "imprint": "Luzern : Eglin, [1807?]"
-    },
-    {
       "id": "e-rara:10198105",
       "title": "Ueber den Bau der Erde in dem Alpen-Gebirge zwischen 12 Längen- und 2-4 Breitengraden: Karte der höchsten Gebirge Europas",
       "yearStart": 1808,
@@ -1312,40 +1721,6 @@
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/10198105",
       "sheet": "Karte der höchsten Gebirge Europas",
       "imprint": "[Zürich] : [Orell, Füssli und Compagnie], [1808]"
-    },
-    {
-      "id": "e-rara:6697957",
-      "title": "General-Charte der Schweiz in XIX Cantone abgetheilt",
-      "yearStart": 1809,
-      "yearEnd": 1809,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Scheuermann, Samuel Johann Jakob"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21664",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6697959/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6697957/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 6,
-        "east": 10.41667,
-        "north": 47.83333,
-        "south": 45.66667
-      },
-      "geo": {
-        "lat": 46.75,
-        "lon": 8.20833
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6697959",
-      "shelfmark": "Rar KS 547",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6697957",
-      "imprint": "Zürich : zu finden bey Orell, Füssli und Compagnie, 1809"
     },
     {
       "id": "e-rara:6484199",
@@ -1382,6 +1757,39 @@
       "imprint": "[Zürich] : [Fuessli & Comp.], [1813]"
     },
     {
+      "id": "e-rara:8602254",
+      "title": "Winterthur mit der umliegenden Gegend Ao. 1292",
+      "yearStart": 1814,
+      "yearEnd": 1814,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26690",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602256/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602254/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.68333,
+        "east": 8.75,
+        "north": 47.51667,
+        "south": 47.46667
+      },
+      "geo": {
+        "lat": 47.49167,
+        "lon": 8.71666
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602256",
+      "shelfmark": "3 Kx 55: 1",
+      "canvasCount": 1,
+      "imprint": "[Zürich] : [Feuerwerker Gesellschaft], [1814]"
+    },
+    {
       "id": "e-rara:6507640",
       "title": "Karte vom Thunersee",
       "yearStart": 1816,
@@ -1416,38 +1824,71 @@
       "imprint": "[Bern] : [Verlag nicht ermittelbar], [1816]"
     },
     {
-      "id": "e-rara:7203584",
-      "title": "Carte de l'ancien évêché de Bâle",
-      "yearStart": 1819,
-      "yearEnd": 1819,
+      "id": "e-rara:8602437",
+      "title": "Grundriss der Stadt Zürich 1824",
+      "yearStart": 1824,
+      "yearEnd": 1824,
       "depictedYearStart": null,
       "depictedYearEnd": null,
       "creators": [
-        "Buchwalder, Antoine Joseph"
+        "Keller, Heinrich"
       ],
       "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
+      "institution": "Zentralbibliothek Zürich",
       "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23146",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/7203586/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7203584/manifest",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26726",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602439/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602437/manifest",
       "type": "map",
       "collection": "Schweizer Landkarten aus vier Jahrhunderten",
       "extent": {
-        "west": 6.83333,
-        "east": 7.91667,
-        "north": 47.56667,
-        "south": 47.03333
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.36667,
+        "south": 47.35
       },
       "geo": {
-        "lat": 47.3,
-        "lon": 7.375
+        "lat": 47.35833,
+        "lon": 8.53334
       },
-      "imageService": "https://www.e-rara.ch/i3f/v20/7203586",
-      "shelfmark": "Rar K 1044",
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602439",
+      "shelfmark": "3 Lb 05: 4 Expl 2",
       "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203584",
-      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1819]"
+      "imprint": "Zürich : Heinrich Keller, 1824"
+    },
+    {
+      "id": "e-rara:8602493",
+      "title": "[Zürich mit seiner Umgegend]",
+      "yearStart": 1825,
+      "yearEnd": 1825,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26737",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602495/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602493/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.38333,
+        "east": 8.61667,
+        "north": 47.4,
+        "south": 47.3
+      },
+      "geo": {
+        "lat": 47.35,
+        "lon": 8.5
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602495",
+      "shelfmark": "3 Lb 05: 16",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602493",
+      "imprint": "[Zürich] : [Feuerwerker-Gesellschaft], [1825]"
     },
     {
       "id": "e-rara:8834442",
@@ -1553,40 +1994,6 @@
       "imprint": "[Basel] : [Schweighauser], [1827]"
     },
     {
-      "id": "e-rara:6484810",
-      "title": "Der Canton Zürich mit seinen nähern Angränzungen",
-      "yearStart": 1828,
-      "yearEnd": 1828,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Keller, Heinrich"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20744",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484813/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484810/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.33333,
-        "east": 8.96667,
-        "north": 47.7,
-        "south": 47.15
-      },
-      "geo": {
-        "lat": 47.425,
-        "lon": 8.65
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/6484812",
-      "shelfmark": "Rar K 295",
-      "canvasCount": 3,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484810",
-      "imprint": "Zürich : Heinrich Keller, 1828"
-    },
-    {
       "id": "e-rara:6507721",
       "title": "Carte de la Suisse à l'usage des écoles Suisses",
       "yearStart": 1830,
@@ -1617,6 +2024,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/6507723",
       "shelfmark": "Rar K 497",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6507721",
       "imprint": "Zürich : bey Heinrich Keller, 1830"
     },
     {
@@ -1684,39 +2092,8 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/6526405",
       "shelfmark": "Rar KS 450",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526403",
       "imprint": "Zurigo ; S. Gallo : Enrico Füssli & Co. : Huber & Co., [1835?]"
-    },
-    {
-      "id": "e-rara:6526415",
-      "title": "Historisch-geographisch-statistisches Gemälde der Schweiz: Der Kanton Unterwalden, historisch, geographisch, statistisch geschildert, Canton Unterwalden",
-      "yearStart": 1836,
-      "yearEnd": 1836,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Bruder, Carl"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21033",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/6526417/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6526415/manifest",
-      "type": "map",
-      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
-      "extent": {
-        "west": 8.08333,
-        "east": 8.83333,
-        "north": 47.03333,
-        "south": 46.71667
-      },
-      "geo": {
-        "lat": 46.875,
-        "lon": 8.45833
-      },
-      "shelfmark": "Rar K 530",
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526415",
-      "imprint": "[St. Gallen] : [Huber], [1836]"
     },
     {
       "id": "e-rara:25996178",
@@ -1785,6 +2162,108 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602468",
       "imprint": "Zürich : Heinrich Keller, 1838"
+    },
+    {
+      "id": "e-rara:6505505",
+      "title": "Carte von dem Canton Aargau",
+      "yearStart": 1840,
+      "yearEnd": 1840,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Scheuermann, Samuel Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20941",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6505507/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6505505/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.7,
+        "east": 8.46667,
+        "north": 47.63333,
+        "south": 47.11667
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.08333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6505507",
+      "shelfmark": "Rar KS 357",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6505505",
+      "imprint": "Aarau : Scheurmann, 1840"
+    },
+    {
+      "id": "e-rara:6484571",
+      "title": "Karte der Cantone St. Gallen und Appenzell",
+      "yearStart": 1840,
+      "yearEnd": 1840,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bernet, J."
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20707",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484574/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484571/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.8,
+        "east": 9.66667,
+        "north": 47.7,
+        "south": 46.88333
+      },
+      "geo": {
+        "lat": 47.29167,
+        "lon": 9.23334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484573",
+      "shelfmark": "Rar K 316",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484571",
+      "imprint": "St.Gallen ; Bern : Huber et Comp., 1840"
+    },
+    {
+      "id": "e-rara:6484353",
+      "title": "Karte der Schweiz mit Randnamen",
+      "yearStart": 1840,
+      "yearEnd": 1840,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20684",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6484355/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484353/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.95,
+        "east": 10.5,
+        "north": 47.8,
+        "south": 45.8
+      },
+      "geo": {
+        "lat": 46.8,
+        "lon": 8.225
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6484355",
+      "shelfmark": "Rar KS 364",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6484353",
+      "imprint": "Zürich : Keller, 1840"
     },
     {
       "id": "e-rara:21562841",
@@ -1924,6 +2403,74 @@
       "imprint": "[Zürich] : J.J. Hofer, [1847]-[1879]"
     },
     {
+      "id": "e-rara:6526543",
+      "title": "Karte der centralen Schweiz",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Leuzinger, Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21040",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6526545/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6526543/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.23333,
+        "east": 9.06667,
+        "north": 47.35,
+        "south": 46.65
+      },
+      "geo": {
+        "lat": 47,
+        "lon": 8.65
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6526545",
+      "shelfmark": "Rar K 472",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6526543",
+      "imprint": "Zürich : bei Heinrich Fuessli u. Comp., [1850?]"
+    },
+    {
+      "id": "e-rara:6914543",
+      "title": "Karte der Schweiz",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Ziegler, Jakob Melchior"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-22295",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6914547/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6914543/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.95,
+        "east": 10.5,
+        "north": 47.8,
+        "south": 45.8
+      },
+      "geo": {
+        "lat": 46.8,
+        "lon": 8.225
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6914545",
+      "shelfmark": "Rar K 513",
+      "canvasCount": 28,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6914543",
+      "imprint": "St. Gallen ; Bern : von Huber & Comp. ; Berlin : Dietrich Reimer, 1850"
+    },
+    {
       "id": "e-rara:24181606",
       "title": "Karte des Küstenlandes von Aegypten, Syrien und Kleinasien",
       "yearStart": 1850,
@@ -1956,6 +2503,40 @@
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/24181606",
       "imprint": "[Deutschland?] : [Verlag nicht ermittelbar], [nach 1850]"
+    },
+    {
+      "id": "e-rara:7203589",
+      "title": "Karte über einen Theil der südlichen Wallisthäler",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Studer, Gottlieb"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-23147",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/7203591/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/7203589/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 7.3,
+        "east": 8.03333,
+        "north": 46.31667,
+        "south": 45.88333
+      },
+      "geo": {
+        "lat": 46.1,
+        "lon": 7.66667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/7203591",
+      "shelfmark": "Rar KS 264",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203589",
+      "imprint": "Zürich : Heinrich Fuessli u. Comp. zur Meisen ; Winterthur : J. Wurster u. Comp., 1850"
     },
     {
       "id": "swisstopo:zeitreise-18501231",
@@ -2238,7 +2819,6 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 14 Expl 3",
       "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924088",
       "sheet": "Kloten",
       "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
     },
@@ -2346,7 +2926,6 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 18 Expl 2",
       "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924104",
       "sheet": "Zürich",
       "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
     },
@@ -2880,6 +3459,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 24 Expl 2",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924128",
       "sheet": "Hinweil",
       "imprint": "[Zürich] : [Topographisches Bureau], [1860]"
     },
@@ -2955,6 +3535,40 @@
       "editionDate": "1860-12-31"
     },
     {
+      "id": "e-rara:8563000",
+      "title": "Karte des Kantons Zürich",
+      "yearStart": 1861,
+      "yearEnd": 1861,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26515",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8563002/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8563000/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.36667,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.675
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8563002",
+      "shelfmark": "3 Kb 06: 8",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8563000",
+      "imprint": "Winterthur : J. Wurster & Comp., 1861"
+    },
+    {
       "id": "e-rara:8924112",
       "title": "Karte des Kantons Zürich im Masstab von 1:25 000: Bauma",
       "yearStart": 1861,
@@ -2986,6 +3600,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 20",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924112",
       "sheet": "Bauma",
       "imprint": "[Zürich] : [Topographisches Bureau], [1861]"
     },
@@ -3021,6 +3636,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 16 Expl 4",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924096",
       "sheet": "Elgg",
       "imprint": "[Zürich] : [Topographisches Bureau], [1861]"
     },
@@ -3092,6 +3708,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 12 Expl 2",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924080",
       "sheet": "Frauenfeld",
       "imprint": "[Zürich] : [Topographisches Bureau], [1862]"
     },
@@ -3130,6 +3747,73 @@
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924048",
       "sheet": "Stammheim",
       "imprint": "[Zürich] : [Topographisches Bureau], [1863]"
+    },
+    {
+      "id": "e-rara:8602508",
+      "title": "Grundriss der Stadt Zürich zu Anfang des Jahrs 1864",
+      "yearStart": 1864,
+      "yearEnd": 1864,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26740",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602510/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602508/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.36667,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.35833,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602510",
+      "shelfmark": "3 Lb 06: 2",
+      "canvasCount": 1,
+      "imprint": "Zürich : Heinrich Keller, 1864"
+    },
+    {
+      "id": "e-rara:8602082",
+      "title": "[Karte des mittleren Reppischtals]",
+      "yearStart": 1865,
+      "yearEnd": 1865,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Brack, Johann Jakob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26657",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602084/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602082/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.41667,
+        "east": 8.5,
+        "north": 47.36667,
+        "south": 47.31667
+      },
+      "geo": {
+        "lat": 47.34167,
+        "lon": 8.45833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602084",
+      "shelfmark": "3 Kg 06: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602082",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1865]"
     },
     {
       "id": "e-rara:7203559",
@@ -3302,6 +3986,40 @@
       "imprint": "Zürich : J. J. Hofer, 1869"
     },
     {
+      "id": "e-rara:8563238",
+      "title": "Karte der Umgegend von Zürich",
+      "yearStart": 1870,
+      "yearEnd": 1870,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Beust, Friedrich von"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26561",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8563240/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8563238/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.33333,
+        "east": 8.75,
+        "north": 47.45,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.3,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8563240",
+      "shelfmark": "3 Kc 06: 4",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8563238",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1870?]"
+    },
+    {
       "id": "swisstopo:siegfried-1870",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1870",
       "yearStart": 1870,
@@ -3439,6 +4157,40 @@
       "imprint": "Winterthur : Wurster, Randegger & Cie., 1871"
     },
     {
+      "id": "e-rara:8562975",
+      "title": "Wegekarte vom Canton Zürich",
+      "yearStart": 1871,
+      "yearEnd": 1871,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Keller, Heinrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26510",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8562977/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8562975/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.35,
+        "east": 8.98333,
+        "north": 47.7,
+        "south": 47.15
+      },
+      "geo": {
+        "lat": 47.425,
+        "lon": 8.66667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8562977",
+      "shelfmark": "3 Kb 06: 2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8562975",
+      "imprint": "Zürich : Hch. Keller, [18]71"
+    },
+    {
       "id": "e-rara:8751798",
       "title": "Plan der Stadt Zürich u. Umgebung nach dem grossen offiziellen Plane",
       "yearStart": 1872,
@@ -3471,6 +4223,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751798",
       "imprint": "[Zürich] : Caesar Schmidt (Schabelitz'sche Buchhandlung), [1872]"
+    },
+    {
+      "id": "e-rara:6543932",
+      "title": "Kleiner historischer Atlas des Kantons Zürich",
+      "yearStart": 1873,
+      "yearEnd": 1873,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Beust, Friedrich von"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21152",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6543937/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6543932/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.16667,
+        "east": 9,
+        "north": 47.8,
+        "south": 47.08333
+      },
+      "geo": {
+        "lat": 47.44167,
+        "lon": 8.58333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6543934",
+      "shelfmark": "Rar KA 26",
+      "canvasCount": 9,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6543932",
+      "imprint": "Zürich : Schabelitz'sche Buchhandlung (Cäsar Schmidt), 1873"
     },
     {
       "id": "e-rara:11639807",
@@ -3779,6 +4565,40 @@
       "imprint": "Zürich : J.J. Hofer, [1880?]"
     },
     {
+      "id": "e-rara:8602239",
+      "title": "Plan von Winterthur und Umgebung",
+      "yearStart": 1880,
+      "yearEnd": 1880,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Schoenle, G."
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26687",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602241/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602239/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.68333,
+        "east": 8.75,
+        "north": 47.5,
+        "south": 47.48333
+      },
+      "geo": {
+        "lat": 47.49166,
+        "lon": 8.71666
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602241",
+      "shelfmark": "3 Kx 06: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602239",
+      "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1880?]"
+    },
+    {
       "id": "swisstopo:siegfried-1880",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1880",
       "yearStart": 1880,
@@ -3811,6 +4631,40 @@
         "east": 11.47757,
         "north": 48.230651
       }
+    },
+    {
+      "id": "e-rara:8602340",
+      "title": "[Wetzikon und Umgebung]",
+      "yearStart": 1881,
+      "yearEnd": 1881,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Wurster, Randegger und Cie"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26707",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602342/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602340/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.75,
+        "east": 8.83333,
+        "north": 47.33333,
+        "south": 47.28333
+      },
+      "geo": {
+        "lat": 47.30833,
+        "lon": 8.79167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602342",
+      "shelfmark": "3 Ky 161: 06: 1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602340",
+      "imprint": "[Zürich] : [in Comm. Höhr], [1881]"
     },
     {
       "id": "e-rara:11237570",
@@ -3947,6 +4801,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602529",
       "imprint": "Zürich : Caesar Schmidt, [1881?]"
+    },
+    {
+      "id": "e-rara:8602524",
+      "title": "Zürich",
+      "yearStart": 1882,
+      "yearEnd": 1882,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hofer, J. J."
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26743",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8602526/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602524/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.56667,
+        "north": 47.38333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.36666,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8602526",
+      "shelfmark": "3 Lb 06: 5",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602524",
+      "imprint": "Zürich : Caesar Schmidt, [1882]"
     },
     {
       "id": "e-rara:9047618",
@@ -4428,6 +5316,40 @@
       "imprint": "Zürich : Hch. Keller's geographr. Verlag, [ca. 1890?]"
     },
     {
+      "id": "e-rara:8644873",
+      "title": "Plan von Zürich & Umgebung",
+      "yearStart": 1890,
+      "yearEnd": 1890,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26845",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8644875/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8644873/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.55,
+        "north": 47.38333,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.36666,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8644875",
+      "shelfmark": "3 Lb 06: 16",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8644873",
+      "imprint": "Leipzig : Ed. Gaebler's geogrph. Inst., [1890?]"
+    },
+    {
       "id": "swisstopo:siegfried-1890",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1890",
       "yearStart": 1890,
@@ -4496,6 +5418,40 @@
       "imprint": "[Zürich] : [Hofer & Burger], [1890]"
     },
     {
+      "id": "e-rara:8645024",
+      "title": "[Zürich]",
+      "yearStart": 1892,
+      "yearEnd": 1892,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26875",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8645026/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8645024/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.5,
+        "east": 8.56667,
+        "north": 47.4,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.53334
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8645026",
+      "shelfmark": "3 Lb 46: 8",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8645024",
+      "imprint": "[Zürich] : [Hofer & Burger], [1892]"
+    },
+    {
       "id": "e-rara:8873236",
       "title": "Plan vom Zürich- und Adlis-Berg",
       "yearStart": 1892,
@@ -4528,6 +5484,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8873236",
       "imprint": "Zürich : Hofer & Burger, [1892?]"
+    },
+    {
+      "id": "e-rara:6692752",
+      "title": "Relief-Karte der Schweiz",
+      "yearStart": 1892,
+      "yearEnd": 1892,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Leuzinger, Rudolf"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-21633",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/6692755/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/6692752/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 5.95,
+        "east": 10.5,
+        "north": 47.8,
+        "south": 45.8
+      },
+      "geo": {
+        "lat": 46.8,
+        "lon": 8.225
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/6692754",
+      "shelfmark": "Rar K 220",
+      "canvasCount": 3,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/6692752",
+      "imprint": "Bern : Schmid, Francke, [1892?]"
     },
     {
       "id": "e-rara:8562726",
@@ -4836,6 +5826,40 @@
         "east": 11.47757,
         "north": 48.230651
       }
+    },
+    {
+      "id": "e-rara:8644939",
+      "title": "Uebersichtsplan der Stadt Zürich",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Zentralbibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26858",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/8644941/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/8644939/manifest",
+      "type": "map",
+      "collection": "Schweizer Landkarten aus vier Jahrhunderten",
+      "extent": {
+        "west": 8.51667,
+        "east": 8.56667,
+        "north": 47.4,
+        "south": 47.35
+      },
+      "geo": {
+        "lat": 47.375,
+        "lon": 8.54167
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/8644941",
+      "shelfmark": "3 Lb 07: 3",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8644939",
+      "imprint": "Zürich : Hofer & Co., [1900?]"
     },
     {
       "id": "e-rara:29507666",
