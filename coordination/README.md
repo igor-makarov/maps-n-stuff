@@ -96,13 +96,13 @@ Anything outside this contract is free. Missing modules must not break the shell
 |--------|------|-------------------------|
 | zurich-maps-0 | worker proxy, records seed + source registry | ✅ **140 records**: e-rara OAI-PMH/IIIF (26 ZB Wildkarte sheets, 26 ETH `landkarten`, 18 Zürich plans + 11 Zürich-region + 10 city ground/site plans + 21 Europe/world overview maps via SRU 1.2, 1 Genf) + 27 swisstopo overlay editions; canton-window (mirrored for the world set), per-decade and `zuz`-first selection rules, holding library never defaulted, keyword search covers collection/imprint, `npm run verify:endpoints` (618/618 on 2026-10-19), `docs/data-sources.md` + `sources.json` registry |
 | zurich-maps-1 | shell, design system, store, wrangler, docs, compare | ✅ map-first compact shell, canton design tokens/components (48 px controls), URL-backed store with **working browser back/forward (D6)**, comparison view + device-local Merkliste, cantonal “Nach oben”, Workers config + run book, unused vendor payload removed |
-| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`) |
+| zurich-maps-2 | map, search, results/filters | ✅ own slippy map (no library) with clustering + WMTS overlays, swisstopo place search, time/collection/provider/viewport facets, decade histogram whose **bars count the filter scope (not the period) and whose drag-brush selects a range**, point filter (`at=`), “Ausschnitte” footprint layer (`ex=`), selectable Grundkarte (farbig/grau/Luftbild, `base=`) |
 | zurich-maps-3 | detail view, IIIF, tests, harness | ✅ IIIF deep-zoom viewer + keyboard sheet strip + fullscreen + shareable cut-out (`vv=`), thumbnails fetched on demand, “Blatt” jump for large works, the panel’s own layer toggle for georeferenced swisstopo records, honest degraded-upstream states, series navigation; the comparison panes are the same viewer and are **coupled through each record’s documented extent** (`viewToExtent`/`extentToView`, switch `#compare-sync`); 136 unit tests and the 127-check CDP harness |
 
-Integration gate as of iteration 7-16 (verified on this runner, 140-record seed):
+Integration gate as of iteration 7-17 (verified on this runner, 140-record seed):
 `npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`),
-`node scripts/browser-check.mjs` against `npx wrangler dev` (**127/127** on the tree with
-maps-2's Grundkarte and maps-3's coupled comparison) and
+`node scripts/browser-check.mjs` against `npx wrangler dev` (**130/130** on the tree with
+maps-2's scoped histogram brush and maps-3's coupled comparison) and
 `node scripts/verify:endpoints` for the upstream URLs (maps-0's line states the count it
 last measured). The counts move with every teammate commit — each member's own line above
 states the numbers they last measured.
