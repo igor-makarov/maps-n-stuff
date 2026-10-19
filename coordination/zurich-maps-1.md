@@ -867,3 +867,70 @@ seconds while the toolbar claimed “Ergebnisse werden geladen …” (and, with
 - `tests/site.test.mjs` (maps-3's file, additive): one offline test keeps the
   loading markup, the spinner, the `aria-busy` flag and both bootstrap paths
   (`finishLoading`, “Bestand nicht geladen”) from drifting apart.
+
+---
+
+## Iteration 8-66 (2026-10-19, this runner) — new product direction (PROMPT.md @ 2f1dc08)
+
+The brief is corrected: **global English atlas, original identity, and a real
+historical-borders map**. The Zürich design system stays as a *visual reference*
+only. This supersedes the German/Swiss-first decisions above wherever they
+conflict; the useful machinery (design tokens, store/history contract, harness,
+record viewer, worker proxy) stays.
+
+### Product identity (maps-1 owns the shell, so this is decided here)
+
+- **Name: “AtlasChronicle”** — English, atlas-themed, coherent with the two
+  experiences (the archival *Maps* atlas and the *History* chronicle of borders).
+- **Mark: an original globe with a meridian and an east-pointing chart arrow**;
+  no shield, no diagonal, no canton-like blue/white heraldry. New `favicon.svg`
+  and the header mark in `index.html`. Design-source credit moves to the About
+  block (it already lives there as a link).
+- Tagline: *Historical maps and changing borders, worldwide.*
+- The `--zh-*` token names stay (internal CSS names may remain per the brief);
+  the palette is unchanged so existing contrast tests keep their meaning.
+
+### Lane claim (to avoid duplicate work)
+
+1. **Shell, brand, English chrome, store defaults** — `index.html`, `main.js`
+   (shell parts), `app.css`, `favicon.svg`, `store.js` defaults, `wrangler.jsonc`,
+   `docs/run.md`.
+2. **The missing historical-borders feature** (nobody owns it yet):
+   - pipeline `scripts/fetch-history.mjs` → `public/data/history/`
+     (aourednik/historical-basemaps, GPL-3.0, all 54 snapshots −123000…2010,
+     simplified with recorded tolerance);
+   - `public/app/history.js` (SVG world map, year control, labels, details,
+     honest nearest-snapshot notice, keyboard + touch);
+   - store keys `mode` (`map|history`), `year`, `hlat`, `hlon`, `hz`; nav entry
+     `Maps`/`History` in the header; `#history-view` markup in `index.html`.
+
+### Interface (freeze to test against)
+
+- URL: `?mode=history&year=1880&hlat=20&hlon=10&hz=3`; `year` may be negative
+  (BCE). Absent/other `mode` = the archival map browser.
+- Data: `GET /data/history/index.json` →
+  `{ upstream:{repo,revision,license,retrieved}, tolerance, range:{min,max},
+     snapshots:[{year,file,features,bytes,precision}] }`;
+  `GET /data/history/world_<year>.json` →
+  `{ year, revision, tolerance, features:[{n,s,b,r:[[[lon,lat],…],…]}] }`
+  where `n`=NAME, `s`=SUBJECTO, `b`=BORDERPRECISION 1..3, `r` = polygons
+  (ring 0 exterior, further rings holes; render with even-odd fill).
+- Static assets only — the history view needs **no Worker change**.
+
+### Requests to teammates (small, unblocking allowed and welcome)
+
+- **maps-0 (worker + seed)**: worldwide place search instead of swisstopo-only
+  (`/api/search/places` currently hits `api3.geo.admin.ch`, which cannot answer
+  “Cairo/Tokyo/Mexico City/São Paulo”). Photon (`photon.komoot.io`) or Nominatim
+  are documented, keyless, worldwide; add the host to `ALLOWLIST` and keep the
+  answer shape `{label,lat,lon,bbox,attribution}`. The historical dataset is
+  static, so no worker endpoint is needed for it.
+- **maps-2 (map/search/results)**: global basemap + worldwide initial extent
+  (the current default is Zürich at zoom 12, which the correction forbids), and
+  English strings in `map.js`/`search.js`/`results.js` (their tests too). When
+  `mode=history`, the archive map may stay hidden; `history.js` owns the screen.
+- **maps-3 (detail/iiif/tests/harness)**: English strings in
+  `detail.js`/`iiif.js`/`compare.js` and their tests; harness checks for the
+  History view (year change → different geometry, BCE label, nearest-snapshot
+  notice, worldwide search) — I will add my own unit tests for the store/history
+  contract and the data pipeline.
