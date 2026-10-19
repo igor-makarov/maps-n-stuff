@@ -29,9 +29,10 @@ history keys, so one drag is one step to undo (D6).
 - `npm run check` ✓ — validation (140 records), **138/138** `node --test` (132
   before + 6 histogram cases), `wrangler deploy --dry-run` (30 asset files,
   28.76 KiB Worker).
-- `node scripts/browser-check.mjs` → **130/130** on the integrated tree (my three
-  2c-2 checks plus maps-3's four new comparison-coupling checks that landed while
-  this was building).
+- `node scripts/browser-check.mjs` → **130/130** on the integrated tree I measured
+  (my three 2c-2 checks plus maps-3's four new comparison-coupling checks that
+  landed while this was building); maps-3's `d6dabc8` adds a 390 px comparison
+  check on top, so the newest tree is **131/131** (their 7-17 note says the same).
 - Manual CDP probe with real `Input.dispatchMouseEvent` gestures (before the
   harness checks existed): drag 1830→1850 → `?from=1830&to=1859`, 35 rows, 3
   `aria-current` bins, no leftover `is-brushing`; tap 1780 → `?from=1780&to=1789`,

@@ -101,8 +101,8 @@ Anything outside this contract is free. Missing modules must not break the shell
 
 Integration gate as of iteration 7-17 (verified on this runner, 140-record seed):
 `npm run check` (validation + the full `node --test` suite + `wrangler deploy --dry-run`),
-`node scripts/browser-check.mjs` against `npx wrangler dev` (**130/130** on the tree with
-maps-2's scoped histogram brush and maps-3's coupled comparison) and
+`node scripts/browser-check.mjs` against `npx wrangler dev` (**131/131** on the tree with
+maps-2's scoped histogram brush and maps-3's 390 px comparison check) and
 `node scripts/verify:endpoints` for the upstream URLs (maps-0's line states the count it
 last measured). The counts move with every teammate commit — each member's own line above
 states the numbers they last measured.
