@@ -111,10 +111,13 @@
         <p class="app-intro__more">
           <a class="zh-link" href="#about">
             <span class="app-intro__more-long">Mehr über Bestand, Quellen und Rechte</span>
-            <span class="app-intro__more-short">Bestand, Quellen, Rechte</span>
+            <span class="app-intro__more-short">Quellen &amp; Rechte</span>
           </a>
           <span aria-hidden="true"> · </span>
-          <a class="zh-link" href="#map">Direkt zur Karte</a>
+          <a class="zh-link" href="#map">
+            <span class="app-intro__more-long">Direkt zur Karte</span>
+            <span class="app-intro__more-short">Zur Karte</span>
+          </a>
         </p>
         <ul class="zh-tags" id="intro-tags" aria-label="Datenquellen"></ul>
       </section>
@@ -321,6 +324,10 @@
         <div class="app-docs__grid">
           <article class="zh-card">
             <h3 class="zh-heading zh-heading--4">Wie gearbeitet wird</h3>
+            <!-- On phones the hero band hides its stock figures to keep the way
+                 to the map short; the same numbers stand here (filled by
+                 main.js, same source). Desktop shows only the hero strip. -->
+            <ul class="zh-facts zh-facts--about" id="about-facts" aria-label="Bestand in Zahlen"></ul>
             <p>
               Der Bestand umfasst aktuell <span data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
               Sammlungen – mit Kartenvorschau, Zeitfilter und direkter Verlinkung zum Originaldatensatz. Die Grundkarte
@@ -337,6 +344,9 @@
           </article>
           <article class="zh-card" id="sources">
             <h3 class="zh-heading zh-heading--4">Quellen und Rechte</h3>
+            <!-- Filled from records.json (`generatedAt`) so the page states
+                 when the seed was last harvested, not just where it came from. -->
+            <p class="zh-hint" id="data-stand" hidden></p>
             <dl class="zh-deflist" id="source-list"></dl>
           </article>
           <article class="zh-card">

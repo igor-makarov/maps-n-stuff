@@ -109,25 +109,28 @@ function renderIntro() {
     node.textContent = count;
   }
 
-  // Facts strip: only statements the data actually supports.
-  const facts = qs('#intro-facts');
-  if (facts) {
+  // Facts strip: only statements the data actually supports. Two hosts exist:
+  // the hero band (hidden below 600 px) and the “Über das Projekt” card, which
+  // takes the figures over on phones so the map stays within reach.
+  const factsItems = (() => {
     const providersInUse = new Set(ctx.data.records.map((r) => r.providerId));
     const withManifest = ctx.data.records.filter((r) => r.iiifManifest).length;
-    const collections = new Set(ctx.data.records.map((r) => r.collection).filter(Boolean)).size;
-    facts.replaceChildren(
-      ...[
-        ['Digitalisate', `${ctx.data.records.length}`],
-        ['Zeitraum', `${ctx.data.years.min}–${ctx.data.years.max}`],
-        ['Anbieter', `${providersInUse.size}`],
-        ['IIIF-Bildservice', `${withManifest}`],
-      ].flatMap(([term, value]) => [
-        el('li', {}, [el('span', { class: 'zh-facts__value', text: value }), el('span', { class: 'zh-facts__term', text: term })]),
-      ]),
+    return [
+      ['Digitalisate', `${ctx.data.records.length}`],
+      ['Zeitraum', `${ctx.data.years.min}–${ctx.data.years.max}`],
+      ['Anbieter', `${providersInUse.size}`],
+      ['IIIF-Bildservice', `${withManifest}`],
+    ].map(([term, value]) =>
+      el('li', {}, [el('span', { class: 'zh-facts__value', text: value }), el('span', { class: 'zh-facts__term', text: term })]),
     );
-    // Honest, additive detail: only shown when it is not simply the total.
-    const withExtent = ctx.data.records.filter((r) => r.extent).length;
-    facts.title = `${collections} Sammlungen · ${withExtent} von ${ctx.data.records.length} Datensätzen mit Kartenausschnitt · ${ctx.data.overlays.length} georeferenzierte swisstopo-Kartenwerke`;
+  })();
+  const collections = new Set(ctx.data.records.map((r) => r.collection).filter(Boolean)).size;
+  const withExtent = ctx.data.records.filter((r) => r.extent).length;
+  const factsTitle = `${collections} Sammlungen · ${withExtent} von ${ctx.data.records.length} Datensätzen mit Kartenausschnitt · ${ctx.data.overlays.length} georeferenzierte swisstopo-Kartenwerke`;
+  for (const facts of document.querySelectorAll('#intro-facts, #about-facts')) {
+    facts.replaceChildren(...factsItems.map((item) => item.cloneNode(true)));
+    // The compact strip on a phone carries the same honest detail as a title.
+    facts.title = factsTitle;
   }
 
   const tagList = qs('#intro-tags');
@@ -157,6 +160,16 @@ function renderIntro() {
       );
     }
     sourceList.replaceChildren(...entries);
+  }
+  // Honest provenance: the page says when the seed was last harvested. The
+  // timestamp comes from records.json, not from the visitor's clock.
+  const stand = qs('#data-stand');
+  if (stand && ctx.data.generatedAt) {
+    const [year, month, day] = String(ctx.data.generatedAt).slice(0, 10).split('-');
+    if (year && month && day) {
+      stand.textContent = `Datenstand: ${day}.${month}.${year} · Herkunft und Rechte je Anbieter siehe Quellenregister (/data/sources.json).`;
+      stand.hidden = false;
+    }
   }
   const state = qs('#results-state');
   if (state && ctx.data.loadErrors.length > 0) {
