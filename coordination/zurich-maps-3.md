@@ -1,5 +1,86 @@
 # zurich-maps-3 status
 
+Iteration 7-18 (2026-10-19, ~01:45–02:35 UTC). Member `zurich-maps-3`. Same paths:
+`public/app/detail.js`, `public/app/iiif.js`, `public/app/upstream.js`,
+`public/styles/detail.css`, `tests/**`, `scripts/browser-check.mjs` — plus flagged,
+additive edits in maps-1's `public/app/compare.js` and `public/app/store.js`
+(see Messages).
+
+## Landed on `main` this iteration
+
+**The cut-outs of the comparison panes are shareable state of their own
+(`?cvv=`), and every pane has its own “Ganzes Blatt”.** Before, a shared
+comparison link reopened the whole sheets side by side: whatever place you had
+zoomed to was yours alone, and the panes could not be brought back to the full
+sheet without closing the view (the coupling switch only couples *future*
+gestures).
+
+| Change | File | Why |
+| --- | --- | --- |
+| `cvv` as a URL-backed state key (`id@x,y,w,h` pairs, `;`-separated) | `store.js` (maps-1, flagged) | One cut-out per comparison pane. `STATE_DEFAULTS`/`PARAM`/`TYPES` gain the key, `sanitise()` keeps only pairs that match **both** contracts (record id and the same `x,y,w,h` shape `vv` uses), at most four. It is **not** in `HISTORY_PUSH_KEYS`: a zoom writes it with `replaceState`, so one drag is still one entry for the back button (D6). The record-id regex is now a named constant shared with `cmp`. |
+| `parseCompareViews(value, limit)` / `formatCompareViews(entries, limit)` | `iiif.js` | Pure codec, 5 new unit cases. The pairs are keyed by **record id, not by position**, because the pane order follows the record that was clicked first (`openCompare(viewRecords)`): a link survives a different order, and a stale pair disappears with the next write. Hostile input (`<script>@1,2,3,4`, `e-rara:1@-1,2,3,4`, 20 pairs, a duplicate id, an array) yields fewer entries or `''` instead of throwing — the region itself is still validated against the real sheet by the pane that restores it (`parseViewParam`). The whole sheet is the default and stays out of the link. |
+| panes restore their own cut-out (`restore:` option of `setCanvas`) and write it back, debounced (400 ms) | `compare.js` (maps-1, flagged) | `mountViewers` reads `cvv`, each pane gets its pair as it receives its canvas, and a view change writes all live panes back (`formatCompareViews`) — the same “write only when it changed” pattern as the detail viewer's `vv`. A `mounting` flag keeps the *restored* value from being reported back as a visitor gesture (it would propagate a whole-sheet view on load), and panes whose manifest failed are skipped. |
+| “Ganzes Blatt” per pane (`[data-compare-reset]`, cantonal ghost button) | `compare.js` | `viewer.reset()` (the exported viewer factory already had it) plus a status line; the button is **disabled while the pane shows the whole sheet**, so it is never an inert control. It ends the one gap the coupling switch left: back to the full sheet, and — when coupled — the other panes follow to their own full sheet. |
+| a link that names **one** pane's cut-out opens that place in the others too (only at mount, only when coupled) | `compare.js` | That is what “gekoppelt” promises: a permalink of one zoomed sheet still shows the same place in the second sheet. A link that names several panes carries its own placement and is left alone. The propagated cut-outs are then written back, so the link becomes fully specified. |
+
+### Verified on this runner (2026-10-19, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation (169 records), **156/156** `node --test` (149 before
+  + 5 `iiif.js` codec cases + 2 store/URL cases + 1 comparison-view contract case),
+  `wrangler deploy --dry-run` (31 asset files, 28.76 KiB Worker).
+- `node scripts/browser-check.mjs` → **141/141** on the integrated tree (maps-0's
+  169 records, maps-1's loading/outage states, maps-2's 2c-2 histogram brush and my
+  three new checks in section **8c3**), no console errors, no failed requests
+  (`/tmp/shots-cvv/`, screenshot `11c-compare-cutout.png`).
+- The three new checks, with the values they measured:
+  1. `zooming a comparison pane writes that pane's own cut-out as shareable state (cvv)` —
+     both reset buttons start **disabled** and labelled “Ganzes Blatt”; after two `+`
+     presses in pane 1 the URL carries
+     `cvv=e-rara:8602401@1497,1820,1919,1166;e-rara:8751735@3420,3423,4384,2193`, and the
+     first pair is exactly the region in that pane's own request
+     (`1497,1820,1919,1166`, read-out “Ausschnitt 1919×1166 von 4913×4805”).
+  2. `each comparison pane can go back to the whole sheet, and the link drops the cut-out` —
+     after pressing pane 1's reset (coupling on) both panes read “Gesamtansicht”, `cvv`
+     is gone from the URL and both buttons are disabled again.
+  3. `a shared comparison link reopens that cut-out in its own pane and, coupled, in the other` —
+     `/…?cmp=…&cvv=e-rara:8602401@1497,1820,1919,1166` opens pane 1 on exactly
+     `1497,1820,1919,1166` and pane 2 on the same place (`Ausschnitt 4384×2193 von
+     11223×9039`), and the link then names both panes.
+- The three checks before mine (the 7-16 coupling section) still pass unchanged, so
+  the restore path did not disturb the existing gesture coupling.
+
+### Messages
+
+- **→ maps-1**: two flagged, additive edits in your files. (1) `store.js` gains the
+  documented `cvv` key (same pattern as `vv`/`cmp`, including a `sanitise()` rule and
+  a shared record-id regex); it deliberately stays out of `HISTORY_PUSH_KEYS` so a
+  zoom replaces the current entry, and `docs/run.md` lists it in the “replaces the
+  current entry” row and in the URL-state paragraph. (2) `compare.js` gains the
+  per-pane “Ganzes Blatt”, the `restore`/write-back wiring and one post-mount
+  propagation rule; the coupling switch, the store/bus usage and the `cmp` handling
+  are untouched, and every new string is German. Revert or reword freely — the state
+  is one button plus `writeCompareViews()`.
+- **→ maps-2**: the harness is **141** checks now (138 + my three in section 8c3,
+  which sits between the shared `?cmp=` link check and section 8d). Nothing of yours
+  is touched; your 2c-2 brush checks and the Grundkarte section ran green on the
+  same tree. If your histogram/media-query work needs a different order, tell me and
+  I move 8c3.
+- **→ maps-0**: nothing to harvest. `cvv` only uses record ids and the regions the
+  viewers produce; a record without a documented extent stays independent (the
+  coupling hint says so) and the whole sheet is never written into the link.
+- **→ all**: the gate on this commit is `npm run check` (156 tests) + the 141-check
+  harness. `main` was rebased onto `origin/main` (c409e10) before the push.
+
+### Next (my area)
+
+- The comparison's *coupled* state has no permalink of its own: a link carries the
+  pane cut-outs, not the switch position, so a shared link always opens coupled.
+- The 400 ms write-back is a plain debounce; a very slow manifest can still produce
+  one write per pane (harmless, but the URL flickers in the address bar).
+- Real-device touch check (still synthetic via `Input.dispatchTouchEvent`).
+
+---
+
 Iteration 7-16 (2026-10-19, ~00:45–02:0x UTC). Member `zurich-maps-3`. Same paths:
 `public/app/detail.js`, `public/app/iiif.js`, `public/app/upstream.js` (new),
 `public/styles/detail.css`, `tests/**`, `scripts/browser-check.mjs` — plus a flagged,
