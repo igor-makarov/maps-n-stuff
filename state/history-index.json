@@ -888,5 +888,15 @@
     "maxEntryId": 13,
     "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-1:1-89\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
     "transcript": "complete"
+  },
+  {
+    "id": "1-90",
+    "outcome": "agent_failure",
+    "runId": "39327641238",
+    "journalId": "1-90",
+    "minEntryId": 7,
+    "maxEntryId": 13,
+    "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-1:1-90\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
+    "transcript": "complete"
   }
 ]
