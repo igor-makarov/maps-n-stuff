@@ -404,6 +404,44 @@ The committed registry contains only the two real providers above. Tests that ne
 synthetic records build them in memory (`tests/records.test.mjs`), so no fixture
 metadata can appear in the public data or the UI.
 
+## 4. historical-basemaps — historical borders (the History view)
+
+The **Borders through time** view (`?view=history`, `public/app/history.js`) draws
+dated territorial polygons from a primary community dataset — not from a map
+aggregator, and never modern country outlines under a historical map.
+
+| | |
+| --- | --- |
+| Source | `aourednik/historical-basemaps` — “Collection of georeferenced boundaries of world countries and cultural regions for use in mapping historical data on global or continental scale” |
+| Homepage / repository | <https://github.com/aourednik/historical-basemaps> |
+| Primary record URL | <https://github.com/aourednik/historical-basemaps/tree/da7a4b735ecef70aebdc9c73e409d8a2500d50f3> (pinned revision) |
+| Provider / attribution | Historical Basemaps © André Ourednik and contributors |
+| Rights | GNU GPL v3 or later (upstream `LICENSE`); the licence text is bundled at `public/data/history/LICENSE-GPL-3.0.txt` and the same statement appears in the view |
+| Identifiers | upstream commit `da7a4b735ecef70aebdc9c73e409d8a2500d50f3`, upstream file names `geojson/world_<year>.geojson`; our derived files `world_<year>.json` |
+| Retrieved | 2026-10-19 (`index.json.retrievedAt`); the harvest records the date in its cache manifest so an offline rebuild is byte-stable |
+| Endpoints actually used | `https://raw.githubusercontent.com/aourednik/historical-basemaps/<commit>/index.json`, `…/geojson/world_<year>.geojson`, `…/geojson/places.geojson`, `…/LICENSE` — **harvest-time only**; the app reads the bundled files and has no runtime dependency on GitHub |
+| Snapshot index | 54 published snapshots, `-123000 … 2010` CE (one file per year, straight from the upstream `index.json`; the app integrates all of them) |
+| Fields used | `NAME` (label), `SUBJECTO` (sovereignty / colonial power), `PARTOF` (larger cultural area), `BORDERPRECISION` (1 approximate, 2 moderately precise, 3 determined by international law); `places.geojson`: `name`, `inhabitedSince`, `inhabitedUntil` |
+| Our modification | Douglas–Peucker simplification per ring (tolerance 0.05°), rings below 0.02 deg² dropped except each polygon’s largest ring, coordinates quantised to integer millidegrees; all parameters and the caveat are written into `public/data/history/index.json` |
+
+Honesty rules the view enforces (all covered by `tests/history-borders.test.mjs`):
+
+- **Snapshots are discrete maps, not validity ranges.** A date between two
+  published maps is drawn as the nearest snapshot and the interface names it
+  (“Snapshot 1900 CE — the nearest published map, 1 year after 1899 CE”); a tie
+  goes to the earlier map, so a map drawn for 1500 does not silently jump to 1530.
+- **Coverage is per snapshot.** The view states how many polities and regions a
+  snapshot actually contains; the dataset itself says it is work in progress and
+  that borders before the Peace of Westphalia (1648) are conceptual.
+- **Uncertainty is visible.** Approximate (1) and unstated (0) borders are drawn
+  dashed, moderately precise (2) and internationally determined (3) solid, and the
+  details panel spells the value out.
+- **No invented geography.** Every polygon, name and date comes from the source;
+  the pipeline has no hand-made fallback data.
+
+Refresh: `npm run harvest:history` (network) or `npm run harvest:history:offline`
+(cache). `scripts/validate.mjs` is the build gate over the bundle.
+
 ## Fetching policy (politeness, caching, failure behaviour)
 
 - **Bounded harvest**: `scripts/fetch-records.mjs` requests the documented OAI-PMH

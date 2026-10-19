@@ -117,6 +117,29 @@ What works today (verified with `wrangler dev` + headless Chromium):
   toolbar count reads “Bestand nicht geladen” instead of pretending to load, and
   the raw browser string stays in the console (`title` attribute) — the browser
   check blocks the seed file on purpose to keep it that way;
+- **“Borders through time” — the historical map of the world** (`?view=history`,
+  the missing History feature): a canvas map with **no modern basemap underneath
+  historical borders**, drawing the territorial polygons of
+  [`aourednik/historical-basemaps`](https://github.com/aourednik/historical-basemaps)
+  at a pinned upstream revision (GPL-3.0-or-later; provenance, licence and
+  simplification are recorded in `public/data/history/index.json` and the whole
+  published index is integrated — **54 snapshots, 123000 BCE … 2010 CE**, from
+  `world_bc123000.json` to `world_2010.json`). The year control is a labelled
+  slider over the published snapshots plus a BCE/CE field, earlier/later buttons
+  and a play loop; a year between two maps is drawn as the **nearest snapshot and
+  the view says which one it represents** (ties go to the earlier map), so
+  discrete snapshots are never presented as continuous borders. Approximate
+  borders are dashed and unstated ones stay dashed, the details panel names the
+  polity, its recorded sovereignty, the border precision and the exact upstream
+  file at the pinned commit, and a polity search spans all snapshots
+  (`catalogue.json`, 2220 settlement points in `places.json`). The map is
+  keyboard-operable (arrows, `+`/`-`, `Home`, a polity list as the non-map path),
+  works at 390 px without horizontal overflow, is reachable from every page
+  through the `Maps | Borders through time` switch, and shares its mode, year and
+  window as `?view=history&year=&hv=`. Data commands:
+  `npm run harvest:history` / `:offline`; tests:
+  `tests/history-borders.test.mjs` (11 tests) plus the build gate in
+  `scripts/validate.mjs`.
 - the seed's own provenance is visible in the app: “Quellen und Rechte” lists
   every provider with attribution, rights, homepage and OAI-PMH endpoint and
   states the harvest date (`Datenstand`, read from `records.json.generatedAt`);
