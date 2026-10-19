@@ -1,7 +1,96 @@
 # zurich-maps-1 status
 
-Iteration 7-18 (2026-10-19 ~01:45–02:0x UTC). Shell/design-system/store/wrangler/
+Iteration 7-65 (2026-10-19 ~05:0x–05:4x UTC). Shell/design-system/store/wrangler/
 docs/compare owner. Newest entry first; earlier iterations are kept below.
+
+## Iteration 7-65 — the comparison coupling is shareable, and the dialog's keyboard contract is asserted
+
+One product change in my own files (`store.js`, `compare.js`), its unit tests,
+one additive harness section in maps-3's file (flagged below), and the docs.
+No other module touched.
+
+### 1. `csync` — a comparison link keeps the coupling state it was sent with
+
+maps-3's 7-23 “Next” named the gap: the panes' cut-outs are shareable (`cvv`,
+D7) and so is the pinned list (`cmp`), but the coupling switch itself was not —
+**every** shared `?cmp=`/`?cvv=` link reopened *coupled*, so a visitor who had
+deliberately decoupled two sheets of different scales silently handed over a
+link that couples them again. Decision **D13** in `coordination/README.md`.
+
+- `store.js`: `csync` defaults to `'1'` (coupled). The default stays out of the
+  URL, so only the visitor's decision travels (`?csync=0`). `sanitise()` is a
+  flag: `'0'`/`'false'` decouple, everything else (including junk from a
+  hand-edited link) falls back to coupled. Like `cvv` it replaces the current
+  history entry instead of opening one (D6/D7) — the exploration stays the
+  history, the shared view stays in the link.
+- `compare.js`: the store is the single source of truth. `state.csync` seeds
+  `coupled` before the panes mount, so the mounting path already knows whether a
+  link's single named cut-out may be propagated; `toggleCoupling()` writes
+  `csync` and `applyCoupling()` renders the result (also on back/forward), so a
+  re-coupled view propagates the last active pane at once. Turning the coupling
+  back on writes the default and removes the parameter again.
+- The already-documented hint branch does the honest part: an uncoupled link
+  reads “Die Kopplung ist aus: jede Karte wird für sich bewegt.” instead of
+  promising a coupling it does not perform.
+
+3 new cases in `tests/compare.test.mjs` (default stays out of the URL, junk
+falls back to coupled, `cmp`+`cvv`+`csync` round-trip together) — **180/180**
+`node --test`.
+
+### 2. The comparison dialog's keyboard contract is now asserted
+
+My own 7-19 open item (“`compare.js` has no automated check for its focus
+trap”). New harness section **8c5** (3 checks, inserted before maps-3's 8d):
+
+1. `?cmp=…&csync=0` reopens the panes decoupled, the switch reads
+   `aria-pressed="false"`/“Ausschnitte koppeln”, the hint says the coupling is
+   off, and focus starts on `#compare-view-close`.
+2. Enter on the focused switch re-couples, the status confirms it, and `csync`
+   is gone from the URL again (the default is the default).
+3. Tab from the dialog's last focusable (10 focusables in the measured view)
+   wraps to the first (`compare-view-copy`), and Escape closes the dialog and
+   hands focus back to `#compare-open`.
+
+### Evidence (this runner, 2026-10-19 ~05:0x–05:3x UTC)
+
+- `npm ci` ✓ · `npm run check` → validation ✓, **180/180** `node --test`,
+  `wrangler deploy --dry-run` ✓ (31 asset files, 28.76 KiB Worker, `env.ASSETS`
+  only).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots-765b`
+  → **155/155**, 0 console errors, 0 failed requests; measured new details:
+  `{"pressed":"false","text":"Ausschnitte koppeln","hint":"Die Kopplung ist aus: jede Karte wird für sich bewegt.","csync":"0","focus":"compare-view-close"}`,
+  `{"pressed":"true","text":"Ausschnitte gekoppelt","csync":null}` and
+  `Tab -> compare-view-copy · Escape -> {"hidden":true,"focus":"compare-open"}`.
+- Baseline before the change on the same integrated tree: `npm run check`
+  177/177 and the harness **152/152** (`/tmp/shots-765`), so nothing else moved.
+
+### Messages
+
+- **→ maps-3**: the harness has one new section **8c5** (my three checks),
+  inserted directly before your `/* --- 8d. a real multi-sheet work` block; no
+  existing check, helper or line of your sections changed. It uses your
+  `readyPanes` and `pinnedIds` locals and adds no navigation after itself except
+  the page your 8d already navigates to. The dialog-keyboard check pins what
+  your 7-18 focus work promised for the compare panel; if you reword the button
+  labels the check reads `#compare-view-close`/`#compare-open` ids, not text.
+- **→ maps-2**: nothing in `map.js`/`search.js`/`results.js` changed. `csync`
+  is a new store key with default `'1'`, so it never appears in a URL the app
+  writes unless a visitor decouples the comparison panes.
+- **→ maps-0**: no data change and no request. The seed is untouched.
+- **→ all**: the gate is `npm run check` (180 tests, 213-record seed) +
+  `node scripts/browser-check.mjs` **155** checks. `csync` follows the `cvv`
+  rule (replace, never push); if your module enumerates state keys, it is the
+  newest one. The task branch is level with `main` (D12).
+
+### Open (updated)
+
+- The comparison's permutation of the *pane order* is still not in the link
+  (`cmp` order is the pin order, the clicked record leads) — `cvv` is keyed by
+  record id, so cut-outs survive it, but the leader is not shareable.
+- `#place-quick` at 320 px still scrolls horizontally (deliberate trade-off,
+  D9); the very-small-phone header still eats ~500 px of 640.
+- The compare panel has no check for the `cvv` write-back when the coupling
+  *propagates* to a third pane (only the two-pane cases are pinned).
 
 ## Iteration 7-19 — 320 px gets the map on the first screen, and the loading chart says so
 

@@ -18,6 +18,10 @@
  * pane has a “Ganzes Blatt” reset: a shared comparison link reopens the same
  * place in both sheets, not just the whole sheets side by side.
  *
+ * Since decision D13 the coupling switch is shareable too: `csync=0` in the
+ * link reopens the panes decoupled (they follow only when the visitor couples
+ * them again), while the documented default — coupled — stays out of the URL.
+ *
  * It never writes into another module's DOM: the panel markup lives in
  * public/index.html and the previews are built from the record itself.
  */
@@ -89,7 +93,9 @@ export function init(ctx) {
   let panes = [];
   /** Bumped on every rebuild/close so a slow manifest cannot mount into a stale view. */
   let viewToken = 0;
-  let coupled = true;
+  // Coupled is the documented default; only “uncoupled” travels in the link
+  // (`csync=0`), so the switch's state is shareable like the panes' cut-outs.
+  let coupled = ctx.store.getState().csync !== '0';
   let lastActivePane = 0;
   /**
    * True while the panes are mounting: a view change then comes from restoring
@@ -312,7 +318,7 @@ export function init(ctx) {
         type: 'button',
         id: 'compare-sync',
         'aria-pressed': 'true',
-        onclick: (event) => toggleCoupling(event.currentTarget),
+        onclick: () => toggleCoupling(),
         text: 'Ausschnitte gekoppelt',
       }),
       el('p', { class: 'zh-hint', id: 'compare-sync-hint', role: 'status', 'aria-live': 'polite', text: '' }),
@@ -629,9 +635,22 @@ export function init(ctx) {
     }
   }
 
-  function toggleCoupling(button) {
-    coupled = !coupled;
-    button.setAttribute('aria-pressed', coupled ? 'true' : 'false');
+  function toggleCoupling() {
+    // The store owns the shareable state; `applyCoupling()` below renders the
+    // result (and follows back/forward, which re-reads the URL). Coupled is the
+    // default, so turning the coupling on removes the parameter again.
+    ctx.store.update({ csync: coupled ? '0' : '1' });
+  }
+
+  /**
+   * Apply the shareable coupling state (`csync`): the visitor's switch, a shared
+   * link or a history step all land here. Coupled panes follow the last active
+   * pane immediately, so a re-coupled view is consistent at once.
+   */
+  function applyCoupling(state = ctx.store.getState()) {
+    const next = state.csync !== '0';
+    if (next === coupled) return;
+    coupled = next;
     updateSyncUi();
     if (coupled) propagate(lastActivePane);
     setStatus(status, coupled ? 'Kartenausschnitte sind gekoppelt.' : 'Kartenausschnitte sind entkoppelt.', 'info');
@@ -764,6 +783,7 @@ export function init(ctx) {
       writeStoredIds(pinnedIds());
       render();
     } else if (changed.includes('selected')) updateAddButton();
+    else if (changed.includes('csync')) applyCoupling(state);
   });
 
   ctx.bus.on('records:loaded', () => render());

@@ -1527,6 +1527,165 @@ try {
     `pane 1 ${restoredOwn?.readout ?? 'no cut-out'} · pane 2 ${restoredOther?.readout ?? 'no cut-out'} · link cvv "${restoredUrl}"`,
   );
 
+  /* --- 8c4. the degenerate pair is not coupled silently ---------------- */
+  // The coupling maps a cut-out through the *documented* extents. A world sheet
+  // and a small plan whose boxes never meet have no region in common, and the
+  // honest answer is a pane that keeps its whole sheet and says why — not a
+  // silent no-op, and not a guessed region. The pair is derived from the seed:
+  // each “+” press shrinks both axes by 1.6 (the stage aspect can only shrink
+  // them further), so a plan outside that predicted box cannot meet the cut-out.
+  const centreOf = (box) => ({ lon: (box.west + box.east) / 2, lat: (box.south + box.north) / 2 });
+  const predictedCutout = (record, presses) => {
+    const factor = 1.6 ** presses;
+    const { lon, lat } = centreOf(record.extent);
+    const width = (record.extent.east - record.extent.west) / factor;
+    const height = (record.extent.north - record.extent.south) / factor;
+    return { west: lon - width / 2, east: lon + width / 2, south: lat - height / 2, north: lat + height / 2 };
+  };
+  const seeded = [...recordIndex.values()];
+  const worldSheet =
+    seeded.find((record) => record.iiifManifest && record.extent && spanOf(record) >= 180 && rowOf.has(record.id)) ??
+    seeded.find((record) => record.iiifManifest && record.extent && spanOf(record) >= 180);
+  const cutoutBox = worldSheet ? predictedCutout(worldSheet, 3) : null;
+  const distantPlan = cutoutBox
+    ? seeded.find(
+        (record) =>
+          record.id !== worldSheet.id &&
+          record.iiifManifest &&
+          record.extent &&
+          spanOf(record) > 0 &&
+          spanOf(record) <= 2 &&
+          !overlapOf(record.extent, cutoutBox),
+      )
+    : null;
+  if (!worldSheet || !distantPlan) {
+    check(
+      'a world sheet next to a distant plan: the pane says the cut-out is off its sheet',
+      false,
+      `no such pair in the seed (world: ${worldSheet?.id ?? 'none'}, plan: ${distantPlan?.id ?? 'none'})`,
+    );
+  } else {
+    const degenerateIds = [worldSheet.id, distantPlan.id];
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(degenerateIds.join(','))}` });
+    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'degenerate-pair page' });
+    await sleep(500);
+    await cdp.click('#compare-open');
+    await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, {
+      label: 'compare view for the degenerate pair',
+      timeout: 10_000,
+    });
+    await cdp.waitFor(readyPanes, { label: 'degenerate panes ready', timeout: 60_000 }).catch(() => null);
+    const planPaneBefore = await cdp.eval(`document.querySelectorAll('${comparePaneSelector}')[1]?.src || ''`);
+    await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.pressKey('+', { keyCode: 187 });
+    await cdp.pressKey('+', { keyCode: 187 });
+    const worldZoomed = await waitForComparePane(0, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+    const uncovered = await cdp
+      .waitFor(
+        `(() => {
+          const pane = document.querySelectorAll('#compare-view-body .app-compare__pane')[1];
+          const note = pane?.querySelector('[data-compare-coverage="1"]');
+          if (!pane || !note || pane.dataset.coverage !== 'outside' || note.hidden) return null;
+          return {
+            coverage: pane.dataset.coverage,
+            note: note.textContent,
+            readout: pane.querySelector('[data-compare-readout]')?.textContent || '',
+            src: pane.querySelector('img')?.src || '',
+            hint: document.querySelector('#compare-sync-hint')?.textContent || '',
+            status: document.querySelector('#compare-status')?.textContent || '',
+          };
+        })()`,
+        { label: 'the plan pane names the uncovered cut-out', timeout: 30_000 },
+      )
+      .catch(() => null);
+    const planPaneAfter = await cdp.eval(`document.querySelectorAll('${comparePaneSelector}')[1]?.src || ''`);
+    // The viewer reports its region on a 400 ms debounce, so the shareable
+    // cut-out lands in the URL *after* the note appears — read it by waiting
+    // for the write instead of once (the same race the `vv` check hit).
+    const degenerateCvv = await cdp
+      .waitFor(`new URLSearchParams(location.search).get('cvv') || ''`, { label: 'the world pane writes its cut-out to cvv', timeout: 10_000 })
+      .catch(() => '');
+    check(
+      'a world sheet next to a distant plan: the pane says the cut-out is off its sheet',
+      Boolean(uncovered) &&
+        /Ausschnitt/.test(worldZoomed?.readout ?? '') &&
+        /Gesamtansicht/.test(uncovered?.readout ?? '') &&
+        /belegt den gezeigten Ausschnitt nicht/.test(uncovered?.note ?? '') &&
+        /ausserhalb der belegten Ausdehnung/.test(uncovered?.hint ?? '') &&
+        planPaneAfter === planPaneBefore &&
+        degenerateCvv.startsWith(`${worldSheet.id}@`) &&
+        !degenerateCvv.includes(distantPlan.id),
+      `Karte 1 ${worldZoomed?.readout ?? 'no cut-out'} · Karte 2 ${uncovered?.readout ?? 'unchanged'} · coverage "${uncovered?.coverage ?? 'none'}" · cvv "${degenerateCvv}" · note “${(uncovered?.note ?? 'absent').slice(0, 52)}…”`,
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '11d-compare-degenerate.png')).then(() => report.screenshots.push('11d-compare-degenerate.png'));
+  }
+
+  /* --- 8c5. the coupling state is shareable, and the view is keyboard-usable */
+  // Coupled is the documented default and stays out of the link; a visitor who
+  // decoupled the panes sends `csync=0`, and the link must reopen exactly that
+  // view instead of silently re-coupling sheets of different scales. The switch
+  // is a real button, so Enter toggles it — and the same section checks that the
+  // dialog keeps keyboard focus inside itself and hands it back on Escape.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(pinnedIds.join(','))}&csync=0` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'uncoupled compare link' });
+  await sleep(500);
+  await cdp.click('#compare-open');
+  await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'uncoupled compare view', timeout: 10_000 });
+  await cdp.waitFor(readyPanes, { label: 'uncoupled panes ready', timeout: 60_000 }).catch(() => null);
+  const uncoupledLink = await cdp.eval(`(() => ({
+    pressed: document.querySelector('#compare-sync')?.getAttribute('aria-pressed') ?? null,
+    text: document.querySelector('#compare-sync')?.textContent ?? '',
+    hint: document.querySelector('#compare-sync-hint')?.textContent ?? '',
+    csync: new URLSearchParams(location.search).get('csync'),
+    focus: document.activeElement?.id ?? '',
+  }))()`);
+  check(
+    'a comparison link that uncoupled the panes reopens decoupled (csync=0) and says so',
+    uncoupledLink.pressed === 'false' &&
+      /koppeln/.test(uncoupledLink.text) &&
+      /Kopplung ist aus/.test(uncoupledLink.hint) &&
+      uncoupledLink.csync === '0' &&
+      uncoupledLink.focus === 'compare-view-close',
+    JSON.stringify(uncoupledLink).slice(0, 240),
+  );
+
+  await cdp.eval(`document.querySelector('#compare-sync').focus(); true`);
+  await cdp.pressKey('Enter');
+  await sleep(500);
+  const recoupledLink = await cdp.eval(`(() => ({
+    pressed: document.querySelector('#compare-sync')?.getAttribute('aria-pressed') ?? null,
+    text: document.querySelector('#compare-sync')?.textContent ?? '',
+    csync: new URLSearchParams(location.search).get('csync'),
+    status: document.querySelector('#compare-status')?.textContent ?? '',
+  }))()`);
+  check(
+    'the coupling switch is keyboard-operable and coupled stays the default in the URL',
+    recoupledLink.pressed === 'true' && /Ausschnitte gekoppelt/.test(recoupledLink.text) && recoupledLink.csync === null && /gekoppelt/.test(recoupledLink.status),
+    JSON.stringify(recoupledLink).slice(0, 240),
+  );
+
+  // Tab from the dialog's last focusable wraps to its first (trapFocus), and
+  // Escape closes the dialog and hands focus back to the button that opened it.
+  const lastFocusable = await cdp.eval(`(() => {
+    const nodes = [...document.querySelectorAll('#compare-view a[href], #compare-view button:not([disabled]), #compare-view input:not([disabled]), #compare-view select:not([disabled]), #compare-view textarea:not([disabled]), #compare-view [tabindex]:not([tabindex="-1"])')].filter((node) => node.offsetParent !== null);
+    const last = nodes[nodes.length - 1];
+    if (!last) return null;
+    last.focus();
+    return { count: nodes.length, last: last.id || last.className || last.tagName, first: nodes[0]?.id || nodes[0]?.tagName || '' };
+  })()`);
+  await cdp.pressKey('Tab', { code: 'Tab', keyCode: 9 });
+  await sleep(200);
+  const afterTab = await cdp.eval(`document.activeElement?.id || document.activeElement?.className || document.activeElement?.tagName || ''`);
+  await cdp.pressKey('Escape');
+  await sleep(400);
+  const afterEscape = await cdp.eval(`({ hidden: document.querySelector('#compare-view')?.hidden === true, focus: document.activeElement?.id || '' })`);
+  check(
+    'the comparison dialog keeps Tab focus inside and returns it to the toolbar on Escape',
+    Boolean(lastFocusable) && afterTab === lastFocusable.first && afterEscape.hidden && afterEscape.focus === 'compare-open',
+    `${JSON.stringify(lastFocusable)} · Tab -> ${afterTab} · Escape -> ${JSON.stringify(afterEscape)}`,
+  );
+
   /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
   const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
   if (multiSheet) {

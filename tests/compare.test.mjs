@@ -149,3 +149,35 @@ test('storage failures stay silent (private mode, disabled storage)', async () =
     else globalThis.localStorage = original;
   }
 });
+
+/**
+ * The coupling state of the comparison panes (`csync`). Coupled is the
+ * documented default and stays out of the URL; only “uncoupled” travels in a
+ * link, so a comparison link reproduces the view it names instead of silently
+ * re-coupling sheets the sender had decoupled (D13).
+ */
+test('csync defaults to coupled and only "uncoupled" reaches the URL', () => {
+  assert.equal(STATE_DEFAULTS.csync, '1');
+  assert.equal(new URLSearchParams(stateToQuery(STATE_DEFAULTS)).has(PARAM.csync), false, 'coupled is the default and not repeated');
+  assert.equal(new URLSearchParams(stateToQuery({ ...STATE_DEFAULTS, csync: '1' })).has(PARAM.csync), false);
+
+  const uncoupled = stateToQuery({ ...STATE_DEFAULTS, csync: '0' });
+  assert.equal(new URLSearchParams(uncoupled).get(PARAM.csync), '0');
+  assert.equal(readStateFromUrl(`?${uncoupled}`).csync, '0');
+});
+
+test('csync is a flag: junk, empty values and lookalikes fall back to coupled', () => {
+  for (const raw of ['', 'maybe', '2', 'yes', 'csync']) {
+    assert.equal(sanitise({ ...STATE_DEFAULTS, csync: raw }).csync, '1', `"${raw}" is not a decoupling request`);
+  }
+  assert.equal(sanitise({ ...STATE_DEFAULTS, csync: '0' }).csync, '0');
+  assert.equal(sanitise({ ...STATE_DEFAULTS, csync: 'false' }).csync, '0');
+});
+
+test('a comparison link keeps its cut-outs and its coupling state together', () => {
+  const state = { ...STATE_DEFAULTS, cmp: 'e-rara:6507640,e-rara:6484810', cvv: 'e-rara:6507640@10,20,30,40', csync: '0' };
+  const back = readStateFromUrl(`?${stateToQuery(state)}`);
+  assert.equal(back.cmp, state.cmp);
+  assert.equal(back.cvv, state.cvv);
+  assert.equal(back.csync, '0');
+});
