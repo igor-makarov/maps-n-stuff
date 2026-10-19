@@ -338,5 +338,15 @@
     "maxEntryId": 13,
     "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-1:1-34\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
     "transcript": "complete"
+  },
+  {
+    "id": "1-35",
+    "outcome": "agent_failure",
+    "runId": "39322136299",
+    "journalId": "1-35",
+    "minEntryId": 7,
+    "maxEntryId": 13,
+    "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-1:1-35\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
+    "transcript": "complete"
   }
 ]
