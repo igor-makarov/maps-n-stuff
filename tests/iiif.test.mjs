@@ -15,6 +15,7 @@ import {
   describeUpstreamError,
   eRaraTitleId,
   eRaraViewerUrl,
+  formatCompareViews,
   formatViewParam,
   fullImageUrl,
   imageRequestUrl,
@@ -22,6 +23,7 @@ import {
   panView,
   parseManifest,
   parseMetadata,
+  parseCompareViews,
   parseViewParam,
   regionRequest,
   serviceId,
@@ -453,4 +455,51 @@ test('the coupling helpers refuse unusable input instead of guessing coordinates
   assert.equal(viewToExtent({ x: 0, y: Number.NaN, w: 100, h: 100 }, bounds, CITY_EXTENT), null);
   assert.equal(viewToExtent({ x: 0, y: 0, w: 100, h: 100 }, { x: 0, y: 0, w: 0, h: 0 }, CITY_EXTENT), null);
   assert.equal(extentToView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, null, CITY_EXTENT), null);
+});
+
+/* ----------------------------------- cut-outs of several sheets at once */
+
+test('the comparison cut-outs round-trip as id@region pairs', () => {
+  const entries = [
+    ['e-rara:8602401', '1160,2395,1487,824'],
+    ['e-rara:8751735', ''],
+  ];
+  assert.equal(formatCompareViews(entries), 'e-rara:8602401@1160,2395,1487,824', 'the whole sheet stays out of the link');
+  const parsed = parseCompareViews(formatCompareViews(entries));
+  assert.deepEqual([...parsed], [['e-rara:8602401', '1160,2395,1487,824']]);
+  assert.equal(parseCompareViews('').size, 0, 'no value means no cut-outs');
+  assert.equal(parseCompareViews(null).size, 0);
+});
+
+test('the comparison cut-outs are keyed by record id, not by position', () => {
+  // The pane order follows the record that was clicked first; a link must
+  // survive that order changing.
+  const value = formatCompareViews([
+    ['e-rara:8751735', '10,20,30,40'],
+    ['e-rara:8602401', '50,60,70,80'],
+  ]);
+  const views = parseCompareViews(value);
+  assert.equal(views.get('e-rara:8602401'), '50,60,70,80');
+  assert.equal(views.get('e-rara:8751735'), '10,20,30,40');
+});
+
+test('hostile or sloppy cut-out values yield fewer entries, never a throw', () => {
+  assert.equal(formatCompareViews(null), '');
+  assert.equal(formatCompareViews([['not an id', '1,2,3,4']]), '', 'an id outside the data contract is dropped');
+  assert.equal(formatCompareViews([['e-rara:1', 'whole sheet']]), '', 'a region the viewer could not produce is dropped');
+  assert.equal(formatCompareViews([['e-rara:1', '1,2,3,4'], ['e-rara:1', '5,6,7,8']]), 'e-rara:1@1,2,3,4', 'one region per record');
+  const capped = formatCompareViews([1, 2, 3, 4, 5, 6].map((n) => [`e-rara:${n}`, `${n},2,3,4`]));
+  assert.equal(capped.split(';').length, 4, 'never more pairs than the comparison has panes');
+
+  const parsed = parseCompareViews('<script>@1,2,3,4;e-rara:1@x,2,3,4;e-rara:2@1,2,3,4,,;../../etc/passwd@1,2,3,4;e-rara:3@1,2,3,4');
+  assert.deepEqual([...parsed], [['e-rara:3', '1,2,3,4']], 'only the pair matching both contracts survives');
+  assert.equal(parseCompareViews('e-rara:1@-1,2,3,4').size, 0, 'negative coordinates are not a region');
+  assert.equal(parseCompareViews('e-rara:1@1,2,3,4'.repeat(1) + ';' + Array(20).fill('e-rara:2@1,2,3,4').join(';')).size <= 4, true);
+});
+
+test('parseCompareViews keeps the last pair of a duplicated id and respects the pane limit', () => {
+  assert.deepEqual([...parseCompareViews('e-rara:1@1,2,3,4;e-rara:1@5,6,7,8')], [['e-rara:1', '5,6,7,8']]);
+  const many = Array.from({ length: 9 }, (_, i) => `e-rara:${i + 1}@1,2,3,4`).join(';');
+  assert.equal(parseCompareViews(many).size, 4);
+  assert.equal(formatCompareViews([[ 'e-rara:1', '1,2,3,4' ], [ 'e-rara:2', '2,2,3,4' ], [ 'e-rara:3', '3,2,3,4' ], [ 'e-rara:4', '4,2,3,4' ], [ 'e-rara:5', '5,2,3,4' ]]), 'e-rara:1@1,2,3,4;e-rara:2@2,2,3,4;e-rara:3@3,2,3,4;e-rara:4@4,2,3,4');
 });

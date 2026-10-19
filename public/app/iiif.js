@@ -419,6 +419,63 @@ export function extentToView(part, bounds, extent) {
   return clampView({ x, y, w, h }, bounds);
 }
 
+/* ----------------------------------- cut-outs of several sheets at once */
+
+/** One record id as the data contract writes it (`<providerId>:<recordId>`). */
+const IDENTIFIER = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
+/** One `x,y,w,h` region, the exact shape `formatViewParam` writes. */
+const REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
+/** The comparison lays out at most four panes, so at most four cut-outs. */
+export const MAX_COMPARE_VIEWS = 4;
+
+/**
+ * Read the `cvv` value back into `record id → region` (`x,y,w,h`).
+ *
+ * The comparison shows several sheets next to each other, so each pane needs
+ * its own cut-out — and it is keyed by record id, not by position, because the
+ * pane order changes with the record that was clicked (it leads the view).
+ * The region itself stays the same compact token the detail viewer uses (`vv`),
+ * so a pane validates it against its own sheet size. A hostile or stale value
+ * yields fewer (or no) entries instead of throwing; a duplicate id keeps the
+ * last pair, and everything beyond `limit` panes is ignored.
+ */
+export function parseCompareViews(value, limit = MAX_COMPARE_VIEWS) {
+  const views = new Map();
+  for (const pair of String(value ?? '').split(';')) {
+    if (views.size >= limit) break;
+    const at = pair.indexOf('@');
+    if (at <= 0) continue;
+    const id = pair.slice(0, at).trim();
+    const region = pair.slice(at + 1).trim();
+    if (!IDENTIFIER.test(id) || !REGION.test(region)) continue;
+    views.set(id, region);
+  }
+  return views;
+}
+
+/**
+ * Write `[record id, region]` pairs as the shareable `cvv` value.
+ *
+ * The whole sheet is the default and stays out of the URL (`''`), and a pane
+ * that reports no region — no canvas yet, the whole sheet, or a value the
+ * viewer could never have produced — is simply not written. The first
+ * `limit` usable pairs win, so the string can never grow past what the
+ * comparison can show.
+ */
+export function formatCompareViews(entries, limit = MAX_COMPARE_VIEWS) {
+  const parts = [];
+  const seen = new Set();
+  for (const [id, region] of entries ?? []) {
+    const key = String(id ?? '').trim();
+    const value = String(region ?? '').trim();
+    if (!IDENTIFIER.test(key) || !REGION.test(value) || seen.has(key)) continue;
+    seen.add(key);
+    parts.push(`${key}@${value}`);
+    if (parts.length >= limit) break;
+  }
+  return parts.join(';');
+}
+
 /* ----------------------------------------------------------------- metadata */
 
 /**

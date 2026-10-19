@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp }
+ *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp, cvv }
  *   store.update({ from: 1800 }) -> merge, sync URL, notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *   store.applyUrl()             -> re-read the URL (used by popstate)
@@ -48,6 +48,7 @@ export const STATE_DEFAULTS = Object.freeze({
   overlay: '', // swisstopo layer id of the comparison layer
   otime: '', // time value for that layer (YYYYMMDD where the layer is a Zeitreise layer)
   cmp: '', // comma-separated record ids pinned in the comparison list (max 4)
+  cvv: '', // cut-outs of the comparison panes: "id@x,y,w,h" pairs, ";"-separated (shareable)
 });
 
 /** URL parameter names kept short for shareable links. */
@@ -74,10 +75,21 @@ export const PARAM = {
   overlay: 'ov',
   otime: 'ot',
   cmp: 'cmp',
+  cvv: 'cvv',
 };
 
+/**
+ * One record id as the data contract writes it (`<providerId>:<recordId>`).
+ * Used for the pinned comparison list and for the panes' cut-outs.
+ */
+const RECORD_ID = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
+/** One `x,y,w,h` region as the viewer writes it; the same shape as `vv`. */
+const VIEW_REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
+/** The comparison holds at most four panes, so at most four cut-outs are kept. */
+const MAX_COMPARE_VIEWS = 4;
+
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv'],
+  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv', 'cvv'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -226,9 +238,23 @@ export function sanitise(state) {
   out.cmp = String(out.cmp || '')
     .split(',')
     .map((id) => id.trim())
-    .filter((id) => /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(id))
-    .slice(0, 4)
+    .filter((id) => RECORD_ID.test(id))
+    .slice(0, MAX_COMPARE_VIEWS)
     .join(',');
+  // The cut-outs of the comparison panes, one `id@x,y,w,h` per pane that shows a
+  // cut-out instead of the whole sheet. Keyed by record id (the pane order can
+  // change), hand-editable like every other parameter, so only pairs matching
+  // both contracts survive — capped at the four panes. Each region is checked
+  // against the real sheet by the pane that restores it (`parseViewParam`).
+  out.cvv = String(out.cvv || '')
+    .split(';')
+    .map((pair) => pair.trim())
+    .filter((pair) => {
+      const at = pair.indexOf('@');
+      return at > 0 && RECORD_ID.test(pair.slice(0, at)) && VIEW_REGION.test(pair.slice(at + 1));
+    })
+    .slice(0, MAX_COMPARE_VIEWS)
+    .join(';');
   return out;
 }
 

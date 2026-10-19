@@ -78,7 +78,12 @@ What works today (verified with `wrangler dev` + headless Chromium):
   off, and a record without a documented extent simply stays independent);
   the pinned list is also kept in this browser (`kartenzeit.cmp.v1`, only
   locally, cleared by “Liste leeren”), so a returning visitor finds their own
-  selection again;
+  selection again; the visible cut-out of each pane is shareable state of its own
+  (`cvv`): the comparison writes it debounced, a shared link restores every pane
+  it names — and a link that names one pane opens the same place in the others,
+  because that is what the coupling promises — while “Ganzes Blatt” in a pane
+  clears its entry (the button is disabled while the pane already shows the whole
+  sheet);
 - a map-first shell: the intro is a compact band from 1024 px, so the map and the
   result controls are on the first screen at desktop sizes (measured: map starts
   at 612 px of a 900 px viewport), with a “Direkt zur Karte” link, a keyboard
@@ -99,11 +104,14 @@ What works today (verified with `wrangler dev` + headless Chromium):
   every provider with attribution, rights, homepage and OAI-PMH endpoint and
   states the harvest date (`Datenstand`, read from `records.json.generatedAt`);
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `base`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
-  `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
+  `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`, `cvv`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a
   26-sheet work does not add 26 stops; `vv` = visible region of that sheet in the
-  IIIF viewer, so a permalink reopens the exact cut-out; `at` = point filter). The
+  IIIF viewer, so a permalink reopens the exact cut-out; `cvv` = the cut-outs of
+  the comparison panes, one `id@x,y,w,h` per pane and keyed by record id, so a
+  shared comparison opens on the same place in both sheets and each pane's
+  “Ganzes Blatt” clears its own entry; `at` = point filter). The
   **browser's back and forward buttons work**: a search, a filter or a selected
   record is a history step, while panning the map and dragging the year control
   only replace the current entry (a typed search is one step, not one per

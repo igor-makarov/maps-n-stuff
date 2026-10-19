@@ -13,14 +13,26 @@
  * zoom in one sheet follows in the others. Records without a manifest keep the
  * static raster tile preview.
  *
+ * Since iteration 7-18 (zurich-maps-3) those cut-outs are shareable state of
+ * their own (`cvv`, one `id@x,y,w,h` per pane, keyed by record id) and every
+ * pane has a “Ganzes Blatt” reset: a shared comparison link reopens the same
+ * place in both sheets, not just the whole sheets side by side.
+ *
  * It never writes into another module's DOM: the panel markup lives in
  * public/index.html and the previews are built from the record itself.
  */
 
-import { el, qs, setStatus, trapFocus, copyText } from './dom.js';
+import { el, qs, setStatus, trapFocus, copyText, debounce } from './dom.js';
 import { createViewer } from './detail.js';
 import { fetchUpstreamJson } from './upstream.js';
-import { describeUpstreamError, extentToView, parseManifest, viewToExtent } from './iiif.js';
+import {
+  describeUpstreamError,
+  extentToView,
+  formatCompareViews,
+  parseCompareViews,
+  parseManifest,
+  viewToExtent,
+} from './iiif.js';
 
 const MAX_PINNED = 4;
 const COMPARE_WIDTH = 1200; // IIIF Image API width for a readable comparison
@@ -79,6 +91,13 @@ export function init(ctx) {
   let viewToken = 0;
   let coupled = true;
   let lastActivePane = 0;
+  /**
+   * True while the panes are mounting: a view change then comes from restoring
+   * this link's own `cvv` value, not from a visitor, so it must not be reported
+   * back (that would propagate a whole-sheet view right after load) and must
+   * not rewrite the URL the visitor just opened.
+   */
+  let mounting = false;
 
   const recordOf = (id) => ctx.data.recordIndex?.get(id) ?? null;
   const pinnedIds = () => {
@@ -229,6 +248,18 @@ export function init(ctx) {
                 })
               : null,
             el('p', { class: 'app-compare__paneactions' }, [
+              viewerCapable(record)
+                ? el('button', {
+                    class: 'zh-button zh-button--small zh-button--ghost',
+                    type: 'button',
+                    'data-compare-reset': String(index),
+                    // Enabled by refreshPaneReset() as soon as a real cut-out is shown;
+                    // pressing it on the whole sheet would be a control that does nothing.
+                    disabled: true,
+                    onclick: () => resetPane(index),
+                    text: 'Ganzes Blatt',
+                  })
+                : null,
               el('a', { class: 'zh-button zh-button--small', href: record.recordUrl, rel: 'noopener', text: 'Originaldatensatz öffnen ↗' }),
               el('button', {
                 class: 'zh-button zh-button--small zh-button--ghost',
@@ -301,42 +332,105 @@ export function init(ctx) {
     const token = ++viewToken;
     panes = [];
     updateSyncUi();
-    for (const [index, record] of records.entries()) {
-      const stage = container.querySelector(`[data-compare-stage="${index}"]`);
-      if (!stage) continue;
-      try {
-        const manifest = parseManifest(await fetchUpstreamJson(record.iiifManifest));
-        if (token !== viewToken || !open) return;
-        const canvas = manifest.canvases[0];
-        const instance = createViewer(stage, {
-          record,
-          loadJson: fetchUpstreamJson,
-          onZoom: (text) => setReadout(stage, text),
-          onError: (message) => showPaneFallback(stage, record, message),
-          // A view change is the coupling trigger; the value itself is not shared
-          // through the URL (the comparison view is not the detail panel).
-          onViewChange: () => propagate(index),
-        });
-        instance.setCanvas(canvas, { label: canvas.label });
-        panes.push({ index, record, viewer: instance, stage });
-      } catch (err) {
-        if (token !== viewToken) return;
-        showPaneFallback(stage, record, describeUpstreamError(err));
+    // The link's own cut-outs (`cvv`): applied as each pane gets its canvas, so a
+    // shared comparison opens on the same place in every sheet it names.
+    const shared = parseCompareViews(ctx.store.getState().cvv);
+    mounting = true;
+    try {
+      for (const [index, record] of records.entries()) {
+        const stage = container.querySelector(`[data-compare-stage="${index}"]`);
+        if (!stage) continue;
+        try {
+          const manifest = parseManifest(await fetchUpstreamJson(record.iiifManifest));
+          if (token !== viewToken || !open) return;
+          const canvas = manifest.canvases[0];
+          const instance = createViewer(stage, {
+            record,
+            loadJson: fetchUpstreamJson,
+            onZoom: (text) => {
+              setReadout(stage, text);
+              refreshPaneReset(index);
+            },
+            onError: (message) => showPaneFallback(stage, record, message),
+            // A view change is both the coupling trigger and the shareable cut-out
+            // of this pane; while the panes mount it is the restored link value
+            // being applied, which must not be reported back.
+            onViewChange: () => {
+              refreshPaneReset(index);
+              if (mounting) return;
+              propagate(index);
+              scheduleViewsWrite();
+            },
+          });
+          instance.setCanvas(canvas, { label: canvas.label, restore: shared.get(record.id) ?? '' });
+          panes.push({ index, record, viewer: instance, stage });
+        } catch (err) {
+          if (token !== viewToken) return;
+          showPaneFallback(stage, record, describeUpstreamError(err));
+        }
       }
+    } finally {
+      mounting = false;
     }
     if (token !== viewToken) return;
     updateSyncUi();
+    refreshPaneResets();
     if (coupled && panes.length > 1) {
       // Whole sheets on both sides are already "the same place" (the documented
-      // extent), so nothing has to be applied here — but the toggle must state
-      // honestly whether coupling is possible at all.
-      updateSyncHint();
+      // extent) — but a link that names a cut-out for *one* pane is opened in the
+      // others too, because that is what the coupling promises. A link naming a
+      // cut-out for several panes carries its own placement and is left alone.
+      const placed = panes.filter((pane) => pane.viewer.getViewParam?.());
+      if (placed.length === 1) propagate(placed[0].index);
+      else updateSyncHint();
     }
+    // Drop cut-outs of records that are no longer pinned (a rebuilt view) — but
+    // keep the value the visitor's link carried as long as it is still valid.
+    writeCompareViews();
   }
 
   function setReadout(stage, text) {
     const readout = stage.closest('figure')?.querySelector('[data-compare-readout]');
     if (readout) readout.textContent = text;
+  }
+
+  /**
+   * Report the panes' cut-outs as the shareable `cvv` value. Only panes that
+   * really show a cut-out are written (the whole sheet is the default and stays
+   * out of the link), and the id in each pair is the record id — a link survives
+   * a different pane order, and a stale pair disappears with the next write.
+   * Debounced like the detail viewer's `vv`, so a drag does not rewrite the URL
+   * on every frame; the write only replaces the current history entry.
+   */
+  function writeCompareViews() {
+    if (!open || panes.length === 0) return;
+    const value = formatCompareViews(
+      panes.filter((pane) => !pane.failed).map((pane) => [pane.record.id, pane.viewer.getViewParam?.() ?? '']),
+    );
+    if (value === String(ctx.store.getState().cvv ?? '')) return;
+    ctx.store.update({ cvv: value });
+  }
+  const scheduleViewsWrite = debounce(writeCompareViews, 400);
+
+  /** “Ganzes Blatt” is only enabled while the pane really shows a cut-out. */
+  function refreshPaneReset(index) {
+    const button = viewBody?.querySelector(`[data-compare-reset="${index}"]`);
+    if (!button) return;
+    const pane = panes.find((entry) => entry.index === index);
+    button.disabled = !pane || !pane.viewer.getViewParam?.();
+  }
+
+  function refreshPaneResets() {
+    for (const pane of panes) refreshPaneReset(pane.index);
+  }
+
+  /** Back to the whole sheet of one pane (and to the others when coupled). */
+  function resetPane(index) {
+    const pane = panes.find((entry) => entry.index === index);
+    if (!pane) return;
+    pane.viewer.reset();
+    refreshPaneReset(index);
+    setStatus(status, `Karte ${index + 1} zeigt wieder das ganze Blatt.`, 'info');
   }
 
   /** Replace a failed viewer stage with the record's documented thumbnail. */
