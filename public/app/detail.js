@@ -169,12 +169,7 @@ export function init(ctx) {
           },
         }),
         record.overlay
-          ? el('button', {
-              class: 'zh-button zh-button--small',
-              type: 'button',
-              text: 'Als Kartenebene einblenden',
-              onclick: () => showAsOverlay(record),
-            })
+          ? overlayButton(record)
           : null,
       ]),
       reuseSection(record),
@@ -239,6 +234,52 @@ export function init(ctx) {
     ctx.bus.emit('overlay:changed', { layer, time: overlay.timeValue ?? 'current' });
     ctx.bus.emit('overlay:time', { time: overlay.timeValue ?? 'current', layer });
     setStatus(statusNode(), `${layer.title} ist als Kartenebene eingeblendet (Deckkraft im Filterbereich einstellbar).`, 'info');
+  }
+
+  /** Take this record's layer off the map again (the sidebar select stays in charge). */
+  function hideAsOverlay(record) {
+    // Same shape the sidebar's “keine Ebene” option uses, so the map, the select
+    // and the shared URL cannot drift apart.
+    ctx.store.update({ overlay: '', otime: '' });
+    ctx.bus.emit('overlay:changed', { layer: null, time: null });
+    setStatus(statusNode(), `${record?.collection || record?.title || 'Die Kartenebene'} ist als Kartenebene ausgeblendet.`, 'info');
+  }
+
+  /** Is this record's documented layer the one currently shown on the map? */
+  function overlayIsShown(record) {
+    const overlay = record?.overlay;
+    if (!overlay?.layerId) return false;
+    const state = ctx.store.getState();
+    return state.overlay === overlay.layerId && (state.otime ?? '') === (overlay.timeValue ?? '');
+  }
+
+  /** Keep the panel's layer button in step with the shared `ov`/`ot` state. */
+  function updateOverlayButton(button, record) {
+    if (!button || !record?.overlay) return;
+    const shown = overlayIsShown(record);
+    button.textContent = shown ? 'Kartenebene ausblenden' : 'Als Kartenebene einblenden';
+    button.setAttribute('aria-pressed', shown ? 'true' : 'false');
+  }
+
+  /**
+   * The panel's own way to put a georeferenced record on the map. It is a real
+   * toggle: a second press removes the layer, and the sidebar's select (or a
+   * shared link) keeps the label in sync through the store subscription.
+   */
+  function overlayButton(record) {
+    const button = el('button', {
+      class: 'zh-button zh-button--small',
+      type: 'button',
+      id: 'detail-overlay',
+      'aria-pressed': 'false',
+      onclick: () => {
+        if (overlayIsShown(record)) hideAsOverlay(record);
+        else showAsOverlay(record);
+        updateOverlayButton(button, record);
+      },
+    });
+    updateOverlayButton(button, record);
+    return button;
   }
 
   /** Use this sheet's publication period as the time filter, then get out of the way. */
@@ -882,6 +923,7 @@ export function init(ctx) {
   // when the sidebar (or a shared ?cmp= link) changes it.
   ctx.store.subscribe((state, changed) => {
     if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
+    if (changed.includes('overlay') || changed.includes('otime')) updateOverlayButton(qs('#detail-overlay'), current);
     // A hand-edited or reloaded `vv` (or a cleared one) drives the open viewer;
     // the viewer ignores a value that matches what is already on screen, so the
     // debounced write-back from the viewer cannot loop back into it.

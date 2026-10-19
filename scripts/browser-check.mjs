@@ -1486,6 +1486,109 @@ try {
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   }
 
+  /* --- 8p. a georeferenced record as a map layer, from the detail panel ---- */
+  // swisstopo records have no IIIF manifest: the panel shows the documented
+  // WMTS tile and offers its own toggle for the comparison layer.
+  const overlayRecord = [...recordIndex.values()].find((record) => record.overlay?.urlTemplate && record.overlay?.layerId && record.thumbnail) ?? null;
+  if (overlayRecord) {
+    await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(overlayRecord.id)}&ov=&ot=` });
+    await cdp.waitFor(`document.querySelector('#detail')?.hidden === false`, { label: 'overlay record panel', timeout: 20_000 });
+    const overlayPanel = await cdp.waitFor(
+      `(() => {
+        const img = document.querySelector('#detail-preview img');
+        const button = document.querySelector('#detail-overlay');
+        if (!img || !(img.naturalWidth > 0) || !button) return '';
+        return {
+          viewer: Boolean(document.querySelector('#viewer-stage')),
+          tileLoaded: img.naturalWidth > 0,
+          caption: document.querySelector('#detail-preview + p, #detail-body .app-viewer__caption')?.textContent || '',
+          label: button.textContent,
+          pressed: button.getAttribute('aria-pressed'),
+          records: document.querySelectorAll('#result-list > *').length,
+        };
+      })()`,
+      { label: 'overlay record tile', timeout: 20_000 },
+    );
+    check(
+      'a WMTS record shows its documented tile and a layer toggle instead of a viewer',
+      overlayPanel.viewer === false &&
+        overlayPanel.tileLoaded === true &&
+        /WMTS-Kachelprobe/.test(overlayPanel.caption) &&
+        /swisstopo/.test(overlayPanel.caption) &&
+        overlayPanel.label === 'Als Kartenebene einblenden' &&
+        overlayPanel.pressed === 'false',
+      `${overlayRecord.id} -> ${JSON.stringify(overlayPanel)}`,
+    );
+
+    await cdp.click('#detail-overlay');
+    let overlayOn = null;
+    try {
+      overlayOn = await cdp.waitFor(
+        `(() => {
+          const params = new URLSearchParams(location.search);
+          const button = document.querySelector('#detail-overlay');
+          const select = document.querySelector('#overlay-select');
+          const tiles = document.querySelectorAll('.map-overlay-tile').length;
+          if (params.get('ov') !== ${JSON.stringify(overlayRecord.overlay.layerId)} || !tiles || button?.getAttribute('aria-pressed') !== 'true') return '';
+          return {
+            ov: params.get('ov'),
+            ot: params.get('ot'),
+            select: select?.value ?? '',
+            tiles,
+            label: button.textContent,
+            pressed: button.getAttribute('aria-pressed'),
+            status: document.querySelector('#detail-status')?.textContent || '',
+          };
+        })()`,
+        { label: 'comparison layer on', timeout: 20_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'the layer button of the panel really puts the documented layer on the map',
+      overlayOn?.ov === overlayRecord.overlay.layerId &&
+        overlayOn?.ot === String(overlayRecord.overlay.timeValue ?? '') &&
+        overlayOn?.select === overlayRecord.overlay.layerId &&
+        overlayOn?.tiles > 0 &&
+        overlayOn?.pressed === 'true' &&
+        overlayOn?.label === 'Kartenebene ausblenden' &&
+        /eingeblendet/.test(overlayOn?.status ?? ''),
+      `${overlayRecord.id} -> ${JSON.stringify(overlayOn)}`,
+    );
+    await cdp.screenshot(path.join(OUT_DIR, '10-overlay-layer.png')).then(() => report.screenshots.push('10-overlay-layer.png'));
+
+    // A second press removes it again — and the sidebar select must agree, so the
+    // panel cannot leave a layer behind that the rest of the app still shows.
+    await cdp.click('#detail-overlay');
+    let overlayOff = null;
+    try {
+      overlayOff = await cdp.waitFor(
+        `(() => {
+          const params = new URLSearchParams(location.search);
+          const button = document.querySelector('#detail-overlay');
+          if (params.get('ov') || button?.getAttribute('aria-pressed') !== 'false') return '';
+          return {
+            ov: params.get('ov'),
+            select: document.querySelector('#overlay-select')?.value ?? '',
+            tiles: document.querySelectorAll('.map-overlay-tile').length,
+            label: button.textContent,
+          };
+        })()`,
+        { label: 'comparison layer off', timeout: 20_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+    check(
+      'a second press removes the layer and the sidebar select follows',
+      overlayOff?.ov === null && overlayOff?.select === '' && overlayOff?.tiles === 0 && overlayOff?.label === 'Als Kartenebene einblenden',
+      JSON.stringify(overlayOff),
+    );
+    await cdp.pressKey('Escape');
+    await sleep(300);
+  }
+
   /* --- 8f. device-local list + map-first shell -------------------------- */
   // The pinned list is also kept in this browser. A plain page load (no ?cmp=)
   // must bring it back; «Liste leeren» must remove it from the device again.

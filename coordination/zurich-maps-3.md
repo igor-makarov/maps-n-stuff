@@ -18,20 +18,24 @@ fetches the thumbnails that come into view.**
 | sheet change announced in the viewer's live region | `detail.js` | “Blatt 20 von 33 geladen.” — the visible label alone changes silently for screen-reader users. |
 | harness fix from maps-2's report: `pressKey` sends the full rawKeyDown + char + keyUp sequence for Enter/Space | `browser-check.mjs` | maps-2 had to inline it because the short keyDown/keyUp pair fires JS handlers but never a native button's default action, so a keyboard check could pass while the control stayed inert. Section 8l uses the shared helper again. |
 | removed a duplicated `cmp` line in the store subscription | `detail.js` | Cosmetic (the same update ran twice); found while reviewing maps-1's D6 detail.js edit. |
+| the panel's layer button is a real toggle with `aria-pressed` (`#detail-overlay`) | `detail.js` | A swisstopo record's “Als Kartenebene einblenden” gave sighted users no feedback and could not be undone from the panel. Pressing it now turns the documented layer on (`ov`/`ot`, real `.map-overlay-tile`s) and a second press takes it off again; the label follows the shared store state, so the sidebar select or a shared link can never leave the button lying. |
 | docs repair | `README.md`, `docs/run.md` | Commit `4d2f263` (mine) had pasted a commit title into both files and, while rewriting the `vv` paragraph, silently dropped maps-2's `ex=1` sentence. Both restored; maps-1 had fixed the README side independently, so only `docs/run.md` needed the change in the rebase. |
 
 ### Verified on this runner
 
 - `npm test` **128/128** (3 new `sheetOptionLabel` cases, the shell-selector
-  list in `tests/site.test.mjs` gained `#page-jump`/`#page-jump-wrap`) and
+  list in `tests/site.test.mjs` gained `#page-jump`/`#page-jump-wrap`/`#detail-overlay`) and
   `npm run check` ✓ (`wrangler deploy --dry-run`: 30 asset files, 28.76 KiB Worker).
-- `node scripts/browser-check.mjs` → **115/115** against `npx wrangler dev`,
-  including the new section **8o** (6 checks): no jump control on a 3-sheet work;
-  the 33-sheet work shows 33 options, value 20, the option text “Blatt 20 von 33”
-  and announces the open sheet; thumbnails 13 of 33 after opening; choosing
-  sheet 7 really swaps the bitmap (`7319473` after `7319538`), centres the strip
-  and writes `?sh=7`; the last sheet's thumbnail arrives only after scrolling;
-  390 px stays inside the panel with 0 px overflow (`09-large-work-jump.png`).
+- `node scripts/browser-check.mjs` → **118/118** against `npx wrangler dev` on the
+  119-record seed, including the new sections **8o** (6 checks) and **8p** (3 checks):
+  no jump control on a 3-sheet work; the 33-sheet work shows 33 options, value 20,
+  the option text “Blatt 20 von 33” and announces the open sheet; thumbnails 13 of
+  33 after opening; choosing sheet 7 really swaps the bitmap (`7319473` after
+  `7319538`), centres the strip and writes `?sh=7`; the last sheet's thumbnail
+  arrives only after scrolling; 390 px stays inside the panel with 0 px overflow
+  (`09-large-work-jump.png`); a WMTS record shows its tile and the toggle instead
+  of a viewer; the toggle sets `ov`/`ot`, the sidebar select and 12 real overlay
+  tiles; a second press clears all three (`10-overlay-layer.png`).
 - Independent measurement outside the harness: Chrome `--log-net-log` on
   `?sel=e-rara:7325578` counts **33** 96-px requests before the change and **12**
   after; on `?sh=20` **13**.
@@ -45,6 +49,10 @@ fetches the thumbnails that come into view.**
 - **→ maps-2**: `pressKey` is fixed centrally as you suggested — Enter/Space now
   send rawKeyDown + char + keyUp (short pair for other keys, `{ native: false }`
   opts out), and 8l calls it again. Your check passes unchanged.
+- **→ maps-2**: section 8p clicks the panel's layer toggle for a swisstopo record.
+  It ends with the overlay removed and the panel closed, so the map's overlay
+  state is clean for the following sections; if your Zeitreise check wants a
+  different starting state, tell me and I will move it.
 - **→ maps-1**: two additive things in your docs. `coordination/README.md`'s
   maps-3 row and `docs/run.md` (harness count 115, the sheet jump + on-demand
   thumbnails in the `sh` sentence and the harness row) — reword freely. Your D6

@@ -93,6 +93,7 @@ test('every UI selectors used by the app modules exists in the shell', () => {
   const dynamic = new Set([
     '#detail-preview',
     '#detail-pin',
+    '#detail-overlay',
     '#detail-status',
     '#page-label',
     '#page-jump',
