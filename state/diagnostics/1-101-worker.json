@@ -1,0 +1,15 @@
+{
+  "outcome": "agent_failure",
+  "code": 0,
+  "error": {
+    "conversationId": 1,
+    "requestId": "maps-n-stuff-3:1-101",
+    "type": "input",
+    "status": "unanswered",
+    "entry": 9,
+    "id": 10,
+    "reason": "model_error",
+    "detail": "429: {\"type\":\"GoUsageLimitError\",\"message\":\"Go usage limit exceeded\"}"
+  },
+  "log": ""
+}
