@@ -23,6 +23,7 @@ import {
   extentRects,
   latToTileY,
   lonToTileX,
+  markerPoints,
   tileUrl,
 } from '../public/app/map.js';
 import { STATE_DEFAULTS, sanitise, stateToQuery } from '../public/app/store.js';
@@ -287,4 +288,41 @@ test('the point list is chronological, then alphabetical, and keeps every record
   );
   assert.deepEqual(clusterRecords(undefined), []);
   assert.equal(clusterRecords([{ record: null }]).length, 0);
+});
+
+test('markerPoints pins every placeable record (no silent 300-record slice)', () => {
+  // The map used to render `state.filtered.slice(0, 300)`; the seed is at 169,
+  // so the slice was invisible until a harvest crossed it. A synthetic set well
+  // past that line must come back whole, in list order (the pin number is the
+  // list's "Nr.").
+  const synthetic = Array.from({ length: 320 }, (_, i) => ({
+    id: `probe:${i}`,
+    title: `Probe ${i}`,
+    geo: { lat: 47.37, lon: 8.54 },
+  }));
+  const { points, unplaced } = markerPoints(synthetic, 12);
+  assert.equal(points.length, 320);
+  assert.equal(unplaced, 0);
+  assert.deepEqual(points.map((point) => point.index), synthetic.map((_, i) => i));
+  assert.equal(points[319].id, 'probe:319');
+});
+
+test('markerPoints counts what cannot be placed and uses the documented position', () => {
+  const TILE = 256; // the module's tile size (not exported)
+  const withPoint = { id: 'probe:geo', geo: { lat: 47.1, lon: 8.2 }, extent: { west: 0, east: 1, south: 0, north: 1 } };
+  const extentOnly = { id: 'probe:extent', extent: { west: 8, east: 9, south: 47, north: 48 } };
+  const nowhere = { id: 'probe:nowhere' };
+  const { points, unplaced } = markerPoints([withPoint, extentOnly, nowhere], 10);
+  assert.equal(points.length, 2);
+  assert.equal(unplaced, 1, 'a record without geo and without extent is counted, not silently skipped');
+  // The published point wins over the extent centre …
+  assert.equal(points[0].x, lonToTileX(8.2, 10) * TILE);
+  assert.equal(points[0].y, latToTileY(47.1, 10) * TILE);
+  // … and an extent-only record is pinned at its documented centre.
+  assert.equal(points[1].x, lonToTileX(8.5, 10) * TILE);
+  assert.equal(points[1].y, latToTileY(47.5, 10) * TILE);
+  // The list position of the unplaceable record is not reused.
+  assert.deepEqual(points.map((point) => point.index), [0, 1]);
+  // An unloaded / empty result set is not an error.
+  assert.deepEqual(markerPoints(undefined, 10), { points: [], unplaced: 0 });
 });

@@ -31,6 +31,20 @@ maps-1's `434ba19` had just fixed the same line (plus a blank line) — no
 duplicate history, and `git grep '^<<<<<<<'` / `'^>>>>>>>'` over the whole tree
 now returns nothing.
 
+**The map no longer drops pins silently past 300 records.** `renderMarkers()`
+used `state.filtered.slice(0, 300)` — invisible at 169 records, but the seed has
+grown by ~30 records per iteration, and past 300 the map would have drawn a
+subset with no hint that it did. `markerPoints(records, zoom)` (new, pure,
+exported) now turns **every** record with a documented point-or-extent centre
+into a pin, in list order (the pin number and its aria-label repeat the list's
+“Nr.”), and counts the records with no documented position at all (`unplaced`).
+The status line appends “· N ohne dokumentierten Standort.” only when that count
+is non-zero, so the seed's wording is byte-identical. No cap is needed: the DOM
+is bounded by `clusterByCell` (one node per 56 px cell) and by clipping to the
+viewport. 2 unit cases (320 synthetic records come back whole; the published
+point wins over the extent centre, the unplaceable record is counted and its list
+position is not reused; `undefined` input is empty).
+
 ### Verified
 
 - `npm run check` → validation ✓, **161/161** `node --test` on the integrated tree
@@ -79,11 +93,6 @@ now returns nothing.
 
 ## Next (my area, if the loop continues)
 
-- `map.js` still slices the filtered set at `300` records before pinning
-  (`state.filtered.slice(0, 300)`), silently — harmless at 169, a correctness
-  hole once maps-0's seed passes 300. Replace the slice with the clustering that
-  already bounds the DOM, and state the “no placeable extent” count honestly
-  (0 records today, so a fixture-driven unit test).
 - Reveal the selected row in the list when the selection came from a pin
   (`record:selected` with `source: 'map'`), without moving the page on a deep
   link.

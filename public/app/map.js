@@ -256,6 +256,40 @@ export function extentRects(records, view, size, { margin = 64, max = 500 } = {}
   return { rects: list.slice(0, max), visible, areas: list.length, withExtent, filtered: (records ?? []).length };
 }
 
+/**
+ * The pins a result set can really place: one point per record whose centre is
+ * known, in the order of `records` — the list's order, which the pin number and
+ * its aria-label repeat. `recordCenter` uses the record's published point or,
+ * failing that, the centre of its documented extent; nothing is inferred.
+ *
+ * Nothing is capped either. The map used to slice the filtered set at 300
+ * records, which would have dropped pins *silently* had a harvest pushed the
+ * seed past that line; the DOM stays small anyway, because `clusterByCell`
+ * draws at most one node per 56 px cell and only points inside the viewport get
+ * an element. A record with no documented position at all cannot be pinned: it
+ * is counted as `unplaced` so the status line can say how many, instead of
+ * letting the map pretend it shows the whole filtered set.
+ */
+export function markerPoints(records, zoom) {
+  const points = [];
+  let unplaced = 0;
+  for (const [index, record] of (records ?? []).entries()) {
+    const center = recordCenter(record);
+    if (!center) {
+      unplaced += 1;
+      continue;
+    }
+    points.push({
+      id: record.id,
+      record,
+      index,
+      x: lonToTileX(center.lon, zoom) * TILE,
+      y: latToTileY(center.lat, zoom) * TILE,
+    });
+  }
+  return { points, unplaced };
+}
+
 export function init(ctx) {
   const container = qs('[data-map]');
   if (!container) return;
@@ -276,6 +310,7 @@ export function init(ctx) {
     filtered: [],
     selected: '',
     visibleRecords: 0,
+    unplacedRecords: 0,
   };
 
   // A shared point filter without an explicit view (?at=lat,lon, no lat/lon/z)
@@ -660,18 +695,8 @@ export function init(ctx) {
 
   function renderMarkers(originX, originY, w, h, z) {
     const selectedId = state.selected;
-    const points = [];
-    state.filtered.slice(0, 300).forEach((record, index) => {
-      const center = recordCenter(record);
-      if (!center) return;
-      points.push({
-        id: record.id,
-        record,
-        index,
-        x: lonToTileX(center.lon, z) * TILE,
-        y: latToTileY(center.lat, z) * TILE,
-      });
-    });
+    const { points, unplaced } = markerPoints(state.filtered, z);
+    state.unplacedRecords = unplaced;
 
     const inside = (x, y) => x >= 0 && y >= 0 && x <= w && y <= h;
     // Honest status line: records whose anchor is in the viewport, clustered or not.
@@ -1031,12 +1056,16 @@ export function init(ctx) {
     if (!host) return;
     const visible = state.visibleRecords ?? 0;
     const total = state.filtered.length;
+    // Records without any documented position can never become a pin; say so
+    // rather than letting the counts read as if the map showed everything.
+    const unplaced = state.unplacedRecords ?? 0;
+    const unplacedNote = unplaced > 0 ? ` · ${unplaced} ohne dokumentierten Standort.` : '';
     host.textContent =
       total === 0
         ? ''
         : visible === 0
-          ? 'Keine der gefilterten Karten liegen in diesem Ausschnitt – «Treffer einpassen» zeigt sie.'
-          : `${visible} von ${total} gefilterten Karten in diesem Ausschnitt.`;
+          ? `Keine der gefilterten Karten liegen in diesem Ausschnitt – «Treffer einpassen» zeigt sie.${unplacedNote}`
+          : `${visible} von ${total} gefilterten Karten in diesem Ausschnitt.${unplacedNote}`;
   }
 
   const push = debounce(() => {
