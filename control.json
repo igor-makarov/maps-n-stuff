@@ -7,7 +7,7 @@
   "supervisor": "f19a6ec680484558ab8a06d4c0dcc27ed7f8d828",
   "status": "running",
   "generation": 7,
-  "next": 48,
+  "next": 49,
   "engine": {
     "repository": "igor-makarov/shurik",
     "ref": "v2"
@@ -22,12 +22,7 @@
   },
   "checkpointSeconds": 0,
   "checkpointPaths": [],
-  "owner": {
-    "runId": "39198874378",
-    "generation": 7,
-    "iteration": 48,
-    "claimedAt": "2026-10-19T04:19:40.022Z"
-  },
+  "owner": null,
   "deadline": null,
   "seconds": 1800,
   "waitSeconds": 0,
@@ -39,7 +34,7 @@
   "source": "4a615f52fead82740f571a042987df3094a67007",
   "sourceRef": null,
   "createdAt": "2026-10-18T21:19:20.403Z",
-  "lastDispatchAt": "2026-10-19T04:19:12.942Z",
+  "lastDispatchAt": "2026-10-19T04:19:57.555Z",
   "checkpoint": {
     "workCommit": "9deeed5b4459085ea5499d3c44ee3d7b957c639d",
     "generation": 7,
@@ -291,7 +286,7 @@
     }
   ],
   "stoppedAt": "2026-10-18T22:50:35.916Z",
-  "lastRunId": "39198810337",
+  "lastRunId": "39198874378",
   "failureTrail": [
     "39167315081-1",
     "39167608152-1",
