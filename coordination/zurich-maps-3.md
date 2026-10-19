@@ -9,9 +9,9 @@ before this one (7-19 model error, 7-20 interrupted, 7-21 timeout) left nothing 
 
 ## Landed on `main` this iteration
 
-**maps-0's world set made three harness checks red on the pushed `main`; two of
-them were real product/honesty gaps in the comparison coupling. All three are
-green again, measured on the integrated tree.**
+**maps-0's world set made three harness checks red on the pushed `main`; all
+three are addressed — two harness repairs here (measured green), the product side
+by maps-1's `coupledView()` (see the addendum below).**
 
 | Change | File | Why |
 | --- | --- | --- |
@@ -19,6 +19,37 @@ green again, measured on the integrated tree.**
 | the hint names the **real reason** when a transfer only yields the whole sheet, and the switch no longer overpromises | `compare.js` (maps-1, flagged, additive) | `propagate()` now counts the panes whose mapped region is the whole sheet (`view.w/h >= bounds`) and says “Karte 2 zeigt nur die ganze Karte – die belegten Maßstäbe sind zu verschieden für eine engere Kopplung.” with `#compare-sync-hint[data-sync-state="scale"]`. Before, `setView()` returns `true` even when the region equals the one on screen, so a world-map cut-out that covers a whole city sheet was reported as “Ausschnitt … übertragen” although nothing moved (and the “keine belegte Ausdehnung” branch named the wrong reason). Three states now: `transferred`, `scale`, `no-extent`. |
 | a new check asserts the honest behaviour for the **degenerate pair** | `scripts/browser-check.mjs` | `?cmp=<world map>,<city plan>` + two `+` presses in the world pane: the city pane stays on `Gesamtansicht`, the hint carries `data-sync-state="scale"` and names the Maßstab, and no console error appears. Measured: `{"syncState":"scale","hint":"Karte 2 zeigt nur die ganze Karte – die belegten Maßstäbe sind zu verschieden für eine engere Kopplung.","pane2Readout":"Gesamtansicht · Auflösung 16 %"}`. |
 | the point-filter empty state is derived from the **seed and the period** | `scripts/browser-check.mjs` | The old probe asked for a point outside *every* documented extent; since the world set documents the whole globe, no such point exists, so the check silently used the `-58, -178` fallback, where a 1787–1914 world sheet *does* document the point → 1 row and a red check. The probe now walks the same grid, and where a point is covered it picks the publication year of a sheet elsewhere in the seed that no covering sheet documents and filters to it — honest “nothing here **for this period**”: measured `?at=62.0000,-178.0000&from=1547&to=1547` → 0 rows, empty state with its own “Punktfilter entfernen”, removal restores 1 row and drops `at`. |
+
+### What changed while this iteration ran: maps-1's `coupledView()`
+
+maps-1 pushed **`6832fc5`** (`compare(coupling): the panes follow only where the
+two extents meet…`) at 03:25 UTC, i.e. after the measurements below but before
+this branch was pushed. Their fix is the better one for the same finding — the
+mapped region is now the **intersection** of the two documented extents
+(`intersectExtents`/`coupledView` in `iiif.js`, three coverage states, unit-tested,
+plus a cantonal note in the pane that stayed wide) — and `compare.js` has one
+owner, so on the merge (`45c98f6`) **my duplicate `propagate()` edit was dropped
+and theirs kept**. My `data-sync-state="scale"` check went with it; the pane-level
+note maps-1 added is not asserted by the harness yet (**next**: a check for
+`[data-compare-coverage="outside"]` on the degenerate world/city pair).
+
+What survives from this iteration and is on `main`:
+
+- the coupling checks **derive their pair from the seed** (overlapping spans within
+  a factor of four, both with a manifest, both rendered, regional sheets first) —
+  measured `e-rara:8562848` + `e-rara:8602092`, both panes to a real region;
+- the **point-filter probe** picks a period no covering sheet documents —
+  measured `?at=62.0000,-178.0000&from=1547&to=1547` → 0 rows, honest empty state,
+  removal restores the list;
+- `npm run check` ✓ **174/174** tests after the merge (maps-1's 2 new iiif cases),
+  `wrangler deploy --dry-run` ✓ (31 asset files, 28.76 KiB Worker).
+
+**Honest status of the harness numbers:** `149/149` is the measurement of this
+member's own run (all checks green on the integrated tree *before* `6832fc5`); the
+148 checks that remain are the ones that run was green on, but the coupling
+sections (8c/8c2/8c3) were measured against the previous `compare.js` and need the
+re-run against maps-1's `coupledView()` — that run is the first thing to do next
+iteration (`node scripts/browser-check.mjs`, then update `docs/run.md`'s count).
 
 ### Verified on this runner (2026-10-19, `wrangler dev` on 127.0.0.1:8787)
 
