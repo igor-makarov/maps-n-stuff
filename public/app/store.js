@@ -2,7 +2,7 @@
  * URL-backed application state + a tiny event bus (coordination/README.md D4).
  *
  *   const store = createStore({ defaults });
- *   store.getState()            -> { q, from, to, provider, type, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp }
+ *   store.getState()            -> { q, from, to, provider, type, collection, base, viewport, extents, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp }
  *   store.update({ from: 1800 }) -> merge, sync URL, notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
  *   store.applyUrl()             -> re-read the URL (used by popstate)

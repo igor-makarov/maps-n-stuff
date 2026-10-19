@@ -1,7 +1,89 @@
 # zurich-maps-1 status
 
-Iteration 7-14 (2026-10-18 23:5x UTC). Shell/design-system/store/wrangler/docs
-owner. Newest entry first; earlier iterations are kept below.
+Iteration 7-16 (2026-10-19 ~00:45–01:2x UTC). Shell/design-system/store/wrangler/
+docs/compare owner. Newest entry first; earlier iterations are kept below.
+
+## Iteration 7-16 — the map starts on the phone screen, and the seed says when it was harvested
+
+### 1. The phone step of the map-first shell (my file, reconciled with maps-0)
+
+The map-first shell was only half done: at 390×844 the map began at 722 px, so a
+phone visitor saw a 122 px strip of map under header, hero and toolbar. The hero
+“Zahlen und Fakten” strip was the largest movable block.
+
+| Change | File | Effect (measured, headless Chromium) |
+| --- | --- | --- |
+| Below 600 px the hero hands its stock figures to “Über das Projekt”: `#about-facts` is filled from the **same** render path in `main.js` (one facts builder, two hosts, cloned nodes), so the numbers stay on the page — they simply no longer stand between the visitor and the map. | `index.html`, `main.js`, `app.css` | 390×844: map top **722 → 609 px**, visible map **122 → 235 px**; 320×640: 767 → 633 px (the map starts to peek); desktop ≥600 unchanged (1440: 612 px) |
+| Hero/shell paddings drop one cantonal step at ≤599 px (`--zh-size-tiny` instead of `--zh-size-small-regular`), toolbar margin likewise; the two phone link labels are shortened (“Quellen & Rechte · Zur Karte”). | `app.css`, `index.html` | ~35 px of the total |
+| Below the cantonal 400 px breakpoint the brand claim is hidden (the name stays; the claim repeats the page title and is in the meta description). | `app.css` | 320 px: one header line |
+| No horizontal overflow at any tested width; the harness check asserts it. | `app.css` | 320/390/1440: 0 px |
+
+**Reconciled, not reverted:** maps-0 had fixed the same strip the other way
+(da11385, two-column grid instead of the clipped scroll row) while I was working.
+Their readability fix is **kept** and now applies to the visible `#about-facts`
+list (two columns on a phone); only the *hero* host is hidden there, because a
+two-row strip made the first phone screen 55 px taller again. Their measured
+values, layout reason and grid rule are untouched in `app.css`.
+
+### 2. Honest provenance: “Datenstand”
+
+`records.json.generatedAt` is now visible in “Quellen und Rechte” as
+“Datenstand: TT.MM.JJJJ · Herkunft und Rechte je Anbieter siehe
+Quellenregister”. It is read from the data file, never from the visitor's clock,
+and stays hidden when the field is absent. The seed's harvest date was otherwise
+only in the docs and the console line.
+
+### 3. New harness check (maps-3's file, additive, section 8f)
+
+`phone map-first: the map starts on the first screen and the stock figures stay
+in “Über das Projekt”` — at 390×844 (the same page load as the heading-curve
+check, so no extra navigation) it asserts `mapVisible > 180` (measured 235),
+`#about-facts` has ≥4 visible items, the hero strip is `display: none`, and the
+document does not overflow. Screenshot `03d-mobile-mapfirst.png`. The integrated
+harness is **127/127** after the rebase over da11385/971ce2f/6eef9ba.
+
+### Verified (this runner, 2026-10-19 ~01:2x UTC)
+
+- `npm run check` ✓ — validation, **136/136** `node --test` (the rebased tree
+  includes maps-2's Grundkarte and maps-3's compare coupling), `wrangler deploy
+  --dry-run` (30 asset files, 28.76 KiB Worker).
+- `node scripts/browser-check.mjs` → **127/127** against `wrangler dev` on the
+  rebased tree (126 checks from teammates + mine), no console errors, no failed
+  requests; screenshots in `/tmp/shots-716r`.
+- Rebase conflicts resolved by hand in `app.css` (see “Reconciled” above),
+  `README.md` (kept maps-2's new `base` URL key next to my phone-step text) and
+  `docs/run.md` (kept maps-3's 126-check description and added the phone step →
+  127). No teammate's commit was reverted.
+
+### Messages
+
+- **→ maps-0 (your da11385 in my file)**: thank you — the clipped-strip diagnosis
+  was right, and your two-column grid is kept for `#about-facts`. I then hid only
+  the *hero* host at ≤599 px because the two-row strip added ~55 px back to the
+  first phone screen; the same four figures are now in the About card, filled
+  from the same data path, so nothing is lost. If you would rather keep the strip
+  in the hero on phones, say so and I will revert my part — the harness check I
+  added names the trade-off explicitly.
+- **→ maps-2**: nothing of `map.js`/`search.js`/`results.js` touched. The store
+  keeps `base` as a replace-only key (I checked: it is in the default set and not
+  in `HISTORY_PUSH_KEYS`), so switching the Grundkarte does not create history
+  steps.
+- **→ maps-3**: one additive check in section 8f of `browser-check.mjs` (right
+  after the heading-curve check, reusing its page load) and one screenshot.
+  `docs/run.md`'s harness description now says 127; your compare-coupling text and
+  the 65-sheet wording are preserved.
+- **→ all**: the phone step is a documented shell decision (`docs/design-system.md`
+  “Phone step (app decision)”). The harness gate stays `npm run check` +
+  `node scripts/browser-check.mjs`.
+
+### Next (my area)
+
+- 320×640 is still 633 px to the map: the remaining blocks are the header
+  (242 px: note, nav, brand, search, quick picks) and the toolbar (151 px, three
+  rows). A real further step would have to touch `search.js`'s quick picks or
+  collapse the toolbar; both need their owners' agreement.
+- `detail.css:117` still carries the dead `--zh-line-medium` fallback noted in
+  7-13 (maps-3's file, no visual effect).
 
 ## Iteration 7-14 — the browser's back button now walks the exploration
 
