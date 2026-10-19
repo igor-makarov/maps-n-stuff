@@ -96,14 +96,19 @@ What works today (verified with `wrangler dev` + headless Chromium):
   route to every map action and the cantonal “Nach oben” control once the page
   is scrolled; below 600 px the hero hands its stock figures to “Über das
   Projekt” (same data, `#about-facts`) so the map still starts on the first phone
-  screen (measured at 390×844: map top 609 px with 235 px of map visible, before
-  722 px / 122 px), and the lead is a complete short sentence there — the long
-  desktop wording needed four to eight lines on a phone and a clamp cut it
-  mid-word;
+  screen (measured at 390×844: map top 483 px with 361 px of map visible, before
+  the 722 px / 122 px of iteration 7-16), and below the cantonal 400 px
+  breakpoint the very small phones win the map its first strip: the design note,
+  the hero lead and its two links yield to it (the sentence reads complete in
+  “Über das Projekt”, the nav and footer keep the wording), so 320×640 shows
+  133 px of map instead of none;
 - honest loading and outage states: the results area starts with a visible
   “Bestand wird geladen …” block (cantonal spinner) and `aria-busy` on the list,
   both cleared when the seed arrives — measured with a throttled connection
-  (~40 kB/s: the block is on screen for seconds instead of a blank panel); if
+  (~40 kB/s: the block is on screen for seconds instead of a blank panel); the
+  “Zeitraum” area shows a “Jahresverteilung lädt …” placeholder until the chart
+  can be built from the records, and the browser check throttles the connection
+  to keep both there; if
   `/data/records.json` cannot be fetched, the panel says so in plain German, the
   toolbar count reads “Bestand nicht geladen” instead of pretending to load, and
   the raw browser string stays in the console (`title` attribute) — the browser

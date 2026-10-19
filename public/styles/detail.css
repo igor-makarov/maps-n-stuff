@@ -93,7 +93,7 @@
 }
 
 .app-viewer__readout {
-  font-size: var(--zh-font-tiny, 0.8125rem);
+  font-size: var(--zh-font-tiny, 12px);
   color: var(--zh-color-text-soft, #666);
   font-variant-numeric: tabular-nums;
 }
@@ -136,14 +136,14 @@
 
 .app-viewer__caption {
   margin: 0;
-  font-size: var(--zh-font-tiny, 0.8125rem);
+  font-size: var(--zh-font-tiny, 12px);
   color: var(--zh-color-text-soft, #666);
-  line-height: var(--zh-line-medium, 1.45);
+  line-height: var(--zh-line-medium, 1.3);
 }
 
 .app-viewer__hint {
   margin: 0;
-  font-size: var(--zh-font-tiny, 0.8125rem);
+  font-size: var(--zh-font-tiny, 12px);
   color: var(--zh-color-text-soft, #666);
 }
 
@@ -270,7 +270,7 @@
   padding: 2px var(--zh-size-tiny, 8px);
   background: rgb(255 255 255 / 88%);
   color: var(--zh-black, #000);
-  font-size: var(--zh-font-tiny, 0.8125rem);
+  font-size: var(--zh-font-tiny, 12px);
   pointer-events: none;
 }
 

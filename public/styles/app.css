@@ -1320,6 +1320,35 @@ body.app-compare--open {
   .zh-brand__claim {
     display: none;
   }
+
+  /* ---- very small phones: 320–399 px get the map on the first screen ----
+     Measured at 320×640 before this step: header 242 px + hero 242 px +
+     toolbar 151 px put the map top at 658 px — 0 px of map on screen. Three
+     blocks yield, none of them losing information from the page:
+       · the design-reference note in the black bar (34 px): the same sentence
+         stands verbatim in “Über das Projekt” and the footer names the canton
+         as the design reference, while the nav links next to it stay;
+       · the hero lead and its two links (116 px): the lead is the #about
+         sentence again, and both link targets are in the header nav or on the
+         page (`#about`, `#sources`, `#map`);
+       · the “Schnellauswahl:” caption of the place chips: the group keeps its
+         accessible name (`aria-label` on #place-quick) and the chips get the
+         whole 296 px row, so the last chip is no longer cut in half.
+     Result: map top 507 px, 133 px of map visible at 320×640; at 390×844 the
+     map moves from 609 px to ≈ 460 px (measured after the change, see
+     docs/design-system.md). */
+  .zh-header__note {
+    display: none;
+  }
+
+  .app-intro .zh-lead,
+  .app-intro__more {
+    display: none;
+  }
+
+  #place-quick > .zh-hint {
+    display: none;
+  }
 }
 
 /* ---------- year histogram (module: public/app/results.js, maps-2) ----
@@ -1400,6 +1429,28 @@ body.app-compare--open {
   .zh-histogram__bin {
     min-inline-size: 3px;
   }
+}
+
+/* While the seed is loading the chart does not exist yet — results.js builds
+   its bins only after the records arrive — so the “Zeitraum” fieldset showed a
+   56 px empty box above its hint (found by throttling the connection, 7-17).
+   The skeleton is tied to the shell's own loading state : #results-loading is
+   visible and #result-list is busy until the shell ends both. That also ends it
+   in the outage case, where no bins ever come and the error block takes over.
+   Presentational only; a browser without :has() shows the empty box as before. */
+.app-side:has(#result-list[aria-busy='true']) #year-histogram:empty {
+  background-image: repeating-linear-gradient(90deg, var(--zh-color-bg) 0 8px, transparent 8px 12px);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 40%;
+  border-block-end-color: var(--zh-color-border);
+}
+
+.app-side:has(#result-list[aria-busy='true']) #year-histogram:empty::after {
+  content: 'Jahresverteilung lädt …';
+  margin: auto;
+  color: var(--zh-color-text-soft);
+  font-size: var(--zh-font-small);
 }
 
 /* ---------- filter panel footer (shell: maps-1) ---------- */

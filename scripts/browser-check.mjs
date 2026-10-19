@@ -2089,13 +2089,14 @@ try {
         const node = document.querySelector('.app-intro .zh-lead');
         const short = document.querySelector('.app-intro__lead-short');
         const long = document.querySelector('.app-intro__lead-long');
-        const shortVisible = short ? getComputedStyle(short).display !== 'none' : false;
-        const visible = shortVisible ? short : long;
+        const aboutLead = document.querySelector('#about [data-record-count]')?.closest('p');
         return {
-          shortVisible,
+          display: node ? getComputedStyle(node).display : '',
+          shortVisible: short ? getComputedStyle(short).display !== 'none' : false,
           longVisible: long ? getComputedStyle(long).display !== 'none' : false,
           clamped: node ? node.scrollHeight > node.clientHeight + 1 : true,
-          text: visible ? visible.textContent.replace(/\\s+/g, ' ').trim() : '',
+          aboutVisible: aboutLead ? getComputedStyle(aboutLead).display !== 'none' : false,
+          aboutText: aboutLead ? aboutLead.textContent.replace(/\\s+/g, ' ').trim() : '',
         };
       })(),
     };
@@ -2121,24 +2122,32 @@ try {
   const narrowLead = await cdp.eval(`(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     const lead = document.querySelector('.app-intro .zh-lead');
-    const short = document.querySelector('.app-intro__lead-short');
-    const long = document.querySelector('.app-intro__lead-long');
-    const shortVisible = short ? getComputedStyle(short).display !== 'none' : false;
-    const visible = shortVisible ? short : long;
+    const aboutLead = document.querySelector('#about [data-record-count]')?.closest('p');
+    const map = document.querySelector('#map')?.getBoundingClientRect();
     return {
-      shortVisible,
-      longVisible: long ? getComputedStyle(long).display !== 'none' : false,
-      clamped: lead ? lead.scrollHeight > lead.clientHeight + 1 : true,
-      text: visible ? visible.textContent.replace(/\\s+/g, ' ').trim() : '',
+      display: lead ? getComputedStyle(lead).display : '',
+      aboutVisible: aboutLead ? getComputedStyle(aboutLead).display !== 'none' : false,
+      aboutText: aboutLead ? aboutLead.textContent.replace(/\\s+/g, ' ').trim() : '',
+      mapTop: map ? Math.round(map.top + window.scrollY) : -1,
+      mapVisible: map ? Math.round(Math.max(0, Math.min(innerHeight, map.bottom) - Math.max(0, map.top))) : 0,
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   })()`);
-  const leadComplete = (lead) =>
-    Boolean(lead) && lead.shortVisible && !lead.longVisible && !lead.clamped && /\.$/.test(lead.text);
+  // Signature of the very-small-phone step (maps-1, 7-19): below the cantonal
+  // 400 px breakpoint the hero hands the lead sentence and its two links to the
+  // map, and that sentence stands complete in “Über das Projekt”. Measured
+  // 390×844: map top 609 → 483 px (235 → 361 px of map); 320×640: 658 → 507 px
+  // (0 → 133 px of map).
+  const heroYieldsToMap = (m) => m.lead.display === 'none' && m.lead.aboutVisible && /\.$/.test(m.lead.aboutText);
   check(
-    'the phone lead ends as a complete sentence at 390 and 320 px',
-    leadComplete(phoneFirstScreen.lead) && leadComplete(narrowLead) && narrowLead.overflow === 0,
-    JSON.stringify({ at390: phoneFirstScreen.lead, at320: narrowLead }),
+    'below 400 px the hero lead yields to the map and reads complete in “Über das Projekt”',
+    heroYieldsToMap(phoneFirstScreen) && narrowLead.display === 'none' && narrowLead.aboutVisible && /\.$/.test(narrowLead.aboutText),
+    JSON.stringify({ at390: phoneFirstScreen.lead, at320: { lead: narrowLead.display, about: narrowLead.aboutText.slice(0, 80) } }),
+  );
+  check(
+    'the map starts on the first screen at 320×640 as well',
+    narrowLead.mapVisible > 100 && narrowLead.mapTop < 640 && narrowLead.overflow === 0,
+    JSON.stringify({ mapTop: narrowLead.mapTop, mapVisible: narrowLead.mapVisible, overflow: narrowLead.overflow }),
   );
   await cdp.send('Emulation.clearDeviceMetricsOverride');
 
@@ -3622,6 +3631,58 @@ try {
     offOrigin.length === 0,
     offOrigin.length ? offOrigin.slice(0, 4).join(' | ') : `${new Set(apiRequests).size} same-origin API calls`,
   );
+
+  /* --- 8m. the loading state is real, not just markup --------------------- */
+  // On a slow connection the seed is in flight for seconds. The shell must say
+  // what is happening (maps-1, 7-17) and the “Zeitraum” chart — which results.js
+  // can only build once the records arrive — must not look like a broken, empty
+  // box (maps-1, 7-19). Throttled instead of blocked: a blocked request fails
+  // instantly and never shows the loading window.
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await cdp.send('Network.emulateNetworkConditions', {
+    offline: false, latency: 2000, downloadThroughput: 20_000, uploadThroughput: 20_000, connectionType: 'cellular3g',
+  });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  let loadingState = null;
+  try {
+    loadingState = await cdp.waitFor(
+      `(() => {
+        const loading = document.querySelector('#results-loading');
+        const busy = document.querySelector('#result-list')?.getAttribute('aria-busy');
+        if (!loading || loading.hidden || busy !== 'true') return '';
+        // The throttled nav also slows the stylesheets down; the skeleton can
+        // only be measured once app.css has parsed (otherwise this reads the
+        // pre-CSS page and reports “none”).
+        const appSheet = [...document.styleSheets].find((sheet) => String(sheet.href || '').endsWith('/app.css'));
+        if (!appSheet || !appSheet.cssRules.length) return '';
+        const hist = document.querySelector('#year-histogram');
+        return {
+          stylesReady: true,
+          count: (document.querySelector('#result-count')?.textContent || '').trim(),
+          block: (document.querySelector('#results-loading .zh-state__title')?.textContent || '').trim(),
+          skeleton: String(getComputedStyle(hist, '::after').content || ''),
+          bins: hist ? hist.childElementCount : -1,
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      })()`,
+      { label: 'throttled loading state', timeout: 20_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'a slow seed shows the loading state and a year-chart skeleton instead of an empty box',
+    Boolean(loadingState) &&
+      loadingState.bins === 0 &&
+      /lädt/.test(loadingState.skeleton) &&
+      /geladen|lädt/i.test(loadingState.count) &&
+      /geladen|lädt/i.test(loadingState.block) &&
+      loadingState.overflow === 0,
+    JSON.stringify(loadingState).slice(0, 220),
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '07c-loading-state.png')).then(() => report.screenshots.push('07c-loading-state.png'));
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: false });
 
   /* --- 9. honest degradation when the image service is unreachable ------ */
   // Deliberately after the console/failed-request checks: blocking a host logs

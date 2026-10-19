@@ -72,9 +72,22 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   (measured 390×844: map top 722 → 609 px, visible map 122 → 235 px; harness
   check “phone map-first …”). The lead paragraph has a second, short sentence
   for phones (`.app-intro__lead-short`): the long one needed 4–8 lines at
-  320–430 px and the 2-line clamp cut it mid-word, so the phone band now ends
-  on a full stop at every measured width and the clamp is only the safety net;
-  the long wording stays in “Über das Projekt”.
+  320–430 px and the 2-line clamp cut it mid-word, so the phone band ended on a
+  full stop at every measured width and the clamp is only the safety net; the
+  long wording stays in “Über das Projekt”.
+- **Very small phones (app decision, ≤ 399 px)**: 320–399 px get the map onto
+  the first screen by yielding three blocks, none of which loses information:
+  the black bar's design-reference note (the sentence stands verbatim in “Über
+  das Projekt”, the footer still names the canton, and the nav links next to it
+  stay), the hero lead and its two links (`.app-intro__lead-short`, the same
+  sentence as the first “Über das Projekt” paragraph, whose targets are in the
+  header nav or on the page), and the “Schnellauswahl:” caption of the place
+  chips (the group keeps its `aria-label`, and the chips get the whole row, so
+  the last chip is no longer cut in half). Measured 320×640: map top 658 → 507 px,
+  visible map 0 → 133 px; 390×844: 609 → 483 px, 235 → 361 px. The harness
+  asserts the map at 320 px and that the sentence reads complete in “Über das
+  Projekt”. The desktop and tablet layouts are untouched (414 px still shows the
+  full intro band).
 - **Form controls**: 2 px black borders, official input scales 72 / 60 / 48 px
   (`form_input.scss`: `$targetInputHeight` 72, `$targetMediumInputHeight` 60,
   `$targetSmallInputHeight` 48), labels in InterBlack at 14 px, 2 px input
