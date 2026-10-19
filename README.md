@@ -86,7 +86,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
   is scrolled; below 600 px the hero hands its stock figures to “Über das
   Projekt” (same data, `#about-facts`) so the map still starts on the first phone
   screen (measured at 390×844: map top 609 px with 235 px of map visible, before
-  722 px / 122 px);
+  722 px / 122 px), and the lead is a complete short sentence there — the long
+  desktop wording needed four to eight lines on a phone and a clamp cut it
+  mid-word;
 - honest loading and outage states: the results area starts with a visible
   “Bestand wird geladen …” block (cantonal spinner) and `aria-busy` on the list,
   both cleared when the seed arrives — measured with a throttled connection

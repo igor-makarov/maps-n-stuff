@@ -2004,6 +2004,19 @@ try {
       aboutFactsVisible: aboutFacts ? getComputedStyle(aboutFacts).display !== 'none' : false,
       heroFactsHidden: heroFacts ? getComputedStyle(heroFacts).display === 'none' : false,
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      lead: (() => {
+        const node = document.querySelector('.app-intro .zh-lead');
+        const short = document.querySelector('.app-intro__lead-short');
+        const long = document.querySelector('.app-intro__lead-long');
+        const shortVisible = short ? getComputedStyle(short).display !== 'none' : false;
+        const visible = shortVisible ? short : long;
+        return {
+          shortVisible,
+          longVisible: long ? getComputedStyle(long).display !== 'none' : false,
+          clamped: node ? node.scrollHeight > node.clientHeight + 1 : true,
+          text: visible ? visible.textContent.replace(/\\s+/g, ' ').trim() : '',
+        };
+      })(),
     };
   })()`);
   check(
@@ -2016,6 +2029,36 @@ try {
     JSON.stringify(phoneFirstScreen),
   );
   await cdp.screenshot(path.join(OUT_DIR, '03d-mobile-mapfirst.png')).then(() => report.screenshots.push('03d-mobile-mapfirst.png'));
+
+  // The intro sentence must end on its own at every phone width. Before 7-18
+  // the long lead needed 4–8 lines at 320–430 px and the 2-line clamp cut it
+  // mid-word (“… aus echten Sammlungen – mit Kartenvorschau, Zeitfilter,
+  // Vergleichsebene und…”); the short phone variant is a complete sentence of
+  // its own and the clamp is only the safety net. Measured at 390 and 320.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 640, deviceScaleFactor: 2, mobile: true });
+  await sleep(500);
+  const narrowLead = await cdp.eval(`(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    const lead = document.querySelector('.app-intro .zh-lead');
+    const short = document.querySelector('.app-intro__lead-short');
+    const long = document.querySelector('.app-intro__lead-long');
+    const shortVisible = short ? getComputedStyle(short).display !== 'none' : false;
+    const visible = shortVisible ? short : long;
+    return {
+      shortVisible,
+      longVisible: long ? getComputedStyle(long).display !== 'none' : false,
+      clamped: lead ? lead.scrollHeight > lead.clientHeight + 1 : true,
+      text: visible ? visible.textContent.replace(/\\s+/g, ' ').trim() : '',
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  })()`);
+  const leadComplete = (lead) =>
+    Boolean(lead) && lead.shortVisible && !lead.longVisible && !lead.clamped && /\.$/.test(lead.text);
+  check(
+    'the phone lead ends as a complete sentence at 390 and 320 px',
+    leadComplete(phoneFirstScreen.lead) && leadComplete(narrowLead) && narrowLead.overflow === 0,
+    JSON.stringify({ at390: phoneFirstScreen.lead, at320: narrowLead }),
+  );
   await cdp.send('Emulation.clearDeviceMetricsOverride');
 
   /* --- 8g. view switch: map-only / list-only stay inside their boxes ---- */
@@ -3258,7 +3301,27 @@ try {
 
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
-  const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));
+  // A partner library that is down or throttling makes the browser log
+  // “Failed to load resource: net::ERR_CONNECTION_REFUSED https://…/i3f/…”.
+  // That is not a product regression: the app's fallback path is what matters
+  // and section 9 blocks the image host on purpose to assert it. Keep the
+  // evidence in the report, but only our own origin and our own exceptions can
+  // fail this check (e-rara answered 429/5xx repeatedly on 2026-10-19 and was
+  // refused outright during this iteration's first run).
+  const upstreamConsoleErrors = [];
+  const realErrors = consoleMessages.filter((m) => {
+    if (m.level === 'warning' || /favicon/i.test(m.text)) return false;
+    const external = !m.text.includes(new URL(BASE_URL).origin);
+    if (m.level === 'browser' && external && /^Failed to load resource: net::ERR_(CONNECTION_|NAME_|TIMED_OUT|INTERNET_|NETWORK_|ADDRESS_|CERT_)/.test(m.text)) {
+      upstreamConsoleErrors.push(m.text);
+      return false;
+    }
+    return true;
+  });
+  report.upstreamConsoleErrors = upstreamConsoleErrors;
+  if (upstreamConsoleErrors.length) {
+    console.log(`ℹ ${upstreamConsoleErrors.length} external resource error(s) from a partner library or tile host, kept in report.upstreamConsoleErrors`);
+  }
   check('no uncaught console errors during the whole session', realErrors.length === 0, realErrors.map((m) => m.text.slice(0, 160)).join(' | '));  const broken = failedRequests.filter((r) => !/favicon|\/api\/fetch/.test(r.url));
   check('no failed asset or data requests', broken.length === 0, broken.slice(0, 4).map((b) => `${b.status} ${b.url}`).join(' | '));
 

@@ -103,13 +103,15 @@
         </h1>
         <ul class="zh-facts" id="intro-facts" aria-label="Bestand in Zahlen"></ul>
         <p class="zh-lead">
-          <!-- Deliberately one sentence: the band above the map is clamped on
-               narrow screens, and a paragraph that ends mid-sentence on a wide
-               screen reads like a defect. The longer provenance sentence
+          <!-- Deliberately one sentence per variant: the band above the map is
+               clamped on narrow screens, and a paragraph that ends mid-sentence
+               reads like a defect. The phone variant is short enough to end
+               inside the clamp at 320 px; the long provenance sentence
                (swisstopo layers, e-rara partner libraries) stands verbatim in
                “Über das Projekt” below, and the provider tags sit right here. -->
-          Der Bestand umfasst aktuell <span id="intro-count" data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
-          Sammlungen – mit Kartenvorschau, Zeitfilter, Vergleichsebene und direkter Verlinkung zum Originaldatensatz.
+          <span class="app-intro__lead-long">Der Bestand umfasst aktuell <span id="intro-count" data-record-count>…</span> digitalisierte Karten und Atlanten aus echten
+          Sammlungen – mit Kartenvorschau, Zeitfilter, Vergleichsebene und direkter Verlinkung zum Originaldatensatz.</span>
+          <span class="app-intro__lead-short">Der Bestand umfasst <span data-record-count>…</span> Karten und Atlanten aus echten Sammlungen.</span>
         </p>
         <p class="app-intro__more">
           <a class="zh-link" href="#about">

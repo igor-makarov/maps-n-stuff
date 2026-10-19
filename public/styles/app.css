@@ -27,6 +27,13 @@
   display: none;
 }
 
+/* The phone lead is a complete sentence of its own: the long one needs 4–8
+   lines at 320–430 px, and a clamp cut it mid-word (measured before the
+   change: scrollHeight 202 px vs 50 px visible at 320 px). */
+.app-intro__lead-short {
+  display: none;
+}
+
 /* Map-first composition: from 840 px (the cantonal `medium` breakpoint, where
    the shell gets its 16 px gutters and the two-column header) the orientation
    block becomes a compact band instead of a full-height page. The headline keeps its cantonal 3 px rule
@@ -1207,11 +1214,19 @@ body.app-compare--open {
     font-size: var(--zh-font-small-big);
     margin-bottom: var(--zh-size-tiny);
   }
-  /* Orientation text stays readable but does not push the map off the screen;
-     the full wording lives in “Über das Projekt” and the result list. */
+  /* Orientation text stays readable but does not push the map off the screen:
+     the short variant ends on its own at 320–430 px, so the clamp is a safety
+     net rather than the thing that ends the sentence. The full wording lives
+     in “Über das Projekt” and the result list. */
+  .app-intro__lead-long {
+    display: none;
+  }
+  .app-intro__lead-short {
+    display: inline;
+  }
   .app-intro .zh-lead {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: var(--zh-size-tiny);

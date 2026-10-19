@@ -70,7 +70,11 @@ naming is ours (`--zh-*`) so we do not redistribute upstream SCSS.
   400 px breakpoint the brand claim is hidden — the name stays. Both keep the
   map on the first phone screen without dropping information from the page
   (measured 390×844: map top 722 → 609 px, visible map 122 → 235 px; harness
-  check “phone map-first …”).
+  check “phone map-first …”). The lead paragraph has a second, short sentence
+  for phones (`.app-intro__lead-short`): the long one needed 4–8 lines at
+  320–430 px and the 2-line clamp cut it mid-word, so the phone band now ends
+  on a full stop at every measured width and the clamp is only the safety net;
+  the long wording stays in “Über das Projekt”.
 - **Form controls**: 2 px black borders, official input scales 72 / 60 / 48 px
   (`form_input.scss`: `$targetInputHeight` 72, `$targetMediumInputHeight` 60,
   `$targetSmallInputHeight` 48), labels in InterBlack at 14 px, 2 px input
