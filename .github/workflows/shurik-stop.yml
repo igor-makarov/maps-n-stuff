@@ -1,5 +1,5 @@
 name: Stop Shurik swarm
-run-name: Stop all four Shurik agents
+run-name: Stop current and legacy Shurik agents; keep model calls paused
 
 on:
   push:

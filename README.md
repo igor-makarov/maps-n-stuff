@@ -41,3 +41,7 @@ The [global catalogue audit](docs/global-catalogue-audit.md) records integration
 ## Shurik
 
 The four Shurik members are **stopped** while the model quota is unavailable. Brief changes no longer resume them automatically. Their saved state and manual stop/resume workflows remain available; no automatic restart is scheduled for tomorrow. The original brief is [PROMPT.md](PROMPT.md).
+
+The model workflow is manual-only: neither pushes (including swarm renames) nor
+scheduled recovery can start agents. The stop workflow covers both current and
+legacy member names. Starting or resuming model work requires an explicit action.

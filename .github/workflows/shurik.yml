@@ -1,12 +1,7 @@
 name: Shurik
-run-name: ${{ github.event_name == 'schedule' && 'Shurik recovery' || (github.event_name == 'push' && 'Shurik swarm / start' || (inputs.command == 'iterate' && format('Shurik {0} / {1}', inputs.loop_id, inputs.iteration) || format('Shurik {0} / {1}', inputs.loop_id, inputs.command))) }}
+run-name: ${{ inputs.command == 'iterate' && format('Shurik {0} / {1}', inputs.loop_id, inputs.iteration) || format('Shurik {0} / {1}', inputs.loop_id, inputs.command) }}
 
 on:
-  push:
-    branches: [main]
-    paths: [.github/shurik/launch.json]
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       command:
@@ -68,7 +63,7 @@ permissions:
 
 jobs:
   control:
-    if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.command != 'iterate')) && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: github.event_name == 'workflow_dispatch' && inputs.command != 'iterate' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
@@ -80,7 +75,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Check model credential before starting agents
-        if: github.event_name == 'push' || inputs.command == 'start' || inputs.command == 'resume'
+        if: inputs.command == 'start' || inputs.command == 'resume'
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: |
@@ -88,25 +83,10 @@ jobs:
             echo '::error::Add the OPENCODE_API_KEY repository Actions secret, then rerun this job. No agents have been started.'
             exit 1
           fi
-      - name: Read explicit push launch request
-        if: github.event_name == 'push'
-        id: launch
-        run: |
-          launch_inputs=$(jq -ce . .github/shurik/launch.json)
-          echo "inputs=$launch_inputs" >> "$GITHUB_OUTPUT"
-          loop_prefix=$(jq -er '.loop_id | select(test("^[a-z0-9][a-z0-9-]{0,48}$"))' .github/shurik/launch.json)
-          existing=$(git for-each-ref --format='%(refname)' "refs/remotes/origin/shurik-control/$loop_prefix-*")
-          if [ -n "$existing" ]; then
-            echo 'initialize=false' >> "$GITHUB_OUTPUT"
-            echo 'Swarm members already exist; keeping their saved state. Use the brief-update workflow to apply settings.'
-          else
-            echo 'initialize=true' >> "$GITHUB_OUTPUT"
-          fi
       - id: shurik
-        if: github.event_name != 'push' || steps.launch.outputs.initialize == 'true'
         uses: igor-makarov/shurik@v2
         with:
-          inputs: ${{ github.event_name == 'push' && steps.launch.outputs.inputs || toJSON(inputs) }}
+          inputs: ${{ toJSON(inputs) }}
           checkpoint-seconds: ${{ inputs['checkpoint-seconds'] || '0' }}
       - name: Preserve emergency snapshot after publication failure
         if: failure() && steps.shurik.outputs.emergency-path != ''
