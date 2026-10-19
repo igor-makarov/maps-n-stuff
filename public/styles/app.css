@@ -618,6 +618,129 @@
   background: rgb(255 255 255 / 92%);
 }
 
+/* “Karten an diesem Punkt”: the real, focusable list a point pile opens instead
+   of a zoom that cannot separate its records. Same plate as the hover card, but
+   interactive, scrollable and reachable by keyboard. */
+.map-cluster-list {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: min(420px, calc(100% - 16px));
+  border: 2px solid var(--zh-black);
+  background: var(--zh-white);
+  box-shadow: var(--zh-shadow-card);
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* The list is the one part of the map that must scroll under the pointer: it
+     keeps the wheel (JS guard) and at least vertical touch gestures. */
+  touch-action: pan-y;
+}
+
+.map-cluster-list[hidden] {
+  display: none;
+}
+
+.map-cluster-list:focus-visible {
+  outline: 3px solid var(--zh-black);
+  outline-offset: 1px;
+}
+
+.map-cluster-list__head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zh-size-mini);
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border-bottom: var(--zh-rule) solid var(--zh-black);
+  background: var(--zh-white);
+}
+
+.map-cluster-list__title {
+  margin: 0;
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+}
+
+.map-cluster-list__close {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 var(--zh-size-mini);
+  border: 1px solid var(--zh-black);
+  border-radius: var(--zh-radius);
+  background: var(--zh-white);
+  color: var(--zh-black);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.map-cluster-list__close:hover {
+  background: var(--zh-black);
+  color: var(--zh-white);
+}
+
+.map-cluster-list__hint {
+  margin: 0;
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border-bottom: 1px solid var(--zh-color-border);
+  color: var(--zh-black-60);
+  font-size: var(--zh-font-tiny);
+  line-height: 1.4;
+}
+
+.map-cluster-list__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.map-cluster-list__item {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 2px var(--zh-size-mini);
+  width: 100%;
+  padding: var(--zh-size-mini) var(--zh-size-small);
+  border: 0;
+  border-bottom: 1px solid var(--zh-color-border);
+  background: var(--zh-white);
+  color: var(--zh-black);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-cluster-list__item:hover {
+  background: var(--zh-black-10);
+}
+
+.map-cluster-list__year {
+  grid-row: span 2;
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+}
+
+.map-cluster-list__name {
+  font-size: var(--zh-font-small);
+  line-height: 1.3;
+}
+
+.map-cluster-list__meta {
+  grid-column: 2;
+  color: var(--zh-black-60);
+  font-size: var(--zh-font-tiny);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-cluster-list__foot {
+  padding: var(--zh-size-mini) var(--zh-size-small);
+}
+
 .map-extent {
   position: absolute;
   border: 2px dashed var(--zh-black);

@@ -14,8 +14,12 @@ import {
   BASE_LAYERS,
   CLUSTER_CELL,
   DEFAULT_BASE,
+  MAX_ZOOM,
   baseLayerFor,
+  clusterAnchorKey,
   clusterByCell,
+  clusterCanSplit,
+  clusterRecords,
   extentRects,
   latToTileY,
   lonToTileX,
@@ -225,4 +229,62 @@ test('the Grundkarte key is shareable URL state but never trusted blindly', () =
   assert.equal(sanitise({ base: 'x'.repeat(40) }).base, '');
   assert.equal(stateToQuery({ ...STATE_DEFAULTS, base: 'luftbild', from: 1781 }), 'from=1781&base=luftbild');
   assert.equal(stateToQuery({ ...STATE_DEFAULTS }), '', 'the default layer stays out of the URL');
+});
+
+/* ---------------------------------------------------------------------------
+ * “Karten an diesem Punkt”: point piles cannot be split by zooming (maps-2).
+ *
+ * Ten groups in the seed share one documented anchor (six Zürich Stadtpläne on
+ * 47.358330 / 8.533340, three on 47.341660 / 8.508330, …). Their pins keep
+ * landing in the same 56 px cell at every zoom level and at MAX_ZOOM no cell
+ * shrinks any further, so a click must offer the records instead of a zoom that
+ * provably changes nothing. These three helpers decide that; they are pure.
+ */
+const pileMember = (id, yearStart, lat, lon, title = id) => ({
+  id,
+  record: { id, title, yearStart, yearEnd: yearStart, geo: { lat, lon } },
+});
+
+test('a cluster of records on different anchors can still be split by zooming', () => {
+  const members = [pileMember('a', 1696, 47.35833, 8.53334), pileMember('b', 1838, 47.37, 8.54)];
+  assert.equal(clusterCanSplit(members, 12), true);
+  assert.equal(clusterCanSplit(members, 17), true);
+});
+
+test('a point pile cannot be split at any zoom — the click must open the list', () => {
+  const pile = [pileMember('a', 1696, 47.35833, 8.53334), pileMember('b', 1705, 47.35833, 8.53334), pileMember('c', 1838, 47.35833, 8.53334)];
+  for (const zoom of [4, 8, 12, 16, 17]) assert.equal(clusterCanSplit(pile, zoom), false, `zoom ${zoom}`);
+});
+
+test('deepest zoom cannot split even a mixed cluster, and a lone member needs no list', () => {
+  const mixed = [pileMember('a', 1696, 47.35833, 8.53334), pileMember('b', 1838, 47.37, 8.54)];
+  assert.equal(clusterCanSplit(mixed, MAX_ZOOM), false);
+  assert.equal(clusterCanSplit(mixed, MAX_ZOOM + 1), false);
+  assert.equal(clusterCanSplit([pileMember('a', 1696, 47.35833, 8.53334)], 12), true);
+  assert.equal(clusterCanSplit([], 12), true);
+  assert.equal(clusterCanSplit(undefined, 12), true);
+});
+
+test('a record without a point is keyed by its documented extent centre', () => {
+  assert.equal(clusterAnchorKey({ extent: { west: 8, east: 9, south: 47, north: 48 } }), '47.500000:8.500000');
+  assert.equal(clusterAnchorKey({}), '');
+  const anonymous = [{ record: { id: 'a' } }, { record: { id: 'b' } }];
+  // Two anchors that cannot be computed are not proof of a shared point: the
+  // cluster stays zoomable (records without any location never reach a marker).
+  assert.equal(clusterCanSplit(anonymous, 12), true);
+});
+
+test('the point list is chronological, then alphabetical, and keeps every record', () => {
+  const pile = [
+    pileMember('c', 1838, 47.35833, 8.53334, 'Stadt Zürich 1838'),
+    pileMember('a', 1696, 47.35833, 8.53334, 'Grundriss 1696'),
+    pileMember('b', 1705, 47.35833, 8.53334, 'Grundriss 1705'),
+    pileMember('a2', 1696, 47.35833, 8.53334, 'Atlas 1696'),
+  ];
+  assert.deepEqual(
+    clusterRecords(pile).map((record) => record.id),
+    ['a2', 'a', 'b', 'c'],
+  );
+  assert.deepEqual(clusterRecords(undefined), []);
+  assert.equal(clusterRecords([{ record: null }]).length, 0);
 });

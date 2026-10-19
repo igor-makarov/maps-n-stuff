@@ -116,6 +116,13 @@ export function tileUrl(template, { z, x, y, time }) {
 export const CLUSTER_CELL = 56;
 
 /**
+ * Deepest zoom the base layers publish (see BASE_LAYERS) — and the zoom the
+ * store clamps to. A cluster at this zoom cannot be split any further by
+ * zooming, so it must offer another way to its records.
+ */
+export const MAX_ZOOM = 18;
+
+/**
  * Group already projected pixel points into grid cells.
  *
  * Points are global pixel coordinates at one zoom level, so a cell key is
@@ -137,6 +144,57 @@ export function clusterByCell(points, cellPx = CLUSTER_CELL) {
     cell.members.push(point);
   }
   return [...cells.values()].map((cell) => ({ ...cell, x: cell.x / cell.count, y: cell.y / cell.count }));
+}
+
+/**
+ * The documented anchor of a record as a comparable key (6 decimals ≈ 0.1 m).
+ * Returns `''` for a record without any published point or extent.
+ */
+export function clusterAnchorKey(record) {
+  const center = recordCenter(record);
+  if (!center) return '';
+  return `${Number(center.lat).toFixed(6)}:${Number(center.lon).toFixed(6)}`;
+}
+
+/**
+ * Can zooming further separate this cluster into single markers?
+ *
+ * Usually yes: the cell shrinks with the zoom. Two cases provably cannot be
+ * split, and both must not pretend otherwise:
+ *
+ *   - **point piles** — every member carries the *same* documented anchor (six
+ *     Zürich Stadtpläne sit on 47.358330 / 8.533340 in the catalogue), so the
+ *     pins keep sharing a cell at every zoom level;
+ *   - the map is already at `MAX_ZOOM`.
+ *
+ * Pure, therefore unit-tested; `renderMarkers` uses it to decide whether a
+ * cluster click zooms (the OldMapsOnline gesture) or opens the list of the
+ * records behind the number.
+ */
+export function clusterCanSplit(members, zoom, maxZoom = MAX_ZOOM) {
+  const list = [...(members ?? [])].filter((member) => member?.record);
+  if (list.length < 2) return true;
+  if (Math.round(Number(zoom) || 0) >= Number(maxZoom)) return false;
+  const keys = list.map((member) => clusterAnchorKey(member.record));
+  // An anchor that cannot be computed is never proof of a shared point.
+  if (keys.some((key) => key === '')) return true;
+  return new Set(keys).size > 1;
+}
+
+/**
+ * The records behind a cluster, oldest first (then by title) — the order the
+ * “Karten an diesem Punkt” list shows them in, so several editions of one place
+ * read as a sequence instead of as an arbitrary set.
+ */
+export function clusterRecords(members) {
+  return [...(members ?? [])]
+    .map((member) => member?.record)
+    .filter(Boolean)
+    .sort(
+      (a, b) =>
+        Number(a.yearStart ?? 0) - Number(b.yearStart ?? 0) ||
+        String(a.title ?? '').localeCompare(String(b.title ?? ''), 'de'),
+    );
 }
 
 /**
@@ -277,7 +335,23 @@ export function init(ctx) {
   // name and the result list already carry the same information.
   const preview = el('div', { class: 'map-preview', 'aria-hidden': 'true', hidden: true });
 
-  container.replaceChildren(baseLayer, overlayLayer, footprintLayer, shapeLayer, markerLayer, controls, badge, preview, live);
+  /**
+   * “Karten an diesem Punkt”: the list a cluster opens when zooming provably
+   * cannot split it (see `clusterCanSplit`). It is the only route to the records
+   * of a point pile — a mouse click on the map would set a point filter that
+   * also returns everything else covering the place — so it is a real, focusable
+   * dialog instead of the decorative hover card.
+   */
+  const clusterList = el('section', {
+    class: 'map-cluster-list',
+    role: 'dialog',
+    'aria-modal': 'false',
+    'aria-labelledby': 'map-cluster-list-title',
+    tabindex: '-1',
+    hidden: true,
+  });
+
+  container.replaceChildren(baseLayer, overlayLayer, footprintLayer, shapeLayer, markerLayer, controls, badge, preview, clusterList, live);
 
   const cache = new Map(); // tile key -> <img>
   const markers = new Map(); // record id -> <button>
@@ -299,17 +373,26 @@ export function init(ctx) {
     for (const [, cluster] of clusters) cluster.element.classList.remove('is-preview');
   }
 
-  /** Position the hover/focus card above a marker, clamped into the map. */
-  function placePreview(marker, width = PREVIEW_WIDTH) {
+  /** Position a hover/focus card above a marker, clamped into the map. */
+  function placeCard(node, marker, width = PREVIEW_WIDTH) {
     const mapRect = container.getBoundingClientRect();
     const markerRect = marker.getBoundingClientRect();
     const finalWidth = Math.min(width, Math.max(160, mapRect.width - 16));
     const left = Math.max(8, Math.min(mapRect.width - finalWidth - 8, markerRect.left - mapRect.left + markerRect.width / 2 - finalWidth / 2));
-    preview.style.width = `${finalWidth}px`;
-    preview.hidden = false;
-    const topAbove = markerRect.top - mapRect.top - preview.offsetHeight - 12;
-    preview.style.left = `${Math.round(left)}px`;
-    preview.style.top = `${Math.round(topAbove >= 8 ? topAbove : markerRect.bottom - mapRect.top + 12)}px`;
+    node.style.width = `${finalWidth}px`;
+    node.hidden = false;
+    const height = node.offsetHeight;
+    const above = markerRect.top - mapRect.top - height - 12;
+    const below = markerRect.bottom - mapRect.top + 12;
+    // Prefer above the marker; if that does not fit either, clamp into the box
+    // (a tall list of six records must stay inside the map, not hang over it).
+    const top = above >= 8 ? above : below + height <= mapRect.height - 8 ? below : Math.max(8, mapRect.height - height - 8);
+    node.style.left = `${Math.round(left)}px`;
+    node.style.top = `${Math.round(Math.min(top, Math.max(8, mapRect.height - height - 8)))}px`;
+  }
+
+  function placePreview(marker, width = PREVIEW_WIDTH) {
+    placeCard(preview, marker, width);
   }
 
   function showPreview(record, marker) {
@@ -334,6 +417,7 @@ export function init(ctx) {
     if (!cluster) return;
     previewId = '';
     const titles = cluster.members.slice(0, 3).map((member) => member.record.title);
+    const canSplit = clusterCanSplit(cluster.members, state.zoom);
     preview.replaceChildren(
       el('span', { class: 'map-preview__thumb map-preview__thumb--missing', text: '🗺', 'aria-hidden': 'true' }),
       el('div', { class: 'map-preview__body' }, [
@@ -341,7 +425,9 @@ export function init(ctx) {
         ...titles.map((title) => el('span', { class: 'map-preview__title', text: title })),
         el('span', {
           class: 'map-preview__meta',
-          text: `${cluster.members.length > titles.length ? '… ' : ''}Klicken vergrössert die Ansicht.`,
+          text: canSplit
+            ? `${cluster.members.length > titles.length ? '… ' : ''}Klicken vergrössert die Ansicht.`
+            : `Klick öffnet die Liste dieser ${cluster.members.length} Karten (derselbe Kartenpunkt).`,
         }),
       ]),
     );
@@ -349,12 +435,125 @@ export function init(ctx) {
     for (const [, node] of clusters) node.element.classList.toggle('is-preview', node === cluster);
   }
 
+  /** The cluster whose list is open (`null` when closed) and the button to return focus to. */
+  let listedCluster = null;
+
+  function closeClusterList({ restoreFocus = false } = {}) {
+    if (clusterList.hidden) return;
+    const anchor = listedCluster?.element ?? null;
+    clusterList.hidden = true;
+    clusterList.replaceChildren();
+    listedCluster = null;
+    anchor?.classList.remove('is-preview');
+    if (restoreFocus && anchor?.isConnected) anchor.focus();
+  }
+
+  /**
+   * Open the record list of a point pile and move focus to its first row, so a
+   * keyboard user reaches the hidden records with Enter and Escape gets back out
+   * (no focus trap: Tab simply leaves the dialog).
+   */
+  function openClusterList(cluster, marker) {
+    if (!cluster) return;
+    const records = clusterRecords(cluster.members);
+    if (records.length === 0) return;
+    listedCluster = cluster;
+    const title = `Karten an diesem Punkt (${records.length})`;
+    const hint =
+      state.zoom >= MAX_ZOOM
+        ? 'Diese Karten liegen im Katalog auf demselben Punkt; weiteres Vergrössern trennt sie nicht. Wählen Sie einen Titel.'
+        : 'Diese Karten liegen im Katalog auf demselben Punkt. Wählen Sie einen Titel; die Karte bleibt, wo sie ist.';
+    const rows = records.map((record) =>
+      el(
+        'button',
+        {
+          class: 'map-cluster-list__item',
+          type: 'button',
+          'data-record-id': record.id,
+          onclick: () => chooseRecord(record),
+        },
+        [
+          el('span', { class: 'map-cluster-list__year', text: formatYearRange(record.yearStart, record.yearEnd) }),
+          el('span', { class: 'map-cluster-list__name', text: record.title }),
+          el('span', {
+            class: 'map-cluster-list__meta',
+            text: [record.institution, record.creators?.[0]].filter(Boolean).join(' · '),
+          }),
+        ],
+      ),
+    );
+    clusterList.replaceChildren(
+      el('div', { class: 'map-cluster-list__head' }, [
+        el('h3', { class: 'map-cluster-list__title', id: 'map-cluster-list-title', text: title }),
+        el(
+          'button',
+          {
+            class: 'map-cluster-list__close',
+            type: 'button',
+            'aria-label': 'Liste schliessen',
+            onclick: () => closeClusterList({ restoreFocus: true }),
+          },
+          ['✕'],
+        ),
+      ]),
+      el('p', { class: 'map-cluster-list__hint', text: hint }),
+      el('ol', { class: 'map-cluster-list__items' }, rows.map((row) => el('li', {}, [row]))),
+      state.zoom < MAX_ZOOM
+        ? el('div', { class: 'map-cluster-list__foot' }, [
+            el(
+              'button',
+              {
+                class: 'zh-button zh-button--ghost zh-button--small',
+                type: 'button',
+                onclick: () => {
+                  const target = listedCluster;
+                  closeClusterList({ restoreFocus: true });
+                  zoomToCluster(target);
+                },
+              },
+              ['Ansicht trotzdem vergrössern'],
+            ),
+          ])
+        : null,
+      el('p', {
+        class: 'visuallyhidden',
+        text: `${title}. ${hint}`,
+      }),
+    );
+    placeCard(clusterList, marker, 320);
+    clusterList.scrollTop = 0;
+    hidePreview();
+    // Keep the pin highlighted while its list is open, so the visitor can see
+    // which pile the list belongs to.
+    cluster.element.classList.add('is-preview');
+    rows[0]?.focus();
+  }
+
+  /** A record chosen from the cluster list: same path as a marker click. */
+  function chooseRecord(record) {
+    closeClusterList();
+    ctx.bus.emit('record:preview', { id: null });
+    ctx.store.update({ selected: record.id });
+    ctx.bus.emit('record:selected', { record, source: 'map-point-list' });
+  }
+
+  // Escape leaves the list and puts focus back on the cluster it came from; the
+  // event is stopped so a global Escape handler (the detail panel) does not also
+  // close something the visitor did not mean to close.
+  clusterList.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeClusterList({ restoreFocus: true });
+  });
+
   function templateFor(layer, time) {
     return layer.urlTemplate.replace('{Time}', encodeURIComponent(time ?? layer.timeValues?.[0] ?? 'current'));
   }
 
   function render() {
     hidePreview();
+    closeClusterList();
     const w = container.clientWidth || 640;
     const h = container.clientHeight || 420;
     const z = state.zoom;
@@ -545,18 +744,22 @@ export function init(ctx) {
       if (!cluster) {
         const element = el('button', { class: 'map-marker map-cluster', type: 'button' });
         cluster = { element, members, x, y, px: cx, py: cy, key };
-        element.addEventListener('click', () => zoomIntoCluster(clusters.get(key)));
+        element.addEventListener('click', () => activateCluster(clusters.get(key)));
         element.addEventListener('pointerenter', () => {
+          if (listedCluster) return; // an open record list must not be swapped away
           showClusterPreview(clusters.get(key), element);
           ctx.bus.emit('record:preview', { id: null });
         });
         element.addEventListener('pointerleave', () => {
-          if (document.activeElement === element) return;
+          if (document.activeElement === element || listedCluster) return;
           hidePreview();
         });
-        element.addEventListener('focus', () => showClusterPreview(clusters.get(key), element));
+        element.addEventListener('focus', () => {
+          if (listedCluster) return;
+          showClusterPreview(clusters.get(key), element);
+        });
         element.addEventListener('blur', () => {
-          if (element.matches(':hover')) return;
+          if (element.matches(':hover') || listedCluster) return;
           hidePreview();
         });
         clusters.set(key, cluster);
@@ -570,12 +773,18 @@ export function init(ctx) {
       cluster.px = cx;
       cluster.py = cy;
       const titles = members.slice(0, 3).map((member) => member.record.title);
+      const canSplit = clusterCanSplit(members, z);
       cluster.element.textContent = String(members.length);
       cluster.element.dataset.count = String(members.length);
-      cluster.element.title = `${members.length} Karten: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`;
+      cluster.element.dataset.action = canSplit ? 'zoom' : 'list';
+      cluster.element.title = canSplit
+        ? `${members.length} Karten: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`
+        : `${members.length} Karten auf demselben Punkt: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`;
       cluster.element.setAttribute(
         'aria-label',
-        `${members.length} Karten in diesem Bereich – Ansicht vergrössern. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`,
+        canSplit
+          ? `${members.length} Karten in diesem Bereich – Ansicht vergrössern. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`
+          : `${members.length} Karten auf demselben Kartenpunkt – Liste öffnen. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`,
       );
       cluster.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     };
@@ -609,15 +818,29 @@ export function init(ctx) {
     }
   }
 
-  /** Clicking a cluster zooms two steps further into its centre. */
-  function zoomIntoCluster(cluster) {
+  /** Two (three for big clusters) steps closer to a cluster's centre. */
+  function zoomToCluster(cluster) {
     if (!cluster || cluster.members.length === 0) return;
     hidePreview();
+    closeClusterList();
     state.lon = tileXToLon(cluster.px / TILE, state.zoom);
     state.lat = tileYToLat(cluster.py / TILE, state.zoom);
-    state.zoom = Math.max(2, Math.min(18, state.zoom + (cluster.members.length > 8 ? 3 : 2)));
+    state.zoom = Math.max(2, Math.min(MAX_ZOOM, state.zoom + (cluster.members.length > 8 ? 3 : 2)));
     render();
     push();
+  }
+
+  /**
+   * What a click (or Enter) on a cluster does. Zooming in is the OldMapsOnline
+   * gesture and stays the default; it only gives way to the record list when
+   * `clusterCanSplit` proves that the members share one documented point (or the
+   * map is already at MAX_ZOOM) — otherwise those records would stay behind the
+   * number forever.
+   */
+  function activateCluster(cluster) {
+    if (!cluster) return;
+    if (clusterCanSplit(cluster.members, state.zoom)) zoomToCluster(cluster);
+    else openClusterList(cluster, cluster.element);
   }
 
   /**
@@ -927,6 +1150,8 @@ export function init(ctx) {
   const DRAG_THRESHOLD = 4; // px: below this a pointer gesture is a click, not a pan
   container.addEventListener('pointerdown', (event) => {
     if (event.target.closest('button, a, select, input')) return;
+    // Clicks on the “Karten an diesem Punkt” list are picks, not map gestures.
+    if (event.target.closest('.map-cluster-list')) return;
     if (event.button !== 0 && event.pointerType === 'mouse') return;
     dragging = { startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, moved: false };
     container.classList.add('is-dragging');
@@ -955,7 +1180,7 @@ export function init(ctx) {
     push.flush();
     // A click that did not pan the map selects the point under the pointer for
     // the point filter (OldMapsOnline's “browse maps at this place” gesture).
-    if (wasClick && event) setPointFromClient(event.clientX, event.clientY);
+    if (wasClick && event && !event.target?.closest?.('.map-cluster-list')) setPointFromClient(event.clientX, event.clientY);
   };
   container.addEventListener('pointerup', (event) => endDrag(event, { allowClick: true }));
   container.addEventListener('pointercancel', () => endDrag());
@@ -964,6 +1189,8 @@ export function init(ctx) {
   container.addEventListener(
     'wheel',
     (event) => {
+      // A wheel gesture inside the record list scrolls the list, it does not zoom.
+      if (event.target.closest?.('.map-cluster-list')) return;
       event.preventDefault();
       zoomBy(event.deltaY < 0 ? 1 : -1, event.clientX, event.clientY);
     },
@@ -971,7 +1198,7 @@ export function init(ctx) {
   );
 
   container.addEventListener('dblclick', (event) => {
-    if (event.target.closest('button')) return;
+    if (event.target.closest('button, .map-cluster-list')) return;
     zoomBy(1, event.clientX, event.clientY);
   });
 
