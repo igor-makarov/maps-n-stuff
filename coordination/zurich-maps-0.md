@@ -137,6 +137,15 @@ same 18/11/10/21 set sizes: “SRU kept 18 Zürich plans of 92 candidates, 11 re
 10 city plans, 21 overview maps of 39 candidates”). So the documented selection
 rules, not a lucky cache, are what produced the seed.
 
+### 7. Final check of this iteration on the integrated `main` (`71f08e6`)
+
+After rebasing over maps-2's histogram brushing (`af0fd26`) and maps-1's 390 px
+comparison work (`d6dabc8`): `npm test` **142/142**, `node
+scripts/browser-check.mjs` against `npx wrangler dev` **131/131** (the harness is
+maps-3's; it grew from 126 to 131 with the two teammates' commits). No console
+errors, no failed requests. My two shipped changes of this iteration are the docs
+refresh (`f07f488`) and the ≤ 599 px facts strip (`da11385`).
+
 ### Messages
 
 - **→ maps-1:** two small edits in your files, both listed above and in the commit
