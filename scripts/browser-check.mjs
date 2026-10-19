@@ -2624,6 +2624,7 @@ try {
         revealed: button.classList.contains('is-revealed'),
         coveredByPanel: rect.right > panelLeft,
         mapVisible: document.querySelector('#map').getBoundingClientRect().bottom > 0,
+        live: document.querySelector('#results-live')?.textContent || '',
       };
     })()`);
   }
@@ -2639,6 +2640,17 @@ try {
       revealAfter?.mapVisible === true &&
       revealAfter?.scrollY !== revealTarget.scrollY,
     `${JSON.stringify(revealTarget && { id: revealTarget.id, index: revealTarget.index, scrollY: revealTarget.scrollY, rowOutOfView: revealTarget.rowOutOfView })} -> ${JSON.stringify(revealAfter)}`,
+  );
+  // The same selection has to be announced: the reveal moves the page for a
+  // sighted visitor, and `#results-live` (role="status") is what tells a screen
+  // reader which row the list moved to and that the page scrolled with it.
+  check(
+    'the map selection is announced with its row number in the live region',
+    Boolean(revealAfter) &&
+      revealAfter.live.includes(`Zeile ${revealTarget.index + 1} von `) &&
+      revealAfter.live.includes('ausgewählt') &&
+      revealAfter.live.includes('gescrollt'),
+    JSON.stringify(revealAfter?.live || ''),
   );
   await cdp.screenshot(path.join(OUT_DIR, '13-map-reveal.png')).then(() => report.screenshots.push('13-map-reveal.png'));
 
@@ -2669,12 +2681,19 @@ try {
     } catch {
       /* reported below */
     }
-    phoneAfter = await cdp.eval(`({ scrollY: window.scrollY, sel: new URLSearchParams(location.search).get('sel'), revealed: document.querySelectorAll('.zh-result.is-revealed').length })`);
+    phoneAfter = await cdp.eval(`({ scrollY: window.scrollY, sel: new URLSearchParams(location.search).get('sel'), revealed: document.querySelectorAll('.zh-result.is-revealed').length, live: document.querySelector('#results-live')?.textContent || '' })`);
   }
   check(
     '390 px: a pin click keeps the page on the map it was used on',
     Boolean(phonePin) && phoneAfter?.sel === phonePin.id && Math.abs(phoneAfter.scrollY - phonePin.scrollY) <= 2 && phoneAfter.revealed === 0,
     `${JSON.stringify(phonePin && { id: phonePin.id, scrollY: phonePin.scrollY })} -> ${JSON.stringify(phoneAfter)}`,
+  );
+  // The phone keeps the page still, but the selection still has to be announced
+  // — without the “the list scrolled” clause, which would be a lie there.
+  check(
+    '390 px: the selection is announced without claiming a scroll',
+    Boolean(phoneAfter) && phoneAfter.live.includes('ausgewählt') && phoneAfter.live.includes('Zeile ') && !phoneAfter.live.includes('gescrollt'),
+    JSON.stringify(phoneAfter?.live || ''),
   );
 
   /* --- 8h3. Windows high contrast / forced colors (maps-2) -------------- */
@@ -2731,6 +2750,76 @@ try {
     JSON.stringify(forcedColors),
   );
   await cdp.screenshot(path.join(OUT_DIR, '13b-forced-colors.png')).then(() => report.screenshots.push('13b-forced-colors.png'));
+
+  // A brushed range under the mode: the bars' own fill is replaced by the
+  // system colour, so `.is-brushing` adds a Highlight fill *and* an outline.
+  // This drives the real drag and compares a brushed decade with a plain one
+  // (the drag is released afterwards, which commits the range as usual).
+  // The detail panel has to go first: its `.app-scrim` covers the sidebar, so a
+  // real mouse event would land on the scrim instead of a bar.
+  await cdp.eval(`(() => {
+    const close = [...document.querySelectorAll('#detail button')].find((node) => /Schliessen/.test(node.textContent));
+    close?.click();
+    return true;
+  })()`);
+  await sleep(400);
+  const fcBrushBins = await cdp.eval(`(() => {
+    const host = document.querySelector('#year-histogram');
+    host.scrollIntoView({ block: 'center', behavior: 'instant' });
+    return [...host.querySelectorAll('button')].filter((b) => !b.classList.contains('is-empty')).slice(0, 4).map((b) => {
+      const r = b.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height - 6) };
+    });
+  })()`);
+  let fcBrush = null;
+  if (fcBrushBins.length >= 2) {
+    const from = fcBrushBins[0];
+    const to = fcBrushBins[fcBrushBins.length - 1];
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x, y: from.y });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: from.x, y: from.y, button: 'left', clickCount: 1, buttons: 1 });
+    for (let step = 1; step <= 6; step += 1) {
+      await cdp.send('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        x: Math.round(from.x + ((to.x - from.x) * step) / 6),
+        y: to.y,
+        button: 'left',
+        buttons: 1,
+      });
+      await sleep(20);
+    }
+    fcBrush = await cdp.eval(`(() => {
+      const paint = (node) => {
+        if (!node) return null;
+        const style = getComputedStyle(node);
+        return { background: style.backgroundColor, outline: style.outlineWidth + ' ' + style.outlineStyle + ' ' + style.outlineColor };
+      };
+      const brushedBin = document.querySelector('.zh-histogram__bin.is-brushing');
+      // A plain decade is neither brushed nor part of the current period: the
+      // current ones are already Highlight, which is what a brush paints too.
+      const plainBin = [...document.querySelectorAll('.zh-histogram__bin')].find(
+        (b) => !b.classList.contains('is-brushing') && !b.classList.contains('is-empty') && b.getAttribute('aria-current') !== 'true',
+      );
+      return {
+        brushed: document.querySelectorAll('#year-histogram .is-brushing').length,
+        brushedBar: paint(brushedBin?.querySelector('.zh-histogram__bar')),
+        plainBar: paint(plainBin?.querySelector('.zh-histogram__bar')),
+        brushedOutline: paint(brushedBin)?.outline,
+        plainOutline: paint(plainBin)?.outline,
+        scrimHidden: document.querySelector('#scrim')?.hidden === true,
+      };
+    })()`);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: to.x, y: to.y, button: 'left', buttons: 0 });
+    await sleep(300);
+  }
+  check(
+    'forced colors: a brushed range keeps a Highlight fill and an outline',
+    Boolean(fcBrush) &&
+      fcBrush.brushed >= 2 &&
+      fcBrush.scrimHidden === true &&
+      fcBrush.brushedBar?.background !== fcBrush.plainBar?.background &&
+      fcBrush.brushedOutline?.startsWith('1px solid') === true,
+    JSON.stringify(fcBrush),
+  );
   await cdp.send('Emulation.setEmulatedMedia', { features: [] });
 
   /* --- 8i. no placeholder values in the rendered UI --------------------- */
@@ -2917,7 +3006,7 @@ try {
   await sleep(500);
   const afterPointRemove = await cdp.eval(`({ rows: document.querySelectorAll('#result-list > *').length, at: new URLSearchParams(location.search).get('at') })`);
   check(
-    `a point no ${uncoveredPoint.from}–${uncoveredPoint.to} sheet documents says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon})`,
+    `a point with no map in the chosen period says so and can be removed on its own (${uncoveredPoint.lat}, ${uncoveredPoint.lon} · ${uncoveredPoint.from}–${uncoveredPoint.to})`,
     Boolean(emptyPoint) && emptyPoint.rows === 0 && emptyPoint.empty && pointRemove === true && afterPointRemove.rows > 0 && !afterPointRemove.at,
     `${JSON.stringify(emptyPoint)} remove=${pointRemove} ${JSON.stringify(afterPointRemove)}`,
   );

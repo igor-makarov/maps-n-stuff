@@ -98,6 +98,13 @@ export function init(ctx) {
    * not rewrite the URL the visitor just opened.
    */
   let mounting = false;
+  /**
+   * True while one “Ganzes Blatt” press returns the coupled panes to their own
+   * whole sheets. Without this the first pane's whole-sheet view would be mapped
+   * onto the others by `propagate()` and the panes would hand a cut-out back and
+   * forth, so the button's promise depended on which extent contains which.
+   */
+  let resetting = false;
 
   const recordOf = (id) => ctx.data.recordIndex?.get(id) ?? null;
   const pinnedIds = () => {
@@ -435,11 +442,37 @@ export function init(ctx) {
   function resetPane(index) {
     const pane = panes.find((entry) => entry.index === index);
     if (!pane) return;
-    pane.viewer.reset();
-    pane.coverage = '';
+    // “Ganzes Blatt” is a reset, not a gesture: with the coupling on every live
+    // pane returns to its *own* whole sheet (the state the comparison opens in),
+    // instead of the reset sheet's place being mapped onto the others. The
+    // coupling check in the harness pins this: after the reset both panes read
+    // “Gesamtansicht” and the shareable cut-out is empty again. Each pane also
+    // drops its coverage note (`coverage = ''`), because a note explains one
+    // cut-out and is wrong the moment every sheet is whole again.
+    const targets = coupled ? panes.filter((entry) => !entry.failed) : [pane];
+    resetting = true;
+    try {
+      for (const entry of targets) {
+        entry.viewer.reset();
+        entry.coverage = '';
+        refreshPaneReset(entry.index);
+      }
+    } finally {
+      resetting = false;
+    }
     refreshPaneCoverage();
-    refreshPaneReset(index);
-    setStatus(status, `Karte ${index + 1} zeigt wieder das ganze Blatt.`, 'info');
+    scheduleViewsWrite();
+    setStatus(
+      status,
+      targets.length > 1 ? `${targets.length} Karten zeigen wieder das ganze Blatt.` : `Karte ${index + 1} zeigt wieder das ganze Blatt.`,
+      'info',
+    );
+    // The propagation that would normally rewrite the hint is suppressed above,
+    // so the previous “Ausschnitt übertragen …” sentence would survive the reset
+    // and describe a cut-out that no longer exists.
+    updateSyncHint(
+      targets.length > 1 ? `${targets.length} Karten zeigen wieder ihr ganzes Blatt – die Kopplung greift beim nächsten Ausschnitt.` : '',
+    );
   }
 
   /** Replace a failed viewer stage with the record's documented thumbnail. */
@@ -483,6 +516,7 @@ export function init(ctx) {
    * there is nothing to show, so the pane states it.
    */
   function propagate(sourceIndex) {
+    if (resetting) return;
     lastActivePane = sourceIndex;
     const source = panes.find((pane) => pane.index === sourceIndex);
     const geometry = source?.viewer.getView();

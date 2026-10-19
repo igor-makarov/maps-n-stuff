@@ -55,7 +55,9 @@ What works today (verified with `wrangler dev` + headless Chromium):
 - coordinated result list ↔ map selection, list/map/split view switch: a pin (or a
   point pile) selected on the map brings its own row into view in the desktop split
   layout — the sticky map column stays on screen — and marks it for a moment, while
-  the same click on a phone deliberately leaves the page where the visitor is;
+  the list's live region says which row it is (`Zeile N von M ausgewählt …`,
+  including that the list scrolled); the same click on a phone deliberately leaves
+  the page where the visitor is and announces the row without the scroll clause;
   every map/marker/footprint/histogram state that the app communicates with a
   background colour also has a border or outline under `forced-colors` (Windows
   high contrast), so a selected pin, row or decade stays recognisable there;
@@ -164,8 +166,9 @@ prospects, the 1875–1881 Übersichtspläne, the 1896 Zürichsee map, 1908/1919
 sheets), 10 city ground and site plans (the 1696/1705 fortress plans, the 1800
 and 1838 city plans, the 1881 quay and 1890 tramway situations), 35 overview and world maps
 (1546–1914, extent centre deliberately outside the canton, at least 5° of span;
-20 queries since 7-21, so the set carries whole-globe sheets as well as Americas,
-African, Indian, Japanese and Ottoman sheets) and 1 map from the
+20 queries since 7-21, so the set carries the whole-globe sheets — 1546, 1700,
+1835, 1893 — as well as Americas, African, Indian, Japanese and Ottoman sheets)
+and 1 map from the
 Bibliothèque de Genève) — plus 27 georeferenced swisstopo overlay editions; the UI
 states the real count and `records.json.selection`
 documents the rule per set, including the `landkarten` window (30 of the set's 2335

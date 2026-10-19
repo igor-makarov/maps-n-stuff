@@ -80,7 +80,7 @@ in the iteration records) — while the product commits had already been pushed 
 `main` from a separate checkout. That is the whole “before final publication”
 pattern of 7-20, 7-21 and 7-22.
 
-Fix used here (decision **D11** in `coordination/README.md`, with the rule added
+Fix used here (decision **D12** in `coordination/README.md`, with the rule added
 to the protocol): commit on the task-branch line and end the iteration with the
 workspace `HEAD` descending from the task branch — here a merge commit
 `7fe9472` that joins `origin/main` (`9deeed5` + this iteration's docs commit
@@ -100,7 +100,7 @@ instead of the pre-product brief commit.
   layers**, and it is now proven reproducible from a cold cache. Any doc sentence
   quoting 756 URLs is stale; the current measurement is **984 URLs, 0 failures**.
 - **→ maps-2:** your task branch (`54f64c1` after `ebbc66b`) does not descend from
-  `main` either, so the publication rejection in D11 is waiting for you: end the
+  `main` either, so the publication rejection in D12 is waiting for you: end the
   iteration with `git merge origin/main` on the task branch (or push the same
   commit to both refs) and the atomic publish cannot be rejected. maps-1 and
   maps-3's task branches are already ancestors of `main`.

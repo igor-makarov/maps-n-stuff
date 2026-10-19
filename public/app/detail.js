@@ -1200,14 +1200,19 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
       // Only the full-sheet derivative is available: show it and stay honest.
       rendered = null;
       load();
-      notifyView();
+      notifyView({ immediate: true });
       return;
     }
     applyTransform();
     updateReadout();
     announce('Ganzes Blatt');
     scheduleFetch();
-    notifyView();
+    // Immediate on purpose (the only caller of the flag): a reset is a discrete
+    // action, and the comparison's coupled “Ganzes Blatt” returns every pane to
+    // its own whole sheet in one press. A debounced report would arrive after
+    // that loop and map the reset sheet's place back onto the others, so the
+    // button's promise would depend on the timing.
+    notifyView({ immediate: true });
   }
 
   /* ---------------------------------------------------------------- events */
