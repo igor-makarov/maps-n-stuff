@@ -1,1554 +1,966 @@
 {
- "source": {
+  "dataset": "historical-basemaps",
   "title": "Historical boundaries of world countries and cultural regions",
-  "credit": "André Ourednik and contributors, historical-basemaps (GPL-3.0)",
   "homepage": "https://github.com/aourednik/historical-basemaps",
-  "datasetUrl": "https://github.com/aourednik/historical-basemaps/tree/da7a4b735ecef70aebdc9c73e409d8a2500d50f3/geojson",
-  "licence": "GPL-3.0",
-  "licenceFile": "LICENSE.txt",
-  "attribution": "Boundaries © André Ourednik and the historical-basemaps contributors (GPL-3.0)",
-  "retrieval": {
-   "retrievedAt": "2026-10-19T05:38:22.713Z",
-   "requestedRef": "master",
-   "upstreamCommit": "da7a4b735ecef70aebdc9c73e409d8a2500d50f3",
-   "upstreamCommitDate": "2026-09-15T12:38:00Z"
+  "repository": "https://github.com/aourednik/historical-basemaps/tree/da7a4b735ecef70aebdc9c73e409d8a2500d50f3",
+  "commit": "da7a4b735ecef70aebdc9c73e409d8a2500d50f3",
+  "commitShort": "da7a4b735e",
+  "license": "GPL-3.0-or-later",
+  "licenseFile": "LICENSE-GPL-3.0.txt",
+  "credit": "Historical Basemaps © André Ourednik and contributors (GPL-3.0-or-later)",
+  "retrievedAt": "2026-10-19T05:28:40.631Z",
+  "generatedBy": "scripts/harvest-history.mjs",
+  "simplification": {
+    "method": "Douglas–Peucker per ring; rings below the area threshold are dropped except each polygon’s largest ring",
+    "toleranceDeg": 0.05,
+    "minRingAreaDeg2": 0.02,
+    "coordinateUnit": "millidegrees (0.001°), integer, rings are flat [x0,y0,x1,y1,…] and closed",
+    "caveat": "World/continent scale only. The upstream data is explicitly work in progress; borders before 1648 are conceptual and approximate."
   },
-  "method": "Ramer–Douglas–Peucker simplification of every ring (finest tolerance that keeps a snapshot under 300 KiB), coordinates quantised to 0.01° (≈1 km at the equator), rings crossing the antimeridian split at the seam, rings that collapse dropped, features sorted by area (largest first), closed rings with an explicit repeated first vertex. No borders were invented or edited; anchors are the area centroid of each feature's largest ring. A few edges still span the antimeridian (source pole/unattributed-space rings; `wideEdges` per year): they are kept because in Web Mercator such a chord lies on the map's clip line, and the affected features are flagged `bg`.",
-  "upstreamNote": "The upstream project calls itself work in progress and asks users to verify the maps against other sources; it also warns that territory and fixed borders are a modern concept in many regions and periods. BORDERPRECISION (1 approximate … 3 demarcated) is carried through unchanged as `b`."
- },
- "schema": {
-  "index": "source, years[{year, label, file, features, points, ringsDropped, toleranceDeg, precision{approximate,moderate,demarcated,unclassified}, bbox, upstream}], excluded[{year, reason}]",
-  "snapshot": "{ year, features[{ n: NAME (\"Unnamed\" when the source has none), s: SUBJECTO (omitted when equal to n), p: PARTOF, b: BORDERPRECISION 1..3, bg: 1 for the source's unattributed-space polygons, c: [anchorLon, anchorLat] (area centroid of the largest ring), a: ring area, r: [[lon,lat,…], …] (closed rings) }] }",
-  "units": "all coordinates are integers in 0.01° units (1 unit = 0.01°)",
-  "yearNumbering": "year is astronomical (0 = 1 BCE, -500 = 501 BCE, 1492 = 1492 CE); `label` is the same year as text"
- },
- "stats": {
-  "years": 52,
-  "earlierYear": -8000,
-  "latestYear": 2010,
-  "bytes": 9497157,
-  "features": 15587,
-  "points": 789760,
-  "budgetKiB": 300,
-  "intervalNote": "The upstream publisher provides snapshots, not continuous validity ranges. The app must name the snapshot it actually draws for any requested date and must not interpolate between snapshots."
- },
- "years": [
-  {
-   "year": -8000,
-   "label": "8001 BCE",
-   "file": "world_bc8000.json",
-   "features": 122,
-   "points": 10288,
-   "ringsDropped": 22,
-   "unnamedFeatures": 105,
-   "backgroundFeatures": 2,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 122,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc8000.geojson",
-    "features": 134,
-    "names": 14
-   }
+  "fields": {
+    "features": "{name, subject, partOf, borderPrecision (1 approximate, 2 moderate, 3 international law, 0 unknown), parts: [flatRing, …]}",
+    "catalogue": "[[year, [names…]], …] — the names present in each snapshot, for the cross-snapshot polity search"
   },
-  {
-   "year": -5000,
-   "label": "5001 BCE",
-   "file": "world_bc5000.json",
-   "features": 186,
-   "points": 21232,
-   "ringsDropped": 354,
-   "unnamedFeatures": 158,
-   "backgroundFeatures": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 186,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -55.05,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc5000.geojson",
-    "features": 279,
-    "names": 29
-   }
+  "coverage": {
+    "firstYear": -123000,
+    "lastYear": 2010,
+    "snapshots": 54,
+    "snapshotYears": [
+      -123000,
+      -10000,
+      -8000,
+      -5000,
+      -4000,
+      -3000,
+      -2000,
+      -1500,
+      -1000,
+      -700,
+      -500,
+      -400,
+      -323,
+      -300,
+      -200,
+      -100,
+      -1,
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900,
+      1000,
+      1100,
+      1200,
+      1279,
+      1300,
+      1400,
+      1492,
+      1500,
+      1530,
+      1600,
+      1650,
+      1700,
+      1715,
+      1783,
+      1800,
+      1815,
+      1878,
+      1880,
+      1900,
+      1914,
+      1920,
+      1930,
+      1938,
+      1945,
+      1960,
+      1994,
+      2000,
+      2010
+    ],
+    "note": "One discrete snapshot per published year — not continuous validity ranges. Dates between snapshots resolve to the nearest snapshot and the UI must name the represented snapshot."
   },
-  {
-   "year": -4000,
-   "label": "4001 BCE",
-   "file": "world_bc4000.json",
-   "features": 124,
-   "points": 10409,
-   "ringsDropped": 20,
-   "unnamedFeatures": 101,
-   "backgroundFeatures": 2,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 124,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc4000.geojson",
-    "features": 136,
-    "names": 23
-   }
+  "caveats": [
+    "Coverage is global in intent but thin for some regions and periods; the per-snapshot feature list is the honest coverage statement.",
+    "The upstream repository asks that the maps be verified against other sources before academic use.",
+    "Where the dataset marks a border as approximate (borderPrecision 1) or leaves it unknown (0), the map draws it differently and the details panel says so."
+  ],
+  "years": [
+    {
+      "year": -123000,
+      "file": "world_bc123000.json",
+      "upstream": "geojson/world_bc123000.geojson",
+      "features": 4,
+      "countries": 3,
+      "droppedFeatures": 153,
+      "droppedParts": 0,
+      "precision": {
+        "1": 4,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 15475
+    },
+    {
+      "year": -10000,
+      "file": "world_bc10000.json",
+      "upstream": "geojson/world_bc10000.geojson",
+      "features": 16,
+      "countries": 13,
+      "droppedFeatures": 119,
+      "droppedParts": 0,
+      "precision": {
+        "1": 16,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 19523
+    },
+    {
+      "year": -8000,
+      "file": "world_bc8000.json",
+      "upstream": "geojson/world_bc8000.geojson",
+      "features": 17,
+      "countries": 14,
+      "droppedFeatures": 117,
+      "droppedParts": 0,
+      "precision": {
+        "1": 17,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 21322
+    },
+    {
+      "year": -5000,
+      "file": "world_bc5000.json",
+      "upstream": "geojson/world_bc5000.geojson",
+      "features": 28,
+      "countries": 28,
+      "droppedFeatures": 251,
+      "droppedParts": 46,
+      "precision": {
+        "1": 28,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 50830
+    },
+    {
+      "year": -4000,
+      "file": "world_bc4000.json",
+      "upstream": "geojson/world_bc4000.geojson",
+      "features": 23,
+      "countries": 23,
+      "droppedFeatures": 113,
+      "droppedParts": 1,
+      "precision": {
+        "1": 23,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 25971
+    },
+    {
+      "year": -3000,
+      "file": "world_bc3000.json",
+      "upstream": "geojson/world_bc3000.geojson",
+      "features": 25,
+      "countries": 25,
+      "droppedFeatures": 113,
+      "droppedParts": 1,
+      "precision": {
+        "1": 25,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 27539
+    },
+    {
+      "year": -2000,
+      "file": "world_bc2000.json",
+      "upstream": "geojson/world_bc2000.geojson",
+      "features": 45,
+      "countries": 45,
+      "droppedFeatures": 100,
+      "droppedParts": 17,
+      "precision": {
+        "1": 45,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 97801
+    },
+    {
+      "year": -1500,
+      "file": "world_bc1500.json",
+      "upstream": "geojson/world_bc1500.geojson",
+      "features": 69,
+      "countries": 68,
+      "droppedFeatures": 94,
+      "droppedParts": 10,
+      "precision": {
+        "1": 69,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 122908
+    },
+    {
+      "year": -1000,
+      "file": "world_bc1000.json",
+      "upstream": "geojson/world_bc1000.geojson",
+      "features": 70,
+      "countries": 69,
+      "droppedFeatures": 93,
+      "droppedParts": 10,
+      "precision": {
+        "1": 70,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 123215
+    },
+    {
+      "year": -700,
+      "file": "world_bc700.json",
+      "upstream": "geojson/world_bc700.geojson",
+      "features": 80,
+      "countries": 73,
+      "droppedFeatures": 94,
+      "droppedParts": 10,
+      "precision": {
+        "1": 80,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 124975
+    },
+    {
+      "year": -500,
+      "file": "world_bc500.json",
+      "upstream": "geojson/world_bc500.geojson",
+      "features": 77,
+      "countries": 74,
+      "droppedFeatures": 112,
+      "droppedParts": 14,
+      "precision": {
+        "1": 77,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 110734
+    },
+    {
+      "year": -400,
+      "file": "world_bc400.json",
+      "upstream": "geojson/world_bc400.geojson",
+      "features": 79,
+      "countries": 76,
+      "droppedFeatures": 111,
+      "droppedParts": 21,
+      "precision": {
+        "1": 79,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 122477
+    },
+    {
+      "year": -323,
+      "file": "world_bc323.json",
+      "upstream": "geojson/world_bc323.geojson",
+      "features": 71,
+      "countries": 68,
+      "droppedFeatures": 78,
+      "droppedParts": 10,
+      "precision": {
+        "1": 71,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 98971
+    },
+    {
+      "year": -300,
+      "file": "world_bc300.json",
+      "upstream": "geojson/world_bc300.geojson",
+      "features": 76,
+      "countries": 73,
+      "droppedFeatures": 79,
+      "droppedParts": 10,
+      "precision": {
+        "1": 76,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 100862
+    },
+    {
+      "year": -200,
+      "file": "world_bc200.json",
+      "upstream": "geojson/world_bc200.geojson",
+      "features": 86,
+      "countries": 86,
+      "droppedFeatures": 97,
+      "droppedParts": 15,
+      "precision": {
+        "1": 86,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 128204
+    },
+    {
+      "year": -100,
+      "file": "world_bc100.json",
+      "upstream": "geojson/world_bc100.geojson",
+      "features": 85,
+      "countries": 84,
+      "droppedFeatures": 148,
+      "droppedParts": 11,
+      "precision": {
+        "1": 85,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 102652
+    },
+    {
+      "year": -1,
+      "file": "world_bc1.json",
+      "upstream": "geojson/world_bc1.geojson",
+      "features": 80,
+      "countries": 79,
+      "droppedFeatures": 362,
+      "droppedParts": 14,
+      "precision": {
+        "1": 80,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 99446
+    },
+    {
+      "year": 100,
+      "file": "world_100.json",
+      "upstream": "geojson/world_100.geojson",
+      "features": 84,
+      "countries": 83,
+      "droppedFeatures": 356,
+      "droppedParts": 14,
+      "precision": {
+        "1": 84,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 102290
+    },
+    {
+      "year": 200,
+      "file": "world_200.json",
+      "upstream": "geojson/world_200.geojson",
+      "features": 69,
+      "countries": 69,
+      "droppedFeatures": 285,
+      "droppedParts": 10,
+      "precision": {
+        "1": 69,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 93525
+    },
+    {
+      "year": 300,
+      "file": "world_300.json",
+      "upstream": "geojson/world_300.geojson",
+      "features": 71,
+      "countries": 71,
+      "droppedFeatures": 395,
+      "droppedParts": 10,
+      "precision": {
+        "1": 71,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 94997
+    },
+    {
+      "year": 400,
+      "file": "world_400.json",
+      "upstream": "geojson/world_400.geojson",
+      "features": 79,
+      "countries": 79,
+      "droppedFeatures": 288,
+      "droppedParts": 10,
+      "precision": {
+        "1": 79,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 96494
+    },
+    {
+      "year": 500,
+      "file": "world_500.json",
+      "upstream": "geojson/world_500.geojson",
+      "features": 88,
+      "countries": 87,
+      "droppedFeatures": 117,
+      "droppedParts": 87,
+      "precision": {
+        "1": 88,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 109464
+    },
+    {
+      "year": 600,
+      "file": "world_600.json",
+      "upstream": "geojson/world_600.geojson",
+      "features": 86,
+      "countries": 83,
+      "droppedFeatures": 118,
+      "droppedParts": 49,
+      "precision": {
+        "1": 86,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 107890
+    },
+    {
+      "year": 700,
+      "file": "world_700.json",
+      "upstream": "geojson/world_700.geojson",
+      "features": 131,
+      "countries": 126,
+      "droppedFeatures": 122,
+      "droppedParts": 11,
+      "precision": {
+        "1": 131,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 125456
+    },
+    {
+      "year": 800,
+      "file": "world_800.json",
+      "upstream": "geojson/world_800.geojson",
+      "features": 121,
+      "countries": 117,
+      "droppedFeatures": 104,
+      "droppedParts": 23,
+      "precision": {
+        "1": 121,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 137094
+    },
+    {
+      "year": 900,
+      "file": "world_900.json",
+      "upstream": "geojson/world_900.geojson",
+      "features": 136,
+      "countries": 134,
+      "droppedFeatures": 108,
+      "droppedParts": 26,
+      "precision": {
+        "1": 136,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 147942
+    },
+    {
+      "year": 1000,
+      "file": "world_1000.json",
+      "upstream": "geojson/world_1000.geojson",
+      "features": 131,
+      "countries": 128,
+      "droppedFeatures": 133,
+      "droppedParts": 78,
+      "precision": {
+        "1": 131,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 143410
+    },
+    {
+      "year": 1100,
+      "file": "world_1100.json",
+      "upstream": "geojson/world_1100.geojson",
+      "features": 149,
+      "countries": 139,
+      "droppedFeatures": 86,
+      "droppedParts": 80,
+      "precision": {
+        "1": 149,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 141001
+    },
+    {
+      "year": 1200,
+      "file": "world_1200.json",
+      "upstream": "geojson/world_1200.geojson",
+      "features": 135,
+      "countries": 129,
+      "droppedFeatures": 151,
+      "droppedParts": 67,
+      "precision": {
+        "1": 135,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 142686
+    },
+    {
+      "year": 1279,
+      "file": "world_1279.json",
+      "upstream": "geojson/world_1279.geojson",
+      "features": 116,
+      "countries": 113,
+      "droppedFeatures": 131,
+      "droppedParts": 70,
+      "precision": {
+        "1": 116,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 135171
+    },
+    {
+      "year": 1300,
+      "file": "world_1300.json",
+      "upstream": "geojson/world_1300.geojson",
+      "features": 115,
+      "countries": 113,
+      "droppedFeatures": 122,
+      "droppedParts": 72,
+      "precision": {
+        "1": 115,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 133813
+    },
+    {
+      "year": 1400,
+      "file": "world_1400.json",
+      "upstream": "geojson/world_1400.geojson",
+      "features": 122,
+      "countries": 115,
+      "droppedFeatures": 111,
+      "droppedParts": 64,
+      "precision": {
+        "1": 122,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 143110
+    },
+    {
+      "year": 1492,
+      "file": "world_1492.json",
+      "upstream": "geojson/world_1492.geojson",
+      "features": 1292,
+      "countries": 1284,
+      "droppedFeatures": 654,
+      "droppedParts": 148,
+      "precision": {
+        "1": 1291,
+        "2": 0,
+        "3": 1,
+        "unknown": 0
+      },
+      "bytes": 553907
+    },
+    {
+      "year": 1500,
+      "file": "world_1500.json",
+      "upstream": "geojson/world_1500.geojson",
+      "features": 142,
+      "countries": 138,
+      "droppedFeatures": 149,
+      "droppedParts": 111,
+      "precision": {
+        "1": 142,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 159507
+    },
+    {
+      "year": 1530,
+      "file": "world_1530.json",
+      "upstream": "geojson/world_1530.geojson",
+      "features": 277,
+      "countries": 269,
+      "droppedFeatures": 217,
+      "droppedParts": 64,
+      "precision": {
+        "1": 277,
+        "2": 0,
+        "3": 0,
+        "unknown": 0
+      },
+      "bytes": 178512
+    },
+    {
+      "year": 1600,
+      "file": "world_1600.json",
+      "upstream": "geojson/world_1600.geojson",
+      "features": 655,
+      "countries": 634,
+      "droppedFeatures": 211,
+      "droppedParts": 96,
+      "precision": {
+        "1": 653,
+        "2": 0,
+        "3": 2,
+        "unknown": 0
+      },
+      "bytes": 277032
+    },
+    {
+      "year": 1650,
+      "file": "world_1650.json",
+      "upstream": "geojson/world_1650.geojson",
+      "features": 591,
+      "countries": 587,
+      "droppedFeatures": 187,
+      "droppedParts": 99,
+      "precision": {
+        "1": 12,
+        "2": 0,
+        "3": 579,
+        "unknown": 0
+      },
+      "bytes": 273352
+    },
+    {
+      "year": 1700,
+      "file": "world_1700.json",
+      "upstream": "geojson/world_1700.geojson",
+      "features": 586,
+      "countries": 581,
+      "droppedFeatures": 196,
+      "droppedParts": 98,
+      "precision": {
+        "1": 8,
+        "2": 0,
+        "3": 578,
+        "unknown": 0
+      },
+      "bytes": 270134
+    },
+    {
+      "year": 1715,
+      "file": "world_1715.json",
+      "upstream": "geojson/world_1715.geojson",
+      "features": 600,
+      "countries": 595,
+      "droppedFeatures": 158,
+      "droppedParts": 116,
+      "precision": {
+        "1": 4,
+        "2": 0,
+        "3": 596,
+        "unknown": 0
+      },
+      "bytes": 280354
+    },
+    {
+      "year": 1783,
+      "file": "world_1783.json",
+      "upstream": "geojson/world_1783.geojson",
+      "features": 556,
+      "countries": 543,
+      "droppedFeatures": 85,
+      "droppedParts": 120,
+      "precision": {
+        "1": 1,
+        "2": 0,
+        "3": 552,
+        "unknown": 3
+      },
+      "bytes": 290626
+    },
+    {
+      "year": 1800,
+      "file": "world_1800.json",
+      "upstream": "geojson/world_1800.geojson",
+      "features": 551,
+      "countries": 540,
+      "droppedFeatures": 76,
+      "droppedParts": 131,
+      "precision": {
+        "1": 1,
+        "2": 0,
+        "3": 550,
+        "unknown": 0
+      },
+      "bytes": 286315
+    },
+    {
+      "year": 1815,
+      "file": "world_1815.json",
+      "upstream": "geojson/world_1815.geojson",
+      "features": 322,
+      "countries": 308,
+      "droppedFeatures": 114,
+      "droppedParts": 88,
+      "precision": {
+        "1": 1,
+        "2": 0,
+        "3": 321,
+        "unknown": 0
+      },
+      "bytes": 236741
+    },
+    {
+      "year": 1878,
+      "file": "world_1878.json",
+      "upstream": "geojson/world_1878.geojson",
+      "features": 173,
+      "countries": 169,
+      "droppedFeatures": 66,
+      "droppedParts": 76,
+      "precision": {
+        "1": 0,
+        "2": 2,
+        "3": 171,
+        "unknown": 0
+      },
+      "bytes": 205601
+    },
+    {
+      "year": 1880,
+      "file": "world_1880.json",
+      "upstream": "geojson/world_1880.geojson",
+      "features": 170,
+      "countries": 166,
+      "droppedFeatures": 66,
+      "droppedParts": 76,
+      "precision": {
+        "1": 0,
+        "2": 2,
+        "3": 168,
+        "unknown": 0
+      },
+      "bytes": 203931
+    },
+    {
+      "year": 1900,
+      "file": "world_1900.json",
+      "upstream": "geojson/world_1900.geojson",
+      "features": 183,
+      "countries": 162,
+      "droppedFeatures": 87,
+      "droppedParts": 36,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 183,
+        "unknown": 0
+      },
+      "bytes": 202842
+    },
+    {
+      "year": 1914,
+      "file": "world_1914.json",
+      "upstream": "geojson/world_1914.geojson",
+      "features": 141,
+      "countries": 139,
+      "droppedFeatures": 36,
+      "droppedParts": 75,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 141,
+        "unknown": 0
+      },
+      "bytes": 208006
+    },
+    {
+      "year": 1920,
+      "file": "world_1920.json",
+      "upstream": "geojson/world_1920.geojson",
+      "features": 162,
+      "countries": 160,
+      "droppedFeatures": 43,
+      "droppedParts": 67,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 162,
+        "unknown": 0
+      },
+      "bytes": 225656
+    },
+    {
+      "year": 1930,
+      "file": "world_1930.json",
+      "upstream": "geojson/world_1930.geojson",
+      "features": 168,
+      "countries": 160,
+      "droppedFeatures": 32,
+      "droppedParts": 62,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 158,
+        "unknown": 10
+      },
+      "bytes": 218913
+    },
+    {
+      "year": 1938,
+      "file": "world_1938.json",
+      "upstream": "geojson/world_1938.geojson",
+      "features": 169,
+      "countries": 166,
+      "droppedFeatures": 85,
+      "droppedParts": 109,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 169,
+        "unknown": 0
+      },
+      "bytes": 221488
+    },
+    {
+      "year": 1945,
+      "file": "world_1945.json",
+      "upstream": "geojson/world_1945.geojson",
+      "features": 182,
+      "countries": 180,
+      "droppedFeatures": 45,
+      "droppedParts": 80,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 182,
+        "unknown": 0
+      },
+      "bytes": 231945
+    },
+    {
+      "year": 1960,
+      "file": "world_1960.json",
+      "upstream": "geojson/world_1960.geojson",
+      "features": 159,
+      "countries": 156,
+      "droppedFeatures": 38,
+      "droppedParts": 70,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 159,
+        "unknown": 0
+      },
+      "bytes": 226195
+    },
+    {
+      "year": 1994,
+      "file": "world_1994.json",
+      "upstream": "geojson/world_1994.geojson",
+      "features": 191,
+      "countries": 189,
+      "droppedFeatures": 49,
+      "droppedParts": 108,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 191,
+        "unknown": 0
+      },
+      "bytes": 239924
+    },
+    {
+      "year": 2000,
+      "file": "world_2000.json",
+      "upstream": "geojson/world_2000.geojson",
+      "features": 192,
+      "countries": 189,
+      "droppedFeatures": 48,
+      "droppedParts": 109,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 192,
+        "unknown": 0
+      },
+      "bytes": 240038
+    },
+    {
+      "year": 2010,
+      "file": "world_2010.json",
+      "upstream": "geojson/world_2010.geojson",
+      "features": 192,
+      "countries": 189,
+      "droppedFeatures": 48,
+      "droppedParts": 109,
+      "precision": {
+        "1": 0,
+        "2": 0,
+        "3": 192,
+        "unknown": 0
+      },
+      "bytes": 240029
+    }
+  ],
+  "catalogue": {
+    "file": "catalogue.json",
+    "years": 54
   },
-  {
-   "year": -3000,
-   "label": "3001 BCE",
-   "file": "world_bc3000.json",
-   "features": 126,
-   "points": 10463,
-   "ringsDropped": 20,
-   "unnamedFeatures": 101,
-   "backgroundFeatures": 2,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 126,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc3000.geojson",
-    "features": 138,
-    "names": 25
-   }
+  "places": {
+    "file": "places.json",
+    "bytes": 161655
   },
-  {
-   "year": -2000,
-   "label": "2001 BCE",
-   "file": "world_bc2000.json",
-   "features": 140,
-   "points": 11185,
-   "ringsDropped": 30,
-   "unnamedFeatures": 95,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 140,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc2000.geojson",
-    "features": 145,
-    "names": 45
-   }
-  },
-  {
-   "year": -1500,
-   "label": "1501 BCE",
-   "file": "world_bc1500.json",
-   "features": 155,
-   "points": 11435,
-   "ringsDropped": 25,
-   "unnamedFeatures": 86,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 155,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc1500.geojson",
-    "features": 163,
-    "names": 68
-   }
-  },
-  {
-   "year": -1000,
-   "label": "1001 BCE",
-   "file": "world_bc1000.json",
-   "features": 155,
-   "points": 11438,
-   "ringsDropped": 25,
-   "unnamedFeatures": 85,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 155,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc1000.geojson",
-    "features": 163,
-    "names": 69
-   }
-  },
-  {
-   "year": -700,
-   "label": "701 BCE",
-   "file": "world_bc700.json",
-   "features": 166,
-   "points": 11500,
-   "ringsDropped": 25,
-   "unnamedFeatures": 86,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 166,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc700.geojson",
-    "features": 174,
-    "names": 73
-   }
-  },
-  {
-   "year": -500,
-   "label": "501 BCE",
-   "file": "world_bc500.json",
-   "features": 175,
-   "points": 11869,
-   "ringsDropped": 29,
-   "unnamedFeatures": 98,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 175,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc500.geojson",
-    "features": 189,
-    "names": 74
-   }
-  },
-  {
-   "year": -400,
-   "label": "401 BCE",
-   "file": "world_bc400.json",
-   "features": 177,
-   "points": 11753,
-   "ringsDropped": 35,
-   "unnamedFeatures": 96,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 177,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc400.geojson",
-    "features": 190,
-    "names": 76
-   }
-  },
-  {
-   "year": -323,
-   "label": "324 BCE",
-   "file": "world_bc323.json",
-   "features": 139,
-   "points": 11778,
-   "ringsDropped": 30,
-   "unnamedFeatures": 66,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 139,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc323.geojson",
-    "features": 149,
-    "names": 68
-   }
-  },
-  {
-   "year": -300,
-   "label": "301 BCE",
-   "file": "world_bc300.json",
-   "features": 145,
-   "points": 12072,
-   "ringsDropped": 29,
-   "unnamedFeatures": 68,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 145,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc300.geojson",
-    "features": 155,
-    "names": 73
-   }
-  },
-  {
-   "year": -200,
-   "label": "201 BCE",
-   "file": "world_bc200.json",
-   "features": 171,
-   "points": 12143,
-   "ringsDropped": 32,
-   "unnamedFeatures": 85,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 171,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc200.geojson",
-    "features": 183,
-    "names": 86
-   }
-  },
-  {
-   "year": -100,
-   "label": "101 BCE",
-   "file": "world_bc100.json",
-   "features": 182,
-   "points": 12486,
-   "ringsDropped": 73,
-   "unnamedFeatures": 97,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 182,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc100.geojson",
-    "features": 233,
-    "names": 84
-   }
-  },
-  {
-   "year": -1,
-   "label": "2 BCE",
-   "file": "world_bc1.json",
-   "features": 305,
-   "points": 14616,
-   "ringsDropped": 320,
-   "unnamedFeatures": 225,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 305,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_bc1.geojson",
-    "features": 442,
-    "names": 79
-   }
-  },
-  {
-   "year": 100,
-   "label": "100 CE",
-   "file": "world_100.json",
-   "features": 337,
-   "points": 14752,
-   "ringsDropped": 246,
-   "unnamedFeatures": 252,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 337,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_100.geojson",
-    "features": 440,
-    "names": 83
-   }
-  },
-  {
-   "year": 200,
-   "label": "200 CE",
-   "file": "world_200.json",
-   "features": 265,
-   "points": 14576,
-   "ringsDropped": 292,
-   "unnamedFeatures": 195,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 265,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_200.geojson",
-    "features": 354,
-    "names": 69
-   }
-  },
-  {
-   "year": 300,
-   "label": "300 CE",
-   "file": "world_300.json",
-   "features": 325,
-   "points": 14536,
-   "ringsDropped": 295,
-   "unnamedFeatures": 254,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 325,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_300.geojson",
-    "features": 466,
-    "names": 71
-   }
-  },
-  {
-   "year": 400,
-   "label": "400 CE",
-   "file": "world_400.json",
-   "features": 278,
-   "points": 14102,
-   "ringsDropped": 238,
-   "unnamedFeatures": 198,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 278,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_400.geojson",
-    "features": 367,
-    "names": 79
-   }
-  },
-  {
-   "year": 500,
-   "label": "500 CE",
-   "file": "world_500.json",
-   "features": 193,
-   "points": 12329,
-   "ringsDropped": 130,
-   "unnamedFeatures": 105,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 193,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_500.geojson",
-    "features": 205,
-    "names": 87
-   }
-  },
-  {
-   "year": 600,
-   "label": "600 CE",
-   "file": "world_600.json",
-   "features": 188,
-   "points": 12634,
-   "ringsDropped": 76,
-   "unnamedFeatures": 100,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 188,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_600.geojson",
-    "features": 204,
-    "names": 83
-   }
-  },
-  {
-   "year": 700,
-   "label": "700 CE",
-   "file": "world_700.json",
-   "features": 241,
-   "points": 12624,
-   "ringsDropped": 32,
-   "unnamedFeatures": 110,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 241,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_700.geojson",
-    "features": 253,
-    "names": 127
-   }
-  },
-  {
-   "year": 800,
-   "label": "800 CE",
-   "file": "world_800.json",
-   "features": 214,
-   "points": 12516,
-   "ringsDropped": 44,
-   "unnamedFeatures": 93,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 214,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_800.geojson",
-    "features": 225,
-    "names": 117
-   }
-  },
-  {
-   "year": 900,
-   "label": "900 CE",
-   "file": "world_900.json",
-   "features": 233,
-   "points": 13119,
-   "ringsDropped": 42,
-   "unnamedFeatures": 97,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 233,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_900.geojson",
-    "features": 244,
-    "names": 135
-   }
-  },
-  {
-   "year": 1000,
-   "label": "1000 CE",
-   "file": "world_1000.json",
-   "features": 241,
-   "points": 14016,
-   "ringsDropped": 128,
-   "unnamedFeatures": 110,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 241,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1000.geojson",
-    "features": 264,
-    "names": 129
-   }
-  },
-  {
-   "year": 1100,
-   "label": "1100 CE",
-   "file": "world_1100.json",
-   "features": 229,
-   "points": 13456,
-   "ringsDropped": 119,
-   "unnamedFeatures": 80,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 229,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1100.geojson",
-    "features": 235,
-    "names": 139
-   }
-  },
-  {
-   "year": 1200,
-   "label": "1200 CE",
-   "file": "world_1200.json",
-   "features": 259,
-   "points": 13277,
-   "ringsDropped": 108,
-   "unnamedFeatures": 124,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 259,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1200.geojson",
-    "features": 286,
-    "names": 129
-   }
-  },
-  {
-   "year": 1279,
-   "label": "1279 CE",
-   "file": "world_1279.json",
-   "features": 229,
-   "points": 13272,
-   "ringsDropped": 100,
-   "unnamedFeatures": 113,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 229,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1279.geojson",
-    "features": 247,
-    "names": 113
-   }
-  },
-  {
-   "year": 1300,
-   "label": "1300 CE",
-   "file": "world_1300.json",
-   "features": 219,
-   "points": 13217,
-   "ringsDropped": 105,
-   "unnamedFeatures": 104,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 219,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1300.geojson",
-    "features": 237,
-    "names": 113
-   }
-  },
-  {
-   "year": 1400,
-   "label": "1400 CE",
-   "file": "world_1400.json",
-   "features": 214,
-   "points": 13350,
-   "ringsDropped": 93,
-   "unnamedFeatures": 92,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 214,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1400.geojson",
-    "features": 233,
-    "names": 115
-   }
-  },
-  {
-   "year": 1492,
-   "label": "1492 CE",
-   "file": "world_1492.json",
-   "features": 1347,
-   "points": 17410,
-   "ringsDropped": 938,
-   "unnamedFeatures": 183,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.18,
-   "precision": {
-    "approximate": 1346,
-    "moderate": 0,
-    "demarcated": 1,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1492.geojson",
-    "features": 1946,
-    "names": 1307
-   }
-  },
-  {
-   "year": 1500,
-   "label": "1500 CE",
-   "file": "world_1500.json",
-   "features": 266,
-   "points": 14855,
-   "ringsDropped": 178,
-   "unnamedFeatures": 123,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 266,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1500.geojson",
-    "features": 291,
-    "names": 139
-   }
-  },
-  {
-   "year": 1530,
-   "label": "1530 CE",
-   "file": "world_1530.json",
-   "features": 477,
-   "points": 17269,
-   "ringsDropped": 125,
-   "unnamedFeatures": 200,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 477,
-    "moderate": 0,
-    "demarcated": 0,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1530.geojson",
-    "features": 494,
-    "names": 269
-   }
-  },
-  {
-   "year": 1600,
-   "label": "1600 CE",
-   "file": "world_1600.json",
-   "features": 845,
-   "points": 21243,
-   "ringsDropped": 150,
-   "unnamedFeatures": 190,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 843,
-    "moderate": 0,
-    "demarcated": 2,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1600.geojson",
-    "features": 866,
-    "names": 638
-   }
-  },
-  {
-   "year": 1650,
-   "label": "1650 CE",
-   "file": "world_1650.json",
-   "features": 765,
-   "points": 21435,
-   "ringsDropped": 125,
-   "unnamedFeatures": 173,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 12,
-    "moderate": 0,
-    "demarcated": 753,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1650.geojson",
-    "features": 778,
-    "names": 593
-   }
-  },
-  {
-   "year": 1700,
-   "label": "1700 CE",
-   "file": "world_1700.json",
-   "features": 770,
-   "points": 21216,
-   "ringsDropped": 119,
-   "unnamedFeatures": 183,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 8,
-    "moderate": 0,
-    "demarcated": 762,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1700.geojson",
-    "features": 782,
-    "names": 584
-   }
-  },
-  {
-   "year": 1715,
-   "label": "1715 CE",
-   "file": "world_1715.json",
-   "features": 746,
-   "points": 21998,
-   "ringsDropped": 141,
-   "unnamedFeatures": 146,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 4,
-    "moderate": 0,
-    "demarcated": 742,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1715.geojson",
-    "features": 758,
-    "names": 600
-   }
-  },
-  {
-   "year": 1783,
-   "label": "1783 CE",
-   "file": "world_1783.json",
-   "features": 629,
-   "points": 20997,
-   "ringsDropped": 141,
-   "unnamedFeatures": 72,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 1,
-    "moderate": 0,
-    "demarcated": 624,
-    "unclassified": 4
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1783.geojson",
-    "features": 641,
-    "names": 549
-   }
-  },
-  {
-   "year": 1800,
-   "label": "1800 CE",
-   "file": "world_1800.json",
-   "features": 615,
-   "points": 20645,
-   "ringsDropped": 146,
-   "unnamedFeatures": 64,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 1,
-    "moderate": 0,
-    "demarcated": 614,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1800.geojson",
-    "features": 627,
-    "names": 546
-   }
-  },
-  {
-   "year": 1815,
-   "label": "1815 CE",
-   "file": "world_1815.json",
-   "features": 418,
-   "points": 18625,
-   "ringsDropped": 120,
-   "unnamedFeatures": 96,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 1,
-    "moderate": 0,
-    "demarcated": 417,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1815.geojson",
-    "features": 436,
-    "names": 313
-   }
-  },
-  {
-   "year": 1878,
-   "label": "1878 CE",
-   "file": "world_1878.json",
-   "features": 231,
-   "points": 16772,
-   "ringsDropped": 88,
-   "unnamedFeatures": 58,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 2,
-    "demarcated": 229,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1878.geojson",
-    "features": 239,
-    "names": 172
-   }
-  },
-  {
-   "year": 1880,
-   "label": "1880 CE",
-   "file": "world_1880.json",
-   "features": 228,
-   "points": 16683,
-   "ringsDropped": 88,
-   "unnamedFeatures": 58,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 2,
-    "demarcated": 226,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1880.geojson",
-    "features": 236,
-    "names": 169
-   }
-  },
-  {
-   "year": 1900,
-   "label": "1900 CE",
-   "file": "world_1900.json",
-   "features": 226,
-   "points": 16314,
-   "ringsDropped": 85,
-   "unnamedFeatures": 43,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 226,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1900.geojson",
-    "features": 270,
-    "names": 165
-   }
-  },
-  {
-   "year": 1914,
-   "label": "1914 CE",
-   "file": "world_1914.json",
-   "features": 172,
-   "points": 16200,
-   "ringsDropped": 87,
-   "unnamedFeatures": 31,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 172,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1914.geojson",
-    "features": 177,
-    "names": 142
-   }
-  },
-  {
-   "year": 1920,
-   "label": "1920 CE",
-   "file": "world_1920.json",
-   "features": 194,
-   "points": 17505,
-   "ringsDropped": 87,
-   "unnamedFeatures": 32,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 194,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1920.geojson",
-    "features": 205,
-    "names": 163
-   }
-  },
-  {
-   "year": 1930,
-   "label": "1930 CE",
-   "file": "world_1930.json",
-   "features": 194,
-   "points": 16838,
-   "ringsDropped": 74,
-   "unnamedFeatures": 26,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 182,
-    "unclassified": 12
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1930.geojson",
-    "features": 200,
-    "names": 163
-   }
-  },
-  {
-   "year": 1938,
-   "label": "1938 CE",
-   "file": "world_1938.json",
-   "features": 234,
-   "points": 17272,
-   "ringsDropped": 137,
-   "unnamedFeatures": 63,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 234,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1938.geojson",
-    "features": 254,
-    "names": 171
-   }
-  },
-  {
-   "year": 1945,
-   "label": "1945 CE",
-   "file": "world_1945.json",
-   "features": 219,
-   "points": 17266,
-   "ringsDropped": 95,
-   "unnamedFeatures": 37,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 219,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1945.geojson",
-    "features": 227,
-    "names": 183
-   }
-  },
-  {
-   "year": 1960,
-   "label": "1960 CE",
-   "file": "world_1960.json",
-   "features": 191,
-   "points": 16928,
-   "ringsDropped": 81,
-   "unnamedFeatures": 32,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 191,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1960.geojson",
-    "features": 197,
-    "names": 157
-   }
-  },
-  {
-   "year": 1994,
-   "label": "1994 CE",
-   "file": "world_1994.json",
-   "features": 229,
-   "points": 18628,
-   "ringsDropped": 123,
-   "unnamedFeatures": 38,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 229,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_1994.geojson",
-    "features": 240,
-    "names": 193
-   }
-  },
-  {
-   "year": 2000,
-   "label": "2000 CE",
-   "file": "world_2000.json",
-   "features": 229,
-   "points": 18609,
-   "ringsDropped": 124,
-   "unnamedFeatures": 37,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 229,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_2000.geojson",
-    "features": 240,
-    "names": 193
-   }
-  },
-  {
-   "year": 2010,
-   "label": "2010 CE",
-   "file": "world_2010.json",
-   "features": 229,
-   "points": 18609,
-   "ringsDropped": 124,
-   "unnamedFeatures": 37,
-   "backgroundFeatures": 1,
-   "wideEdges": 1,
-   "toleranceDeg": 0.05,
-   "precision": {
-    "approximate": 0,
-    "moderate": 0,
-    "demarcated": 229,
-    "unclassified": 0
-   },
-   "bbox": [
-    -180,
-    -90,
-    180,
-    83.58
-   ],
-   "upstream": {
-    "filename": "world_2010.geojson",
-    "features": 240,
-    "names": 193
-   }
-  }
- ],
- "excluded": [
-  {
-   "year": -123000,
-   "filename": "world_bc123000.geojson",
-   "reason": "before -8000 (pre-Neolithic range areas, not polities)"
-  },
-  {
-   "year": -10000,
-   "filename": "world_bc10000.geojson",
-   "reason": "before -8000 (pre-Neolithic range areas, not polities)"
-  }
- ]
+  "totalBytes": 8718296
 }

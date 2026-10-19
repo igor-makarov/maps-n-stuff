@@ -10,7 +10,7 @@
  *   - public/data/{records,sources,overlays}.json parse and pass the D4 schema
  *   - the worker exposes default.fetch and an allowlist
  */
-import { readFile, access } from 'node:fs/promises';
+import { readFile, access, stat } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -105,7 +105,7 @@ async function checkHtmlAssets() {
 }
 
 async function checkModules() {
-  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'src/worker/index.js'];
+  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'public/app/history.js', 'src/worker/index.js'];
   for (const file of modules) {
     try {
       await run(process.execPath, ['--check', abs(file)]);
@@ -131,7 +131,7 @@ async function checkModules() {
     if (!worker.includes(endpoint)) fail(`src/worker/index.js: endpoint ${endpoint} missing`);
   }
   const main = await readFile(abs('public/app/main.js'), 'utf8');
-  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js', 'compare.js']) {
+  for (const moduleName of ['map.js', 'search.js', 'results.js', 'detail.js', 'compare.js', 'history.js']) {
     if (!main.includes(moduleName)) fail(`public/app/main.js: optional module ${moduleName} not wired`);
   }
   notes.push(`modules: ${modules.length} checked, optional modules wired`);
@@ -184,11 +184,41 @@ async function checkData() {
   );
 }
 
+async function checkHistory() {
+  // The historical-borders bundle: harvested from aourednik/historical-basemaps
+  // (GPL-3.0-or-later) by scripts/harvest-history.mjs. The build gate checks the
+  // provenance and that every indexed snapshot is really on disk with the size
+  // the harvest recorded, so a half-committed harvest cannot ship.
+  const index = JSON.parse(await readFile(abs('public/data/history/index.json'), 'utf8'));
+  if (index.dataset !== 'historical-basemaps') fail('history/index.json: unexpected dataset');
+  if (index.license !== 'GPL-3.0-or-later') fail('history/index.json: the upstream licence is not recorded');
+  if (!/^[0-9a-f]{40}$/.test(String(index.commit ?? ''))) fail('history/index.json: no pinned upstream commit');
+  await access(abs('public/data/history', index.licenseFile));
+  const years = index.years ?? [];
+  if (years.length < 50) fail(`history/index.json: only ${years.length} snapshots (expected the full published index)`);
+  let bytes = 0;
+  for (const entry of years) {
+    if (!Number.isFinite(entry.year) || !/^world_[a-z0-9]+\.json$/.test(String(entry.file ?? ''))) {
+      fail(`history/index.json: bad entry ${JSON.stringify(entry).slice(0, 80)}`);
+      continue;
+    }
+    try {
+      const info = await stat(abs('public/data/history', entry.file));
+      if (info.size !== entry.bytes) fail(`history/${entry.file}: ${info.size} bytes on disk, index says ${entry.bytes}`);
+      bytes += info.size;
+    } catch {
+      fail(`history/${entry.file}: indexed but missing`);
+    }
+  }
+  notes.push(`history: ${years.length} snapshots (${index.coverage?.firstYear} … ${index.coverage?.lastYear}), ${(bytes / 1048576).toFixed(1)} MiB, ${index.commitShort} ${index.license}`);
+}
+
 try {
   await checkWrangler();
   await checkHtmlAssets();
   await checkModules();
   await checkData();
+  await checkHistory();
 } catch (err) {
   fail(`validation crashed: ${err?.message || err}`);
 }
