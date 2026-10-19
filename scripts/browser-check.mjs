@@ -2132,6 +2132,161 @@ try {
   );
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900 });
 
+  /* --- 8m. browser back/forward walk the exploration -------------------- */
+  // The product promises shareable state, so the browser buttons have to walk
+  // the same path the user took: a selection or a typed search is a history
+  // entry, while panning the map must not be one. Every check below reads where
+  // a single press of “back” lands (browsers clamp history.length, so counting
+  // entries would be a flaky proxy) and uses real mouse events.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+
+  // 1. Leaving the app and coming back must not be blocked by entries the app
+  // creates for itself while starting up (it clamps the year range to the data).
+  await cdp.send('Page.navigate', { url: 'about:blank' });
+  await cdp.waitFor(`location.href === 'about:blank'`, { label: 'blank page', timeout: 10_000 });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'history start page' });
+  await sleep(1500); // give a late start-up write-back time to happen
+  await cdp.eval(`history.back()`).catch(() => {});
+  let historyLeftApp = false;
+  try {
+    historyLeftApp = await cdp.waitFor(`location.href === 'about:blank' ? 'yes' : ''`, { label: 'one back press leaves the app', timeout: 8_000 });
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the app adds no history entry of its own while it starts up',
+    historyLeftApp === 'yes',
+    `one “back” from the start page: ${JSON.stringify(await cdp.eval(`location.href`).catch(() => '?'))}`,
+  );
+
+  // 2. Forward brings the app back — restored from the back/forward cache or
+  // loaded again, it has to work either way.
+  await cdp.eval(`history.forward()`).catch(() => {});
+  let historyForward = null;
+  try {
+    historyForward = await cdp.waitFor(
+      `(() => { const rows = document.querySelectorAll('#result-list > *').length; return rows > 5 ? { rows, search: location.search } : ''; })()`,
+      { label: 'forward returns to the app', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check('“forward” brings the app back with its results', Boolean(historyForward?.rows > 5), JSON.stringify(historyForward));
+
+  // 3. Opening a record is a step the browser can undo.
+  const historyRecord = [...recordIndex.values()].find((record) => record.title) ?? null;
+  let historyOpened = null;
+  if (historyRecord) {
+    await cdp.click(`#result-list button[data-record-id="${historyRecord.id}"]`).catch(() => {});
+    try {
+      historyOpened = await cdp.waitFor(
+        `(() => {
+          const sel = new URLSearchParams(location.search).get('sel');
+          return sel && document.querySelector('#detail')?.hidden === false ? { sel, rows: document.querySelectorAll('#result-list > *').length } : '';
+        })()`,
+        { label: 'record opened for the history check', timeout: 12_000 },
+      );
+    } catch {
+      /* reported below */
+    }
+  }
+  check(
+    'opening a record is a step the browser can undo',
+    Boolean(historyOpened) && historyOpened?.sel === historyRecord?.id,
+    historyOpened ? `sel=${historyOpened.sel}` : 'the detail panel never opened',
+  );
+
+  await cdp.eval(`history.back()`).catch(() => {});
+  let historyClosed = null;
+  try {
+    historyClosed = await cdp.waitFor(
+      `(() => {
+        const sel = new URLSearchParams(location.search).get('sel');
+        return !sel && document.querySelector('#detail')?.hidden === true
+          ? { rows: document.querySelectorAll('#result-list > *').length }
+          : '';
+      })()`,
+      { label: 'back closes the record', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    '“back” closes the open record and keeps the search',
+    Boolean(historyClosed && historyClosed.rows > 5),
+    JSON.stringify(historyClosed ?? { search: await cdp.eval(`location.search`).catch(() => '?') }),
+  );
+
+  // 4. …and forward re-opens it.
+  await cdp.eval(`history.forward()`).catch(() => {});
+  let historyReopened = null;
+  try {
+    historyReopened = await cdp.waitFor(
+      `(() => {
+        const sel = new URLSearchParams(location.search).get('sel');
+        return sel && document.querySelector('#detail')?.hidden === false ? { sel } : '';
+      })()`,
+      { label: 'forward re-opens the record', timeout: 12_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check('“forward” re-opens the record', historyReopened?.sel === historyRecord?.id, JSON.stringify(historyReopened));
+
+  // 5. A map drag changes the view but must replace the current entry: after one
+  // “back” the browser has to leave the app entirely, not land on a pan step.
+  await cdp.eval(`history.back()`).catch(() => {});
+  await cdp.waitFor(`!new URLSearchParams(location.search).get('sel')`, { label: 'back on the plain start entry', timeout: 12_000 }).catch(() => {});
+  await sleep(500);
+  const mapBox = await cdp
+    .eval(`(() => { const m = document.querySelector('#map'); if (!m) return null; const r = m.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`)
+    .catch(() => null);
+  if (mapBox) {
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: mapBox.x, y: mapBox.y });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: mapBox.x, y: mapBox.y, button: 'left', clickCount: 1 });
+    for (const step of [40, 80, 120, 160]) {
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: mapBox.x + step, y: mapBox.y + step / 2, button: 'left' });
+      await sleep(80);
+    }
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: mapBox.x + 160, y: mapBox.y + 80, button: 'left', clickCount: 1 });
+    await sleep(1200);
+  }
+  const dragged = await cdp.eval(`({ lat: new URLSearchParams(location.search).get('lat'), sel: new URLSearchParams(location.search).get('sel') })`);
+  await cdp.eval(`history.back()`).catch(() => {});
+  let panLeftApp = false;
+  try {
+    panLeftApp = await cdp.waitFor(`location.href === 'about:blank' ? 'yes' : ''`, { label: 'the pan was not a history step', timeout: 8_000 });
+  } catch {
+    /* reported below */
+  }
+  check(
+    'a map drag replaces the entry instead of adding history steps',
+    Boolean(dragged.lat) && dragged.sel === null && panLeftApp === 'yes',
+    `the drag wrote lat=${dragged.lat}; one “back” then reached ${JSON.stringify(await cdp.eval(`location.href`).catch(() => '?'))}`,
+  );
+
+  // 6. Typing is one entry per search, not one per keystroke: the row debounces
+  // the field and the store merges the successive values of the same gesture.
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'typing history page' });
+  await sleep(600);
+  await cdp.click('#text-filter');
+  for (const char of 'Zürich') {
+    await cdp.send('Input.insertText', { text: char });
+    await sleep(260); // slower than the field's own debounce, so every keystroke reaches the store
+  }
+  await sleep(1200);
+  const searchTyped = await cdp.eval(`({ q: new URLSearchParams(location.search).get('q'), rows: document.querySelectorAll('#result-list > *').length })`);
+  await cdp.eval(`history.back()`).catch(() => {});
+  await sleep(1500);
+  const searchUndone = await cdp.eval(`({ q: new URLSearchParams(location.search).get('q'), rows: document.querySelectorAll('#result-list > *').length })`);
+  check(
+    'one “back” undoes a whole typed search (the keystrokes coalesce)',
+    searchTyped.q === 'Zürich' && searchUndone.q === null && searchUndone.rows > searchTyped.rows && searchTyped.rows > 5,
+    `typed “Zürich” -> ${searchTyped.rows} rows, one “back” -> ${searchUndone.rows} rows, q=${JSON.stringify(searchUndone.q)}`,
+  );
+
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

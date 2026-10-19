@@ -27,7 +27,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **463/463 URLs, 0 failures** on the 109-record seed |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 99 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure | 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 106 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure | 
 
 ## Cloudflare Workers deployment
 
@@ -108,7 +108,28 @@ it debounced while zooming/panning, “Ganzes Blatt”/closing the panel removes
 and a shared link opens exactly that cut-out (an impossible value is ignored and
 dropped). `at` is the point filter `"lat,lon"`: only records
 whose documented extent covers that point remain in the list and on the map
-(`coversPoint` in `records.js`; a record without a stated extent cannot match). 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
+(`coversPoint` in `records.js`; a record without a stated extent cannot match).
+
+### Browser history (back/forward)
+
+The store turns *deliberate* state changes into real history entries, so the
+browser buttons walk the way the visitor explored instead of leaving the app:
+
+| Behaviour | Keys |
+| --- | --- |
+| New history entry (`pushState`) | `q, from, to, provider, type, collection, viewport, at, place, selected` |
+| Replaces the current entry (`replaceState`) | `lat, lon, zoom, sheet, vv, extents, view, sort, overlay, otime, cmp` — panning, dragging the year control, walking the sheets of a work, the visible viewer cut-out, the footprint layer, the pinned comparison list |
+
+Repeated changes to the same key set inside `HISTORY_COALESCE_MS` (900 ms, both
+exported from `store.js`) merge into the entry that started the gesture: a typed
+search and a slider drag are one step each, not one per keystroke. Two guard
+rails keep the app's own start-up work out of the history — the year range is
+clamped to the data right after the records arrive, and a view may write a
+clamped value back (`sheet`) — so the first “back” after landing on the site
+still leaves it. `popstate` re-reads the URL and notifies the modules with the
+same `(state, changedKeys)` shape an ordinary update uses, so every view follows
+the buttons without extra wiring (`store.applyUrl()`; `detail.js` closes or
+re-opens the panel for `selected`).
 
 ## Response headers and caching
 

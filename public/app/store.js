@@ -3,8 +3,18 @@
  *
  *   const store = createStore({ defaults });
  *   store.getState()            -> { q, from, to, provider, type, at, place, lat, lon, zoom, selected, sheet, vv, view, sort, overlay, otime, cmp }
- *   store.update({ from: 1800 }) -> merge, sync URL (replaceState), notify subscribers
+ *   store.update({ from: 1800 }) -> merge, sync URL, notify subscribers
  *   store.subscribe(fn)          -> fn(state, changedKeys); returns unsubscribe
+ *   store.applyUrl()             -> re-read the URL (used by popstate)
+ *
+ * History: a change to a *deliberate* search/selection key (see
+ * HISTORY_PUSH_KEYS) becomes a real history entry, so the browser's back and
+ * forward buttons walk the way the user actually explored; continuous changes
+ * (panning, zooming, dragging the year control, pinning records) only replace
+ * the current entry, so one drag never floods the history. Repeated changes to
+ * the same keys inside HISTORY_COALESCE_MS merge into the entry they started.
+ * `popstate` re-reads the URL and notifies the modules exactly like an ordinary
+ * update does, so every view follows the browser buttons.
  *
  *   const bus = createBus();
  *   bus.on('records:loaded', fn); bus.emit('records:loaded', { records });
@@ -67,6 +77,29 @@ const TYPES = {
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
+/**
+ * Keys whose change is a navigation step the user would want to undo with the
+ * browser's back button: a search, a filter, a place or a selected record.
+ * Every other key (pan/zoom, slider drags, the sheet or the visible cut-out of a
+ * work, the footprint layer, the pinned comparison list, the view and sort
+ * choices) only replaces the current entry.
+ */
+export const HISTORY_PUSH_KEYS = Object.freeze([
+  'q',
+  'from',
+  'to',
+  'provider',
+  'type',
+  'collection',
+  'viewport',
+  'at',
+  'place',
+  'selected',
+]);
+
+/** Repeated changes to the same keys inside this window replace instead of push. */
+export const HISTORY_COALESCE_MS = 900;
+
 function coerce(key, value) {
   if (value === null || value === undefined || value === '') return STATE_DEFAULTS[key];
   if (TYPES.number.includes(key)) {
@@ -89,6 +122,15 @@ function safeLocation() {
   try {
     if (typeof window === 'undefined') return null;
     return window.location || null;
+  } catch {
+    return null;
+  }
+}
+
+function safeWindow() {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window;
   } catch {
     return null;
   }
@@ -209,11 +251,33 @@ export function createBus() {
   };
 }
 
-export function createStore({ initial = {}, defaults = STATE_DEFAULTS, history = safeHistory(), location = safeLocation() } = {}) {
+export function createStore({
+  initial = {},
+  defaults = STATE_DEFAULTS,
+  history = safeHistory(),
+  location = safeLocation(),
+  window: win = safeWindow(),
+  now = () => Date.now(), // injectable clock: the coalescing window is testable
+} = {}) {
   let state = sanitise({ ...defaults, ...initial, ...readStateFromUrl(location?.search ?? '', defaults) });
   const subscribers = new Set();
   let urlSync = Boolean(history && location);
-  let pending = null;
+  // Which URL the browser is on right now. Comparing against it keeps us from
+  // writing an entry twice and from turning a no-op into a history step.
+  let lastUrl = urlOf();
+  let lastPushSignature = '';
+  let lastPushAt = 0;
+  let suppressPushUntil = 0;
+  // Flipped by the first pointer/key event; until then every URL write replaces.
+  let userActed = false;
+  const markUserAction = () => {
+    userActed = true;
+  };
+
+  function urlOf() {
+    if (!location) return '';
+    return `${location.pathname || '/'}${location.search || ''}${location.hash || ''}`;
+  }
 
   function notify(changedKeys) {
     for (const fn of subscribers) {
@@ -225,18 +289,51 @@ export function createStore({ initial = {}, defaults = STATE_DEFAULTS, history =
     }
   }
 
-  function syncUrl() {
+  const signatureOf = (changedKeys) => [...changedKeys].sort().join(',');
+  /**
+   * Should this change open a new history entry? Only deliberate state changes
+   * do, and never twice in a row for the same set of keys inside
+   * HISTORY_COALESCE_MS — that is what keeps typing in the filter box from
+   * leaving one entry per keystroke.
+   *
+   * Two guard rails:
+   *  - `userActed` — the app repairs its own initial state after the data
+   *    arrives (the year range is clamped to the years that exist), and that
+   *    repair must land in the entry the visitor arrived on, not on top of it;
+   *    otherwise the first press of “back” would stay inside the app.
+   *  - `suppressPushUntil` — the same for writes right after a popstate.
+   */
+  function shouldPush(changedKeys, stamp) {
+    if (!userActed) return false;
+    if (stamp < suppressPushUntil) return false;
+    if (!changedKeys.some((key) => HISTORY_PUSH_KEYS.includes(key))) return false;
+    const signature = signatureOf(changedKeys);
+    return !(signature === lastPushSignature && stamp - lastPushAt < HISTORY_COALESCE_MS);
+  }
+
+  function syncUrl(mode = 'auto', changedKeys = []) {
     if (!urlSync || !history || !location) return;
     const query = stateToQuery(state, defaults);
-    const next = `${location.pathname || '/'}${query ? `?${query}` : ''}`;
+    const next = `${location.pathname || '/'}${query ? `?${query}` : ''}${location.hash || ''}`;
+    if (next === lastUrl) return;
+    const stamp = now();
+    const push = mode === 'push' || (mode === 'auto' && shouldPush(changedKeys, stamp));
     try {
-      history.replaceState({ ...state }, '', next);
+      if (push) history.pushState({ ...state }, '', next);
+      else history.replaceState({ ...state }, '', next);
+      // A gesture stays the same gesture as long as changes keep arriving: the
+      // window is measured from the *last* change of this key set, not from the
+      // entry it opened. Otherwise a long drag or a long word would push again
+      // in the middle of the gesture.
+      lastPushSignature = signatureOf(changedKeys);
+      lastPushAt = stamp;
+      lastUrl = next;
     } catch {
       urlSync = false; // sandboxed iframe or file:// – keep working without URL sync
     }
   }
 
-  function update(patch, { silent = false } = {}) {
+  function update(patch, { silent = false, history: mode = 'auto' } = {}) {
     const changed = [];
     const next = { ...state };
     for (const [key, value] of Object.entries(patch)) {
@@ -249,9 +346,46 @@ export function createStore({ initial = {}, defaults = STATE_DEFAULTS, history =
     }
     state = sanitise(next);
     if (changed.length === 0) return state;
-    syncUrl();
+    syncUrl(mode, changed);
     if (!silent) notify(changed);
     return state;
+  }
+
+  /**
+   * Read the state back out of the URL the browser just moved us to. Returns
+   * the list of keys that really changed, so the caller can tell a real
+   * navigation from a hash-only popstate. Modules need no extra wiring: they
+   * receive the same `(state, changedKeys)` notification as from `update()`.
+   */
+  function applyUrl() {
+    if (!location) return [];
+    const parsed = readStateFromUrl(location.search || '', defaults);
+    const changed = Object.keys(defaults).filter((key) => state[key] !== parsed[key]);
+    lastUrl = urlOf();
+    lastPushSignature = '';
+    // A view that writes its clamped state back (for example a sheet number)
+    // must not turn the entry we just navigated to into a second entry.
+    suppressPushUntil = now() + HISTORY_COALESCE_MS;
+    if (changed.length === 0) return [];
+    state = parsed;
+    notify(changed);
+    return changed;
+  }
+
+  if (urlSync && typeof win?.addEventListener === 'function') {
+    win.addEventListener('popstate', () => {
+      applyUrl();
+    });
+    // The first real interaction separates “the app fixing up its own start-up
+    // state” (replace) from what the visitor asked for (push). The `click`
+    // listener is captured so that it is seen before the clicked control's own
+    // handler, and a plain `click` event counts too — an activation that never
+    // saw a pointer or a key (screen reader, `el.click()`) is still a user
+    // decision.
+    win.addEventListener('click', markUserAction, { capture: true, passive: true });
+    for (const type of ['pointerdown', 'keydown', 'touchstart']) {
+      win.addEventListener(type, markUserAction, { passive: true });
+    }
   }
 
   return {
@@ -265,6 +399,8 @@ export function createStore({ initial = {}, defaults = STATE_DEFAULTS, history =
     replace(next, options) {
       return update({ ...defaults, ...next }, options);
     },
+    /** Back/forward handling and the tests call this. */
+    applyUrl,
     setUrlSync(enabled) {
       urlSync = Boolean(enabled);
     },

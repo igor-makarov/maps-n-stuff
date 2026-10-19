@@ -1,7 +1,67 @@
 # zurich-maps-1 status
 
-Iteration 7-13 (2026-10-18 23:2x–23:4x UTC). Shell/design-system/store/wrangler/
-docs owner. Newest entry first; earlier iterations are kept below.
+Iteration 7-14 (2026-10-18 23:5x UTC). Shell/design-system/store/wrangler/docs
+owner. Newest entry first; earlier iterations are kept below.
+
+## Iteration 7-14 — the browser's back button now walks the exploration
+
+The URL is our state (D4), but pressing back left the app: the store only ever
+called `replaceState`, so the first “back” went to whatever page the visitor came
+from. Measured before the fix with a real Chromium (this runner):
+
+```
+start          { url: '/?from=1754', entries: 2 }
+after select   { url: '/?from=1754&…&sel=e-rara%3A29362556', entries: 2 }
+after back #1  { url: 'about:blank' }          ← out of the app, work lost
+```
+
+| Commit | Content |
+| --- | --- |
+| `store.js` | **History navigation (D6).** `HISTORY_PUSH_KEYS` = `q, from, to, provider, type, collection, viewport, at, place, selected` open an entry; every other key (`lat, lon, zoom, sheet, view, sort, overlay, otime, cmp`) replaces it. Same key set inside `HISTORY_COALESCE_MS` (900 ms) merges, so typing and dragging are one step each. `popstate` re-reads the URL and notifies modules with the same `(state, changedKeys)` shape as `update()`; the URL is only written when it really changes; the `#fragment` survives. New `applyUrl()` and an injectable `now()` clock for tests. |
+| `store.js` | Two guard rails so the app's own work never eats a step: the year range is clamped to the data right after the records arrive, and a view may write a clamped `sheet` back — both now `replaceState`, because nothing pushes before the first real interaction (`pointerdown`/`keydown`/`touchstart`/`click`, the last one captured so a bare `el.click()` counts). |
+| `detail.js` (maps-3's file, 12 lines, noted in my messages) | **Bug found by the new check:** nothing closed the panel when `selected` was cleared from the outside (the browser's back button, a shared link, the series lead), and the panel did not re-open when the URL named another record. The store subscription now closes/re-opens for `selected`, and the `record:selected` bus handler skips a record that is already on screen (no second manifest load). `close()` is unchanged: it still keeps the selection, because the comparison list's «hinzufügen» action and the harness rely on “select → close → pin”. |
+| `tests/history.test.mjs` | **10 new tests** (111 total) with a fake `history`/`location`/`window` and a hand-cranked clock: push vs replace per key set, coalescing (including a gesture longer than the window), bare-click interaction, start-up repair, popstate back/forward, no-op writes, fragment, junk URL, and no-`history` fallback. |
+| `scripts/browser-check.mjs` (maps-3's file, additive section 8l, noted) | **7 new checks** (97 total): the app adds no history entry while it starts up, forward restores it, opening a record is undoable, back closes it and keeps the search, forward re-opens it, a map drag is not a step, and one “back” undoes a whole typed search. Uses real mouse events and `history.back()` instead of counting `history.length` (browsers clamp it). Two small repairs in the same file: the pinned/selected id is read from `#result-list button[data-record-id]` (the `<li>` wrapper has no id, so `selectedRecord` was always `null`), and the “detail selection is shareable” assertion moved next to the `?sel=` link checks. |
+| `README.md`, `docs/run.md`, `coordination/README.md` | Feature list, a new “Browser history (back/forward)” table in the run book, 111 tests / 97 checks, status board refreshed to the real 98-record seed, decision **D6**. |
+
+### Verified (this runner, 2026-10-18 23:5x UTC)
+
+- `npm run check` ✓ — validation, **111/111** `node --test`, `wrangler deploy
+  --dry-run` (30 asset files, 28.76 KiB worker).
+- `node scripts/browser-check.mjs` → **97/97** against `wrangler dev`
+  (90 before this iteration, plus my 7 new checks in section 8l).
+- Behaviour after the fix, same probe: `start entries 2` (no start-up entry),
+  select → `3`, back → `/?from=1754` with the list intact, year change → push,
+  back → `?from=1754` (80 rows), forward → `?from=1794` (71 rows).
+- Mobile/desktop layout, contrast sweep, degraded-upstream, compare, series and
+  the whole existing harness stay green in the same run; screenshots in
+  `/tmp/shots-714f`.
+
+### Messages
+
+- **→ maps-3 (harness + `detail.js`)**: I added section **8l** to your
+  `browser-check.mjs` (before the console-hygiene block, self-contained with real
+  mouse events), changed the “detail selection is shareable” assertion to match
+  the `?sel=` checks, and made `detail.js` follow `selected` in both directions
+  (close on clear, re-open on a URL that names another record). `close()` itself
+  is untouched. Two lines of your harness are repaired: the selected id now comes
+  from the row's button, not its `<li>`. Revert/reword freely — the ids my checks
+  assert are `#result-list button[data-record-id]`, `#detail`, `#text-filter`,
+  `#map`.
+- **→ maps-2**: nothing in `map.js`/`search.js`/`results.js` changed. Your
+  debounced `push()` in `map.js` writes only `lat/lon/zoom`, which are
+  replace-only keys, so a pan cannot create a step — the check “a map drag
+  replaces the entry instead of adding history steps” pins that down. If you ever
+  add a *deliberate* action that should be undoable, use a key from
+  `HISTORY_PUSH_KEYS` or call `ctx.store.update(patch, { history: 'push' })`.
+- **→ maps-0**: no data change; the harness now reads the selected record's id
+  from the DOM, so the checks that compare against `recordIndex` finally do what
+  they were written to do.
+- **→ all**: `npm run check` + `node scripts/browser-check.mjs` stay the gate.
+  Nothing about the Workers config, the asset set or the CSP changed.
+- **→ all (D6 reminder)**: do not write store state during start-up unless it is
+  a `replace`-only key, and never re-introduce a selection-clearing path without
+  telling `detail.js` — it now follows `selected`.
 
 ## Iteration 7-13 — controls follow the cantonal scale, unused payload gone
 

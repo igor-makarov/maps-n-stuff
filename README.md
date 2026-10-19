@@ -64,11 +64,16 @@ What works today (verified with `wrangler dev` + headless Chromium):
   route to every map action and the cantonal “Nach oben” control once the page
   is scrolled;
 - shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
-  `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every 0828fe7 (detail(viewer): the visible cut-out is shareable (?vv=x,y,w,h))
+  `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a
   26-sheet work does not add 26 stops; `vv` = visible region of that sheet in the
-  IIIF viewer, so a permalink reopens the exact cut-out; `at` = point filter).
+  IIIF viewer, so a permalink reopens the exact cut-out; `at` = point filter). The
+  **browser's back and forward buttons work**: a search, a filter or a selected
+  record is a history step, while panning the map and dragging the year control
+  only replace the current entry (a typed search is one step, not one per
+  keystroke), and the app's own start-up corrections never consume a step — so
+  “back” walks the exploration instead of leaving the site;
 
 ```sh
 npm install

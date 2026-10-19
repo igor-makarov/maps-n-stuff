@@ -783,15 +783,34 @@ export function init(ctx) {
 
   /* -------------------------------------------------------------- events */
 
-  ctx.bus.on('record:selected', ({ record }) => open(record));
+  ctx.bus.on('record:selected', ({ record }) => {
+    // Re-selecting the record that is already on screen must not reload its
+    // manifest (the store subscription below opens it for URL-driven changes).
+    if (!record || (current?.id === record.id && !panel.hidden)) return;
+    open(record);
+  });
   // The comparison list is shareable state; keep the panel's pin label in sync
   // when the sidebar (or a shared ?cmp= link) changes it.
   ctx.store.subscribe((state, changed) => {
+    if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
     if (changed.includes('cmp')) updatePinButton(qs('#detail-pin'), current);
     // A hand-edited or reloaded `vv` (or a cleared one) drives the open viewer;
     // the viewer ignores a value that matches what is already on screen, so the
     // debounced write-back from the viewer cannot loop back into it.
     if (changed.includes('vv')) viewer?.restoreView?.(state.vv);
+    if (!changed.includes('selected')) return;
+    const record = state.selected ? (ctx.data.recordIndex.get(state.selected) ?? null) : null;
+    if (!record) {
+      // Cleared from the outside — the browser's back button, a shared link or
+      // the series lead (`collection` + `selected: ''`). The panel follows the
+      // URL instead of showing a record the state no longer names.
+      if (!panel.hidden) close();
+      return;
+    }
+    // The bus already opened the panel for a click in the list, the map or the
+    // comparison view; this branch covers the URL changing on its own
+    // (back/forward to another sheet, a hand-written ?sel= link).
+    if (current?.id !== record.id || panel.hidden) open(record, { keepSheet: true });
   });
   ctx.bus.on('records:loaded', () => {
     const id = ctx.store.getState().selected;
