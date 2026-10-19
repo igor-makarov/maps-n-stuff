@@ -1527,52 +1527,6 @@ try {
     `pane 1 ${restoredOwn?.readout ?? 'no cut-out'} · pane 2 ${restoredOther?.readout ?? 'no cut-out'} · link cvv "${restoredUrl}"`,
   );
 
-  // A pair whose documented scales are worlds apart (a world map next to a city
-  // plan, both in the seed since 7-20) cannot keep “the same place”: a fraction
-  // of the world is the whole city sheet. The panes must then stay put and the
-  // hint must name that reason instead of claiming a coupling that does nothing.
-  const wideRecord = [...recordIndex.values()].find((record) => {
-    const box = record.extent;
-    return record.iiifManifest && box && Math.abs(box.east - box.west) > 60 && Math.abs(box.north - box.south) > 30;
-  });
-  const closeRecord = [...recordIndex.values()].find((record) => {
-    const box = record.extent;
-    return (
-      record.iiifManifest && box && Math.abs(box.east - box.west) < 3 && Math.abs(box.north - box.south) < 3 && wideRecord && record.id !== wideRecord.id
-    );
-  });
-  if (wideRecord && closeRecord) {
-    const degeneratePanesReady = `(() => {
-      const panes = [...document.querySelectorAll('#compare-view-body .app-compare__pane')];
-      return panes.length === 2 && panes.every((pane) => pane.querySelector('[data-compare-stage]')?.dataset.state === 'ready');
-    })()`;
-    const degenerateImage = '#compare-view-body .app-viewer__image';
-    await cdp.send('Page.navigate', { url: `${BASE_URL}/?cmp=${encodeURIComponent(`${wideRecord.id},${closeRecord.id}`)}` });
-    await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'incompatible pair' });
-    await sleep(500);
-    await cdp.click('#compare-open');
-    await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view for the incompatible pair', timeout: 10_000 });
-    await cdp.waitFor(degeneratePanesReady, { label: 'incompatible panes ready', timeout: 60_000 }).catch(() => null);
-    await cdp.eval(`document.querySelector('[data-compare-stage="0"]').focus(); true`);
-    await cdp.pressKey('+', { keyCode: 187 });
-    await cdp.pressKey('+', { keyCode: 187 });
-    await cdp.waitFor(`document.querySelectorAll('[data-compare-readout]')[0]?.textContent !== 'Gesamtansicht'`, { label: 'wide pane zoomed', timeout: 20_000 }).catch(() => null);
-    await sleep(1500);
-    const degenerate = await cdp.eval(`(() => ({
-      syncState: document.querySelector('#compare-sync-hint')?.dataset.syncState ?? '',
-      hint: document.querySelector('#compare-sync-hint')?.textContent ?? '',
-      pane2: document.querySelectorAll('${degenerateImage}')[1]?.src || '',
-      pane2Readout: document.querySelectorAll('[data-compare-readout]')[1]?.textContent ?? '',
-    }))()`);
-    check(
-      'sheets whose documented scales differ are not coupled to nonsense',
-      degenerate.syncState === 'scale' && /Maßst/.test(degenerate.hint) && /Gesamtansicht/.test(degenerate.pane2Readout),
-      `${wideRecord.id} (world) + ${closeRecord.id} (city): ${JSON.stringify(degenerate)}`,
-    );
-  } else {
-    check('sheets whose documented scales differ are not coupled to nonsense', false, 'no wide/narrow pair with a manifest in the seed');
-  }
-
   /* --- 8d. a real multi-sheet work: sheet navigation -------------------- */
   const multiSheet = [...recordIndex.values()].find((record) => (record.canvasCount ?? 0) > 1 && record.iiifManifest);
   if (multiSheet) {

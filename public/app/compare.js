@@ -26,8 +26,8 @@ import { el, qs, setStatus, trapFocus, copyText, debounce } from './dom.js';
 import { createViewer } from './detail.js';
 import { fetchUpstreamJson } from './upstream.js';
 import {
+  coupledView,
   describeUpstreamError,
-  extentToView,
   formatCompareViews,
   parseCompareViews,
   parseManifest,
@@ -241,6 +241,13 @@ export function init(ctx) {
             el('p', { class: 'zh-hint', text: `${yearText(record)} · ${record.creatorText || (record.creators ?? []).join(', ') || 'Urheber unbekannt'}` }),
             el('p', { class: 'zh-hint', text: `${record.institution || record.providerId} · ${record.rights || 'Rechte nicht angegeben'}` }),
             el('p', { class: 'app-compare__readout zh-hint', 'data-compare-readout': '', text: viewerCapable(record) ? 'Ausschnitt wird geladen …' : '' }),
+            el('p', {
+              class: 'app-compare__coverage zh-hint',
+              'data-compare-coverage': String(index),
+              role: 'status',
+              hidden: true,
+              text: '',
+            }),
             viewerCapable(record)
               ? el('p', {
                   class: 'app-compare__viewhint zh-hint',
@@ -363,7 +370,7 @@ export function init(ctx) {
             },
           });
           instance.setCanvas(canvas, { label: canvas.label, restore: shared.get(record.id) ?? '' });
-          panes.push({ index, record, viewer: instance, stage });
+          panes.push({ index, record, viewer: instance, stage, coverage: '' });
         } catch (err) {
           if (token !== viewToken) return;
           showPaneFallback(stage, record, describeUpstreamError(err));
@@ -429,6 +436,8 @@ export function init(ctx) {
     const pane = panes.find((entry) => entry.index === index);
     if (!pane) return;
     pane.viewer.reset();
+    pane.coverage = '';
+    refreshPaneCoverage();
     refreshPaneReset(index);
     setStatus(status, `Karte ${index + 1} zeigt wieder das ganze Blatt.`, 'info');
   }
@@ -462,9 +471,16 @@ export function init(ctx) {
 
   /**
    * A zoom/pan in one pane follows in every other pane that documents an extent:
-   * the visible region becomes a geographic box,
-   * which is mapped back onto the other sheets’ pixels. Two viewers never report
-   * their own `setView` back, so this cannot loop.
+   * the visible region becomes a geographic box, which is mapped onto the other
+   * sheets’ pixels — but only where the two documented extents really meet. Two
+   * viewers never report their own `setView` back, so this cannot loop.
+   *
+   * A partner whose extent does not cover the box at all keeps its whole sheet
+   * **and says so**: clamping the box onto the sheet edges would show the wrong
+   * place, and staying still without a word looks like a broken coupling. The
+   * measured case that forced this: the 1546 world sheet (extent −180…180 / −90…90)
+   * zoomed to the tropics against the 1547 “Zürychgow” sheet (8.05…9.17° E) —
+   * there is nothing to show, so the pane states it.
    */
   function propagate(sourceIndex) {
     lastActivePane = sourceIndex;
@@ -477,44 +493,73 @@ export function init(ctx) {
       updateSyncHint(`Ausschnitt in Karte ${sourceIndex + 1} geändert – die Kopplung ist aus.`);
       return;
     }
-    let applied = 0;
-    let withoutExtent = 0;
-    const coarsePanes = [];
+    const followed = [];
+    const uncovered = [];
+    let partial = false;
     for (const pane of panes) {
       if (pane === source || pane.failed) continue;
-      if (!pane.record.extent) {
-        withoutExtent += 1;
-        continue;
-      }
       const target = pane.viewer.getView();
       if (!target) continue;
-      const view = extentToView(geo, target.bounds, pane.record.extent);
-      if (!view) continue;
-      // The mapping produced the whole sheet: the cut-out covers this document
-      // completely (or misses it), so a fraction of the source sheet is no place
-      // on this one. The viewer is still set — that is the honest result of the
-      // documented mapping — but the hint must not promise a close coupling.
-      const coarse = view.w >= target.bounds.w - 1 && view.h >= target.bounds.h - 1;
-      if (!pane.viewer.setView(view)) continue;
-      applied += 1;
-      if (coarse) coarsePanes.push(pane.index + 1);
+      const linked = coupledView(geo, target.bounds, pane.record.extent);
+      if (!linked) {
+        pane.coverage = '';
+        continue;
+      }
+      if (linked.coverage === 'outside') {
+        pane.coverage = 'outside';
+        uncovered.push(pane.index);
+        continue;
+      }
+      if (pane.viewer.setView(linked.view)) {
+        pane.coverage = linked.coverage === 'partial' ? 'partial' : '';
+        if (linked.coverage === 'partial') partial = true;
+        followed.push(pane.index);
+      }
     }
-    // "Nothing moved" and "only the whole sheet came out of it" have different
-    // reasons and the hint names the real one.
-    if (applied > 0 && coarsePanes.length === 0) {
-      updateSyncHint(`Ausschnitt von Karte ${sourceIndex + 1} auf ${applied} weitere Karte${applied === 1 ? '' : 'n'} übertragen.`, 'transferred');
-    } else if (applied > 0 && applied > coarsePanes.length) {
-      updateSyncHint(
-        `Ausschnitt von Karte ${sourceIndex + 1} auf ${applied - coarsePanes.length} weitere Karte${applied - coarsePanes.length === 1 ? '' : 'n'} übertragen; Karte ${coarsePanes.join(', ')} zeigt nur die ganze Karte (zu verschiedener Maßstab).`,
-        'scale',
-      );
-    } else if (coarsePanes.length > 0) {
-      updateSyncHint(
-        `Karte ${coarsePanes.join(', ')} zeigt nur die ganze Karte – die belegten Maßstäbe sind zu verschieden für eine engere Kopplung.`,
-        'scale',
-      );
-    } else if (withoutExtent > 0 && panes.length > 1) {
-      updateSyncHint(`Karte ${sourceIndex + 1} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`, 'no-extent');
+    refreshPaneCoverage();
+    updateSyncHint(couplingSentence(sourceIndex, followed, uncovered, partial));
+  }
+
+  /** “Karte 2” / “Karten 2 und 3” — the panes are numbered in their captions. */
+  function paneList(indexes) {
+    return indexes.length === 1 ? `Karte ${indexes[0] + 1}` : `Karten ${indexes.map((index) => index + 1).join(' und ')}`;
+  }
+
+  /** What just happened, in one plain-German sentence (read out by the hint). */
+  function couplingSentence(sourceIndex, followed, uncovered, partial) {
+    const from = `Karte ${sourceIndex + 1}`;
+    if (followed.length === 0 && uncovered.length === 0) {
+      return `${from} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`;
+    }
+    if (followed.length === 0) {
+      return `Der Ausschnitt von ${from} liegt ausserhalb der belegten Ausdehnung von ${paneList(uncovered)} – dort bleibt das ganze Blatt.`;
+    }
+    const shared = partial ? ' (gezeigt wird der gemeinsame Bereich)' : '';
+    if (uncovered.length === 0) {
+      return `Ausschnitt von ${from} auf ${paneList(followed)} übertragen${shared}.`;
+    }
+    return `Ausschnitt von ${from} auf ${paneList(followed)} übertragen${shared}; ${paneList(uncovered)} belegt dieses Gebiet nicht – dort bleibt das ganze Blatt.`;
+  }
+
+  /**
+   * The pane that is not part of the current cut-out explains itself, so the
+   * visitor does not have to guess why one map stayed wide while the other
+   * zoomed (the same honesty the panel uses for a missing manifest).
+   */
+  function refreshPaneCoverage() {
+    for (const pane of panes) {
+      const note = viewBody?.querySelector(`[data-compare-coverage="${pane.index}"]`);
+      const coverage = pane.failed ? '' : pane.coverage || '';
+      note?.closest('figure')?.setAttribute('data-coverage', coverage);
+      if (!note) continue;
+      const text =
+        coverage === 'outside'
+          ? 'Dieses Blatt belegt den gezeigten Ausschnitt nicht – es bleibt beim ganzen Blatt.'
+          : coverage === 'partial'
+            ? 'Gezeigt wird der gemeinsame Bereich; das Blatt reicht nicht weiter.'
+            : '';
+      note.textContent = text;
+      note.hidden = text === '';
     }
   }
 
@@ -527,13 +572,13 @@ export function init(ctx) {
       button.textContent = coupled ? 'Ausschnitte gekoppelt' : 'Ausschnitte koppeln';
       button.setAttribute('aria-label', coupled ? 'Kartenausschnitte entkoppeln' : 'Kartenausschnitte anhand der belegten Ausdehnung koppeln');
     }
+    refreshPaneCoverage();
     updateSyncHint();
   }
 
-  function updateSyncHint(text, state = '') {
+  function updateSyncHint(text) {
     const hint = qs('#compare-sync-hint');
     if (!hint) return;
-    hint.dataset.syncState = state;
     if (text) {
       hint.textContent = text;
       return;
