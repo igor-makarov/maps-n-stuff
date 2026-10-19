@@ -198,7 +198,7 @@ test('a date between snapshots resolves to the nearest snapshot and says so', as
 
   const exact = nearestSnapshot(years, 1500);
   assert.equal(exact.exact, true);
-  assert.match(snapshotNote(years, 1500), /published as its own map/);
+  assert.match(snapshotNote(years, 1500), /Snapshot 1500 CE — published map for this year/);
 
   const honest = snapshotNote(years, 1899);
   assert.match(honest, /1900 CE/);

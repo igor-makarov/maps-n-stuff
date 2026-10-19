@@ -11,9 +11,9 @@ import { bboxIntersects, filterRecords, overlapsRange, recordsInBounds, sortReco
 
 test('formatYear is honest about missing or BCE dates', () => {
   assert.equal(formatYear(1846), '1846');
-  assert.equal(formatYear(-20), '20 v. Chr.');
-  assert.equal(formatYear(null), 'ohne Jahr');
-  assert.equal(formatYear('nope'), 'ohne Jahr');
+  assert.equal(formatYear(-20), '20 BCE');
+  assert.equal(formatYear(null), 'Undated');
+  assert.equal(formatYear('nope'), 'Undated');
   assert.equal(formatYearRange(1846, 1846), '1846');
   assert.equal(formatYearRange(1846, 1860), '1846–1860');
   assert.equal(formatYearRange(null, 1860), '1860');

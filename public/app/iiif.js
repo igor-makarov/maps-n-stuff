@@ -1,5 +1,5 @@
 /**
- * IIIF helpers for Kartenzeit.
+ * IIIF helpers for Meridian Atlas.
  *
  * Everything here is pure (no DOM, no network) so it can be unit-tested with
  * `node --test` and reused by the detail viewer. Two flavours of IIIF are
@@ -26,10 +26,10 @@ export const MIN_REGION_FRACTION = 0.04;
 /* ------------------------------------------------------------------ labels */
 
 /**
- * IIIF labels are a string (v2) or a language map (v3, e.g. `{ de: ['Blatt 1'] }`).
+ * IIIF labels are a string (v2) or a language map (v3, e.g. `{ de: ['Sheet 1'] }`).
  * Returns a plain string or `null`; never invents a label.
  */
-export function labelText(label, preferred = ['de', 'en', 'none']) {
+export function labelText(label, preferred = ['en', 'none', 'de']) {
   if (label == null) return null;
   if (typeof label === 'string') return label.trim() || null;
   if (Array.isArray(label)) {
@@ -80,7 +80,7 @@ export function normaliseCanvas(canvas, index = 0) {
   return {
     id: canvas['@id'] ?? canvas.id ?? null,
     index,
-    label: labelText(canvas.label) ?? `Blatt ${index + 1}`,
+    label: labelText(canvas.label) ?? `Sheet ${index + 1}`,
     // Canvas size is the full-resolution image; the painting resource may be a
     // smaller derivative (`webcache/1000`), which is a *provider* choice.
     width: numberOrNull(canvas.width ?? resource?.width),
@@ -115,10 +115,10 @@ export function parseManifest(manifest) {
     : Array.isArray(manifest.items)
       ? manifest.items
       : null;
-  if (!raw) throw new Error('IIIF-Manifest ohne Bildseiten (weder items noch sequences).');
+  if (!raw) throw new Error('IIIF manifest has no image pages (no items or sequences).');
 
   const canvases = raw.map((canvas, index) => normaliseCanvas(canvas, index)).filter(Boolean);
-  if (canvases.length === 0) throw new Error('IIIF-Manifest ohne verwendbare Bildseiten.');
+  if (canvases.length === 0) throw new Error('IIIF manifest has no usable image pages.');
 
   return {
     id: manifest['@id'] ?? manifest.id ?? null,
@@ -209,7 +209,7 @@ export function sheetThumbUrl(canvas, width = 96) {
 export function sheetOptionLabel(canvas, index, total) {
   const number = Math.max(0, Math.floor(Number(index) || 0)) + 1;
   const count = Math.max(number, Math.floor(Number(total) || number));
-  const name = `Blatt ${number} von ${count}`;
+  const name = `Sheet ${number} of ${count}`;
   const label = String(canvas?.label ?? '').trim();
   if (!label) return name;
   // e-rara states the plain sheet number as the canvas label — sometimes written
@@ -564,7 +564,7 @@ export function eRaraTitleId(url) {
  *
  * Browser errors are English developer strings (`Failed to fetch`,
  * `NetworkError when attempting to fetch resource`) and the proxy adds
- * `HTTP 502` on top; neither belongs in the visible German UI. Our own messages
+ * `HTTP 502` on top; neither belongs in the visible English UI. Our own messages
  * (from `parseManifest`) are already written for visitors and are passed through
  * unchanged, so an unusable manifest still says exactly what is wrong with it.
  *
@@ -572,15 +572,15 @@ export function eRaraTitleId(url) {
  */
 export function describeUpstreamError(err) {
   const raw = String(err?.message ?? err ?? '').trim();
-  if (!raw) return 'Die Vorschau ist nicht erreichbar (unbekannter Fehler).';
+  if (!raw) return 'Preview unavailable (unknown error).';
   const status = raw.match(/\bHTTP (\d{3})\b/);
   if (/failed to fetch|networkerror|network error|load failed|err_/i.test(raw)) {
-    return 'Die Vorschau ist nicht erreichbar: Die Verbindung zum Bilddienst ist fehlgeschlagen.';
+    return 'Preview unavailable. Could not connect to the image service.';
   }
   if (status) {
-    return `Die Vorschau ist nicht erreichbar: Der Bilddienst antwortet mit HTTP ${status[1]}.`;
+    return `Preview unavailable. The image service returned HTTP ${status[1]}.`;
   }
   // A message we wrote ourselves (manifest parsing): keep it, it is precise.
-  if (/[äöüß]|Manifest|Bildseiten/i.test(raw)) return `Die Vorschau ist nicht verfügbar: ${raw}`;
-  return 'Die Vorschau ist nicht erreichbar: Der Bilddienst hat unerwartet geantwortet.';
+  if (/^IIIF manifest /i.test(raw)) return `Preview unavailable: ${raw}`;
+  return 'Preview unavailable. The image service returned an unexpected response.';
 }

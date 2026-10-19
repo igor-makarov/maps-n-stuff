@@ -220,7 +220,7 @@ export function clusterRecords(members) {
     .sort(
       (a, b) =>
         Number(a.yearStart ?? 0) - Number(b.yearStart ?? 0) ||
-        String(a.title ?? '').localeCompare(String(b.title ?? ''), 'de'),
+        String(a.title ?? '').localeCompare(String(b.title ?? ''), 'en'),
     );
 }
 
@@ -356,8 +356,8 @@ export function init(ctx) {
 
   container.setAttribute('tabindex', '0');
   container.setAttribute('role', 'region');
-  container.setAttribute('aria-roledescription', 'Interaktive Karte');
-  container.setAttribute('aria-label', 'Karte historischer Kartenwerke; Pfeiltasten verschieben, Plus und Minus zoomen, Home zeigt Zürich, Ende passt alle Treffer ein, P filtert auf die Kartenmitte. Ein Klick auf die Karte filtert die Treffer auf den angeklickten Punkt.');
+  container.setAttribute('aria-roledescription', 'Interactive map');
+  container.setAttribute('aria-label', 'Historical map explorer. Arrow keys pan, plus and minus zoom, Home shows the world, End fits results, P filters to the map centre. Click the map to find maps covering that point.');
 
   const baseLayer = el('div', { class: 'map-layer map-layer--base', 'aria-hidden': 'true' });
   const overlayLayer = el('div', { class: 'map-layer map-layer--overlay', 'aria-hidden': 'true' });
@@ -367,15 +367,15 @@ export function init(ctx) {
   const live = el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite' });
   const badge = el('div', { class: 'map-badge' });
   const controls = el('div', { class: 'map-controls' }, [
-    el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Hineinzoomen', 'aria-label': 'Hineinzoomen', onclick: () => zoomBy(1) }, ['+']),
-    el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Herauszoomen', 'aria-label': 'Herauszoomen', onclick: () => zoomBy(-1) }, ['−']),
+    el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Zoom in', 'aria-label': 'Zoom in', onclick: () => zoomBy(1) }, ['+']),
+    el('button', { class: 'zh-button zh-button--small', type: 'button', title: 'Zoom out', 'aria-label': 'Zoom out', onclick: () => zoomBy(-1) }, ['−']),
     el(
       'button',
       {
         class: 'zh-button zh-button--small',
         type: 'button',
-        title: 'Alle Treffer einpassen',
-        'aria-label': 'Alle Treffer einpassen',
+        title: 'Fit all results',
+        'aria-label': 'Fit all results',
         onclick: () => fitBounds(resultsBounds(), { maxZoom: 12 }),
       },
       ['⤢'],
@@ -385,8 +385,8 @@ export function init(ctx) {
       {
         class: 'zh-button zh-button--small',
         type: 'button',
-        title: 'Punktfilter auf die Kartenmitte setzen (ohne Maus)',
-        'aria-label': 'Punktfilter auf die Kartenmitte setzen',
+        title: 'Find maps covering the map centre (keyboard)',
+        'aria-label': 'Find maps covering the map centre',
         onclick: () => setPoint(state.lat, state.lon, 'center'),
       },
       ['⌖'],
@@ -483,13 +483,13 @@ export function init(ctx) {
     preview.replaceChildren(
       el('span', { class: 'map-preview__thumb map-preview__thumb--missing', text: '🗺', 'aria-hidden': 'true' }),
       el('div', { class: 'map-preview__body' }, [
-        el('span', { class: 'map-preview__year', text: `${cluster.members.length} Karten` }),
+        el('span', { class: 'map-preview__year', text: `${cluster.members.length} maps` }),
         ...titles.map((title) => el('span', { class: 'map-preview__title', text: title })),
         el('span', {
           class: 'map-preview__meta',
           text: canSplit
-            ? `${cluster.members.length > titles.length ? '… ' : ''}Klicken vergrössert die Ansicht.`
-            : `Klick öffnet die Liste dieser ${cluster.members.length} Karten (derselbe Kartenpunkt).`,
+            ? `${cluster.members.length > titles.length ? '… ' : ''}Click to zoom in.`
+            : `Click to browse these ${cluster.members.length} maps at the same location.`,
         }),
       ]),
     );
@@ -520,11 +520,11 @@ export function init(ctx) {
     const records = clusterRecords(cluster.members);
     if (records.length === 0) return;
     listedCluster = cluster;
-    const title = `Karten an diesem Punkt (${records.length})`;
+    const title = `Maps at this location (${records.length})`;
     const hint =
       state.zoom >= MAX_ZOOM
-        ? 'Diese Karten liegen im Katalog auf demselben Punkt; weiteres Vergrössern trennt sie nicht. Wählen Sie einen Titel.'
-        : 'Diese Karten liegen im Katalog auf demselben Punkt. Wählen Sie einen Titel; die Karte bleibt, wo sie ist.';
+        ? 'These maps share the same catalogue location. Choose a title from the list.'
+        : 'These maps share the same catalogue location. Choose a title to see its details.';
     const rows = records.map((record) =>
       el(
         'button',
@@ -552,7 +552,7 @@ export function init(ctx) {
           {
             class: 'map-cluster-list__close',
             type: 'button',
-            'aria-label': 'Liste schliessen',
+            'aria-label': 'Close list',
             onclick: () => closeClusterList({ restoreFocus: true }),
           },
           ['✕'],
@@ -573,7 +573,7 @@ export function init(ctx) {
                   zoomToCluster(target);
                 },
               },
-              ['Ansicht trotzdem vergrössern'],
+              ['Zoom in anyway'],
             ),
           ])
         : null,
@@ -780,7 +780,7 @@ export function init(ctx) {
       marker.textContent = String(point.index + 1);
       marker.dataset.id = record.id;
       marker.title = record.title;
-      marker.setAttribute('aria-label', `${point.index + 1}. ${record.title} – Details öffnen`);
+      marker.setAttribute('aria-label', `${point.index + 1}. ${record.title} – Open details`);
       marker.classList.toggle('is-selected', selected);
       // Inline transform wins over the class rule, so the selected scale has to
       // be part of the inline transform.
@@ -830,13 +830,13 @@ export function init(ctx) {
       cluster.element.dataset.count = String(members.length);
       cluster.element.dataset.action = canSplit ? 'zoom' : 'list';
       cluster.element.title = canSplit
-        ? `${members.length} Karten: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`
-        : `${members.length} Karten auf demselben Punkt: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`;
+        ? `${members.length} maps: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`
+        : `${members.length} maps at the same location: ${titles.join(' · ')}${members.length > titles.length ? ' …' : ''}`;
       cluster.element.setAttribute(
         'aria-label',
         canSplit
-          ? `${members.length} Karten in diesem Bereich – Ansicht vergrössern. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`
-          : `${members.length} Karten auf demselben Kartenpunkt – Liste öffnen. Enthält: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`,
+          ? `${members.length} maps in this area. Zoom in to explore. Includes: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`
+          : `${members.length} maps at the same location. Open list. Includes: ${titles.join('; ')}${members.length > titles.length ? ' …' : ''}`,
       );
       cluster.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     };
@@ -948,9 +948,9 @@ export function init(ctx) {
       host.textContent = '';
       return;
     }
-    const parts = [`Ausschnitte: ${info.withExtent} von ${info.filtered} gefilterten Karten mit dokumentiertem Ausmass`];
-    parts.push(info.areas < info.visible ? `${info.visible} im Bild, in ${info.areas} Flächen gebündelt` : `${info.visible} im Bild`);
-    if (info.rects.length < info.areas) parts.push(`nur die ${info.rects.length} grössten gezeichnet`);
+    const parts = [`Footprints: ${info.withExtent} of ${info.filtered} filtered maps with documented extents`];
+    parts.push(info.areas < info.visible ? `${info.visible} in view, grouped into ${info.areas} areas` : `${info.visible} in view`);
+    if (info.rects.length < info.areas) parts.push(`showing the ${info.rects.length} largest areas`);
     host.textContent = `${parts.join(' · ')}.`;
   }
 
@@ -960,7 +960,7 @@ export function init(ctx) {
     for (const chip of document.querySelectorAll('[data-map-cmd="extents"]')) {
       chip.setAttribute('aria-pressed', on ? 'true' : 'false');
       // The chip states the action; the inline link in the hint keeps its label.
-      if (chip.dataset.mapCmdLabel !== 'fixed') chip.textContent = on ? 'Ausschnitte ausblenden' : 'Ausschnitte zeigen';
+      if (chip.dataset.mapCmdLabel !== 'fixed') chip.textContent = on ? 'Hide footprints' : 'Show footprints';
     }
   }
 
@@ -1053,7 +1053,7 @@ export function init(ctx) {
         class: 'map-point',
         'data-at': state.at,
         'aria-hidden': 'true',
-        title: `Punktfilter: ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°`,
+        title: `Point filter: ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°`,
         style: `transform: translate3d(${x}px, ${y}px, 0)`,
       }),
     );
@@ -1068,13 +1068,13 @@ export function init(ctx) {
     const extra = qs('#map-attribution-extra');
     if (extra) {
       extra.textContent = state.overlay
-        ? `Ebene: ${state.overlay.title} (${state.overlay.attribution ?? '© swisstopo'})`
+        ? `Overlay: ${state.overlay.title} (${state.overlay.attribution ?? '© swisstopo'})`
         : '';
     }
   }
 
   function updateLive() {
-    live.textContent = `Kartenausschnitt: ${state.lat.toFixed(3)}° N, ${state.lon.toFixed(3)}° O, Zoomstufe ${state.zoom}.`;
+    live.textContent = `Map centre: ${state.lat.toFixed(3)}° latitude, ${state.lon.toFixed(3)}° longitude, zoom ${state.zoom}.`;
   }
 
   /** Tell the user how many of the filtered records are pins in this viewport. */
@@ -1086,13 +1086,13 @@ export function init(ctx) {
     // Records without any documented position can never become a pin; say so
     // rather than letting the counts read as if the map showed everything.
     const unplaced = state.unplacedRecords ?? 0;
-    const unplacedNote = unplaced > 0 ? ` · ${unplaced} ohne dokumentierten Standort.` : '';
+    const unplacedNote = unplaced > 0 ? ` · ${unplaced} without a documented location.` : '';
     host.textContent =
       total === 0
         ? ''
         : visible === 0
-          ? `Keine der gefilterten Karten liegen in diesem Ausschnitt – «Treffer einpassen» zeigt sie.${unplacedNote}`
-          : `${visible} von ${total} gefilterten Karten in diesem Ausschnitt.${unplacedNote}`;
+          ? `No filtered maps in this view. Use “Fit results” to find them.${unplacedNote}`
+          : `${visible} of ${total} filtered maps in this view.${unplacedNote}`;
   }
 
   const push = debounce(() => {
@@ -1197,7 +1197,7 @@ export function init(ctx) {
     const text = String(value);
     if (/^\d{8}$/.test(text)) return `${text.slice(6, 8)}.${text.slice(4, 6)}.${text.slice(0, 4)}`;
     if (/^\d{4}$/.test(text)) return text;
-    return text === 'current' ? 'aktuell' : text;
+    return text === 'current' ? 'current' : text;
   }
 
   /* ---------------- interaction ---------------- */

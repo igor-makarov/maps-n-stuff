@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * End-to-end browser check for the Kartenzeit Workers site.
+ * End-to-end browser check for the Meridian Atlas Workers site.
  *
  * Drives the Chromium binary that is already installed on the runner over the
  * DevTools protocol (no Playwright/Puppeteer download, no extra npm dependency).
@@ -370,7 +370,7 @@ cdp.on('Runtime.consoleAPICalled', (params) => {
   // main.js catches a module whose init() throws and logs a warning. That is the
   // right runtime behaviour, but it means a whole feature can be dead while the
   // console stays quiet, so the harness treats it as a failure.
-  const deadModule = /\[kartenzeit\] module ".*" not available/.test(text);
+  const deadModule = /\[meridian-atlas\] module ".*" not available/.test(text);
   consoleMessages.push({ level: deadModule ? 'error' : params.type, text });
 });
 cdp.on('Runtime.exceptionThrown', (params) => {
@@ -408,7 +408,7 @@ try {
 
   const recordCount = await cdp.waitFor(`document.querySelectorAll('#result-list > *').length`, { label: 'result rows' });
   check('result list renders real records', recordCount > 5, `${recordCount} rows`);
-  await cdp.waitFor(`window.__kartenzeitReady !== undefined || document.documentElement.dataset.app === 'kartenzeit'`, { label: 'app bootstrap' });
+  await cdp.waitFor(`window.__kartenzeitReady !== undefined || document.documentElement.dataset.app === 'meridian-atlas'`, { label: 'app bootstrap' });
   const tiles = await cdp.waitFor(
     `(() => { const imgs = [...document.querySelectorAll('#map img')]; return imgs.filter((i) => i.complete && i.naturalWidth > 0).length; })()`,
     { label: 'map tiles', timeout: 25_000 },
@@ -455,13 +455,13 @@ try {
     };
   })()`);
   const zeroCounts = (collectionFacet?.options ?? []).filter((o) => /\(0\)$/.test(o.text)).length;
-  const periodHint = periodRange?.from && periodRange?.to ? `Zeitraum ${periodRange.from}–${periodRange.to}` : null;
+  const periodHint = periodRange?.from && periodRange?.to ? `published in ${periodRange.from}–${periodRange.to}` : null;
   check(
     'collection facet lists the real series with counts for the current period',
     Boolean(collectionFacet) &&
       collectionFacet.options.length >= 3 &&
       zeroCounts > 0 &&
-      (periodHint ? collectionFacet.hint.includes(periodHint) : /Zeitraum \d{4}–\d{4}/.test(collectionFacet.hint)),
+      (periodHint ? collectionFacet.hint.includes(periodHint) : /published in \d{4}–\d{4}/.test(collectionFacet.hint)),
     `${collectionFacet?.options.length ?? 0} options, ${zeroCounts} empty in period, expected "${periodHint}", hint: ${collectionFacet?.hint ?? 'missing'}`,
   );
   const collectionChoice = await cdp.eval(`(() => {
@@ -643,7 +643,7 @@ try {
       && brushPreview.hint.includes(`${brushFrom.start}–${brushTo.end}`)
       && brushState.current.length === 3
       && brushState.brushed === 0
-      && !/gewählt/.test(brushState.hint)
+      && !/selected:/.test(brushState.hint)
       && brushState.rows <= histogramScope.sum,
     `${brushFrom.start}–${brushTo.end}: mid-drag “${brushPreview.hint}” (${brushPreview.brushed} bars) -> ${brushState.search}, ${brushState.rows} rows, ${brushState.current.join(',')}`,
   );
@@ -698,7 +698,7 @@ try {
       sourceHref: link?.href || null,
       institution: expected
         ? text.includes(expected)
-        : /Zentralbibliothek|ETH-Bibliothek|swisstopo|Universitätsbibliothek|Bibliothèque/.test(text),
+        : /Zentralbibliothek|ETH-Bibliothek|swisstopo|Universitätsbibliothek|Bibliothèque|Library of Congress/.test(text),
       rights: /Public Domain|Rechte|OGD|©/i.test(text),
       previewSrc: img?.src || null,
       previewLoaded: Boolean(img && img.complete && img.naturalWidth > 0),
@@ -821,7 +821,7 @@ try {
     /e-rara\.ch\/i3f\/v\d+\/\d+\/\d+,\d+,\d+,\d+\/\d+,\/0\/default\.jpg$/.test(zoomed.src) && zoomed.decodeW >= Math.min(300, zoomed.stageW),
     JSON.stringify(zoomed).slice(0, 220),
   );
-  check('viewer reports the real resolution and cut-out', /Aufl\u00f6sung \d+ %/.test(zoomed.readout) && /Ausschnitt/.test(zoomed.readout), zoomed.readout);
+  check('viewer reports the real resolution and cut-out', /Resolution \d+ %/.test(zoomed.readout) && /Region/.test(zoomed.readout), zoomed.readout);
   await cdp.screenshot(path.join(OUT_DIR, '02b-detail-zoom.png')).then(() => report.screenshots.push('02b-detail-zoom.png'));
 
   // A real click focuses the stage, like a keyboard user tabbing into it.
@@ -880,11 +880,11 @@ try {
   await cdp.eval(`window.__kzBefore = 1`);
   await cdp.send('Page.navigate', { url: `${BASE_URL}/?${impossible}` });
   await cdp.waitFor(`document.readyState === 'complete' && !window.__kzBefore`, { label: 'reload with an impossible ?vv= value', timeout: 30_000 });
-  const regionFallback = await waitForViewer('(v) => v.decoded && /Gesamtansicht/.test(v.readout)', 30_000);
+  const regionFallback = await waitForViewer('(v) => v.decoded && /Whole sheet/.test(v.readout)', 30_000);
   const fallbackSearch = await cdp.eval(`location.search`);
   check(
     'an impossible ?vv= value shows the whole sheet and is dropped',
-    /Gesamtansicht/.test(regionFallback.readout) && !/(?:^|&)vv=/.test(fallbackSearch),
+    /Whole sheet/.test(regionFallback.readout) && !/(?:^|&)vv=/.test(fallbackSearch),
     `${regionFallback.readout} · ${fallbackSearch}`,
   );
   await cdp.screenshot(path.join(OUT_DIR, '02c-region-permalink.png')).then(() => report.screenshots.push('02c-region-permalink.png'));
@@ -1000,7 +1000,7 @@ try {
   // check fail for reasons that have nothing to do with the hand-off.
   const periodExpected = await cdp.eval(`(() => {
     const text = document.querySelector('#detail')?.textContent || '';
-    const m = text.match(/Publikationsjahr\\s*(\\d{4})(?:\\s*[–-]\\s*(\\d{4}))?/);
+    const m = text.match(/Publication year\\s*(\\d{4})(?:\\s*[–-]\\s*(\\d{4}))?/);
     return m ? { from: m[1], to: m[2] || m[1] } : null;
   })()`);
   const periodButton = await cdp.eval(`(() => {
@@ -1357,7 +1357,7 @@ try {
   })()`);
   check(
     'the comparison mounts a real IIIF viewer per pane and offers the coupling switch',
-    coupledUi.stages === 2 && coupledUi.pressed === 'true' && coupledUi.hidden === false && /gekoppelt/.test(coupledUi.text) && /entkoppeln/.test(coupledUi.label) && coupledUi.readouts.every((text) => text.length > 0),
+    coupledUi.stages === 2 && coupledUi.pressed === 'true' && coupledUi.hidden === false && /linked/.test(coupledUi.text) && /Unlink/.test(coupledUi.label) && coupledUi.readouts.every((text) => text.length > 0),
     JSON.stringify(coupledUi).slice(0, 260),
   );
 
@@ -1371,13 +1371,13 @@ try {
   const paneOneZoomed = await waitForComparePane(0, `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane1Before)}`, 40_000).catch(() => null);
   const followed = await waitForComparePane(
     1,
-    `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane2Before)} && /Ausschnitt/.test(pane.readout)`,
+    `(pane) => pane.decoded && pane.src !== ${JSON.stringify(pane2Before)} && /Region/.test(pane.readout)`,
     40_000,
   ).catch(() => null);
   const pane1After = await cdp.eval(`document.querySelectorAll('#compare-view-body .app-viewer__image')[0]?.src || ''`);
   check(
     'zooming one pane follows in the other (coupled through the documented extent)',
-    Boolean(paneOneZoomed) && Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Ausschnitt \d+×\d+/.test(followed.readout),
+    Boolean(paneOneZoomed) && Boolean(followed) && pane1After !== pane1Before && followed.src !== pane2Before && /Region \d+×\d+/.test(followed.readout),
     `pane 1 ${pane1Before.slice(-32)} -> ${pane1After.slice(-32)} · pane 2 ${pane2Before.slice(-32)} -> ${followed ? followed.src.slice(-32) : 'unchanged'} (${followed?.readout ?? 'no readout'})`,
   );
   await cdp.screenshot(path.join(OUT_DIR, '11-compare-coupled.png')).then(() => report.screenshots.push('11-compare-coupled.png'));
@@ -1464,7 +1464,7 @@ try {
   await cdp.pressKey('+', { keyCode: 187 });
   const zoomedPane = await waitForComparePane(
     0,
-    `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout) && pane.src !== ${JSON.stringify(paneOneBefore)}`,
+    `(pane) => pane.decoded && /Region/.test(pane.readout) && pane.src !== ${JSON.stringify(paneOneBefore)}`,
     40_000,
   ).catch(() => null);
   // The viewer reports its region debounced (400 ms), and the URL write after it.
@@ -1482,7 +1482,7 @@ try {
   check(
     'zooming a comparison pane writes that pane’s own cut-out as shareable state (cvv)',
     resetBefore.length === 2 &&
-      resetBefore.every((button) => button.disabled && /Ganzes Blatt/.test(button.text)) &&
+      resetBefore.every((button) => button.disabled && /Whole sheet/.test(button.text)) &&
       Boolean(cutout) &&
       (cutout?.value ?? '').split(';').includes(`${pinnedIds[0]}@${cutout?.region}`),
     `reset buttons ${JSON.stringify(resetBefore)} · cvv "${cutout?.value ?? 'none'}" vs its own request ${cutout?.region ?? 'none'} (${zoomedPane?.readout ?? 'no readout'})`,
@@ -1495,7 +1495,7 @@ try {
         const readouts = [...document.querySelectorAll('[data-compare-readout]')].map((node) => node.textContent || '');
         const buttons = ${resetButtons};
         const cvv = new URLSearchParams(location.search).get('cvv') || '';
-        return readouts.length === 2 && readouts.every((text) => /Gesamtansicht/.test(text)) && cvv === '' && buttons.every((button) => button.disabled)
+        return readouts.length === 2 && readouts.every((text) => /Whole sheet/.test(text)) && cvv === '' && buttons.every((button) => button.disabled)
           ? { readouts, cvv, disabled: buttons.map((button) => button.disabled) }
           : null;
       })()`,
@@ -1514,8 +1514,8 @@ try {
   await sleep(500);
   await cdp.click('#compare-open');
   await cdp.waitFor(`document.querySelector('#compare-view') && !document.querySelector('#compare-view').hidden`, { label: 'compare view for the shared cut-out', timeout: 10_000 });
-  const restoredOwn = await waitForComparePane(0, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
-  const restoredOther = await waitForComparePane(1, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+  const restoredOwn = await waitForComparePane(0, `(pane) => pane.decoded && /Region/.test(pane.readout)`, 60_000).catch(() => null);
+  const restoredOther = await waitForComparePane(1, `(pane) => pane.decoded && /Region/.test(pane.readout)`, 60_000).catch(() => null);
   const restoredUrl = await cdp.eval(`new URLSearchParams(location.search).get('cvv') || ''`);
   await cdp.screenshot(path.join(OUT_DIR, '11c-compare-cutout.png')).then(() => report.screenshots.push('11c-compare-cutout.png'));
   check(
@@ -1580,7 +1580,7 @@ try {
     await cdp.pressKey('+', { keyCode: 187 });
     await cdp.pressKey('+', { keyCode: 187 });
     await cdp.pressKey('+', { keyCode: 187 });
-    const worldZoomed = await waitForComparePane(0, `(pane) => pane.decoded && /Ausschnitt/.test(pane.readout)`, 60_000).catch(() => null);
+    const worldZoomed = await waitForComparePane(0, `(pane) => pane.decoded && /Region/.test(pane.readout)`, 60_000).catch(() => null);
     const uncovered = await cdp
       .waitFor(
         `(() => {
@@ -1609,9 +1609,9 @@ try {
     check(
       'a world sheet next to a distant plan: the pane says the cut-out is off its sheet',
       Boolean(uncovered) &&
-        /Ausschnitt/.test(worldZoomed?.readout ?? '') &&
-        /Gesamtansicht/.test(uncovered?.readout ?? '') &&
-        /belegt den gezeigten Ausschnitt nicht/.test(uncovered?.note ?? '') &&
+        /Region/.test(worldZoomed?.readout ?? '') &&
+        /Whole sheet/.test(uncovered?.readout ?? '') &&
+        /does not cover the selected region/.test(uncovered?.note ?? '') &&
         /ausserhalb der belegten Ausdehnung/.test(uncovered?.hint ?? '') &&
         planPaneAfter === planPaneBefore &&
         degenerateCvv.startsWith(`${worldSheet.id}@`) &&
@@ -1644,7 +1644,7 @@ try {
     'a comparison link that uncoupled the panes reopens decoupled (csync=0) and says so',
     uncoupledLink.pressed === 'false' &&
       /koppeln/.test(uncoupledLink.text) &&
-      /Kopplung ist aus/.test(uncoupledLink.hint) &&
+      /Linked views are off/.test(uncoupledLink.hint) &&
       uncoupledLink.csync === '0' &&
       uncoupledLink.focus === 'compare-view-close',
     JSON.stringify(uncoupledLink).slice(0, 240),
@@ -1661,7 +1661,7 @@ try {
   }))()`);
   check(
     'the coupling switch is keyboard-operable and coupled stays the default in the URL',
-    recoupledLink.pressed === 'true' && /Ausschnitte gekoppelt/.test(recoupledLink.text) && recoupledLink.csync === null && /gekoppelt/.test(recoupledLink.status),
+    recoupledLink.pressed === 'true' && /Views linked/.test(recoupledLink.text) && recoupledLink.csync === null && /linked/.test(recoupledLink.status),
     JSON.stringify(recoupledLink).slice(0, 240),
   );
 
@@ -1696,7 +1696,7 @@ try {
       navHidden: document.querySelector('#page-nav')?.hidden,
       prevDisabled: document.querySelector('#page-prev')?.disabled,
       src: document.querySelector('.app-viewer__image')?.src || '',
-      hint: /Blatt wechseln: Alt/.test(document.querySelector('.app-viewer__hint')?.textContent || ''),
+      hint: /Change sheet: Alt/.test(document.querySelector('.app-viewer__hint')?.textContent || ''),
     }))()`);
     await cdp.screenshot(path.join(OUT_DIR, '05-multi-sheet.png')).then(() => report.screenshots.push('05-multi-sheet.png'));
     await cdp.click('#page-next');
@@ -1720,9 +1720,9 @@ try {
       'a real multi-sheet work offers working sheet navigation',
       sheetOne.navHidden === false &&
         sheetOne.hint === true &&
-        sheetOne.label === `Blatt 1 von ${expectedTotal}` &&
+        sheetOne.label === `Sheet 1 of ${expectedTotal}` &&
         sheetOne.prevDisabled === true &&
-        sheetTwo.label === `Blatt 2 von ${expectedTotal}` &&
+        sheetTwo.label === `Sheet 2 of ${expectedTotal}` &&
         sheetTwoSrc !== sheetOne.src &&
         sheetTwo.prevDisabled === false,
       `${multiSheet.id} (${expectedTotal} Blatt) · "${sheetOne.label}" -> "${sheetTwo.label}" ${sheetOne.src.slice(-40)} -> ${sheetTwoSrc.slice(-40)}`,
@@ -1744,7 +1744,7 @@ try {
     }))()`);
     check(
       'a shared ?sh= link opens that sheet and the strip marks it',
-      deepLink.label === `Blatt ${total} von ${total}` && deepLink.active === String(total - 1) && deepLink.strip === total && deepLink.stripHidden === false,
+      deepLink.label === `Sheet ${total} of ${total}` && deepLink.active === String(total - 1) && deepLink.strip === total && deepLink.stripHidden === false,
       `${multiSheet.id} sh=${total} -> ${JSON.stringify(deepLink)}`,
     );
 
@@ -1766,7 +1766,7 @@ try {
     const clamped = await cdp.eval(`(() => ({ label: document.querySelector('#page-label')?.textContent || '', sh: new URLSearchParams(location.search).get('sh') }))()`);
     check(
       'an out-of-range sheet number is clamped and written back to the URL',
-      clamped.label === `Blatt ${total} von ${total}` && clamped.sh === String(total),
+      clamped.label === `Sheet ${total} of ${total}` && clamped.sh === String(total),
       JSON.stringify(clamped),
     );
 
@@ -1775,7 +1775,7 @@ try {
     let stripSwitch = null;
     try {
       stripSwitch = await cdp.waitFor(
-        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; const sh = new URLSearchParams(location.search).get('sh'); return label === 'Blatt 1 von ${total}' && sh === null ? { label, sh } : ''; })()`,
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; const sh = new URLSearchParams(location.search).get('sh'); return label === 'Sheet 1 of ${total}' && sh === null ? { label, sh } : ''; })()`,
         { label: 'strip click', timeout: 10_000 },
       );
     } catch {
@@ -1783,7 +1783,7 @@ try {
     }
     check(
       'clicking a sheet in the strip switches to it (sheet 1 is the default URL state)',
-      stripSwitch?.label === `Blatt 1 von ${total}` && stripSwitch?.sh === null,
+      stripSwitch?.label === `Sheet 1 of ${total}` && stripSwitch?.sh === null,
       JSON.stringify(stripSwitch),
     );
 
@@ -1800,7 +1800,7 @@ try {
     let stripArrow = null;
     try {
       stripArrow = await cdp.waitFor(
-        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Blatt 2 von ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null, sh: new URLSearchParams(location.search).get('sh') } : ''; })()`,
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Sheet 2 of ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null, sh: new URLSearchParams(location.search).get('sh') } : ''; })()`,
         { label: 'strip arrow key', timeout: 10_000 },
       );
     } catch {
@@ -1810,7 +1810,7 @@ try {
     let stripHome = null;
     try {
       stripHome = await cdp.waitFor(
-        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Blatt 1 von ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null } : ''; })()`,
+        `(() => { const label = document.querySelector('#page-label')?.textContent || ''; return label === 'Sheet 1 of ${total}' ? { label, focused: document.activeElement?.dataset?.sheet ?? null } : ''; })()`,
         { label: 'strip Home key', timeout: 10_000 },
       );
     } catch {
@@ -1818,7 +1818,7 @@ try {
     }
     check(
       'the sheet strip is a single tab stop and ←/→/Home walk the sheets',
-      stripTabs.tabbable.length === 1 && stripTabs.tabbable[0] === '0' && stripArrow?.label === `Blatt 2 von ${total}` && stripArrow.focused === '1' && stripHome?.label === `Blatt 1 von ${total}` && stripHome?.focused === '0',
+      stripTabs.tabbable.length === 1 && stripTabs.tabbable[0] === '0' && stripArrow?.label === `Sheet 2 of ${total}` && stripArrow.focused === '1' && stripHome?.label === `Sheet 1 of ${total}` && stripHome?.focused === '0',
       `${JSON.stringify(stripTabs)} -> ${JSON.stringify(stripArrow)} -> ${JSON.stringify(stripHome)}`,
     );
 
@@ -1904,7 +1904,7 @@ try {
 
   /* --- 8o. large works: jump to a sheet, thumbnails only where they show --- */
   // The seed's largest digitised work (65 sheets since iteration 7-16). Sheet 20
-  // is 19 “Blatt ›” clicks away, and the strip used to request every thumbnail
+  // is 19 “Sheet ›” clicks away, and the strip used to request every thumbnail
   // while showing about ten — both are what this section measures. The option
   // label may carry the upstream canvas label as a suffix, so it is compared by
   // prefix (maps-2 repaired this stale expectation after the data grew).
@@ -1927,7 +1927,7 @@ try {
     await cdp.send('Page.navigate', { url: `${BASE_URL}/?sel=${encodeURIComponent(bigWork.id)}&sh=20` });
     await cdp.waitFor(`document.querySelector('#viewer-stage')?.dataset.state === 'ready'`, { label: 'large work viewer', timeout: 30_000 });
     const announced = await cdp
-      .waitFor(`/^Blatt 20 von ${bigTotal} geladen\\.$/.test(document.querySelector('#viewer-status')?.textContent || '') ? document.querySelector('#viewer-status').textContent : ''`, {
+      .waitFor(`/^Sheet 20 of ${bigTotal} loaded\\.$/.test(document.querySelector('#viewer-status')?.textContent || '') ? document.querySelector('#viewer-status').textContent : ''`, {
         label: 'sheet announcement',
         timeout: 15_000,
       })
@@ -1950,10 +1950,10 @@ try {
       largeJump.visible === true &&
         largeJump.options === bigTotal &&
         largeJump.value === '20' &&
-        largeJump.option20.startsWith(`Blatt 20 von ${bigTotal}`) &&
-        largeJump.label === `Blatt 20 von ${bigTotal}` &&
+        largeJump.option20.startsWith(`Sheet 20 of ${bigTotal}`) &&
+        largeJump.label === `Sheet 20 of ${bigTotal}` &&
         largeJump.active === '19' &&
-        announced === `Blatt 20 von ${bigTotal} geladen.`,
+        announced === `Sheet 20 of ${bigTotal} loaded.`,
       `${bigWork.id} (${bigTotal} Blätter) -> ${JSON.stringify(largeJump)} announced "${announced}"`,
     );
     check(
@@ -1977,7 +1977,7 @@ try {
           const src = document.querySelector('.app-viewer__image')?.src || '';
           // The viewer swaps the bitmap only when the new region has arrived, so
           // waiting for the label alone would read the previous sheet's image.
-          if (label !== 'Blatt 7 von ${bigTotal}' || sh !== '7' || active?.dataset.sheet !== '6' || !src || src === ${JSON.stringify(sheet20Src)}) return '';
+          if (label !== 'Sheet 7 of ${bigTotal}' || sh !== '7' || active?.dataset.sheet !== '6' || !src || src === ${JSON.stringify(sheet20Src)}) return '';
           const button = active.getBoundingClientRect();
           const box = strip.getBoundingClientRect();
           return {
@@ -1996,7 +1996,7 @@ try {
     }
     check(
       'the jump control opens sheet 7, centres it in the strip and shares ?sh=7',
-      jumpState?.label === `Blatt 7 von ${bigTotal}` &&
+      jumpState?.label === `Sheet 7 of ${bigTotal}` &&
         jumpState?.sh === '7' &&
         jumpState?.active === '6' &&
         jumpState?.value === '7' &&
@@ -2079,7 +2079,7 @@ try {
         overlayPanel.tileLoaded === true &&
         /WMTS-Kachelprobe/.test(overlayPanel.caption) &&
         /swisstopo/.test(overlayPanel.caption) &&
-        overlayPanel.label === 'Als Kartenebene einblenden' &&
+        overlayPanel.label === 'Show as overlay' &&
         overlayPanel.pressed === 'false',
       `${overlayRecord.id} -> ${JSON.stringify(overlayPanel)}`,
     );
@@ -2116,7 +2116,7 @@ try {
         overlayOn?.select === overlayRecord.overlay.layerId &&
         overlayOn?.tiles > 0 &&
         overlayOn?.pressed === 'true' &&
-        overlayOn?.label === 'Kartenebene ausblenden' &&
+        overlayOn?.label === 'Hide overlay' &&
         /eingeblendet/.test(overlayOn?.status ?? ''),
       `${overlayRecord.id} -> ${JSON.stringify(overlayOn)}`,
     );
@@ -2146,7 +2146,7 @@ try {
     }
     check(
       'a second press removes the layer and the sidebar select follows',
-      overlayOff?.ov === null && overlayOff?.select === '' && overlayOff?.tiles === 0 && overlayOff?.label === 'Als Kartenebene einblenden',
+      overlayOff?.ov === null && overlayOff?.select === '' && overlayOff?.tiles === 0 && overlayOff?.label === 'Show as overlay',
       JSON.stringify(overlayOff),
     );
     await cdp.pressKey('Escape');
@@ -2202,7 +2202,7 @@ try {
   let shareStatus = null;
   try {
     shareStatus = await cdp.waitFor(
-      `(() => { const text = document.querySelector('#permalink-status')?.textContent || ''; return /kopiert|Kopieren nicht möglich/.test(text) ? { text, url: location.href } : ''; })()`,
+      `(() => { const text = document.querySelector('#permalink-status')?.textContent || ''; return /copied|Could not copy/.test(text) ? { text, url: location.href } : ''; })()`,
       { label: 'share status', timeout: 10_000 },
     );
   } catch {
@@ -2390,7 +2390,7 @@ try {
       markerInfo.w >= 24 &&
       markerInfo.h >= 24 &&
       markerInfo.bg !== 'rgb(255, 255, 255)' &&
-      /Ausschnitt/.test(markerInfo.visible),
+      /view/.test(markerInfo.visible),
     JSON.stringify(markerInfo),
   );
   await cdp.screenshot(path.join(OUT_DIR, '05-map-pins.png')).then(() => report.screenshots.push('05-map-pins.png'));
@@ -2496,9 +2496,9 @@ try {
       pileCluster.count === pile.count &&
         pileCluster.action === 'list' &&
         !pileCluster.cardHidden &&
-        /Liste öffnen/.test(pileCluster.label) &&
-        !/Ansicht vergrössern/.test(pileCluster.label) &&
-        /Klick öffnet die Liste/.test(pileCluster.cardText),
+        /Open list/.test(pileCluster.label) &&
+        !/Zoom in to explore/.test(pileCluster.label) &&
+        /Click to browse/.test(pileCluster.cardText),
       JSON.stringify(pileCluster),
     );
 
@@ -2573,7 +2573,7 @@ try {
     );
 
     // The list does not remove the zoom gesture, it only stops being the *only*
-    // offer: “Ansicht trotzdem vergrössern” really zooms (and cannot loop back
+    // offer: “Zoom in anyway” really zooms (and cannot loop back
     // into the list it came from).
     await cdp.eval(`document.querySelector('.map-cluster[data-action="list"]').focus(); true`);
     await cdp.pressKey('Enter');
@@ -2588,7 +2588,7 @@ try {
     })()`);
     check(
       'the pile list still offers a real zoom (no dead end)',
-      pileZoom.label.includes('vergrössern') && Number(pileZoom.after) > Number(pileZoom.before) && pileZoom.hidden,
+      pileZoom.label.includes('Zoom in') && Number(pileZoom.after) > Number(pileZoom.before) && pileZoom.hidden,
       JSON.stringify(pileZoom),
     );
   } else {
@@ -2807,8 +2807,8 @@ try {
     'the map selection is announced with its row number in the live region',
     Boolean(revealAfter) &&
       revealAfter.live.includes(`Zeile ${revealTarget.index + 1} von `) &&
-      revealAfter.live.includes('ausgewählt') &&
-      revealAfter.live.includes('gescrollt'),
+      revealAfter.live.includes('selected') &&
+      revealAfter.live.includes('scrolled'),
     JSON.stringify(revealAfter?.live || ''),
   );
   await cdp.screenshot(path.join(OUT_DIR, '13-map-reveal.png')).then(() => report.screenshots.push('13-map-reveal.png'));
@@ -2851,7 +2851,7 @@ try {
   // — without the “the list scrolled” clause, which would be a lie there.
   check(
     '390 px: the selection is announced without claiming a scroll',
-    Boolean(phoneAfter) && phoneAfter.live.includes('ausgewählt') && phoneAfter.live.includes('Zeile ') && !phoneAfter.live.includes('gescrollt'),
+    Boolean(phoneAfter) && phoneAfter.live.includes('selected') && phoneAfter.live.includes('Row ') && !phoneAfter.live.includes('scrolled'),
     JSON.stringify(phoneAfter?.live || ''),
   );
 
@@ -3298,7 +3298,7 @@ try {
   );
   await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' }); true`);
 
-  /* --- 8l. “Ausschnitte”: the documented footprints of the filtered set ---- */
+  /* --- 8l. “Footprints”: the documented footprints of the filtered set ---- */
   // The visual answer to “which maps claim to cover this place?”. The layer is
   // outline-only and purely decorative (pointer-events off, aria-hidden), so the
   // checks look at geometry and the honest status line, not at pixels.
@@ -3348,7 +3348,7 @@ try {
     /* reported below */
   }
   check(
-    'the “Ausschnitte” switch draws the documented footprints and shares them in the URL',
+    'the “Footprints” switch draws the documented footprints and shares them in the URL',
     Boolean(extentBefore.exists && extentBefore.inlineLink && extentBefore.pressed === 'false' && extentBefore.boxes === 0 && extentBefore.status === '') &&
       Boolean(extentOn) &&
       extentOn.url.includes('ex=1') &&
@@ -3641,7 +3641,7 @@ try {
     keywordOffer = await cdp.waitFor(
       `(() => {
         const items = [...document.querySelectorAll('#place-suggestions li button')];
-        const item = items.find((b) => /Karten zum Stichwort/.test(b.textContent));
+        const item = items.find((b) => /Maps matching/.test(b.textContent));
         return item ? { text: item.textContent, items: items.length, status: document.querySelector('#place-status')?.textContent || '' } : '';
       })()`,
       { label: 'record search suggestion', timeout: 12_000 },
@@ -3657,7 +3657,7 @@ try {
 
   // Choosing it applies the keyword filter (no invented result): the list, the
   // count line, the sidebar field and the URL all agree.
-  await cdp.eval(`[...document.querySelectorAll('#place-suggestions li button')].find((b) => /Karten zum Stichwort/.test(b.textContent))?.click(); true`);
+  await cdp.eval(`[...document.querySelectorAll('#place-suggestions li button')].find((b) => /Maps matching/.test(b.textContent))?.click(); true`);
   await sleep(800);
   const keywordApplied = await cdp.eval(`({
     url: location.search,
@@ -3673,7 +3673,7 @@ try {
       keywordApplied.rows > 0 &&
       keywordApplied.rows < rowsBeforeKeyword &&
       keywordApplied.keywordField === 'Siegfriedkarte' &&
-      /Kartensuche: \d+ Datensätze/.test(keywordApplied.status) &&
+      /Map search: \d+ records?/.test(keywordApplied.status) &&
       keywordApplied.listHidden === true,
     `${rowsBeforeKeyword} rows before -> ${JSON.stringify(keywordApplied)}`,
   );
@@ -3684,7 +3684,7 @@ try {
   let keywordEmpty = null;
   try {
     keywordEmpty = await cdp.waitFor(
-      `(() => { const text = document.querySelector('#place-status')?.textContent || ''; const items = document.querySelectorAll('#place-suggestions li').length; return /kein Titeltreffer/.test(text) && items === 0 ? text : ''; })()`,
+      `(() => { const text = document.querySelector('#place-status')?.textContent || ''; const items = document.querySelectorAll('#place-suggestions li').length; return /No place and no title match/.test(text) && items === 0 ? text : ''; })()`,
       { label: 'honest no-match search status', timeout: 12_000 },
     );
   } catch {
@@ -3724,7 +3724,7 @@ try {
     spelling.umlaut.rows > 0 &&
       spelling.digraph.rows === spelling.umlaut.rows &&
       spelling.plain.rows === spelling.umlaut.rows &&
-      /^Zuerich$/i.test((spelling.digraph.count.match(/„(.+?)“/) || [])[1] || '') &&
+      /^Zuerich$/i.test((spelling.digraph.count.match(/“(.+?)”/) || [])[1] || '') &&
       spelling.cleared > spelling.umlaut.rows,
     `${spelling.umlaut.rows} / ${spelling.digraph.rows} / ${spelling.plain.rows} rows · cleared ${spelling.cleared}`,
   );
@@ -3973,9 +3973,9 @@ try {
     'a slow seed shows the loading state and a year-chart skeleton instead of an empty box',
     Boolean(loadingState) &&
       loadingState.bins === 0 &&
-      /lädt/.test(loadingState.skeleton) &&
-      /geladen|lädt/i.test(loadingState.count) &&
-      /geladen|lädt/i.test(loadingState.block) &&
+      /Loading/i.test(loadingState.skeleton) &&
+      /Loading/i.test(loadingState.count) &&
+      /Loading/i.test(loadingState.block) &&
       loadingState.overflow === 0,
     JSON.stringify(loadingState).slice(0, 220),
   );
@@ -4012,7 +4012,7 @@ try {
     check(
       'an unreachable image service degrades to an honest, readable panel',
       degraded.fallback === true &&
-        /Vorschau ist nicht (erreichbar|verfügbar)/.test(degraded.text) &&
+        /Preview unavailable/.test(degraded.text) &&
         String(degraded.providerLink).startsWith('https://') &&
         degraded.thumb === degradable.thumbnail &&
         degraded.title.length > 5 &&
@@ -4039,7 +4039,7 @@ try {
     let searchStatus = '';
     try {
       searchStatus = await cdp.waitFor(
-        `(() => { const text = document.querySelector('#place-status')?.textContent || ''; return /nicht erreichbar/.test(text) ? text : ''; })()`,
+        `(() => { const text = document.querySelector('#place-status')?.textContent || ''; return /unavailable/i.test(text) ? text : ''; })()`,
         { label: 'search outage status', timeout: 15_000 },
       );
     } catch {
@@ -4048,12 +4048,12 @@ try {
     const localSuggestions = await cdp.eval(`document.querySelectorAll('#place-suggestions li').length`);
     check(
       'an unreachable place-search service falls back to local titles without raw errors',
-      /nicht erreichbar/.test(searchStatus) && !/Failed to fetch|NetworkError|undefined/.test(searchStatus) && localSuggestions >= 1,
+      /unavailable/i.test(searchStatus) && !/Failed to fetch|NetworkError|undefined/.test(searchStatus) && localSuggestions >= 1,
       `"${String(searchStatus).slice(0, 150)}" · ${localSuggestions} local suggestions`,
     );
 
     // The seed itself is one file: when it cannot be fetched, the results area
-    // must say so in plain German, drop its aria-busy flag, stop claiming to
+    // must say so in plain English, drop its aria-busy flag, stop claiming to
     // load and keep the raw browser string out of the UI (maps-1, 7-17).
     await cdp.send('Network.setBlockedURLs', { urls: ['*/data/records.json'] });
     await cdp.send('Page.navigate', { url: `${BASE_URL}/` });
@@ -4062,7 +4062,7 @@ try {
       seedOutage = await cdp.waitFor(
         `(() => {
           const state = document.querySelector('#results-state');
-          if (!state || state.hidden || !/konnten nicht geladen werden/.test(state.textContent)) return '';
+          if (!state || state.hidden || !/could not be loaded/.test(state.textContent)) return '';
           return {
             text: state.textContent.replace(/\\s+/g, ' ').trim(),
             count: (document.querySelector('#result-count')?.textContent || '').trim(),
@@ -4077,9 +4077,9 @@ try {
       /* reported below */
     }
     check(
-      'an unreachable seed says so in plain German and stops claiming to load',
+      'an unreachable seed says so in plain English and stops claiming to load',
       Boolean(seedOutage) &&
-        seedOutage.count === 'Bestand nicht geladen' &&
+        seedOutage.count === 'Catalogue unavailable' &&
         seedOutage.busy === 'false' &&
         seedOutage.loadingHidden === true &&
         seedOutage.rawLeak === false,

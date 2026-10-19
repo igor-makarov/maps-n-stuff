@@ -1,11 +1,11 @@
 {
   "retrieved": "2026-10-19",
   "generatedBy": "scripts/fetch-records.mjs",
-  "note": "Zürich and Swiss historical maps from primary institutional sources. Records are copied from upstream IIIF/OAI metadata; no dates or places are inferred.",
+  "note": "Historical maps from primary institutional catalogues, including a curated international Library of Congress selection. Coverage varies by region and period; metadata keeps original titles and rights statements.",
   "providers": [
     {
       "id": "e-rara",
-      "name": "e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
+      "name": "e-rara — digitised maps from Swiss libraries",
       "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
       "institutions": [
         "Bibliothèque de Genève",
@@ -95,7 +95,7 @@
     },
     {
       "id": "swisstopo",
-      "name": "swisstopo – Bundesamt für Landestopografie (geoadmin geoservices)",
+      "name": "swisstopo — Swiss historical map layers",
       "operator": "Bundesamt für Landestopografie swisstopo",
       "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
       "home": "https://www.swisstopo.admin.ch/",
@@ -152,6 +152,22 @@
         "searchServer": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}",
         "mapViewer": "https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}"
       }
+    },
+    {
+      "id": "loc",
+      "name": "Library of Congress",
+      "operator": "Library of Congress, United States",
+      "homepage": "https://www.loc.gov/maps/",
+      "rights": "See each original catalogue record for its Rights Advisory. Geography and Map Division material is generally free to use and reuse unless otherwise stated.",
+      "attribution": "Library of Congress, Geography and Map Division",
+      "retrieved": "2026-10-19",
+      "api": {
+        "catalogue": "https://www.loc.gov/item/{id}/?fo=json",
+        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
+        "image": "https://tile.loc.gov/image-services/iiif/",
+        "documentation": "https://www.loc.gov/apis/"
+      },
+      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov."
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",

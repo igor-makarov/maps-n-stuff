@@ -17,13 +17,15 @@ export const ALLOWLIST = [
   // Swiss places/addresses: the fallback when the worldwide gazetteer is down or
   // returns nothing, and the source of Swiss micro-toponyms Nominatim lacks.
   { host: 'api3.geo.admin.ch', prefixes: ['/rest/services/api/SearchServer'] },
+  { host: 'www.loc.gov', prefixes: ['/item/'] },
+  { host: 'tile.loc.gov', prefixes: ['/image-services/iiif/service:gmd:'] },
   { host: 'www.e-rara.ch', prefixes: ['/i3f/', '/zuz/oai', '/oai'] },
   { host: 'wmts.geo.admin.ch', prefixes: ['/1.0.0/', '/EPSG/'] },
   { host: 'data.geo.admin.ch', prefixes: ['/'] },
 ];
 
 export const USER_AGENT =
-  'zurich-maps/0.1 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
+  'meridian-atlas/0.1 (+https://github.com/igor-makarov/maps-n-stuff; historical map explorer)';
 
 /** True when the URL is https, on an allowlisted host and path. */
 export function isAllowed(target) {

@@ -217,7 +217,7 @@ export function init(ctx) {
     // sidebar uses. Nothing is opened; the result list and the map follow the
     // store, and the status line states how many rows the filter really leaves.
     if (place?.kind === 'dataset') {
-      ctx.store.update({ q: place.query });
+      ctx.store.update({ q: place.query, ...(ctx.store.getState().view === 'history' ? { view: 'split' } : {}) });
       const left = filterRecords({ ...ctx.store.getState(), q: place.query }, ctx.data.records).length;
       setStatus(
         status,
@@ -307,7 +307,7 @@ export function init(ctx) {
       if (items.length === 0) {
         const local = localFallback(query);
         const combined = records ? [records, ...local] : local;
-        open(combined, 'lokal');
+        open(combined, 'local collection');
         setStatus(status, statusText([], records, local));
         return;
       }
@@ -317,7 +317,7 @@ export function init(ctx) {
       if (err?.name === 'AbortError') return;
       const local = localFallback(query);
       const combined = records ? [records, ...local] : local;
-      open(combined, 'lokal');
+      open(combined, 'local collection');
       setStatus(
         status,
         local.length > 0 || records

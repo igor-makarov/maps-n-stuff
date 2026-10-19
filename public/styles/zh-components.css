@@ -396,8 +396,9 @@ input[type='range'].zh-input {
 }
 
 .zh-brand__mark {
-  width: 34px;
-  height: 41px;
+  width: 44px;
+  height: 44px;
+  color: var(--zh-color-accent-dark);
   flex: none;
 }
 

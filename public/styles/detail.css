@@ -263,7 +263,7 @@
 
 /* A visible way out inside fullscreen: the control row is not on screen there. */
 .app-viewer__stage:fullscreen::after {
-  content: 'Vollbild: Esc beendet die Ansicht';
+  content: 'Fullscreen: press Esc to exit';
   position: absolute;
   right: var(--zh-size-regular, 16px);
   bottom: var(--zh-size-regular, 16px);

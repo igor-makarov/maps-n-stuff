@@ -86,7 +86,7 @@ export function nearestSnapshot(years, year) {
 export function snapshotNote(years, year) {
   const near = nearestSnapshot(years, year);
   if (!near) return 'No snapshots available.';
-  if (near.exact) return `Snapshot ${formatYear(near.year)} — the selected year is published as its own map.`;
+  if (near.exact) return `Snapshot ${formatYear(near.year)} — published map for this year.`;
   return `Snapshot ${formatYear(near.year)} — the nearest published map, ${near.distance} ${near.distance === 1 ? 'year' : 'years'} ${near.direction === 'later' ? 'after' : 'before'} ${formatYear(year)}.`;
 }
 
@@ -330,7 +330,10 @@ export function init(ctx) {
   const lead = el(
     'p',
     { class: 'hz__lead' },
-    'Political borders change. Pick a year to draw the world as the historical-basemaps dataset records it — the represented snapshot is always named, because the source publishes discrete maps, not continuous borders.',
+    [
+      el('span', { class: 'hz__lead-long' }, 'Watch borders change across the world. Choose a year, explore a region, or play through the timeline. Dates between published maps use the nearest snapshot.'),
+      el('span', { class: 'hz__lead-short' }, 'Explore the world, year by year.'),
+    ],
   );
   const status = el('p', { class: 'hz__status', id: 'hz-status', role: 'status', 'aria-live': 'polite' }, 'Loading the snapshot index …');
   const header = el('header', { class: 'hz__head' }, [heading, lead, status]);
@@ -343,8 +346,8 @@ export function init(ctx) {
     'aria-label': 'World map of historical borders for the selected year',
   });
   const hover = el('p', { class: 'hz__hover', role: 'status', 'aria-live': 'off', hidden: true });
-  const zoomIn = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-in' }, 'Zoom in');
-  const zoomOut = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-out' }, 'Zoom out');
+  const zoomIn = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-in', 'aria-label': 'Zoom in' }, '+');
+  const zoomOut = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-out', 'aria-label': 'Zoom out' }, '−');
   const zoomReset = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-reset' }, 'Whole world');
   const labelsToggle = el('input', { type: 'checkbox', id: 'hz-labels', checked: true });
   const labelsLabel = el('label', { class: 'hz__toggle', for: 'hz-labels' }, [labelsToggle, el('span', {}, 'Labels')]);
@@ -362,7 +365,7 @@ export function init(ctx) {
   const error = el('div', { class: 'hz__error', id: 'hz-error', role: 'alert', hidden: true });
   const errorRetry = el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-hz': 'retry' }, 'Try again');
   error.append(el('span', { class: 'hz__error-text' }, 'The snapshot could not be loaded.'), errorRetry);
-  const mapwrap = el('div', { class: 'hz__mapwrap' }, [canvas, controls, hover, legend, keyboardHint, loading, error]);
+  const mapwrap = el('div', { class: 'hz__mapwrap' }, [canvas, controls, hover, legend, loading, error]);
 
   /* --- details panel ---------------------------------------------- */
   const details = el('aside', { class: 'hz__panel', id: 'hz-details', hidden: true, 'aria-labelledby': 'hz-details-title' });
@@ -375,9 +378,10 @@ export function init(ctx) {
   const body = el('div', { class: 'hz__body' }, [mapwrap, details]);
 
   /* --- timeline ---------------------------------------------------- */
-  const prev = el('button', { class: 'zh-button zh-button--small zh-button--ghost', type: 'button', 'data-hz': 'prev' }, '← Earlier snapshot');
-  const next = el('button', { class: 'zh-button zh-button--small zh-button--ghost', type: 'button', 'data-hz': 'next' }, 'Later snapshot →');
+  const prev = el('button', { class: 'zh-button zh-button--small zh-button--ghost', type: 'button', 'data-hz': 'prev', 'aria-label': 'Earlier snapshot' }, '← Earlier');
+  const next = el('button', { class: 'zh-button zh-button--small zh-button--ghost', type: 'button', 'data-hz': 'next', 'aria-label': 'Later snapshot' }, 'Later →');
   const play = el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-hz': 'play', 'aria-pressed': 'false' }, 'Play');
+  prev.disabled = next.disabled = play.disabled = true;
   const range = el('input', { class: 'hz__range', type: 'range', id: 'hz-range', min: '0', max: '0', step: '1', value: '0', 'aria-label': 'Published snapshot' });
   const yearInput = el('input', { class: 'zh-input hz__year', type: 'text', id: 'hz-year-input', inputmode: 'numeric', size: '9', 'aria-describedby': 'hz-year-hint' });
   const yearApply = el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-hz': 'apply-year' }, 'Show year');
@@ -402,8 +406,8 @@ export function init(ctx) {
   ]);
 
   const sourceNote = el('p', { class: 'hz__source' });
-  section.append(header, body, timeline, search, sourceNote);
-  main.append(section);
+  section.append(header, timeline, body, keyboardHint, search, sourceNote);
+  modebar.after(section);
   loadStylesheet('/styles/history.css');
 
   /* --- state ------------------------------------------------------- */
@@ -478,7 +482,7 @@ export function init(ctx) {
     context.fillRect(0, 0, width, height);
     drawGraticule();
     const worldWidth = worldSize(state.view.zoom);
-    const offsets = [-1, 0, 1].filter((offset) => {
+    const offsets = (state.viewAuto ? [0] : [-1, 0, 1]).filter((offset) => {
       const left = -offset * worldWidth;
       return left < width + worldWidth && left + worldWidth > -width;
     });
@@ -709,19 +713,24 @@ export function init(ctx) {
     return features;
   }
 
+  let yearRequest = 0;
   async function showYear(year) {
+    const request = ++yearRequest;
     setStatus(`Preparing ${formatYear(year)} …`);
     let features;
     try {
       await loadIndex();
+      if (request !== yearRequest) return;
       features = await loadSnapshot(year);
     } catch (err) {
+      if (request !== yearRequest) return;
       loading.hidden = true;
       error.hidden = false;
       error.querySelector('.hz__error-text').textContent = `The snapshot for ${formatYear(year)} could not be loaded (${err.message}).`;
       setStatus(`Could not load ${formatYear(year)}.`);
       return;
     }
+    if (request !== yearRequest) return;
     error.hidden = true;
     loading.hidden = true;
     state.features = features;
@@ -751,6 +760,7 @@ export function init(ctx) {
     range.setAttribute('aria-valuetext', `${formatYear(state.years[Math.max(0, index)])} — ${state.years.length} published snapshots`);
     prev.disabled = index <= 0;
     next.disabled = index >= state.years.length - 1;
+    play.disabled = false;
   }
 
   function populatePolities(features) {
@@ -934,10 +944,11 @@ export function init(ctx) {
   }
 
   function resetView() {
+    clearTimeout(viewTimer);
     state.viewAuto = true;
     state.view = clampView({ lat: 20, lon: 0, zoom: fitWorldZoom(state.size) }, VIEW_MIN_ZOOM, VIEW_MAX_ZOOM);
-    afterViewChange();
-    publishView();
+    store.update({ hv: '' });
+    draw();
   }
 
   function focusFeature(feature) {
@@ -1086,7 +1097,10 @@ export function init(ctx) {
       historyLink.setAttribute('aria-current', 'false');
       mapsLink.setAttribute('aria-current', 'page');
     }
-    if (!active) return;
+    if (!active) {
+      if (state.playing) togglePlay();
+      return;
+    }
     if (changed) {
       // Fonts/metrics need a layout pass before the canvas can size itself.
       requestAnimationFrame(() => {
@@ -1105,22 +1119,29 @@ export function init(ctx) {
     applyMode(current.view);
   }
 
-  store.subscribe((state, changed) => {
-    if (changed.includes('view')) applyMode(state.view);
-    if (changed.includes('hv') && state.view === 'history') {
-      const next = parseViewParam(state.hv, state.view ?? currentViewFromState());
-      state.viewAuto = false;
+  store.subscribe((nextState, changed) => {
+    if (changed.includes('view')) applyMode(nextState.view);
+    if (changed.includes('hv') && nextState.view === 'history') {
+      const next = parseViewParam(nextState.hv, currentViewFromState());
+      state.viewAuto = !nextState.hv;
       if (state.view && (Math.abs(next.lat - state.view.lat) > 1e-4 || Math.abs(next.lon - state.view.lon) > 1e-4 || Math.abs(next.zoom - state.view.zoom) > 1e-3)) {
         state.view = next;
         draw();
       }
     }
-    if (changed.includes('year') && state.view === 'history') {
-      const near = nearestSnapshot(state.years, state.year);
-      if (near && near.year !== state.loadedYear) showYear(state.year);
-      else if (!near) showYear(state.year); // the index is not loaded yet
+    if (changed.includes('year') && nextState.view === 'history') {
+      const near = nearestSnapshot(state.years, nextState.year);
+      if (near && near.year !== state.loadedYear) showYear(nextState.year);
+      else if (!near) showYear(nextState.year); // the index is not loaded yet
     }
-    if (changed.includes('view')) applyView();
+    applyView();
+  });
+
+  ctx.bus.on('place:selected', (place) => {
+    if (store.getState().view !== 'history' || !Number.isFinite(place.lat) || !Number.isFinite(place.lon)) return;
+    state.view = clampView({ lat: place.lat, lon: place.lon, zoom: Math.min(6, place.zoom ?? 5) }, VIEW_MIN_ZOOM, VIEW_MAX_ZOOM);
+    afterViewChange();
+    publishView();
   });
 
   window.addEventListener('resize', () => {

@@ -2,7 +2,7 @@
   "name": "zurich-maps",
   "version": "0.1.0",
   "private": true,
-  "description": "Historical map explorer (OldMapsOnline-style) in the Canton Z\u00fcrich design system \u2014 Cloudflare Workers site",
+  "description": "Meridian Atlas: historical maps and changing borders around the world. Cloudflare Workers site.",
   "type": "module",
   "engines": {
     "node": ">=20"

@@ -31,6 +31,8 @@ const providerById = new Map(providers.map((p) => [p.id, p]));
 /** Hosts the source registry documents as the primary endpoints for this app. */
 const REGISTRY_HOSTS = new Set([
   'www.e-rara.ch',
+  'www.loc.gov',
+  'tile.loc.gov',
   'api3.geo.admin.ch',
   'wmts.geo.admin.ch',
   'data.geo.admin.ch',
@@ -192,5 +194,28 @@ test('thumbnails are direct image services (IIIF) rather than HTML pages', () =>
       /default\.jpg|\/full\/|\.jpeg$/.test(record.thumbnail),
       `${record.id}: thumbnail should be a direct image derivative (${record.thumbnail})`,
     );
+  }
+});
+
+test('international catalogue refreshes preserve existing maps and never infer footprints from place anchors', async () => {
+  const { addInternationalMaps } = await import('../scripts/add-international-maps.mjs');
+  const copy = structuredClone(recordsFile);
+  const registry = structuredClone(sourcesFile);
+  const originalMaps = copy.records.filter((record) => record.providerId !== 'loc');
+  await addInternationalMaps(copy, registry);
+  const first = structuredClone({ copy, registry });
+  await addInternationalMaps(copy, registry);
+  assert.deepEqual({ copy, registry }, first, 'repeated harvests must not duplicate maps or source entries');
+  assert.deepEqual(copy.records.filter((record) => record.providerId !== 'loc'), originalMaps, 'a global refresh retains the existing collections');
+  const international = copy.records.filter((record) => record.providerId === 'loc');
+  assert.ok(international.some((record) => record.subjectPlace.includes('Egypt')));
+  assert.ok(international.some((record) => record.subjectPlace.includes('Japan')));
+  assert.ok(international.some((record) => record.subjectPlace.includes('Mexico')));
+  assert.ok(international.some((record) => record.subjectPlace.includes('Brazil')));
+  for (const record of international) {
+    assert.equal(record.extent, null, 'an approximate place anchor is not a historical map boundary');
+    assert.equal(record.depictedYearStart, null, 'publication dates do not establish depicted dates');
+    assert.equal(new URL(record.metadataSource).host, 'www.loc.gov');
+    if (record.geo) assert.match(record.geoNote, /Approximate place anchor/);
   }
 });

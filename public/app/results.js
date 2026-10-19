@@ -8,10 +8,10 @@ import { coversPoint, facets, filterRecords, matchesQuery, overlapsRange, record
 import { STATE_DEFAULTS, parsePoint } from './store.js';
 
 const TYPE_LABELS = {
-  map: 'Einzelkarte',
-  atlas: 'Atlas / Kartenwerk',
-  sheet: 'Kartenblatt',
-  overlay: 'Georeferenzierte Ebene',
+  map: 'Map',
+  atlas: 'Atlas / map series',
+  sheet: 'Map sheet',
+  overlay: 'Georeferenced overlay',
 };
 
 const SCALE_MAX = 1000; // slider resolution for the year range
@@ -67,14 +67,14 @@ export function selectionAnnouncement({ index = -1, total = 0, title = '', revea
   const name = String(title ?? '')
     .replace(/\s+/g, ' ')
     .trim();
-  const count = `${Number.isInteger(total) && total > 0 ? total : 0} Treffer`;
+  const count = `${Number.isInteger(total) && total > 0 ? total : 0} results`;
   if (Number.isInteger(index) && index >= 0 && index < total) {
-    return `${count}. Zeile ${index + 1} von ${total} ausgewählt${name ? `: ${name}` : ''}.${
-      revealed ? ' Die Liste ist zu dieser Zeile gescrollt.' : ''
+    return `${count}. Row ${index + 1} of ${total} selected${name ? `: ${name}` : ''}.${
+      revealed ? ' The list scrolled to this row.' : ''
     }`;
   }
   if (!name) return '';
-  return `${count}. Ausgewählt: ${name}. Der Datensatz steht nicht in der aktuellen Trefferliste.`;
+  return `${count}. Selected: ${name}. This record is outside the current results.`;
 }
 
 export function init(ctx) {
@@ -154,7 +154,8 @@ export function init(ctx) {
           onchange: () => ctx.store.update({ [stateKey]: input.checked ? value : '' }),
         });
         input.checked = ctx.store.getState()[stateKey] === value;
-        const label = el('span', { text: `${value} (${count})` });
+        const display = stateKey === 'type' ? TYPE_LABELS[value] ?? value : ctx.data.sources.find((source) => source.id === value)?.name ?? value;
+        const label = el('span', { text: `${display} (${count})` });
         facetLabels.set(`${stateKey}:${value}`, label);
         return el('label', { class: 'zh-check', for: id }, [input, label]);
       }),
@@ -164,14 +165,14 @@ export function init(ctx) {
   buildCheckboxes(providerWrap, providers, 'providers');
   buildCheckboxes(typeWrap, types, 'types');
 
-  /* ---------- collection ("Kartenwerk") facet ---------- */
+  /* ---------- collection ("Map series") facet ---------- */
 
-  const collectionNames = [...facets(records).collections.keys()].sort((a, b) => a.localeCompare(b, 'de'));
+  const collectionNames = [...facets(records).collections.keys()].sort((a, b) => a.localeCompare(b, 'en'));
   const collectionOptions = new Map(); // collection name -> { option, unknown }
 
   function buildCollectionOptions() {
     if (!collectionEl) return;
-    const nodes = [el('option', { value: '', text: 'alle Kartenwerke' })];
+    const nodes = [el('option', { value: '', text: 'All collections' })];
     for (const name of collectionNames) {
       const option = el('option', {
         value: name,
@@ -190,7 +191,7 @@ export function init(ctx) {
   // it selectable so the filter is visible and can be cleared honestly.
   function ensureCollectionOption(name) {
     if (!collectionEl || !name || collectionOptions.has(name)) return;
-    const option = el('option', { value: name, text: `${name} (nicht im Bestand)`, dataset: { count: '0', unknown: '1' } });
+    const option = el('option', { value: name, text: `${name} (not in the catalogue)`, dataset: { count: '0', unknown: '1' } });
     collectionOptions.set(name, { option, unknown: true });
     collectionEl.append(option);
   }
@@ -210,17 +211,18 @@ export function init(ctx) {
       const separator = key.indexOf(':');
       const dimension = key.slice(0, separator);
       const name = key.slice(separator + 1);
-      node.textContent = `${name} (${countOf(dimension === 'provider' ? counts.providers : counts.types, name)})`;
+      const display = dimension === 'type' ? TYPE_LABELS[name] ?? name : ctx.data.sources.find((source) => source.id === name)?.name ?? name;
+      node.textContent = `${display} (${countOf(dimension === 'provider' ? counts.providers : counts.types, name)})`;
     }
     for (const [name, entry] of collectionOptions) {
       const count = countOf(counts.collections, name);
       entry.option.dataset.count = String(count);
-      entry.option.textContent = entry.unknown ? `${name} (nicht im Bestand)` : `${name} (${count})`;
+      entry.option.textContent = entry.unknown ? `${name} (not in the catalogue)` : `${name} (${count})`;
     }
     if (facetHint) {
-      facetHint.textContent = `${scoped.length} von ${records.length} Datensätzen im Zeitraum ${state.from}–${state.to}${
-        state.q ? ` mit „${state.q}“` : ''
-      }${point ? ` und Ausschnitt am Punkt ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°` : ''}: die Zahlen in Klammern gelten für diesen Ausschnitt.`;
+      facetHint.textContent = `${scoped.length} of ${records.length} records published in ${state.from}–${state.to}${
+        state.q ? ` matching “${state.q}”` : ''
+      }${point ? ` covering ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°` : ''}. Counts reflect the current filters.`;
     }
   }
 
@@ -255,20 +257,19 @@ export function init(ctx) {
     pointFilterEl.hidden = false;
     if (pointFilterText) {
       pointFilterText.replaceChildren(
-        el('strong', { text: `Karten an diesem Punkt (${count})` }),
+        el('strong', { text: `Maps at this location (${count})` }),
         el('span', {
-          text: ` – nur Datensätze, deren dokumentierter Kartenausschnitt ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}° enthält.`,
+          text: ` — maps whose documented extent covers ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°.`,
         }),
       );
     }
     if (pointFilterClear) {
-      pointFilterClear.setAttribute('aria-label', `Punktfilter ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}° entfernen`);
+      pointFilterClear.setAttribute('aria-label', `Clear location filter at ${point.lat.toFixed(4)}°, ${point.lon.toFixed(4)}°`);
     }
   }
 
   /** One definition for the filter reset: toolbar button and empty state.
-   *  Restores the documented initial view, clamped to what the data offers:
-   *  resetting to years.min–years.max silently revealed the 2021 overlay records. */
+   *  Restores the initial view, clamped to the available publication years. */
   function resetFilters() {
     ctx.store.update({
       from: Math.max(years.min, STATE_DEFAULTS.from),
@@ -324,12 +325,12 @@ export function init(ctx) {
     return best;
   }
   if (overlayEl && layers.length > 0) {
-    const historical = layers.filter(isHistorical).sort((a, b) => a.title.localeCompare(b.title, 'de'));
-    const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'de'));
+    const historical = layers.filter(isHistorical).sort((a, b) => a.title.localeCompare(b.title, 'en'));
+    const modern = layers.filter((l) => !isHistorical(l)).sort((a, b) => a.title.localeCompare(b.title, 'en'));
     overlayEl.replaceChildren(
-      el('option', { value: '', text: 'keine Ebene' }),
-      el('optgroup', { label: 'Historische Kartenwerke und Luftbilder (Zeitreise, Siegfried, Dufour, SWISSIMAGE)' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
-      el('optgroup', { label: 'Moderne Landeskarten' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('option', { value: '', text: 'No overlay' }),
+      el('optgroup', { label: 'Historical Swiss maps and aerial imagery' }, historical.map((l) => el('option', { value: l.id, text: l.title }))),
+      el('optgroup', { label: 'Modern Swiss national maps' }, modern.map((l) => el('option', { value: l.id, text: l.title }))),
     );
     overlayEl.addEventListener('change', () => {
       const layer = layers.find((l) => l.id === overlayEl.value) ?? null;
@@ -351,10 +352,10 @@ export function init(ctx) {
       if (!layer) return;
       setEdition(layer, editionForYear(layer, state.to));
       if (overlayNote) {
-        setStatus(overlayNote, `Ausgabe ${formatTime(ctx.store.getState().otime)} zum Zeitraum bis ${state.to} gewählt.`);
+        setStatus(overlayNote, `Edition ${formatTime(ctx.store.getState().otime)} selected for the period up to ${state.to}.`);
       }
     },
-  }, ['Ausgabe passend zum Zeitraum']);
+  }, ['Match edition to the year filter']);
   overlayTimeWrap?.append(syncButton);
 
   /** Move the edition slider + store + map to one edition value. */
@@ -372,14 +373,14 @@ export function init(ctx) {
       ctx.bus.emit('overlay:changed', { layer: null, time: null });
       if (overlayTimeWrap) overlayTimeWrap.hidden = true;
       if (overlayOpacityField) overlayOpacityField.hidden = true;
-      if (overlayNote) overlayNote.textContent = 'Georeferenzierte Kartenwerke von swisstopo, direkt als Kachelebene über die moderne Grundkarte gelegt.';
+      if (overlayNote) overlayNote.textContent = 'Georeferenced Swiss map layers from swisstopo. These regional overlays cover Switzerland.';
       return;
     }
     if (overlayOpacityField) overlayOpacityField.hidden = false;
     overlayOpacity?.dispatchEvent(new Event('input'));
     const values = editionsOf(layer);
     syncButton.hidden = values.length <= 1;
-    syncButton.textContent = `Ausgabe für ${ctx.store.getState().to}`;
+    syncButton.textContent = `Edition for ${ctx.store.getState().to}`;
     if (overlayTimeWrap && overlayTime && values.length > 1) {
       overlayTimeWrap.hidden = false;
       overlayTime.min = '0';
@@ -391,7 +392,7 @@ export function init(ctx) {
       overlayTimeWrap.hidden = true;
     }
     if (overlayNote) {
-      overlayNote.textContent = `${layer.title} – ${values.length > 1 ? `${values.length} Ausgaben` : 'eine Ausgabe'}; ${
+      overlayNote.textContent = `${layer.title} – ${values.length > 1 ? `${values.length} editions` : 'one edition'}; ${
         layer.license ?? 'swisstopo geoservices'
       }.`;
     }
@@ -419,7 +420,7 @@ export function init(ctx) {
   function formatTime(value) {
     const text = String(value ?? '');
     if (/^\d{8}$/.test(text)) return `${text.slice(6, 8)}.${text.slice(4, 6)}.${text.slice(0, 4)}`;
-    return text === 'current' ? 'aktuell' : text;
+    return text === 'current' ? 'current' : text;
   }
 
   /* ---------- result list ---------- */
@@ -435,7 +436,7 @@ export function init(ctx) {
     img.addEventListener('error', () => {
       img.removeAttribute('src');
       img.classList.add('zh-result__thumb--missing');
-      img.alt = 'Keine Vorschau verfügbar';
+      img.alt = 'No preview available';
       img.replaceWith(el('span', { class: 'zh-result__thumb zh-result__thumb--missing', 'aria-hidden': 'true', text: '🗺' }));
     });
     return img;
@@ -457,16 +458,16 @@ export function init(ctx) {
         el('span', { class: 'zh-result__body' }, [
           el('span', { class: 'zh-result__meta' }, [
             el('span', { class: 'zh-result__year', text: formatYearRange(record.yearStart, record.yearEnd) }),
-            el('span', { text: `Nr. ${index + 1}` }),
+            el('span', { text: `No. ${index + 1}` }),
             record.type ? el('span', { class: 'zh-tag', text: TYPE_LABELS[record.type] ?? record.type }) : null,
           ]),
           el('span', { class: 'zh-result__title', text: record.title }),
           el('span', { class: 'zh-result__meta' }, [
-            el('span', { text: record.creators?.length ? record.creators.join(', ') : 'Urheber nicht angegeben' }),
+            el('span', { text: record.creators?.length ? record.creators.join(', ') : 'Creator not stated' }),
           ]),
           el('span', { class: 'zh-result__meta' }, [
             el('span', { text: record.institution }),
-            record.extent ? el('span', { class: 'zh-tag zh-tag--green', text: 'Kartenausschnitt bekannt' }) : el('span', { class: 'zh-tag', text: 'Ausschnitt nicht angegeben' }),
+            record.extent ? el('span', { class: 'zh-tag zh-tag--green', text: 'Extent documented' }) : el('span', { class: 'zh-tag', text: 'Extent not stated' }),
             record.iiifManifest ? el('span', { class: 'zh-tag zh-tag--turquoise', text: 'IIIF' }) : null,
           ]),
         ]),
@@ -535,18 +536,18 @@ export function init(ctx) {
         stateEl.hidden = false;
         stateEl.className = 'zh-state zh-state--empty';
         stateEl.replaceChildren(
-          el('span', { class: 'zh-state__title', text: 'Keine Treffer für diese Filter' }),
+          el('span', { class: 'zh-state__title', text: 'No maps match these filters' }),
           el('span', {
             text: state.at
-              ? 'An diesem Punkt hat kein Datensatz einen dokumentierten Kartenausschnitt im gewählten Zeitraum. Zeitraum erweitern, Punktfilter entfernen – oder alles auf einmal zurücksetzen:'
-              : 'Zeitraum erweitern, Sammlung oder Anbieter abwählen oder das Stichwort löschen – oder alles auf einmal zurücksetzen:',
+              ? 'No catalogued maps cover this point in the selected period. Try a wider period, clear the location filter, or reset all filters.'
+              : 'Try a wider period, another collection, or a different keyword. You can also reset all filters.',
           }),
           state.at
             ? el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: () => ctx.store.update({ at: '' }) }, [
-                'Punktfilter entfernen',
+                'Clear location filter',
               ])
             : null,
-          el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: resetFilters }, ['Alle Filter zurücksetzen']),
+          el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', onclick: resetFilters }, ['Reset all filters']),
         );
       }
     } else {
@@ -564,15 +565,15 @@ export function init(ctx) {
 
   function updateCount(filtered) {
     const state = ctx.store.getState();
-    const parts = [`${filtered.length} von ${records.length} Datensätzen`, `${state.from}–${state.to}`];
+    const parts = [`${filtered.length} of ${records.length} records`, `${state.from}–${state.to}`];
     if (state.provider) parts.push(state.provider);
     if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
     if (state.collection) parts.push(state.collection);
     if (state.q) parts.push(`„${state.q}“`);
     if (state.at) parts.push('Ausschnitt am Punkt');
-    if (state.viewport === '1') parts.push('im Kartenausschnitt');
+    if (state.viewport === '1') parts.push('im Map extent');
     countEl.textContent = parts.join(' · ');
-    if (liveEl) liveEl.textContent = `${filtered.length} Treffer. ${filtered[0] ? `Erster Treffer: ${filtered[0].title}.` : ''}`;
+    if (liveEl) liveEl.textContent = `${filtered.length} results. ${filtered[0] ? `First result: ${filtered[0].title}.` : ''}`;
   }
 
   function apply() {
@@ -591,8 +592,8 @@ export function init(ctx) {
     if (viewportCount) {
       viewportCount.textContent =
         state.viewport === '1'                 ? outsideCount > 0
-            ? `${outsideCount} weitere Treffer liegen ausserhalb des Ausschnitts.`
-            : 'Alle Treffer liegen im Ausschnitt.'
+            ? `${outsideCount} more results are outside this view.`
+            : 'All results are in this view.'
           : '';
     }
     if (textEl && textEl.value !== state.q) textEl.value = state.q;
@@ -706,7 +707,7 @@ export function init(ctx) {
   });
   ctx.store.subscribe((next, changed) => {
     if (changed.some((key) => ['from', 'to'].includes(key)) && !syncButton.hidden) {
-      syncButton.textContent = `Ausgabe für ${next.to}`;
+      syncButton.textContent = `Edition for ${next.to}`;
     }
     if (changed.some((key) => ['from', 'to', 'provider', 'type', 'collection', 'at', 'q', 'sort', 'overlay', 'otime', 'viewport'].includes(key))) apply();
     else if (changed.includes('selected')) {
@@ -793,14 +794,14 @@ export function init(ctx) {
       button.dataset.count = String(count);
       const from = Math.max(years.min, bin.start);
       const to = Math.min(years.max, bin.end);
-      const label = `${bin.start}–${bin.end}: ${count} ${count === 1 ? 'Datensatz' : 'Datensätze'}`;
+      const label = `${bin.start}–${bin.end}: ${count} ${count === 1 ? 'record' : 'records'}`;
       button.title = label;
-      button.setAttribute('aria-label', `${label}. Zeitraum ${from}–${to} filtern.`);
+      button.setAttribute('aria-label', `${label}. Filter to ${from}–${to}.`);
       const bar = button.firstElementChild;
       if (bar) bar.style.height = `${count === 0 ? 2 : Math.max(4, Math.round((count / busiest) * 100))}%`;
       button.classList.toggle('is-empty', count === 0);
     });
-    histogramEl.setAttribute('aria-label', `Datensätze je Jahrzehnt – Zeitraum wählen (${total} im aktuellen Filter)`);
+    histogramEl.setAttribute('aria-label', `Maps by publication decade. Choose a period (${total} in the current filters).`);
   }
 
   /** Mark the bins inside the current range and keep exactly one tabbable bin. */
@@ -833,7 +834,7 @@ export function init(ctx) {
     if (!range) return;
     let count = 0;
     for (let index = lo; index <= hi; index += 1) count += Number(histogramButtons()[index]?.dataset.count ?? 0);
-    histogramHint.textContent = `${range.from}–${range.to} gewählt: ${count} ${count === 1 ? 'Datensatz' : 'Datensätze'} – loslassen zum Filtern.`;
+    histogramHint.textContent = `${range.from}–${range.to} selected: ${count} ${count === 1 ? 'record' : 'records'}. Release to apply.`;
   }
 
   function endBrush(event, commit) {

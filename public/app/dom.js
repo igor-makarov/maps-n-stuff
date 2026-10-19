@@ -32,9 +32,9 @@ export function escapeHtml(value) {
 
 /** Year or year range, honest about missing values. */
 export function formatYear(year) {
-  if (year === null || year === undefined || Number.isNaN(Number(year))) return 'ohne Jahr';
+  if (year === null || year === undefined || Number.isNaN(Number(year))) return 'Undated';
   const n = Number(year);
-  return n < 0 ? `${Math.abs(n)} v. Chr.` : String(n);
+  return n < 0 ? `${Math.abs(n)} BCE` : String(n);
 }
 
 export function formatYearRange(start, end) {

@@ -39,7 +39,7 @@ const pkg = JSON.parse(await read('package.json'));
 
 test('index.html is a semantic app shell (landmarks, language, skip link)', () => {
   assert.match(html, /<!doctype html>/i);
-  assert.match(html, /<html[^>]+lang="de-CH"/, 'the UI is written in German and declares it');
+  assert.match(html, /<html[^>]+lang="en"/, 'the global UI declares English');
   assert.match(html, /<a[^>]+class="[^"]*skip[^"]*"[^>]+href="#main"/, 'keyboard users need a skip link');
   for (const landmark of ['<header', '<main', '<footer', '<nav']) {
     assert.ok(html.includes(landmark), `missing landmark ${landmark}`);
@@ -140,7 +140,7 @@ test('the shell ships a visible loading state that the bootstrap always ends', (
   assert.match(modules['main.js'], /function finishLoading\(/, 'the bootstrap owns ending the state');
   assert.match(modules['main.js'], /qs\('#results-loading'\)/, 'it hides the block');
   assert.match(modules['main.js'], /setAttribute\('aria-busy', 'false'\)/, 'and clears the busy flag');
-  assert.match(modules['main.js'], /Bestand nicht geladen/, 'the outage path must replace the “loading” claim');
+  assert.match(modules['main.js'], /Catalogue unavailable/, 'the outage path must replace the “loading” claim');
 });
 
 test('the shell only references entry points that exist', async () => {
@@ -202,7 +202,7 @@ test('the Worker is not an open proxy and holds no credentials', () => {
     // The worldwide gazetteer is the one non-Swiss upstream the app talks to;
     // it is admitted for `/search` only (see src/worker/allowlist.js).
     assert.ok(
-      /^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$|^nominatim\.openstreetmap\.org$/.test(host),
+      /^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$|^nominatim\.openstreetmap\.org$|^www\.loc\.gov$|^tile\.loc\.gov$/.test(host),
       `unexpected proxy host ${host}`,
     );
   }
@@ -224,4 +224,16 @@ test('repository ships no credentials or generated deployment state', async () =
 test('the app is reachable through the documented scripts', () => {
   assert.match(pkg.scripts.dev, /wrangler dev/, 'npm run dev starts the Workers preview');
   assert.match(pkg.scripts.test, /node --test/, 'tests run on the Node test runner without extra deps');
+});
+
+test('global atlas branding stays independent of the design reference', async () => {
+  assert.match(html, /<title>Meridian Atlas/);
+  const header = html.slice(html.indexOf('<header'), html.indexOf('</header>'));
+  assert.doesNotMatch(header, /Kartenzeit|Kanton|Zürich|coat.of.arms/i, 'the header identifies the atlas itself');
+  const icon = await read('public/favicon.svg');
+  assert.match(icon, /<title>Meridian Atlas<\/title>/);
+  assert.doesNotMatch(icon, /Kartenzeit|Kanton|Zürich/);
+  const headers = await read('public/_headers');
+  assert.match(headers, /img-src[^;]+https:\/\/tile\.openstreetmap\.org/);
+  assert.match(headers, /img-src[^;]+https:\/\/tile\.loc\.gov/);
 });

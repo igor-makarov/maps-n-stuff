@@ -1,0 +1,14 @@
+{
+  "retrieved": "2026-10-19",
+  "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov.",
+  "maps": [
+    {"id":"2009580102","title":"General map of Cairo.","year":1920,"creators":["Egypt. Maṣlaḥat al-Misāḥah."],"digitalId":"g8304c.ct002478","subjectPlace":"Cairo, Egypt","language":"English","anchor":{"lat":30.0444,"lon":31.2357}},
+    {"id":"2006458330","title":"Map of eastern China, Japan, and Korea","year":1880,"creators":[],"digitalId":"g7820.ct005242","subjectPlace":"China, Japan, Korea","language":"English"},
+    {"id":"gm71005209","title":"Dai Nihon kairiku zenzu","year":1864,"creators":["Baisotei, Gengyo, 1817-1880","Nagakubo, Sekisui, 1717-1801"],"digitalId":"g7960.ct011921","subjectPlace":"Japan, Tokyo","language":"Japanese","anchor":{"lat":35.6762,"lon":139.6503}},
+    {"id":"00561384","title":"[Map of Mexico City region]","year":1847,"creators":["Beauregard, G. T. (Gustave Toutant)"],"digitalId":"g4414m.ct000537","subjectPlace":"Mexico City, Mexico","language":"English","anchor":{"lat":19.4326,"lon":-99.1332}},
+    {"id":"2003682776","title":"Mappa da provinica de São Paulo","year":1886,"creators":["Sociedade Promotora de Immigração de S. Paulo."],"digitalId":"g5605.br000091","subjectPlace":"São Paulo, Brazil","language":"Portuguese","anchor":{"lat":-23.5505,"lon":-46.6333},"rights":"Public domain or no known copyright restrictions; see the original record."},
+    {"id":"2001620477","title":"Planta guia da cidade de São Paulo","year":1913,"creators":[],"digitalId":"g5404s.ct000632","subjectPlace":"São Paulo, Brazil","language":"Portuguese","anchor":{"lat":-23.5505,"lon":-46.6333}},
+    {"id":"2001620473","title":"Carta da republica dos Estados Unidos do Brazil","year":1892,"creators":[],"digitalId":"g5400.ct000636","subjectPlace":"Brazil","language":"Portuguese"},
+    {"id":"88694044","title":"Map of the city of Washington : established as the permanent seat of the government of the United States of America","year":1850,"creators":[],"digitalId":"g3850.ct004376","subjectPlace":"Washington, D.C., United States","language":"English","anchor":{"lat":38.9072,"lon":-77.0369}}
+  ]
+}

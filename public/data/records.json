@@ -156,6 +156,11 @@
       "considered": 1,
       "kept": 1,
       "rule": "the dedicated SWISSIMAGE 1946 historical aerial layer"
+    },
+    "loc:international": {
+      "considered": 8,
+      "kept": 8,
+      "rule": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov."
     }
   },
   "skipped": [
@@ -7478,6 +7483,249 @@
         "north": 48.230651
       },
       "editionDate": "2021-12-31"
+    },
+    {
+      "id": "loc:2009580102",
+      "title": "General map of Cairo.",
+      "yearStart": 1920,
+      "yearEnd": 1920,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Egypt. Maṣlaḥat al-Misāḥah."
+      ],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/2009580102/",
+      "viewerUrl": "https://www.loc.gov/resource/g8304c.ct002478/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g8304:g8304c:ct002478/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g8304:g8304c:ct002478",
+      "iiifManifest": "https://www.loc.gov/item/2009580102/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "Cairo, Egypt",
+      "languages": [
+        "English"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": 30.0444,
+        "lon": 31.2357
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/2009580102/"
+    },
+    {
+      "id": "loc:2006458330",
+      "title": "Map of eastern China, Japan, and Korea",
+      "yearStart": 1880,
+      "yearEnd": 1880,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/2006458330/",
+      "viewerUrl": "https://www.loc.gov/resource/g7820.ct005242/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g7820:g7820:ct005242/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g7820:g7820:ct005242",
+      "iiifManifest": "https://www.loc.gov/item/2006458330/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "China, Japan, Korea",
+      "languages": [
+        "English"
+      ],
+      "extent": null,
+      "geo": null,
+      "geoNote": "No verified geographic extent or point is available. Browse the original record for details.",
+      "metadataSource": "https://www.loc.gov/item/2006458330/"
+    },
+    {
+      "id": "loc:gm71005209",
+      "title": "Dai Nihon kairiku zenzu",
+      "yearStart": 1864,
+      "yearEnd": 1864,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Baisotei, Gengyo, 1817-1880",
+        "Nagakubo, Sekisui, 1717-1801"
+      ],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/gm71005209/",
+      "viewerUrl": "https://www.loc.gov/resource/g7960.ct011921/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g7960:g7960:ct011921/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g7960:g7960:ct011921",
+      "iiifManifest": "https://www.loc.gov/item/gm71005209/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "Japan, Tokyo",
+      "languages": [
+        "Japanese"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": 35.6762,
+        "lon": 139.6503
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/gm71005209/"
+    },
+    {
+      "id": "loc:00561384",
+      "title": "[Map of Mexico City region]",
+      "yearStart": 1847,
+      "yearEnd": 1847,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Beauregard, G. T. (Gustave Toutant)"
+      ],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/00561384/",
+      "viewerUrl": "https://www.loc.gov/resource/g4414m.ct000537/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g4414:g4414m:ct000537/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g4414:g4414m:ct000537",
+      "iiifManifest": "https://www.loc.gov/item/00561384/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "Mexico City, Mexico",
+      "languages": [
+        "English"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": 19.4326,
+        "lon": -99.1332
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/00561384/"
+    },
+    {
+      "id": "loc:2003682776",
+      "title": "Mappa da provinica de São Paulo",
+      "yearStart": 1886,
+      "yearEnd": 1886,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Sociedade Promotora de Immigração de S. Paulo."
+      ],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Public domain or no known copyright restrictions; see the original record.",
+      "recordUrl": "https://www.loc.gov/item/2003682776/",
+      "viewerUrl": "https://www.loc.gov/resource/g5605.br000091/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g5605:g5605:br000091/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g5605:g5605:br000091",
+      "iiifManifest": "https://www.loc.gov/item/2003682776/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "São Paulo, Brazil",
+      "languages": [
+        "Portuguese"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": -23.5505,
+        "lon": -46.6333
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/2003682776/"
+    },
+    {
+      "id": "loc:2001620477",
+      "title": "Planta guia da cidade de São Paulo",
+      "yearStart": 1913,
+      "yearEnd": 1913,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/2001620477/",
+      "viewerUrl": "https://www.loc.gov/resource/g5404s.ct000632/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g5404:g5404s:ct000632/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g5404:g5404s:ct000632",
+      "iiifManifest": "https://www.loc.gov/item/2001620477/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "São Paulo, Brazil",
+      "languages": [
+        "Portuguese"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": -23.5505,
+        "lon": -46.6333
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/2001620477/"
+    },
+    {
+      "id": "loc:2001620473",
+      "title": "Carta da republica dos Estados Unidos do Brazil",
+      "yearStart": 1892,
+      "yearEnd": 1892,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/2001620473/",
+      "viewerUrl": "https://www.loc.gov/resource/g5400.ct000636/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g5400:g5400:ct000636/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g5400:g5400:ct000636",
+      "iiifManifest": "https://www.loc.gov/item/2001620473/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "Brazil",
+      "languages": [
+        "Portuguese"
+      ],
+      "extent": null,
+      "geo": null,
+      "geoNote": "No verified geographic extent or point is available. Browse the original record for details.",
+      "metadataSource": "https://www.loc.gov/item/2001620473/"
+    },
+    {
+      "id": "loc:88694044",
+      "title": "Map of the city of Washington : established as the permanent seat of the government of the United States of America",
+      "yearStart": 1850,
+      "yearEnd": 1850,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [],
+      "providerId": "loc",
+      "institution": "Library of Congress, Geography and Map Division",
+      "rights": "Free to use and reuse unless otherwise stated in the original record’s Rights Advisory.",
+      "recordUrl": "https://www.loc.gov/item/88694044/",
+      "viewerUrl": "https://www.loc.gov/resource/g3850.ct004376/",
+      "thumbnail": "https://tile.loc.gov/image-services/iiif/service:gmd:g3850:g3850:ct004376/full/304,/0/default.jpg",
+      "imageService": "https://tile.loc.gov/image-services/iiif/service:gmd:g3850:g3850:ct004376",
+      "iiifManifest": "https://www.loc.gov/item/88694044/manifest.json",
+      "type": "map",
+      "collection": "World maps — Library of Congress",
+      "subjectPlace": "Washington, D.C., United States",
+      "languages": [
+        "English"
+      ],
+      "extent": null,
+      "geo": {
+        "lat": 38.9072,
+        "lon": -77.0369
+      },
+      "geoNote": "Approximate place anchor for orientation, based on the named catalogue location. It is not the map’s centre or boundary; the map extent has not been verified.",
+      "metadataSource": "https://www.loc.gov/item/88694044/"
     }
   ]
 }

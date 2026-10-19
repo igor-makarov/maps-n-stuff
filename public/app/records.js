@@ -191,9 +191,9 @@ export function filterRecords(state, records) {
 
 export function sortRecords(records, sort = 'year-asc') {
   const copy = [...records];
-  if (sort === 'year-desc') copy.sort((a, b) => (b.yearStart ?? 0) - (a.yearStart ?? 0) || a.title.localeCompare(b.title, 'de'));
-  else if (sort === 'title') copy.sort((a, b) => a.title.localeCompare(b.title, 'de'));
-  else copy.sort((a, b) => (a.yearStart ?? 0) - (b.yearStart ?? 0) || a.title.localeCompare(b.title, 'de'));
+  if (sort === 'year-desc') copy.sort((a, b) => (b.yearStart ?? 0) - (a.yearStart ?? 0) || a.title.localeCompare(b.title, 'en'));
+  else if (sort === 'title') copy.sort((a, b) => a.title.localeCompare(b.title, 'en'));
+  else copy.sort((a, b) => (a.yearStart ?? 0) - (b.yearStart ?? 0) || a.title.localeCompare(b.title, 'en'));
   return copy;
 }
 

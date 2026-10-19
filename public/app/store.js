@@ -28,7 +28,7 @@
 export const STATE_DEFAULTS = Object.freeze({
   q: '', // free-text filter over title/creator/place
   from: 1500, // publication year range filter
-  to: 1900,
+  to: 2026, // include the full catalogue, including early twentieth-century city maps
   provider: '', // providerId or '' for all
   type: '', // record type or '' for all
   collection: '', // upstream series/collection name or '' for all (facet from the data)

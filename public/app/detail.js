@@ -108,11 +108,11 @@ export function init(ctx) {
     const viewer_ = previewSection(record);
     body.replaceChildren(
       el('div', { class: 'app-detail__bar' }, [
-        el('span', { class: 'zh-tag zh-tag--blue', text: 'Detailansicht' }),
+        el('span', { class: 'zh-tag zh-tag--blue', text: 'Map details' }),
         el('button', {
           class: 'zh-button zh-button--small',
           type: 'button',
-          text: 'Schliessen (Esc)',
+          text: 'Close (Esc)',
           onclick: close,
         }),
       ]),
@@ -123,7 +123,7 @@ export function init(ctx) {
           href: record.recordUrl,
           target: '_blank',
           rel: 'noopener',
-          text: 'Originaldatensatz öffnen ↗',
+          text: 'Open original record ↗',
         }),
         eRaraViewerUrl(record)
           ? el('a', {
@@ -131,17 +131,17 @@ export function init(ctx) {
               href: eRaraViewerUrl(record),
               target: '_blank',
               rel: 'noopener',
-              text: 'Im e-rara-Viewer öffnen ↗',
+              text: 'Open collection viewer ↗',
             })
           : null,
         el('button', {
           class: 'zh-button zh-button--ghost zh-button--small',
           type: 'button',
-          text: 'Auf der Karte zeigen',
+          text: 'Show on map',
           onclick: () => {
             const bounds = record.extent ?? (center ? { west: center.lon - 0.05, east: center.lon + 0.05, south: center.lat - 0.03, north: center.lat + 0.03 } : null);
             if (bounds) ctx.bus.emit('view:fit', { bounds });
-            else setStatus(statusNode(), 'Für diesen Datensatz ist kein Kartenausschnitt dokumentiert.', 'info');
+            else setStatus(statusNode(), 'This record has no documented map extent.', 'info');
           },
         }),
       ]),
@@ -153,21 +153,21 @@ export function init(ctx) {
         el('button', {
           class: 'zh-button zh-button--ghost zh-button--small',
           type: 'button',
-          text: 'Zeitraum dieses Blattes filtern',
+          text: 'Filter to this map’s year',
           onclick: (event) => applyPeriod(record, event.currentTarget),
         }),
         el('button', {
           class: 'zh-button zh-button--ghost zh-button--small',
           type: 'button',
-          text: 'Permalink kopieren',
+          text: 'Copy link',
           onclick: async (event) => {
             // The region reaches the URL debounced; flush it first so the copied
             // link is the view on screen even if the user clicks immediately.
             const region = viewer?.getViewParam?.();
             if (region !== undefined && region !== null) ctx.store.update({ vv: region });
             const ok = await copyText(window.location.href);
-            event.currentTarget.textContent = ok ? 'Link kopiert ✓' : 'Kopieren nicht möglich';
-            setTimeout(() => (event.currentTarget.textContent = 'Permalink kopieren'), 2500);
+            event.currentTarget.textContent = ok ? 'Link copied ✓' : 'Could not copy';
+            setTimeout(() => (event.currentTarget.textContent = 'Copy link'), 2500);
           },
         }),
         record.overlay
@@ -179,10 +179,10 @@ export function init(ctx) {
       relatedSection(record),
       el('p', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite', id: 'detail-status' }),
       el('p', { class: 'zh-hint' }, [
-        el('span', { text: 'Angaben stammen aus dem Datenlieferanten. ' }),
+        el('span', { text: 'Metadata is supplied by the holding collection. ' }),
         record.iiifManifest
-          ? el('a', { href: record.iiifManifest, target: '_blank', rel: 'noopener', text: 'IIIF-Manifest (JSON) öffnen ↗' })
-          : el('span', { text: 'Kein IIIF-Manifest hinterlegt.' }),
+          ? el('a', { href: record.iiifManifest, target: '_blank', rel: 'noopener', text: 'Open IIIF manifest (JSON) ↗' })
+          : el('span', { text: 'No IIIF manifest available.' }),
       ]),
     );
     viewer = viewer_?.__viewer ?? null;
@@ -195,7 +195,7 @@ export function init(ctx) {
   function updatePinButton(button, record) {
     if (!button || !record) return;
     const pinned = pinnedIds().includes(record.id);
-    button.textContent = pinned ? 'Gemerkt ✓ (Vergleich)' : 'Für den Vergleich merken';
+    button.textContent = pinned ? 'Saved ✓ (comparison)' : 'Save for comparison';
     button.setAttribute('aria-pressed', pinned ? 'true' : 'false');
   }
 
@@ -210,7 +210,7 @@ export function init(ctx) {
         const ids = pinnedIds();
         if (ids.includes(record.id)) ctx.store.update({ cmp: ids.filter((id) => id !== record.id).join(',') });
         else if (ids.length >= 4) {
-          setStatus(statusNode(), 'Es lassen sich höchstens vier Datensätze für den Vergleich merken.', 'warn');
+          setStatus(statusNode(), 'You can save up to four maps for comparison.', 'warn');
           return;
         } else ctx.store.update({ cmp: [...ids, record.id].join(',') });
         updatePinButton(button, record);
@@ -235,16 +235,16 @@ export function init(ctx) {
     ctx.store.update({ overlay: layer.id, otime: overlay.timeValue ?? '' });
     ctx.bus.emit('overlay:changed', { layer, time: overlay.timeValue ?? 'current' });
     ctx.bus.emit('overlay:time', { time: overlay.timeValue ?? 'current', layer });
-    setStatus(statusNode(), `${layer.title} ist als Kartenebene eingeblendet (Deckkraft im Filterbereich einstellbar).`, 'info');
+    setStatus(statusNode(), `${layer.title} is shown as an overlay. Adjust its opacity in Filters.`, 'info');
   }
 
   /** Take this record's layer off the map again (the sidebar select stays in charge). */
   function hideAsOverlay(record) {
-    // Same shape the sidebar's “keine Ebene” option uses, so the map, the select
+    // Same shape the sidebar's “No overlay” option uses, so the map, the select
     // and the shared URL cannot drift apart.
     ctx.store.update({ overlay: '', otime: '' });
     ctx.bus.emit('overlay:changed', { layer: null, time: null });
-    setStatus(statusNode(), `${record?.collection || record?.title || 'Die Kartenebene'} ist als Kartenebene ausgeblendet.`, 'info');
+    setStatus(statusNode(), `${record?.collection || record?.title || 'The map layer'} is hidden.`, 'info');
   }
 
   /** Is this record's documented layer the one currently shown on the map? */
@@ -259,7 +259,7 @@ export function init(ctx) {
   function updateOverlayButton(button, record) {
     if (!button || !record?.overlay) return;
     const shown = overlayIsShown(record);
-    button.textContent = shown ? 'Kartenebene ausblenden' : 'Als Kartenebene einblenden';
+    button.textContent = shown ? 'Hide overlay' : 'Show as overlay';
     button.setAttribute('aria-pressed', shown ? 'true' : 'false');
   }
 
@@ -286,7 +286,7 @@ export function init(ctx) {
 
   /** Use this sheet's publication period as the time filter, then get out of the way. */
   function applyPeriod(record, button) {
-    // The slider is documented as “Zeitraum (Publikationsjahr)” (#year-from/#year-to,
+    // The slider is documented as “Zeitraum (Publication year)” (#year-from/#year-to,
     // index.html) and the intro states that the depicted date can differ, so this
     // button must feed the same publication range. Using the depicted period here
     // would hide the very sheet it came from as soon as a source states a survey
@@ -294,15 +294,15 @@ export function init(ctx) {
     const from = record.yearStart;
     const to = record.yearEnd ?? record.yearStart;
     if (!Number.isFinite(from) || !Number.isFinite(to)) {
-      setStatus(statusNode(), 'Für diesen Datensatz ist kein Jahr dokumentiert.', 'info');
+      setStatus(statusNode(), 'This record has no documented year.', 'info');
       return;
     }
     ctx.store.update({ from: Math.min(from, to), to: Math.max(from, to), selected: record.id });
     close();
     const live = qs('#results-live');
-    const message = `Zeitraum auf ${Math.min(from, to)}–${Math.max(from, to)} gesetzt (${record.title}).`;
+    const message = `Period set to ${Math.min(from, to)}–${Math.max(from, to)} (${record.title}).`;
     if (live) live.textContent = message;
-    if (button) button.textContent = 'Zeitraum übernommen ✓';
+    if (button) button.textContent = 'Year filter applied ✓';
   }
 
   /* --------------------------------------------------------- preview/viewer */
@@ -317,15 +317,15 @@ export function init(ctx) {
       id: 'viewer-stage',
       tabindex: '0',
       role: 'group',
-      'aria-roledescription': 'Kartenvorschau mit Zoom',
-      'aria-label': `Kartenvorschau: ${record.title}. Zoomen mit Plus und Minus, verschieben mit den Pfeiltasten.`,
+      'aria-roledescription': 'Zoomable map preview',
+      'aria-label': `Map preview: ${record.title}. Plus and minus zoom; arrow keys pan.`,
     }, [el('span', { class: 'zh-spinner', role: 'presentation' })]);
     const live = el('span', { class: 'visuallyhidden', role: 'status', 'aria-live': 'polite', id: 'viewer-status' });
 
     const controls = el('div', { class: 'app-viewer__controls' }, [
-      el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-out', 'aria-label': 'Verkleinern', text: '−' }),
-      el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-in', 'aria-label': 'Vergrössern', text: '+' }),
-      el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'viewer-reset', text: 'Ganzes Blatt' }),
+      el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-out', 'aria-label': 'Zoom out', text: '−' }),
+      el('button', { class: 'zh-button zh-button--small', type: 'button', id: 'viewer-zoom-in', 'aria-label': 'Zoom in', text: '+' }),
+      el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'viewer-reset', text: 'Whole sheet' }),
       // Real fullscreen for the sheet (the Fullscreen API, not a simulated
       // overlay): the largest possible view of a map without leaving the page.
       // Only offered when the browser supports it – no inert control.
@@ -335,20 +335,20 @@ export function init(ctx) {
             type: 'button',
             id: 'viewer-fullscreen',
             'aria-pressed': 'false',
-            text: 'Vollbild',
+            text: 'Fullscreen',
           })
         : null,
-      el('span', { class: 'app-viewer__readout', id: 'viewer-resolution', text: 'Auflösung –' }),
+      el('span', { class: 'app-viewer__readout', id: 'viewer-resolution', text: 'Resolution –' }),
       // Sheet navigation appears once we know the record has more than one sheet.
       el('span', { class: 'app-viewer__nav', id: 'page-nav', hidden: true }, [
-        el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-prev', text: '‹ Blatt' }),
-        el('span', { class: 'zh-hint', id: 'page-label', text: 'Blatt 1' }),
-        el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-next', text: 'Blatt ›' }),
+        el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-prev', text: '‹ Sheet' }),
+        el('span', { class: 'zh-hint', id: 'page-label', text: 'Sheet 1' }),
+        el('button', { class: 'zh-button zh-button--ghost zh-button--small', type: 'button', id: 'page-next', text: 'Sheet ›' }),
         // Direct jump for works whose strip no longer fits on one row (the
         // 33-sheet canton map): a native select stays keyboard-operable without
         // turning every sheet into a tab stop of its own.
         el('span', { class: 'app-viewer__jump', id: 'page-jump-wrap', hidden: true }, [
-          el('label', { class: 'visuallyhidden', for: 'page-jump', text: 'Direkt zu Blatt' }),
+          el('label', { class: 'visuallyhidden', for: 'page-jump', text: 'Go to sheet' }),
           el('select', {
             class: 'zh-select',
             id: 'page-jump',
@@ -370,19 +370,19 @@ export function init(ctx) {
           class: 'app-viewer__sheets',
           id: 'page-strip',
           role: 'group',
-          'aria-label': 'Blätter dieses Kartenwerks',
+          'aria-label': 'Sheets in this work',
           hidden: true,
           onkeydown: onStripKeyDown,
         },
       ),
       controls,
       el('p', { class: 'app-viewer__caption' }, [
-        el('span', { id: 'preview-meta', text: 'IIIF-Vorschau wird geladen …' }),
+        el('span', { id: 'preview-meta', text: 'Loading map preview …' }),
       ]),
       el('p', {
         class: 'app-viewer__hint',
         // Multi-sheet works name the keyboard route explicitly (and the strip).
-        text: `Zoomen: + / −, Doppelklick oder Ctrl/⌘ + Mausrad · Verschieben: ziehen oder Pfeiltasten (mit Shift grössere Schritte) · Home zeigt das ganze Blatt.${(record.canvasCount ?? 0) > 1 ? ' Blatt wechseln: Alt + ←/→ oder die Blätterleiste unter dem Bild.' : ''}`,
+        text: `Zoom: + / −, double-click or Ctrl/⌘ + scroll. Pan: drag or arrow keys (Shift for larger steps). Home shows the whole sheet.${(record.canvasCount ?? 0) > 1 ? ' Change sheet: Alt + ←/→ or use the sheet strip below the image.' : ''}`,
       }),
       live,
     ]);
@@ -425,13 +425,13 @@ export function init(ctx) {
     const sync = () => {
       const active = document.fullscreenElement === stage;
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      button.textContent = active ? 'Vollbild beenden' : 'Vollbild';
+      button.textContent = active ? 'Exit fullscreen' : 'Fullscreen';
       stage.classList.toggle('is-fullscreen', active);
       instance?.refresh?.();
     };
     button.addEventListener('click', () => {
       if (document.fullscreenElement === stage) document.exitFullscreen?.().catch(() => {});
-      else stage.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => setStatus(statusNode(), 'Vollbild ist in diesem Browser nicht verfügbar.', 'info'));
+      else stage.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => setStatus(statusNode(), 'Fullscreen is unavailable in this browser.', 'info'));
     });
     document.addEventListener('fullscreenchange', sync);
     // The viewer is destroyed when the panel closes or the work changes; the
@@ -451,15 +451,15 @@ export function init(ctx) {
   function staticPreview(record) {
     if (!record.thumbnail) {
       return el('section', { class: 'app-viewer' }, [
-        el('p', { class: 'zh-hint', text: 'Für diesen Datensatz ist keine Vorschau hinterlegt.' }),
+        el('p', { class: 'zh-hint', text: 'No preview is available for this record.' }),
       ]);
     }
     return el('section', { class: 'app-viewer' }, [
       el('div', { class: 'app-viewer__stage app-viewer__stage--static', id: 'detail-preview' }, [
-        el('img', { src: record.thumbnail, alt: `Kartenkachel: ${record.title}`, decoding: 'async' }),
+        el('img', { src: record.thumbnail, alt: `Map tile: ${record.title}`, decoding: 'async' }),
       ]),
       el('p', { class: 'app-viewer__caption' }, [
-        el('span', { text: 'WMTS-Kachelprobe (© swisstopo) – das Kartenwerk selbst liegt als Vergleichsebene über der Karte.' }),
+        el('span', { text: 'Sample map tile (© swisstopo). View the full layer using the overlay control.' }),
       ]),
     ]);
   }
@@ -503,7 +503,7 @@ export function init(ctx) {
     const canvas = manifest.canvases[page];
     if (!canvas) return;
     const pageLabel = qs('#page-label');
-    if (pageLabel) pageLabel.textContent = `Blatt ${page + 1} von ${total}`;
+    if (pageLabel) pageLabel.textContent = `Sheet ${page + 1} of ${total}`;
     viewer?.setCanvas(canvas, { label: canvas.label, restore: ctx.store.getState().vv });
     updateReuseLinks(current);
     const nav = qs('#page-nav');
@@ -516,7 +516,7 @@ export function init(ctx) {
     // silently when the viewer swaps the canvas).
     if (total > 1) {
       const liveNode = qs('#viewer-status');
-      if (liveNode) liveNode.textContent = `Blatt ${page + 1} von ${total} geladen.`;
+      if (liveNode) liveNode.textContent = `Sheet ${page + 1} of ${total} loaded.`;
     }
     updateSheetStrip(total);
   }
@@ -691,7 +691,7 @@ export function init(ctx) {
       el('div', { class: 'app-viewer__fallback' }, [
         el('p', { class: 'zh-hint', text: message, title: rawDetail || undefined }),
         url ? el('img', { src: url, alt: '', decoding: 'async', onerror: (event) => (event.currentTarget.hidden = true) }) : null,
-        el('a', { class: 'zh-button zh-button--small', href: record?.recordUrl ?? '#', target: '_blank', rel: 'noopener', text: 'Beim Anbieter ansehen ↗' }),
+        el('a', { class: 'zh-button zh-button--small', href: record?.recordUrl ?? '#', target: '_blank', rel: 'noopener', text: 'View at the collection ↗' }),
       ].filter(Boolean)),
     );
   }
@@ -713,7 +713,7 @@ export function init(ctx) {
       sentence(record.collection),
       sentence(record.institution),
       `Online: ${record.recordUrl}. `,
-      `Abgerufen am ${new Date().toISOString().slice(0, 10)}.`,
+      `Accessed ${new Date().toISOString().slice(0, 10)}.`,
     ].join('');
   }
 
@@ -721,15 +721,15 @@ export function init(ctx) {
     const copyButton = el('button', {
       class: 'zh-button zh-button--ghost zh-button--small',
       type: 'button',
-      text: 'Zitierweise kopieren',
+      text: 'Copy citation',
       onclick: async (event) => {
         const ok = await copyText(citationText(record));
-        event.currentTarget.textContent = ok ? 'Zitierweise kopiert ✓' : 'Kopieren nicht möglich';
-        setTimeout(() => (event.currentTarget.textContent = 'Zitierweise kopieren'), 2500);
+        event.currentTarget.textContent = ok ? 'Citation copied ✓' : 'Could not copy';
+        setTimeout(() => (event.currentTarget.textContent = 'Copy citation'), 2500);
       },
     });
     return el('section', { id: 'reuse-section' }, [
-      el('h3', { class: 'zh-heading zh-heading--4', text: 'Zitieren und weiterverwenden' }),
+      el('h3', { class: 'zh-heading zh-heading--4', text: 'Cite and reuse' }),
       el('p', { class: 'zh-hint', id: 'citation-text', text: citationText(record) }),
       el('div', { class: 'app-detail__actions' }, [
         copyButton,
@@ -739,7 +739,7 @@ export function init(ctx) {
               href: record.iiifManifest,
               target: '_blank',
               rel: 'noopener',
-              text: 'IIIF-Manifest (JSON) ↗',
+              text: 'IIIF manifest (JSON) ↗',
             })
           : null,
       ]),
@@ -748,9 +748,9 @@ export function init(ctx) {
       el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
         record.imageService
           ? fullImageLink(record.imageService)
-          : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Weitere Links werden geladen …' : 'Kein IIIF-Bilddienst hinterlegt – nutzen Sie den Originaldatensatz.' }),
+          : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
       ]),
-      el('p', { class: 'zh-hint', text: 'Bitte prüfen Sie Rechte und Zitierweise beim Anbieter; die Angaben hier stammen aus dessen Metadaten.' }),
+      el('p', { class: 'zh-hint', text: 'Check rights and citation guidance with the holding collection. The information here comes from its metadata.' }),
     ]);
   }
 
@@ -761,7 +761,7 @@ export function init(ctx) {
       href: `${service}/full/max/0/default.jpg`,
       target: '_blank',
       rel: 'noopener',
-      text: 'Bild in Originalgrösse öffnen (IIIF) ↗',
+      text: 'Open full-resolution image (IIIF) ↗',
     });
   }
 
@@ -780,18 +780,18 @@ export function init(ctx) {
       ...[
         service
           ? fullImageLink(service)
-          : el('span', { class: 'zh-hint', text: 'Für dieses Blatt liefert der Anbieter keinen IIIF-Bilddienst.' }),
+          : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
         manifest?.seeAlso
           ? el('a', {
               class: 'zh-button zh-button--ghost zh-button--small',
               href: manifest.seeAlso,
               target: '_blank',
               rel: 'noopener',
-              text: 'METS/MODS über OAI-PMH ↗',
+              text: 'METS/MODS via OAI-PMH ↗',
             })
           : null,
         record?.recordUrl
-          ? el('a', { class: 'zh-button zh-button--ghost zh-button--small', href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'DOI/Datensatz ↗' })
+          ? el('a', { class: 'zh-button zh-button--ghost zh-button--small', href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'Original record ↗' })
           : null,
       ].filter(Boolean),
     );
@@ -801,35 +801,35 @@ export function init(ctx) {
 
   function factsSection(record) {
     const facts = [
-      ['Publikationsjahr', formatYearRange(record.yearStart, record.yearEnd)],
+      ['Publication year', formatYearRange(record.yearStart, record.yearEnd)],
       [
-        'Dargestellter Zeitraum',
+        'Period depicted',
         record.depictedYearStart || record.depictedYearEnd
           ? formatYearRange(record.depictedYearStart ?? record.depictedYearEnd, record.depictedYearEnd ?? record.depictedYearStart)
-          : 'vom Anbieter nicht angegeben',
+          : 'not stated by the collection',
       ],
-      ['Urheber', record.creators?.length ? record.creators.join(', ') : 'nicht angegeben'],
-      ['Besitzende Institution', record.institution],
-      ['Signatur', record.shelfmark || 'nicht angegeben'],
-      ['Verlag / Impressum', [record.publisher, record.imprint].filter(Boolean).join(' – ') || 'nicht angegeben'],
-      ['Sprache', record.languages?.length ? record.languages.join(', ') : 'nicht angegeben'],
-      ['Rechtehinweis', record.rights],
+      ['Creator', record.creators?.length ? record.creators.join(', ') : 'not stated'],
+      ['Holding institution', record.institution],
+      ['Shelfmark', record.shelfmark || 'not stated'],
+      ['Publisher / imprint', [record.publisher, record.imprint].filter(Boolean).join(' – ') || 'not stated'],
+      ['Language', record.languages?.length ? record.languages.join(', ') : 'not stated'],
+      ['Rights', record.rights],
       [
-        'Kartenausschnitt',
+        'Map extent',
         record.extent
           ? `W ${record.extent.west.toFixed(2)}° / E ${record.extent.east.toFixed(2)}° / S ${record.extent.south.toFixed(2)}° / N ${record.extent.north.toFixed(2)}°`
-          : 'nicht angegeben',
+          : 'not stated',
       ],
-      ['Umfang', record.canvasCount ? `${record.canvasCount} digitalisierte Seiten` : 'nicht angegeben'],
-      ['Datenquelle', `${record.providerId} · ${record.id}`],
+      ['Extent', record.canvasCount ? `${record.canvasCount} digitalisierte Seiten` : 'not stated'],
+      ['Source', `${record.providerId} · ${record.id}`],
     ];
     return el('section', {}, [
-      el('h3', { class: 'zh-heading zh-heading--4', text: 'Angaben zum Objekt' }),
+      el('h3', { class: 'zh-heading zh-heading--4', text: 'About this map' }),
       el('dl', { class: 'app-detail__facts' }, facts.flatMap(([term, value]) => [el('dt', { text: term }), el('dd', { text: value })])),
-      record.geoNote ? el('p', { class: 'zh-hint', text: `Hinweis zur Verortung: ${record.geoNote}` }) : null,
+      record.geoNote ? el('p', { class: 'zh-hint', text: `Location note: ${record.geoNote}` }) : null,
       el('p', { class: 'zh-hint' }, [
-        el('span', { text: 'Bildrechte und Zitierweise stehen beim Datensatz des Anbieters. ' }),
-        el('a', { href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'Rechtehinweis prüfen ↗' }),
+        el('span', { text: 'Image rights and citation guidance are available from the holding collection. ' }),
+        el('a', { href: record.recordUrl, target: '_blank', rel: 'noopener', text: 'Check rights ↗' }),
       ]),
     ]);
   }
@@ -860,8 +860,8 @@ export function init(ctx) {
     if (siblings.length === 0) return null;
     const shown = siblings.slice(0, 6);
     return el('section', { id: 'detail-related' }, [
-      el('h3', { class: 'zh-heading zh-heading--4', text: `Weitere Karten dieser Sammlung (${siblings.length})` }),
-      el('p', { class: 'zh-hint', text: `Aus «${series}». Jahr und Urheber stehen so, wie der Anbieter sie nennt.` }),
+      el('h3', { class: 'zh-heading zh-heading--4', text: `More maps from this collection (${siblings.length})` }),
+      el('p', { class: 'zh-hint', text: `From “${series}”. Dates and creators are transcribed from the collection’s metadata.` }),
       el(
         'ul',
         { class: 'app-detail__related' },
@@ -880,17 +880,17 @@ export function init(ctx) {
         ),
       ),
       siblings.length > shown.length
-        ? el('p', { class: 'zh-hint', text: `… und ${siblings.length - shown.length} weitere in dieser Sammlung.` })
+        ? el('p', { class: 'zh-hint', text: `… and ${siblings.length - shown.length} more from this collection.` })
         : null,
       el('button', {
         class: 'zh-button zh-button--ghost zh-button--small',
         type: 'button',
-        text: 'Sammlung in der Ergebnisliste filtern',
+        text: 'Browse this collection',
         onclick: () => {
           ctx.store.update({ collection: series, selected: '' });
           close();
           const live = qs('#results-live');
-          if (live) live.textContent = `Ergebnisliste auf die Sammlung «${series}» eingeschränkt.`;
+          if (live) live.textContent = `Results filtered to the collection “${series}”.`;
         },
       }),
     ]);
@@ -1076,11 +1076,11 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
     if (!view) return;
     const percent = zoomPercent(view, stageSize().width);
     const whole = view.w >= bounds.w - 1 && view.h >= bounds.h - 1;
-    const box = `Ausschnitt ${Math.round(view.w)}×${Math.round(view.h)} von ${bounds.w}×${bounds.h} Bildpunkten`;
-    // "Gesamtansicht" and not "Ganzes Blatt": the button next to the read-out is
-    // called "Ganzes Blatt", and two identical labels next to each other read
+    const box = `Region ${Math.round(view.w)}×${Math.round(view.h)} of ${bounds.w}×${bounds.h} pixels`;
+    // "Gesamtansicht" and not "Whole sheet": the button next to the read-out is
+    // called "Whole sheet", and two identical labels next to each other read
     // like a duplicate control.
-    onZoom?.(whole ? `Gesamtansicht · Auflösung ${percent} %` : `Auflösung ${percent} % · ${box}`);
+    onZoom?.(whole ? `Whole sheet · Resolution ${percent} %` : `Resolution ${percent} % · ${box}`);
   }
 
   /**
@@ -1144,16 +1144,16 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
       regionFailures = 0;
       rendered = { view: target, left: 0, top: 0, width: 0, height: 0 };
       img.src = url;
-      img.alt = canvas?.label ? `Kartenvorschau: ${record?.title ?? ''} (${canvas.label})` : `Kartenvorschau: ${record?.title ?? ''}`;
+      img.alt = canvas?.label ? `Map preview: ${record?.title ?? ''} (${canvas.label})` : `Map preview: ${record?.title ?? ''}`;
       layout();
       stage.dataset.state = 'ready';
       const info = meta?.();
       if (info) {
         const bits = [];
-        if (canvas?.label) bits.push(`Blatt ${canvas.label}`);
-        bits.push(`${preload.naturalWidth}×${preload.naturalHeight} px geladen`);
+        if (canvas?.label) bits.push(`Sheet ${canvas.label}`);
+        bits.push(`${preload.naturalWidth}×${preload.naturalHeight} px loaded`);
         if (bounds) bits.push(`Original ${bounds.w}×${bounds.h} px`);
-        bits.push(regionsUnsupported ? 'IIIF Image API (nur Gesamtbild)' : 'IIIF Image API (regionByPx, sizeByW)');
+        bits.push(regionsUnsupported ? 'IIIF Image API (whole image only)' : 'IIIF Image API (regionByPx, sizeByW)');
         info.textContent = bits.join(' · ');
       }
       updateReadout();
@@ -1171,9 +1171,9 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
       }
       stage.dataset.state = 'error';
       img.remove();
-      onError?.('Die Bildvorschau konnte nicht geladen werden (Netzwerk, Rechte oder Dienst nicht erreichbar).');
+      onError?.('Could not load the image preview. Open the original record to view this map.');
       const info = meta?.();
-      if (info) info.textContent = 'Vorschau nicht verfügbar – Metadaten und Originaldatensatz bleiben nutzbar.';
+      if (info) info.textContent = 'Preview unavailable. Metadata and the original record are still available.';
     });
     preload.src = url;
   }
@@ -1188,7 +1188,7 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
     view = zoomView(view, factor, anchor ?? { x: 0.5, y: 0.5 }, bounds, { aspect: width / height });
     applyTransform();
     updateReadout();
-    announce(`Auflösung ${zoomPercent(view, stageSize().width)} Prozent`);
+    announce(`Resolution ${zoomPercent(view, stageSize().width)} percent`);
     scheduleFetch();
     notifyView();
   }
@@ -1205,10 +1205,10 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
     }
     applyTransform();
     updateReadout();
-    announce('Ganzes Blatt');
+    announce('Whole sheet');
     scheduleFetch();
     // Immediate on purpose (the only caller of the flag): a reset is a discrete
-    // action, and the comparison's coupled “Ganzes Blatt” returns every pane to
+    // action, and the comparison's coupled “Whole sheet” returns every pane to
     // its own whole sheet in one press. A debounced report would arrive after
     // that loop and map the reset sheet's place back onto the others, so the
     // button's promise would depend on the timing.
@@ -1268,7 +1268,7 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
     applyTransform();
     scheduleFetch();
     if (meta && rendered) {
-      meta.textContent = `Ausschnitt ${Math.round(view.w)}×${Math.round(view.h)} von ${bounds.w}×${bounds.h} Bildpunkten`;
+      meta.textContent = `Region ${Math.round(view.w)}×${Math.round(view.h)} of ${bounds.w}×${bounds.h} pixels`;
     }
   };
 
@@ -1346,7 +1346,7 @@ export function createViewer(stage, { record, live, loadJson, meta, onZoom, onEr
         // Presentation 3 manifests may omit the size; the image service states it.
         loadJson(`${service}/info.json`)
           .then((info) => this.setCanvas({ ...canvas, width: info.width, height: info.height }, { restore }))
-          .catch(() => onError?.('Die Bildmasse konnten nicht ermittelt werden (info.json nicht erreichbar).'));
+          .catch(() => onError?.('Could not load the image dimensions (image service unavailable).'));
         return;
       }
       bounds = boundsForCanvas(width, height);

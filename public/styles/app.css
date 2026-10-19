@@ -1462,7 +1462,7 @@ body.app-compare--open {
 }
 
 .app-side:has(#result-list[aria-busy='true']) #year-histogram:empty::after {
-  content: 'Jahresverteilung lädt …';
+  content: 'Loading publication dates …';
   margin: auto;
   color: var(--zh-color-text-soft);
   font-size: var(--zh-font-small);
@@ -1766,5 +1766,20 @@ body.app-compare--open {
 
   .zh-histogram__bin.is-brushing {
     outline: 1px solid Highlight;
+  }
+}
+
+/* Global city shortcuts remain one scrollable row on narrow phones. */
+@media (max-width: 599px) {
+  #place-quick {
+    display: flex;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #place-quick > * {
+    flex-shrink: 0;
   }
 }

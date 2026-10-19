@@ -64,37 +64,37 @@ test('the reveal mark is long enough to be seen but not permanent', () => {
 test('selectionAnnouncement names the 1-based row a map selection moved the list to', () => {
   assert.equal(
     selectionAnnouncement({ index: 11, total: 167, title: 'Zürich 1850', revealed: true }),
-    '167 Treffer. Zeile 12 von 167 ausgewählt: Zürich 1850. Die Liste ist zu dieser Zeile gescrollt.',
+    '167 results. Row 12 of 167 selected: Zürich 1850. The list scrolled to this row.',
   );
   assert.equal(
     selectionAnnouncement({ index: 0, total: 1, title: 'Plan', revealed: false }),
-    '1 Treffer. Zeile 1 von 1 ausgewählt: Plan.',
+    '1 results. Row 1 of 1 selected: Plan.',
   );
 });
 
 test('selectionAnnouncement is honest when the record is not in the current list', () => {
   assert.equal(
     selectionAnnouncement({ index: -1, total: 42, title: 'Basel 1900' }),
-    '42 Treffer. Ausgewählt: Basel 1900. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+    '42 results. Selected: Basel 1900. This record is outside the current results.',
   );
   assert.equal(
     selectionAnnouncement({ index: 0, total: 0, title: 'Plan' }),
-    '0 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+    '0 results. Selected: Plan. This record is outside the current results.',
     'an empty list cannot have row 1',
   );
   assert.equal(
     selectionAnnouncement({ index: 3, total: 3, title: 'Plan' }),
-    '3 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.',
+    '3 results. Selected: Plan. This record is outside the current results.',
     'an out-of-range index is not a row',
   );
   assert.equal(selectionAnnouncement({ index: -1, total: 5, title: '' }), '', 'nothing to announce without a title');
   assert.equal(selectionAnnouncement(), '');
-  assert.equal(selectionAnnouncement({ index: 1.5, total: 5, title: 'Plan' }), '5 Treffer. Ausgewählt: Plan. Der Datensatz steht nicht in der aktuellen Trefferliste.');
+  assert.equal(selectionAnnouncement({ index: 1.5, total: 5, title: 'Plan' }), '5 results. Selected: Plan. This record is outside the current results.');
 });
 
 test('selectionAnnouncement folds a multi-line title into one sentence', () => {
   assert.equal(
     selectionAnnouncement({ index: 1, total: 2, title: '  Karte\n  von   Zürich ', revealed: false }),
-    '2 Treffer. Zeile 2 von 2 ausgewählt: Karte von Zürich.',
+    '2 results. Row 2 of 2 selected: Karte von Zürich.',
   );
 });

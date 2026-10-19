@@ -1,5 +1,5 @@
 /**
- * Bootstrap for Kartenzeit. Loads the data, wires the optional UI modules and
+ * Bootstrap for Meridian Atlas. Loads the data, wires the optional UI modules and
  * degrades gracefully when one of them is missing (coordination D4).
  */
 
@@ -49,7 +49,7 @@ async function initModules() {
     } catch (err) {
       // A missing/failing module must not stop the rest of the app — but it must
       // not be invisible either: report it in the UI (see reportModuleProblems).
-      console.warn(`[kartenzeit] module "${name}" not available`, err);
+      console.warn(`[meridian-atlas] module "${name}" not available`, err);
       ctx.moduleErrors.push({ name, message: err?.message || String(err) });
     }
   }
@@ -72,11 +72,11 @@ function reportModuleProblems() {
   host.hidden = false;
   host.className = 'zh-state zh-state--error';
   host.replaceChildren(
-    el('span', { class: 'zh-state__title', text: 'Eine Teilfunktion ist derzeit nicht verfügbar.' }),
+    el('span', { class: 'zh-state__title', text: 'One feature is temporarily unavailable.' }),
     el('span', {
       text:
-        `Betroffen: ${problems.map((p) => p.name).join(', ')}. ` +
-        'Die übrigen Funktionen laufen weiter. Bitte die Seite neu laden; bleibt es dabei, ist ein Fehler im Client gemeldet.',
+        `Affected: ${problems.map((p) => p.name).join(', ')}. ` +
+        'Other features remain available. Reload the page to try again.',
     }),
   );
 }
@@ -95,8 +95,8 @@ function wirePermalinkCopy() {
     setStatus(
       status,
       ok
-        ? 'Link zu dieser Ansicht kopiert — Filter, Kartenausschnitt und Auswahl sind darin enthalten.'
-        : 'Kopieren nicht möglich. Bitte die Adresse aus der Adresszeile übernehmen — sie enthält denselben Zustand.',
+        ? 'View link copied, including filters, map position and selection.'
+        : 'Could not copy. Copy the address from your browser to share this view.',
       ok ? 'success' : 'warn',
     );
   });
@@ -117,17 +117,17 @@ function renderIntro() {
     const providersInUse = new Set(ctx.data.records.map((r) => r.providerId));
     const withManifest = ctx.data.records.filter((r) => r.iiifManifest).length;
     return [
-      ['Digitalisate', `${ctx.data.records.length}`],
-      ['Zeitraum', `${ctx.data.years.min}–${ctx.data.years.max}`],
-      ['Anbieter', `${providersInUse.size}`],
-      ['IIIF-Bildservice', `${withManifest}`],
+      ['Archive maps', `${ctx.data.records.length}`],
+      ['Period', `${ctx.data.years.min}–${ctx.data.years.max}`],
+      ['Providers', `${providersInUse.size}`],
+      ['IIIF previews', `${withManifest}`],
     ].map(([term, value]) =>
       el('li', {}, [el('span', { class: 'zh-facts__value', text: value }), el('span', { class: 'zh-facts__term', text: term })]),
     );
   })();
   const collections = new Set(ctx.data.records.map((r) => r.collection).filter(Boolean)).size;
   const withExtent = ctx.data.records.filter((r) => r.extent).length;
-  const factsTitle = `${collections} Sammlungen · ${withExtent} von ${ctx.data.records.length} Datensätzen mit Kartenausschnitt · ${ctx.data.overlays.length} georeferenzierte swisstopo-Kartenwerke`;
+  const factsTitle = `${collections} collections · ${withExtent} of ${ctx.data.records.length} records with documented extents · ${ctx.data.overlays.length} Swiss overlay layers`;
   for (const facts of document.querySelectorAll('#intro-facts, #about-facts')) {
     facts.replaceChildren(...factsItems.map((item) => item.cloneNode(true)));
     // The compact strip on a phone carries the same honest detail as a title.
@@ -143,7 +143,7 @@ function renderIntro() {
         .map((source) =>
           el('li', {}, [el('span', { class: 'zh-tag zh-tag--blue', text: source.name?.split('–')[0]?.trim() || source.id })]),
         ),
-      el('li', {}, [el('span', { class: 'zh-tag zh-tag--turquoise', text: `${ctx.data.overlays.length} swisstopo-Kartenwerke` })]),
+      el('li', {}, [el('span', { class: 'zh-tag zh-tag--turquoise', text: `${ctx.data.overlays.length} Swiss overlay layers` })]),
     );
   }
   const sourceList = qs('#source-list');
@@ -168,7 +168,7 @@ function renderIntro() {
   if (stand && ctx.data.generatedAt) {
     const [year, month, day] = String(ctx.data.generatedAt).slice(0, 10).split('-');
     if (year && month && day) {
-      stand.textContent = `Datenstand: ${day}.${month}.${year} · Herkunft und Rechte je Anbieter siehe Quellenregister (/data/sources.json).`;
+      stand.textContent = `Catalogue updated: ${year}-${month}-${day}. See Sources for provenance and rights.`;
       stand.hidden = false;
     }
   }
@@ -176,7 +176,7 @@ function renderIntro() {
   if (state && ctx.data.loadErrors.length > 0) {
     state.hidden = false;
     state.className = 'zh-state zh-state--error';
-    state.textContent = `Datenprüfung: ${ctx.data.loadErrors.length} Feld(er) unvollständig – bitte Quellenregister prüfen.`;
+    state.textContent = `Data check: ${ctx.data.loadErrors.length} incomplete fields. See Sources for details.`;
   }
 }
 
@@ -238,7 +238,7 @@ function finishLoading() {
 }
 
 async function main() {
-  document.documentElement.dataset.app = 'kartenzeit';
+  document.documentElement.dataset.app = 'meridian-atlas';
   initViewSwitch();
 
   // Data first: every module can rely on ctx.data being populated.
@@ -255,19 +255,19 @@ async function main() {
     bus.emit('records:loaded', { records, sources: sources.providers, overlays: overlays.overlays });
   } catch (err) {
     // The raw message (a browser string like “Failed to fetch”) stays in the
-    // console and in the title attribute; the visible text is plain German.
-    console.error('[kartenzeit] data load failed', err);
+    // console and in the title attribute; the visible text is plain English.
+    console.error('[meridian-atlas] data load failed', err);
     finishLoading();
     const count = qs('#result-count');
-    if (count) count.textContent = 'Bestand nicht geladen';
+    if (count) count.textContent = 'Catalogue unavailable';
     const state = qs('#results-state') || qs('#map-fallback');
     if (state) {
       state.hidden = false;
       state.className = 'zh-state zh-state--error';
       state.title = String(err?.message || err);
       state.replaceChildren(
-        el('span', { class: 'zh-state__title', text: 'Die Datensätze konnten nicht geladen werden.' }),
-        el('span', { text: 'Bitte die Seite neu laden. Die Rohdaten liegen unter /data/records.json; den technischen Grund nennt die Browser-Konsole.' }),
+        el('span', { class: 'zh-state__title', text: 'The map catalogue could not be loaded.' }),
+        el('span', { text: 'Reload the page to try again. You can also download the catalogue from /data/records.json.' }),
       );
     }
     bus.emit('records:error', { error: err });
@@ -282,17 +282,17 @@ async function main() {
 
   // Diagnostics for the console and for curious users of the API.
   console.info(
-    `[kartenzeit] ${ctx.modules?.length ?? 0} Modul(e): ${(ctx.modules ?? []).join(', ')} · ` +
-      `${ctx.data.records.length} Datensätze · ${ctx.data.overlays.length} Kartenwerke (${ctx.data.generatedAt ?? 'ohne Datum'})`,
+    `[meridian-atlas] ${ctx.modules?.length ?? 0} Modul(e): ${(ctx.modules ?? []).join(', ')} · ` +
+      `${ctx.data.records.length} records · ${ctx.data.overlays.length} overlays (${ctx.data.generatedAt ?? 'undated'})`,
   );
 }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    main().catch((err) => console.error('[kartenzeit] startup failed', err));
+    main().catch((err) => console.error('[meridian-atlas] startup failed', err));
   });
 } else {
-  main().catch((err) => console.error('[kartenzeit] startup failed', err));
+  main().catch((err) => console.error('[meridian-atlas] startup failed', err));
 }
 
 export { bus, store, ctx, main };

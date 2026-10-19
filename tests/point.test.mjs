@@ -55,10 +55,11 @@ test('a hand-written point value cannot break the filter', () => {
   assert.equal(sanitise({ ...STATE_DEFAULTS, at: '47.5,999' }).at, sanitisePoint('47.5,999'));
 });
 
-test('the committed seed has a real footprint for every record and Zürich is covered', () => {
+test('the point filter uses documented footprints and excludes maps with unknown extents', () => {
   assert.equal(records.length > 0, true);
   const withoutExtent = records.filter((record) => !record.extent);
-  assert.deepEqual(withoutExtent.map((record) => record.id), [], 'the point filter is only honest when every record states an extent');
+  assert.ok(withoutExtent.every((record) => record.geoNote), 'unknown extents must be explained');
+  assert.ok(withoutExtent.every((record) => !coversPoint(record, record.geo?.lat ?? 0, record.geo?.lon ?? 0)), 'place anchors must never become fabricated map footprints');
   const zurich = records.filter((record) => coversPoint(record, 47.3769, 8.5417));
   assert.ok(zurich.length > 0, 'at least one committed record states a footprint covering Zürich');
   for (const record of zurich) {

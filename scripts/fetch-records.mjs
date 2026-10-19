@@ -22,12 +22,13 @@
  * response cache (`.cache/fetch/`, git-ignored) so repeated runs do not hammer the
  * upstreams. `--offline` never opens a network connection.
  */
+import { addInternationalMaps } from './add-international-maps.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-const UA = 'Kartenzeit/1.0 (Canton-Zurich design study; contact: project maintainers)';
+const UA = 'MeridianAtlas/1.0 (+https://github.com/igor-makarov/maps-n-stuff)';
 const args = process.argv.slice(2);
 const outDir = resolve(getArg('--out') || 'public/data');
 const writeOutput = !args.includes('--no-write');
@@ -1955,6 +1956,7 @@ async function main() {
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +
       `(${records.length} records, ${overlayLayers.length} comparison layers)`,
   );
+  await addInternationalMaps(recordsDoc, sources);
   if (writeOutput) {
     await mkdir(outDir, { recursive: true });
     await writeFile(resolve(outDir, 'records.json'), JSON.stringify(recordsDoc, null, 2) + '\n');

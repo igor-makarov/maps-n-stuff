@@ -50,7 +50,7 @@ const V2 = {
   seeAlso: { format: 'application/xml', '@id': 'https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=mets&identifier=999' },
   metadata: [
     { label: 'Titel', value: 'Testblatt' },
-    { label: 'Besitzende Institution', value: 'Zentralbibliothek Zürich' },
+    { label: 'Holding institution', value: 'Zentralbibliothek Zürich' },
   ],
   sequences: [
     {
@@ -128,7 +128,7 @@ const V3 = {
 test('labelText flattens strings, arrays and language maps', () => {
   assert.equal(labelText('[1]'), '[1]');
   assert.equal(labelText({ de: ['Beiblatt'] }), 'Beiblatt');
-  assert.equal(labelText({ en: 'Sheet', de: ['Blatt'] }), 'Blatt', 'German is preferred');
+  assert.equal(labelText({ en: 'Sheet', de: ['Blatt'] }), 'Sheet', 'English is preferred');
   assert.equal(labelText({ fr: ['Feuille'] }), 'Feuille', 'falls back to the first language');
   assert.equal(labelText(undefined), null);
   assert.equal(labelText('   '), null, 'empty labels are null, not invented');
@@ -167,7 +167,7 @@ test('parseManifest reads a Presentation 2.0 manifest (e-rara shape)', () => {
 test('parseManifest reads a Presentation 3.0 manifest', () => {
   const m = parseManifest(V3);
   assert.equal(m.version, 3);
-  assert.equal(m.label, 'Blatt aus einem Kantonsatlas');
+  assert.equal(m.label, 'Sheet');
   const [canvas] = m.canvases;
   assert.equal(canvas.service, 'https://example.org/iiif/image/abc');
   assert.equal(canvas.thumbnail, 'https://example.org/iiif/image/abc/full/200,/0/default.jpg');
@@ -176,8 +176,8 @@ test('parseManifest reads a Presentation 3.0 manifest', () => {
 
 test('parseManifest rejects things that are not usable manifests', () => {
   assert.throws(() => parseManifest(null), /Kein IIIF-Manifest/);
-  assert.throws(() => parseManifest({ '@type': 'sc:Collection' }), /ohne Bildseiten/);
-  assert.throws(() => parseManifest({ sequences: [{ canvases: [] }] }), /ohne verwendbare Bildseiten/);
+  assert.throws(() => parseManifest({ '@type': 'sc:Collection' }), /no image pages/);
+  assert.throws(() => parseManifest({ sequences: [{ canvases: [] }] }), /no usable image pages/);
 });
 
 test('parseMetadata keeps verbatim pairs and drops incomplete rows', () => {
@@ -231,19 +231,19 @@ test('sheetThumbUrl prefers the manifest thumbnail and derives from the image se
 });
 
 test('sheetOptionLabel names a sheet without repeating an upstream number label', () => {
-  assert.equal(sheetOptionLabel({ label: '7' }, 6, 33), 'Blatt 7 von 33');
-  assert.equal(sheetOptionLabel({ label: '[7]' }, 6, 33), 'Blatt 7 von 33', 'e-rara writes the sheet number as “[7]”');
-  assert.equal(sheetOptionLabel({ label: 'Blatt 7' }, 6, 33), 'Blatt 7 von 33', 'the upstream “Blatt n” is the number again');
-  assert.equal(sheetOptionLabel({}, 0, 1), 'Blatt 1 von 1', 'missing label -> the number alone');
+  assert.equal(sheetOptionLabel({ label: '7' }, 6, 33), 'Sheet 7 of 33');
+  assert.equal(sheetOptionLabel({ label: '[7]' }, 6, 33), 'Sheet 7 of 33', 'e-rara writes the sheet number as “[7]”');
+  assert.equal(sheetOptionLabel({ label: 'Blatt 7' }, 6, 33), 'Sheet 7 of 33', 'the upstream “Blatt n” is the number again');
+  assert.equal(sheetOptionLabel({}, 0, 1), 'Sheet 1 of 1', 'missing label -> the number alone');
   assert.equal(
     sheetOptionLabel({ label: 'Situation der Stadt Zürich' }, 2, 3),
-    'Blatt 3 von 3 – Situation der Stadt Zürich',
+    'Sheet 3 of 3 – Situation der Stadt Zürich',
     'a real upstream name is appended',
   );
   // Defensive: hostile or absent arguments must not produce “Blatt NaN”.
-  assert.equal(sheetOptionLabel(null, 0, 0), 'Blatt 1 von 1');
-  assert.equal(sheetOptionLabel({ label: '   ' }, 1, 'x'), 'Blatt 2 von 2');
-  assert.equal(sheetOptionLabel({ label: 'x' }, -5, -1), 'Blatt 1 von 1 – x');
+  assert.equal(sheetOptionLabel(null, 0, 0), 'Sheet 1 of 1');
+  assert.equal(sheetOptionLabel({ label: '   ' }, 1, 'x'), 'Sheet 2 of 2');
+  assert.equal(sheetOptionLabel({ label: 'x' }, -5, -1), 'Sheet 1 of 1 – x');
 });
 
 /* ----------------------------------------------------------------- view box */
@@ -385,8 +385,8 @@ test('zoomView can reshape the region to the stage aspect (cover instead of bars
 test('describeUpstreamError turns developer strings into an actionable sentence', () => {
   // Browser-level network failures never reach the visible UI as English text.
   const offline = describeUpstreamError(new TypeError('Failed to fetch / Failed to fetch'));
-  assert.match(offline, /nicht erreichbar/);
-  assert.match(offline, /Verbindung/);
+  assert.match(offline, /Preview unavailable/);
+  assert.match(offline, /connect/);
   assert.doesNotMatch(offline, /Failed to fetch|TypeError/);
 
   // A proxy HTTP status is reported with its number (that is useful, not raw).
@@ -395,15 +395,15 @@ test('describeUpstreamError turns developer strings into an actionable sentence'
   assert.doesNotMatch(proxy, /Proxy/);
 
   // Our own manifest messages are German and precise — they are passed through.
-  const manifest = describeUpstreamError(new Error('IIIF-Manifest ohne Bildseiten (weder items noch sequences).'));
-  assert.match(manifest, /ohne Bildseiten/);
+  const manifest = describeUpstreamError(new Error('IIIF manifest has no image pages (no items or sequences).'));
+  assert.match(manifest, /no image pages/);
 
   // Unknown upstream text is not echoed (it may be English developer prose).
   const unknown = describeUpstreamError(new Error('something odd happened in the proxy layer'));
   assert.doesNotMatch(unknown, /something odd/);
-  assert.match(unknown, /unerwartet/);
+  assert.match(unknown, /unexpected/);
 
-  assert.match(describeUpstreamError(null), /unbekannter Fehler/);
+  assert.match(describeUpstreamError(null), /unknown error/);
 });
 
 /* ------------------------------------------------ coupling by documented extent */

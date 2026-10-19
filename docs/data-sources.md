@@ -1,5 +1,20 @@
 # Data sources — registry, rights and verification evidence
 
+## Current global atlas (2026-10-19)
+
+The English Meridian Atlas uses OpenStreetMap for the default worldwide basemap and Nominatim for worldwide place search, with the existing Swiss gazetteer as a fallback. Swiss overlays remain regional options.
+
+The catalogue now contains **221 records from three providers**, including eight international Library of Congress records. `data/international-maps.json` records the selection, checked primary catalogue identifiers, and provenance. The selection covers Egypt, Japan/China/Korea, Mexico, Brazil and the United States; e-rara supplies European and world overview maps. `scripts/add-international-maps.mjs` merges the selection idempotently and is also called by the main harvest. Original titles, creators and institution names retain their source language.
+
+Library of Congress images use its documented IIIF services and manifests, with allowlisted same-origin metadata proxying. These new live image endpoints could not be verified from this development network, which cannot reach loc.gov. The earlier 984-endpoint verification below applies to the **previous 213-record Swiss seed**, not to the expanded catalogue. `npm run verify:endpoints` should be run from a network that can reach the primary services.
+
+The international selection does **not** invent map extents or depicted dates. Its map boundaries stay null until checked against the catalogue. Where a named place has an orientation anchor, `geoNote` identifies that approximate point; point filters and footprints still use only documented extents. Unlocated records remain available in the list.
+
+Historical borders are separate from archive footprints: the bundled 54-snapshot world dataset, precision information and licences are documented below and in `public/data/history/index.json`. The time slider changes the rendered source polygons. Sparse dates resolve to an explicitly named nearest snapshot, and early snapshots include cultural regions as well as political entities.
+
+The source-specific harvest evidence below describes the retained e-rara/swisstopo corpus.
+
+
 Machine-readable registry: [`public/data/sources.json`](../public/data/sources.json)
 (providers, endpoints actually used, rights, attribution, retrieval date) and
 [`public/data/overlays.json`](../public/data/overlays.json) (georeferenced map

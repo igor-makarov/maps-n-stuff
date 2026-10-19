@@ -2,7 +2,7 @@
 # https://developers.cloudflare.com/workers/static-assets/headers/
 #
 # The app is a single-purpose Workers site with no third-party script: the only
-# cross-origin resources are swisstopo tiles/images and e-rara IIIF images, and
+# cross-origin images are OpenStreetMap tiles and primary collection images, and
 # every fetch goes through the same-origin /api/* Worker proxy.
 
 /*
@@ -10,7 +10,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://www.e-rara.ch https://wmts.geo.admin.ch https://api3.geo.admin.ch https://map.geo.admin.ch; connect-src 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://www.e-rara.ch https://wmts.geo.admin.ch https://api3.geo.admin.ch https://map.geo.admin.ch https://tile.openstreetmap.org https://tile.loc.gov https://www.loc.gov; connect-src 'self'
 
 # Fonts never change under the same file name: cache them hard.
 /fonts/*

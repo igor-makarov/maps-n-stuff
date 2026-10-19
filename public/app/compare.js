@@ -15,7 +15,7 @@
  *
  * Since iteration 7-18 (zurich-maps-3) those cut-outs are shareable state of
  * their own (`cvv`, one `id@x,y,w,h` per pane, keyed by record id) and every
- * pane has a “Ganzes Blatt” reset: a shared comparison link reopens the same
+ * pane has a “Whole sheet” reset: a shared comparison link reopens the same
  * place in both sheets, not just the whole sheets side by side.
  *
  * Since decision D13 the coupling switch is shareable too: `csync=0` in the
@@ -105,7 +105,7 @@ export function init(ctx) {
    */
   let mounting = false;
   /**
-   * True while one “Ganzes Blatt” press returns the coupled panes to their own
+   * True while one “Whole sheet” press returns the coupled panes to their own
    * whole sheets. Without this the first pane's whole-sheet view would be mapped
    * onto the others by `propagate()` and the panes would hand a cut-out back and
    * forth, so the button's promise depended on which extent contains which.
@@ -134,10 +134,10 @@ export function init(ctx) {
       const isPinned = selected && pinnedIds().includes(selected);
       addButton.disabled = !selected || Boolean(isPinned) || entries.length >= MAX_PINNED;
       addButton.textContent = isPinned
-        ? 'Ausgewählter Datensatz ist gemerkt'
+        ? 'Selected map is saved'
         : entries.length >= MAX_PINNED
-          ? `Maximal ${MAX_PINNED} Datensätze`
-          : 'Ausgewählten Datensatz merken';
+          ? `Up to ${MAX_PINNED} maps`
+          : 'Save selected map';
     }
     if (clearButton) clearButton.disabled = entries.length === 0;
 
@@ -158,13 +158,13 @@ export function init(ctx) {
                 type: 'button',
                 disabled: known.length < 2,
                 onclick: () => openCompare(index),
-                text: 'Vergleichen',
+                text: 'Compare',
               }),
               el('button', {
                 class: 'zh-chip',
                 type: 'button',
                 onclick: () => remove(id),
-                text: 'Entfernen',
+                text: 'Remove',
               }),
             ]),
           ]),
@@ -173,10 +173,10 @@ export function init(ctx) {
       ...unknown.map((id) =>
         el('li', { class: 'app-compare__item app-compare__item--unknown' }, [
           el('div', { class: 'app-compare__meta' }, [
-            el('span', { class: 'app-compare__title', text: 'Unbekannter Datensatz' }),
-            el('span', { class: 'zh-hint', text: `${id} – nicht im aktuellen Bestand.` }),
+            el('span', { class: 'app-compare__title', text: 'Unknown record' }),
+            el('span', { class: 'zh-hint', text: `${id} is not in the current catalogue.` }),
             el('div', { class: 'app-compare__itemactions' }, [
-              el('button', { class: 'zh-chip', type: 'button', onclick: () => remove(id), text: 'Entfernen' }),
+              el('button', { class: 'zh-chip', type: 'button', onclick: () => remove(id), text: 'Remove' }),
             ]),
           ]),
         ]),
@@ -186,9 +186,9 @@ export function init(ctx) {
     if (entries.length === 0) {
       listNode.append(
         el('li', { class: 'app-compare__empty zh-hint' }, [
-          'Noch nichts gemerkt: Datensatz in der Liste wählen und «Ausgewählten Datensatz merken» drücken – oder einen Vergleichslink mit ',
+          'No saved maps yet. Select a map and choose “Save selected map”, or open a comparison link with ',
           el('code', { text: '?cmp=' }),
-          ' öffnen.',
+          '.',
         ]),
       );
     }
@@ -196,7 +196,7 @@ export function init(ctx) {
     syncToolbar();
 
     if (unknown.length > 0) {
-      setStatus(status, `${unknown.length} gemerkte(r) Datensatz/Datensätze ist nicht mehr im Bestand und wurde rot markiert.`, 'warn');
+      setStatus(status, `${unknown.length} saved records are no longer in the catalogue and are highlighted in red.`, 'warn');
     }
     if (open) renderView();
   }
@@ -204,32 +204,32 @@ export function init(ctx) {
   function addSelected() {
     const { selected } = ctx.store.getState();
     if (!selected) {
-      setStatus(status, 'Zuerst in der Trefferliste oder auf der Karte einen Datensatz auswählen.', 'warn');
+      setStatus(status, 'First select a record in the results or on the map.', 'warn');
       return;
     }
     const ids = pinnedIds();
     if (ids.includes(selected)) {
-      setStatus(status, 'Dieser Datensatz ist bereits gemerkt.', 'info');
+      setStatus(status, 'This map is already saved.', 'info');
       return;
     }
     if (ids.length >= MAX_PINNED) {
-      setStatus(status, `Mehr als ${MAX_PINNED} Datensätze passen nicht in die Vergleichsliste.`, 'warn');
+      setStatus(status, `You can save up to ${MAX_PINNED} maps for comparison.`, 'warn');
       return;
     }
     const record = recordOf(selected);
     ctx.store.update({ cmp: [...ids, selected].join(',') });
-    setStatus(status, `„${record?.title ?? selected}“ gemerkt (${ids.length + 1} von ${MAX_PINNED}).`, 'success');
+    setStatus(status, `“${record?.title ?? selected}” saved (${ids.length + 1} of ${MAX_PINNED}).`, 'success');
   }
 
   function remove(id) {
     const ids = pinnedIds().filter((entry) => entry !== id);
     ctx.store.update({ cmp: ids.join(',') });
-    setStatus(status, ids.length === 0 ? 'Vergleichsliste ist leer.' : `Datensatz entfernt – ${ids.length} gemerkt.`, 'info');
+    setStatus(status, ids.length === 0 ? 'Your comparison list is empty.' : `Map removed. ${ids.length} saved.`, 'info');
   }
 
   function clearAll() {
     ctx.store.update({ cmp: '' });
-    setStatus(status, 'Vergleichsliste ist leer.', 'info');
+    setStatus(status, 'Your comparison list is empty.', 'info');
   }
 
   /* ------------------------------------------------------------- comparison */
@@ -240,7 +240,7 @@ export function init(ctx) {
     const known = viewRecords.length > 0 ? viewRecords.filter((record) => pinned.includes(record)) : pinned;
     if (known.length === 0) viewRecords = [];
     if (viewTitle) {
-      viewTitle.textContent = `Vergleich: ${known.map((record) => shortTitle(record)).join(' ↔ ')}`;
+      viewTitle.textContent = `Compare: ${known.map((record) => shortTitle(record)).join(' ↔ ')}`;
     }
     destroyViewers();
     viewBody.replaceChildren(
@@ -249,11 +249,11 @@ export function init(ctx) {
         el('figure', { class: 'app-compare__pane' }, [
           paneImage(record, index),
           el('figcaption', {}, [
-            el('p', { class: 'app-compare__paneindex zh-hint', text: `Karte ${index + 1} von ${known.length}` }),
+            el('p', { class: 'app-compare__paneindex zh-hint', text: `Map ${index + 1} of ${known.length}` }),
             el('h3', { class: 'zh-heading zh-heading--5', text: record.title }),
-            el('p', { class: 'zh-hint', text: `${yearText(record)} · ${record.creatorText || (record.creators ?? []).join(', ') || 'Urheber unbekannt'}` }),
-            el('p', { class: 'zh-hint', text: `${record.institution || record.providerId} · ${record.rights || 'Rechte nicht angegeben'}` }),
-            el('p', { class: 'app-compare__readout zh-hint', 'data-compare-readout': '', text: viewerCapable(record) ? 'Ausschnitt wird geladen …' : '' }),
+            el('p', { class: 'zh-hint', text: `${yearText(record)} · ${record.creatorText || (record.creators ?? []).join(', ') || 'Creator unknown'}` }),
+            el('p', { class: 'zh-hint', text: `${record.institution || record.providerId} · ${record.rights || 'Rights not stated'}` }),
+            el('p', { class: 'app-compare__readout zh-hint', 'data-compare-readout': '', text: viewerCapable(record) ? 'Loading map region …' : '' }),
             el('p', {
               class: 'app-compare__coverage zh-hint',
               'data-compare-coverage': String(index),
@@ -264,7 +264,7 @@ export function init(ctx) {
             viewerCapable(record)
               ? el('p', {
                   class: 'app-compare__viewhint zh-hint',
-                  text: 'Echter IIIF-Ausschnitt: zoomen mit +/−, Doppelklick oder Ctrl/⌘ + Mausrad, verschieben mit den Pfeiltasten oder per Zug.',
+                  text: 'Zoom: +/−, double-click or Ctrl/⌘ + scroll. Pan with the arrow keys or drag the image.',
                 })
               : null,
             el('p', { class: 'app-compare__paneactions' }, [
@@ -277,19 +277,19 @@ export function init(ctx) {
                     // pressing it on the whole sheet would be a control that does nothing.
                     disabled: true,
                     onclick: () => resetPane(index),
-                    text: 'Ganzes Blatt',
+                    text: 'Whole sheet',
                   })
                 : null,
-              el('a', { class: 'zh-button zh-button--small', href: record.recordUrl, rel: 'noopener', text: 'Originaldatensatz öffnen ↗' }),
+              el('a', { class: 'zh-button zh-button--small', href: record.recordUrl, rel: 'noopener', text: 'Open original record ↗' }),
               el('button', {
                 class: 'zh-button zh-button--small zh-button--ghost',
                 type: 'button',
                 onclick: () => {
                   ctx.store.update({ selected: record.id });
                   ctx.bus.emit('record:selected', { record, source: 'compare' });
-                  setStatus(status, `„${record.title}“ ist ausgewählt.`, 'success');
+                  setStatus(status, `“${record.title}” selected.`, 'success');
                 },
-                text: 'Auswählen',
+                text: 'Select',
               }),
             ]),
           ]),
@@ -297,7 +297,7 @@ export function init(ctx) {
       ),
     );
     if (known.length < 2) {
-      viewBody.append(el('p', { class: 'zh-state zh-hint', text: 'Für einen Vergleich mindestens zwei Datensätze merken.' }));
+      viewBody.append(el('p', { class: 'zh-state zh-hint', text: 'Save at least two maps to compare them.' }));
     }
     // Real viewers for the panes with a manifest; they need the visible layout.
     void mountViewers(known, viewBody);
@@ -319,7 +319,7 @@ export function init(ctx) {
         id: 'compare-sync',
         'aria-pressed': 'true',
         onclick: () => toggleCoupling(),
-        text: 'Ausschnitte gekoppelt',
+        text: 'Views linked',
       }),
       el('p', { class: 'zh-hint', id: 'compare-sync-hint', role: 'status', 'aria-live': 'polite', text: '' }),
     ]);
@@ -335,8 +335,8 @@ export function init(ctx) {
           'data-compare-stage': String(index),
           tabindex: '0',
           role: 'group',
-          'aria-roledescription': 'Kartenausschnitt mit Zoom',
-          'aria-label': `Karte ${index + 1}: ${record.title}. Zoomen mit Plus und Minus, verschieben mit den Pfeiltasten.`,
+          'aria-roledescription': 'Zoomable map region',
+          'aria-label': `Map ${index + 1}: ${record.title}. Plus and minus zoom; arrow keys pan.`,
         },
         [el('span', { class: 'zh-spinner', role: 'presentation' })],
       ),
@@ -346,7 +346,7 @@ export function init(ctx) {
   /**
    * Mount one viewer per pane that has a manifest and load its first canvas.
    * A manifest that cannot be loaded falls back to the documented thumbnail with
-   * a plain German sentence (`describeUpstreamError`) instead of an empty box.
+   * a plain English sentence (`describeUpstreamError`) instead of an empty box.
    */
   async function mountViewers(records, container) {
     const token = ++viewToken;
@@ -432,7 +432,7 @@ export function init(ctx) {
   }
   const scheduleViewsWrite = debounce(writeCompareViews, 400);
 
-  /** “Ganzes Blatt” is only enabled while the pane really shows a cut-out. */
+  /** “Whole sheet” is only enabled while the pane really shows a cut-out. */
   function refreshPaneReset(index) {
     const button = viewBody?.querySelector(`[data-compare-reset="${index}"]`);
     if (!button) return;
@@ -448,7 +448,7 @@ export function init(ctx) {
   function resetPane(index) {
     const pane = panes.find((entry) => entry.index === index);
     if (!pane) return;
-    // “Ganzes Blatt” is a reset, not a gesture: with the coupling on every live
+    // “Whole sheet” is a reset, not a gesture: with the coupling on every live
     // pane returns to its *own* whole sheet (the state the comparison opens in),
     // instead of the reset sheet's place being mapped onto the others. The
     // coupling check in the harness pins this: after the reset both panes read
@@ -470,14 +470,14 @@ export function init(ctx) {
     scheduleViewsWrite();
     setStatus(
       status,
-      targets.length > 1 ? `${targets.length} Karten zeigen wieder das ganze Blatt.` : `Karte ${index + 1} zeigt wieder das ganze Blatt.`,
+      targets.length > 1 ? `${targets.length} maps now show their whole sheets.` : `Map ${index + 1} now shows the whole sheet.`,
       'info',
     );
     // The propagation that would normally rewrite the hint is suppressed above,
     // so the previous “Ausschnitt übertragen …” sentence would survive the reset
     // and describe a cut-out that no longer exists.
     updateSyncHint(
-      targets.length > 1 ? `${targets.length} Karten zeigen wieder ihr ganzes Blatt – die Kopplung greift beim nächsten Ausschnitt.` : '',
+      targets.length > 1 ? `${targets.length} maps now show their whole sheets. Linked views will follow the next zoom or pan.` : '',
     );
   }
 
@@ -530,7 +530,7 @@ export function init(ctx) {
     const geo = viewToExtent(geometry.view, geometry.bounds, source.record.extent);
     if (!geo) return;
     if (!coupled) {
-      updateSyncHint(`Ausschnitt in Karte ${sourceIndex + 1} geändert – die Kopplung ist aus.`);
+      updateSyncHint(`View in map ${sourceIndex + 1} changed. Linked views are off.`);
       return;
     }
     const followed = [];
@@ -562,23 +562,23 @@ export function init(ctx) {
 
   /** “Karte 2” / “Karten 2 und 3” — the panes are numbered in their captions. */
   function paneList(indexes) {
-    return indexes.length === 1 ? `Karte ${indexes[0] + 1}` : `Karten ${indexes.map((index) => index + 1).join(' und ')}`;
+    return indexes.length === 1 ? `Map ${indexes[0] + 1}` : `Maps ${indexes.map((index) => index + 1).join(' and ')}`;
   }
 
-  /** What just happened, in one plain-German sentence (read out by the hint). */
+  /** What just happened, in one plain-English sentence (read out by the hint). */
   function couplingSentence(sourceIndex, followed, uncovered, partial) {
-    const from = `Karte ${sourceIndex + 1}`;
+    const from = `Map ${sourceIndex + 1}`;
     if (followed.length === 0 && uncovered.length === 0) {
-      return `${from} hat keine belegte Ausdehnung – die übrigen Karten bleiben stehen.`;
+      return `${from} has no documented extent. The other maps keep their current views.`;
     }
     if (followed.length === 0) {
-      return `Der Ausschnitt von ${from} liegt ausserhalb der belegten Ausdehnung von ${paneList(uncovered)} – dort bleibt das ganze Blatt.`;
+      return `The view in ${from} falls outside the documented extent of ${paneList(uncovered)}. Those maps show their whole sheets.`;
     }
-    const shared = partial ? ' (gezeigt wird der gemeinsame Bereich)' : '';
+    const shared = partial ? ' (showing the shared area)' : '';
     if (uncovered.length === 0) {
-      return `Ausschnitt von ${from} auf ${paneList(followed)} übertragen${shared}.`;
+      return `View from ${from} applied to ${paneList(followed)}${shared}.`;
     }
-    return `Ausschnitt von ${from} auf ${paneList(followed)} übertragen${shared}; ${paneList(uncovered)} belegt dieses Gebiet nicht – dort bleibt das ganze Blatt.`;
+    return `View from ${from} applied to ${paneList(followed)}${shared}. ${paneList(uncovered)} does not cover this area and shows the whole sheet.`;
   }
 
   /**
@@ -594,9 +594,9 @@ export function init(ctx) {
       if (!note) continue;
       const text =
         coverage === 'outside'
-          ? 'Dieses Blatt belegt den gezeigten Ausschnitt nicht – es bleibt beim ganzen Blatt.'
+          ? 'This sheet does not cover the selected region. Showing the whole sheet.'
           : coverage === 'partial'
-            ? 'Gezeigt wird der gemeinsame Bereich; das Blatt reicht nicht weiter.'
+            ? 'Showing the shared area. This sheet does not extend further.'
             : '';
       note.textContent = text;
       note.hidden = text === '';
@@ -609,8 +609,8 @@ export function init(ctx) {
       const possible = panes.filter((pane) => !pane.failed && pane.record.extent).length >= 2;
       button.hidden = !possible;
       button.setAttribute('aria-pressed', coupled ? 'true' : 'false');
-      button.textContent = coupled ? 'Ausschnitte gekoppelt' : 'Ausschnitte koppeln';
-      button.setAttribute('aria-label', coupled ? 'Kartenausschnitte entkoppeln' : 'Kartenausschnitte anhand der belegten Ausdehnung koppeln');
+      button.textContent = coupled ? 'Views linked' : 'Link views';
+      button.setAttribute('aria-label', coupled ? 'Unlink map views' : 'Link map views using documented extents');
     }
     refreshPaneCoverage();
     updateSyncHint();
@@ -626,12 +626,12 @@ export function init(ctx) {
     const linked = panes.filter((pane) => !pane.failed && pane.record.extent).length;
     if (panes.length > 1 && linked >= 2) {
       hint.textContent = coupled
-        ? 'Zoomen und verschieben in einer Karte folgt in der anderen – gekoppelt über die im Katalog belegte Ausdehnung der Blätter, nicht über eine Georeferenzierung.'
-        : 'Die Kopplung ist aus: jede Karte wird für sich bewegt.';
+        ? 'Zooming and panning follows across maps using their documented extents. Scans are aligned approximately; they are not georectified.'
+        : 'Linked views are off. Each map moves independently.';
     } else if (panes.length > 1) {
-      hint.textContent = 'Für die Kopplung fehlt mindestens einer Karte die belegte Ausdehnung – die Ausschnitte bleiben unabhängig.';
+      hint.textContent = 'At least one map has no documented extent. Views remain independent.';
     } else {
-      hint.textContent = 'Datensätze öffnen einen echten IIIF-Ausschnitt; mit «Ausschnitte koppeln» folgen sich zwei Karten am selben Ort.';
+      hint.textContent = 'Open maps to compare them. Turn on “Link views” to follow the same region across both maps.';
     }
   }
 
@@ -653,7 +653,7 @@ export function init(ctx) {
     coupled = next;
     updateSyncUi();
     if (coupled) propagate(lastActivePane);
-    setStatus(status, coupled ? 'Kartenausschnitte sind gekoppelt.' : 'Kartenausschnitte sind entkoppelt.', 'info');
+    setStatus(status, coupled ? 'Map views are linked.' : 'Map views are independent.', 'info');
   }
 
   /** Toolbar entry point: only useful (and only shown) with two plus records. */
@@ -662,13 +662,13 @@ export function init(ctx) {
     const known = pinnedRecords().filter((entry) => entry.record).length;
     toolbarButton.hidden = known < 2;
     if (toolbarCount) toolbarCount.textContent = known >= 2 ? ` (${known})` : '';
-    toolbarButton.setAttribute('aria-label', known >= 2 ? `Vergleich von ${known} Datensätzen öffnen` : 'Vergleich öffnen');
+    toolbarButton.setAttribute('aria-label', known >= 2 ? `Open comparison of ${known} maps` : 'Open comparison');
   }
 
   function openCompare(index = 0) {
     const known = pinnedRecords().filter((entry) => entry.record);
     if (known.length < 2) {
-      setStatus(status, 'Für den Vergleich mindestens zwei Datensätze merken.', 'warn');
+      setStatus(status, 'Save at least two maps to compare them.', 'warn');
       return;
     }
     // Show the clicked record first; the pinned list itself keeps its order.
@@ -694,7 +694,7 @@ export function init(ctx) {
     if (scrim && !detailOpen) scrim.hidden = true;
     document.body.classList.remove('app-compare--open');
     if (lastFocused?.isConnected) lastFocused.focus();
-    setStatus(status, 'Vergleich geschlossen.', 'info');
+    setStatus(status, 'Comparison closed.', 'info');
   }
 
   /* ---------------------------------------------------------------- helpers */
@@ -703,7 +703,7 @@ export function init(ctx) {
     const start = record.yearStart;
     const end = record.yearEnd;
     if (start && end && start !== end) return `${start}–${end}`;
-    return start ? String(start) : 'ohne Jahr';
+    return start ? String(start) : 'Undated';
   }
 
   function shortTitle(record) {
@@ -720,23 +720,23 @@ export function init(ctx) {
     const box = el('div', { class: 'app-compare__box' });
     const src = previewUrl(record, large);
     if (!src) {
-      box.append(el('span', { class: `${className} app-compare__placeholder`, text: 'keine Vorschau' }));
+      box.append(el('span', { class: `${className} app-compare__placeholder`, text: 'No preview' }));
       return box;
     }
     // The large comparison panes can take a few seconds (real IIIF scans), so
     // they get a visible loading hint; the small list thumbs do not.
-    const hint = large ? el('span', { class: 'app-compare__loading zh-hint', text: 'Vorschau wird geladen …' }) : null;
+    const hint = large ? el('span', { class: 'app-compare__loading zh-hint', text: 'Loading preview …' }) : null;
     const img = el('img', {
       class: className,
       src,
-      alt: `Kartenvorschau: ${record.title}`,
+      alt: `Map preview: ${record.title}`,
       loading: 'lazy',
       decoding: 'async',
     });
     img.addEventListener('load', () => hint?.remove());
     img.addEventListener('error', () => {
       img.remove();
-      const message = el('span', { class: `${className} app-compare__placeholder`, text: `Vorschau nicht verfügbar (${record.providerId})` });
+      const message = el('span', { class: `${className} app-compare__placeholder`, text: `Preview unavailable (${record.providerId})` });
       if (hint?.isConnected) hint.replaceWith(message);
       else box.append(message);
     });
@@ -761,7 +761,7 @@ export function init(ctx) {
   qs('#compare-view-close', view)?.addEventListener('click', closeCompare);
   qs('#compare-view-copy', view)?.addEventListener('click', async () => {
     const ok = await copyText(window.location.href);
-    setStatus(status, ok ? 'Permalink der Vergleichsliste kopiert.' : 'Kopieren nicht möglich – Adresse bitte aus der Adresszeile übernehmen.', ok ? 'success' : 'warn');
+    setStatus(status, ok ? 'Comparison link copied.' : 'Could not copy. Copy the address from your browser instead.', ok ? 'success' : 'warn');
   });
   qs('#compare-view-list', view)?.addEventListener('click', () => {
     closeCompare();
@@ -796,12 +796,12 @@ export function init(ctx) {
     const isPinned = selected && entries.includes(selected);
     addButton.disabled = !selected || Boolean(isPinned) || entries.length >= MAX_PINNED;
     addButton.textContent = !selected
-      ? 'Zuerst einen Datensatz auswählen'
+      ? 'Select a map first'
       : isPinned
-        ? 'Ausgewählter Datensatz ist gemerkt'
+        ? 'Selected map is saved'
         : entries.length >= MAX_PINNED
-          ? `Maximal ${MAX_PINNED} Datensätze`
-          : 'Ausgewählten Datensatz merken';
+          ? `Up to ${MAX_PINNED} maps`
+          : 'Save selected map';
   }
 
   render();
@@ -811,7 +811,7 @@ export function init(ctx) {
     // A shared comparison link should show the list it carries instead of
     // hiding it behind a closed panel.
     panel.open = true;
-    setStatus(status, `${pinnedIds().length} gemerkte Datensätze aus dem Link geladen – «Vergleichen» öffnet die Gegenüberstellung.`, 'info');
+    setStatus(status, `${pinnedIds().length} saved maps loaded from the link. Choose “Compare” to view them side by side.`, 'info');
   } else if (pinnedIds().length === 0) {
     // No list in the link: fall back to the list saved in this browser.
     const saved = readStoredIds();
@@ -820,7 +820,7 @@ export function init(ctx) {
       if (saved.length >= 2) panel.open = true;
       setStatus(
         status,
-        `${saved.length} gemerkte${saved.length === 1 ? 'r Datensatz' : ' Datensätze'} aus diesem Browser wiederhergestellt – die Liste liegt nur lokal und steht zusätzlich im Link (?cmp=).`,
+        `${saved.length} saved maps restored from this browser. Your list is stored locally and included in comparison links.`,
         'info',
       );
     }

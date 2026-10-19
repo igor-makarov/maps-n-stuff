@@ -136,7 +136,7 @@ test('GET /api/search/places validates input and normalises swisstopo results', 
   assert.equal(upstreamUrl.hostname, 'api3.geo.admin.ch');
   assert.equal(upstreamUrl.searchParams.get('type'), 'locations');
   assert.equal(upstreamUrl.searchParams.get('sr'), '4326');
-  assert.match(upstreamCalls.at(-1).init.headers['user-agent'], /zurich-maps/, 'polite, identifiable User-Agent');
+  assert.match(upstreamCalls.at(-1).init.headers['user-agent'], /meridian-atlas/, 'polite, identifiable User-Agent');
 });
 
 test('GET /api/fetch refuses everything outside the host allowlist', async () => {
