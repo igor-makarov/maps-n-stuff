@@ -1,7 +1,8 @@
 /**
- * Place search (combobox) on top of the Worker-proxied swisstopo SearchServer.
- * Falls back to a local title search when the upstream is unreachable, and
- * always says which one answered.
+ * Worldwide place search (combobox) on top of the Worker-proxied Nominatim
+ * gazetteer (OpenStreetMap), with the Swiss swisstopo service as the fallback.
+ * Falls back to a local title search when both are unreachable, and always says
+ * which one answered.
  */
 
 import { debounce, el, qs, setStatus } from './dom.js';
@@ -9,11 +10,15 @@ import { coversPoint, filterRecords, matchesQuery, recordCenter } from './record
 import { parsePoint, sanitisePoint } from './store.js';
 
 const MIN_CHARS = 2;
-const QUICK = [
-  { label: 'Zürich (ZH)', lat: 47.3769, lon: 8.5417, zoom: 12 },
-  { label: 'Schweiz', lat: 46.8, lon: 8.23, zoom: 7 },
-  { label: 'Basel (BS)', lat: 47.5596, lon: 7.5886, zoom: 12 },
-  { label: 'Genf (GE)', lat: 46.2044, lon: 6.1432, zoom: 12 },
+// The initial view is the whole world, so the quick picks are world cities on
+// several continents — not one canton's towns. Every entry is a documented
+// gazetteer coordinate, not a guessed one.
+export const QUICK_PLACES = [
+  { label: 'Cairo', lat: 30.0444, lon: 31.2357, zoom: 11 },
+  { label: 'Tokyo', lat: 35.6762, lon: 139.6503, zoom: 10 },
+  { label: 'Mexico City', lat: 19.4326, lon: -99.1332, zoom: 10 },
+  { label: 'São Paulo', lat: -23.5505, lon: -46.6333, zoom: 10 },
+  { label: 'London', lat: 51.5072, lon: -0.1276, zoom: 10 },
 ];
 
 /**
@@ -28,7 +33,7 @@ export function fallbackSuggestions(records, query, limit = 6) {
     const center = recordCenter(record);
     return {
       label: record.title.length > 80 ? `${record.title.slice(0, 77)}…` : record.title,
-      origin: 'Datensatz',
+      origin: 'record',
       lat: center?.lat ?? null,
       lon: center?.lon ?? null,
       bbox: record.extent ?? null,
@@ -56,8 +61,8 @@ export function datasetSuggestion(records, query, state = {}) {
     kind: 'dataset',
     query: text,
     count,
-    label: `Karten zum Stichwort „${label}“`,
-    origin: count === 1 ? '1 Datensatz' : `${count} Datensätze`,
+    label: `Maps matching “${label}”`,
+    origin: count === 1 ? '1 record' : `${count} records`,
   };
 }
 
@@ -109,10 +114,10 @@ export function init(ctx) {
       type: 'button',
       'aria-pressed': active ? 'true' : 'false',
       title: active
-        ? 'Punktfilter wieder entfernen; danach gilt wieder der ganze Bestand im Zeitraum.'
-        : 'Nur Datensätze zeigen, deren dokumentierter Kartenausschnitt diesen Ort enthält.',
+        ? 'Remove the point filter; the whole collection in the current period applies again.'
+        : 'Show only records whose documented map extent contains this place.',
       onclick: () => ctx.store.update({ at: active ? '' : sanitisePoint(`${point.lat},${point.lon}`) }),
-    }, [count === 0 ? `Karten an diesem Ort – im Zeitraum keine (${label})` : `Karten an diesem Ort (${count}): ${label}`]);
+    }, [count === 0 ? `Maps at this place — none in this period (${label})` : `Maps at this place (${count}): ${label}`]);
     actionWrap.replaceChildren(button);
     actionWrap.hidden = false;
   }
@@ -129,13 +134,13 @@ export function init(ctx) {
 
   function renderQuickLinks() {
     if (!status) return;
-    const wrap = el('span', { class: 'zh-quickranges', id: 'place-quick', role: 'group', 'aria-label': 'Schnellauswahl Orte' }, [
-      el('span', { class: 'zh-hint', text: 'Schnellauswahl: ' }),
-      ...QUICK.map((place) =>
+    const wrap = el('span', { class: 'zh-quickranges', id: 'place-quick', role: 'group', 'aria-label': 'Quick place picks' }, [
+      el('span', { class: 'zh-hint', text: 'Quick picks: ' }),
+      ...QUICK_PLACES.map((place) =>
         el('button', {
           class: 'zh-chip',
           type: 'button',
-          onclick: () => choose({ ...place, origin: 'Schnellauswahl' }, { zoom: place.zoom }),
+          onclick: () => choose({ ...place, origin: 'quick pick' }, { zoom: place.zoom }),
         }, [place.label]),
       ),
     ]);
@@ -217,8 +222,8 @@ export function init(ctx) {
       setStatus(
         status,
         left === 0
-          ? `Kein Datensatz zum Stichwort „${place.query}“ im aktuellen Zeitraum.`
-          : `Kartensuche: ${left} Datensätze zum Stichwort „${place.query}“ – die Liste ist entsprechend gefiltert.`,
+          ? `No record matches “${place.query}” in the current time range.`
+          : `Map search: ${left} record${left === 1 ? '' : 's'} matching “${place.query}” — the list is filtered accordingly.`,
       );
       input.value = place.query;
       close();
@@ -250,10 +255,10 @@ export function init(ctx) {
     setStatus(
       status,
       hasPoint
-        ? `Kartenausschnitt auf „${place.label}“ gesetzt (${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}).`
+        ? `Map view set to “${place.label}” (${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}).`
         : place.bbox
-          ? `Kartenausschnitt auf „${place.label}“ eingepasst.`
-          : `„${place.label}“ ausgewählt.`,
+          ? `Map fitted to “${place.label}”.`
+          : `“${place.label}” selected.`,
     );
     close();
   }
@@ -282,14 +287,14 @@ export function init(ctx) {
     const message = String(err?.message ?? err ?? '');
     const http = message.match(/\bHTTP (\d{3})\b/);
     if (http) return `HTTP ${http[1]}`;
-    if (/failed to fetch|networkerror|network error|load failed|err_/i.test(message)) return 'Netzwerkfehler';
-    return message.slice(0, 80) || 'unbekannter Fehler';
+    if (/failed to fetch|networkerror|network error|load failed|err_/i.test(message)) return 'network error';
+    return message.slice(0, 80) || 'unknown error';
   }
 
   async function suggest(query) {
     state.controller?.abort();
     state.controller = new AbortController();
-    setStatus(status, 'Orte werden gesucht …');
+    setStatus(status, 'Searching places …');
     form.setAttribute('aria-busy', 'true');
     // The record search always joins the list (last, so a real place stays the
     // default choice); it is the only suggestion when no place matches.
@@ -316,8 +321,8 @@ export function init(ctx) {
       setStatus(
         status,
         local.length > 0 || records
-          ? `Ortssuche nicht erreichbar (${errorReason(err)}) – Vorschläge aus den Datensätzen.`
-          : `Ortssuche derzeit nicht erreichbar (${errorReason(err)}).`,
+          ? `Place search unavailable (${errorReason(err)}) — suggestions from the collection.`
+          : `Place search is currently unavailable (${errorReason(err)}).`,
       );
     } finally {
       form.setAttribute('aria-busy', 'false');
@@ -329,20 +334,20 @@ export function init(ctx) {
    * or neither. Counts come from the suggestions that are really shown.
    */
   function statusText(places, records, local) {
-    if (places.length === 0 && !records && local.length === 0) return 'Kein Ort und kein Titeltreffer gefunden.';
+    if (places.length === 0 && !records && local.length === 0) return 'No place and no title match found.';
     const parts = [];
-    if (places.length > 0) parts.push(`${places.length} Ortsvorschläge (swisstopo)`);
-    else parts.push('Kein Ortsvorschlag');
-    if (records) parts.push(`${records.origin} zu „${records.query}“`);
-    else if (local.length > 0) parts.push(`${local.length} Titelvorschläge aus dem Bestand`);
-    return `${parts.join(' · ')}. Mit ↓/↑ wählen, Enter bestätigen.`;
+    if (places.length > 0) parts.push(`${places.length} place suggestion${places.length === 1 ? '' : 's'}`);
+    else parts.push('No place suggestion');
+    if (records) parts.push(`${records.origin} for “${records.query}”`);
+    else if (local.length > 0) parts.push(`${local.length} title suggestion${local.length === 1 ? '' : 's'} from the collection`);
+    return `${parts.join(' · ')}. Use ↓/↑ to choose, Enter to confirm.`;
   }
 
   const onInput = debounce(() => {
     const query = input.value.trim();
     if (query.length < MIN_CHARS) {
       close();
-      setStatus(status, 'Mindestens zwei Zeichen eingeben – oder eine Schnellauswahl nutzen.');
+      setStatus(status, 'Type at least two characters — or use a quick pick.');
       return;
     }
     suggest(query);

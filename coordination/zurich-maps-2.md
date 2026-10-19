@@ -1,5 +1,106 @@
 # zurich-maps-2 status
 
+Iteration 8-69 (2026-10-19, ~05:26–08:3x UTC). Member `zurich-maps-2` (map, search,
+results). **Redirect lane (D14): global basemap + worldwide place search.** I also
+built the historical-borders data pipeline in parallel and **withdrew it** when
+maps-0's integrated History feature landed first — the evidence and the reason are
+below, so nobody repeats that mistake.
+
+## Landed on `main` this iteration
+
+| Commit | Content |
+| --- | --- |
+| `d33591e`, `806f7b5` | D14 lane claim + convergence with maps-3's History claim; then the merge that withdraws my parallel history pipeline (see below) |
+| `HEAD` | **Worldwide place search** (Nominatim/OpenStreetMap through the Worker, swisstopo as the Swiss fallback) + **global basemap** (OpenStreetMap default, world initial view, Swiss layers labelled Switzerland-only) + English strings in `search.js`, `index.html`'s search/map controls, and the matching harness/test expectations |
+
+### The History feature: withdrawn duplicate, not a second dataset
+
+At 05:26 I claimed the historical-borders pipeline (D14) because it was the missing
+required outcome. maps-0's `a4f2bdd` (05:35) had already delivered the whole
+feature: `scripts/harvest-history.mjs`, `public/data/history/` (54 snapshots,
+provenance, places), `public/app/history.js`, the store's world defaults and the
+`view=history` mode. I had a working pipeline of my own (52 snapshots, 9.1 MiB,
+antimeridian/pole seam splitting, area-centroid anchors, 16 unit tests) — committed
+on the task branch as `37ce150`, **never on `main`**. Rather than ship two datasets
+or two renderers, `806f7b5` merges maps-0's version and drops mine. Lesson for the
+bus: a claim written after a teammate's commit is too late; check `origin/main`
+right before starting a large feature, not only at iteration start.
+
+### Worldwide place search (the brief's “worldwide place search” outcome)
+
+- **`src/worker/geocode.js`** (new, pure): `nominatimUrl` (jsonv2, `accept-language=en`,
+  limit ≤ 10, no key), `mapNominatimRecord` (only published positions; Nominatim's
+  `south,north,west,east` box rotated into the app's `west,south,east,north`),
+  `mapNominatimResults` (dedupe + bound), `searchPayload` (source, attribution,
+  honest “no place” note), `maxZoomForBbox`.
+- **`src/worker/index.js`**: `/api/search/places` answers from Nominatim first, falls
+  through to the documented swisstopo `SearchServer` when the worldwide service fails
+  *or* finds nothing (Swiss micro-toponyms), and returns `source`/`attribution` in the
+  payload. `/api/health` now names the place-search upstream and attribution.
+- **`src/worker/allowlist.js`**: `nominatim.openstreetmap.org` admitted for `/search`
+  only.
+- **`public/app/search.js`**: quick picks are **Cairo, Tokyo, Mexico City, São Paulo,
+  London** (exported as `QUICK_PLACES` so a test pins them); the combobox, status
+  lines, place-action chip, error and empty states are **English**.
+- Verified through `npx wrangler dev` (2026-10-19): `/api/health` names the
+  gazetteer; `/api/search/places?q=` returned real coordinates for **Cairo**
+  (30.0443879, 31.2357257), **Tokyo Japan** (35.6768601, 139.7638947), **Mexico City**
+  (19.3207722, −99.1514678) and **São Paulo** (−23.5506507, −46.6333824), each with a
+  bbox and the ODbL licence string from the upstream.
+
+### Global basemap + world initial view (the brief's “global basemap” outcome)
+
+- `BASE_LAYERS` now starts with **OpenStreetMap** (`osm`, XYZ `{z}/{x}/{y}`, maxZoom
+  19, `© OpenStreetMap contributors (ODbL)`) and it is `DEFAULT_BASE`; an empty or
+  unknown `?base=` falls back to it. The three swisstopo layers stay (Swiss detail,
+  `coverage: 'Switzerland'`, labelled “Swiss map / Swiss grey / Aerial”).
+- `tileUrl()` serves both template shapes (WMTS placeholders and `{z}/{x}/{y}`), so
+  the renderer and the overlays are unchanged.
+- `WORLD = { lat: 20, lon: 0, zoom: 2 }` and `WORLD_BOUNDS`; the map's **Home** key
+  and the new “World view” chip go to the world, the empty-result fit no longer
+  falls back to Switzerland. (The world *store* defaults came with maps-0's History
+  commit; `tests/world-search.test.mjs` now pins them against `WORLD`.)
+- Map controls, the basemap label and the map hint are **English** in
+  `index.html`; the base-chip accessible names are `Basemap: <layer> (worldwide |
+  Switzerland only)`.
+
+### Tests and harness
+
+- **`tests/world-search.test.mjs`** (new, 8 tests): Nominatim URL bounds/English/no
+  credential, record mapping (incl. inverted/missing bbox, out-of-range coordinates,
+  missing label), dedupe/limit/honest-empty payload, bbox→zoom, the allowlist (only
+  `/search` on the gazetteer host, path/prefix attacks rejected, the Swiss fallback
+  still allowed), the global default basemap, XYZ+WMTS `tileUrl`, the world store
+  defaults, and the worldwide quick picks.
+- Updated existing expectations that the redirect invalidates:
+  `tests/map.test.mjs` (basemap list + default + labels, XYZ template),
+  `tests/search.test.mjs` (English suggestion strings), `tests/site.test.mjs`
+  (allowlist host list). The harness (`scripts/browser-check.mjs`, maps-3's file) got
+  the mechanical updates for the same reason: basemap tiles/attribution (section 2),
+  the `Basemap` label and the four documented layers (8q), and the English
+  suggestion-status wording (8k). **The rest of the German UI and harness
+  expectations remain maps-1's/maps-3's lane.**
+- `npm test` → **202/202**, `npm run build` → 213 records + 54 history snapshots,
+  `npx wrangler deploy --dry-run` ✓.
+
+### Open requests / next
+
+- **→ maps-1 (blocking the first required outcome):** the shell is still German
+  (header/nav, hero, filters, results, detail panel, footer, meta). `search.js`,
+  `index.html`'s search/map controls are now English; the rest needs the same pass,
+  and `scripts/browser-check.mjs`'s assertions must follow. The product name
+  “Meridian Atlas” (maps-3's proposal, yielded to by maps-0) is not yet in the
+  header/favicon — the canton shield is still there. That is the remaining part of
+  correction outcome #1/#2 that I did not touch.
+- **→ maps-3:** the OSM default changes two harness expectations I patched
+  mechanically (basemap tiles/attribution, 8q layer list) — please re-run and adopt.
+  A new check worth adding: type “São Paulo”, choose the suggestion, assert
+  `place=`/`lat=`/`lon=` and that OSM tiles for a non-Swiss view load.
+- **→ all:** `npm run verify:endpoints` still covers the seed URLs only; the new
+  upstreams (Nominatim `/search`, OSM tiles) are documented in `docs/run.md` with
+  their policies but are not part of that script.
+
+
 Iteration 8-69 (2026-10-19, ~05:3x UTC onward). Member `zurich-maps-2` (map, search,
 results). **Lane claimed on the bus (D14): the historical-borders map (pipeline +
 renderer) and the global basemap + worldwide place search.**

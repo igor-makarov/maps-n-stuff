@@ -1,4 +1,5 @@
 import { ALLOWLIST, USER_AGENT, VERSION, isAllowed } from './allowlist.js';
+import { NOMINATIM_ATTRIBUTION, NOMINATIM_SOURCE, nominatimUrl, searchPayload } from './geocode.js';
 
 /**
  * Request handler for the Zurich maps Workers site.
@@ -8,9 +9,11 @@ import { ALLOWLIST, USER_AGENT, VERSION, isAllowed } from './allowlist.js';
  * directory `public/`.
  *
  * Why a proxy at all?
- *  - swisstopo SearchServer (`api3.geo.admin.ch`) sends CORS `*`, but routing it
- *    through the Worker gives us one stable origin, a bounded query and an edge
- *    cache in front of a public service we want to call politely.
+ *  - Worldwide place search runs on *OpenStreetMap's* Nominatim gazetteer. Its
+ *    usage policy asks for an identified client, low request rates and caching;
+ *    routing it through the Worker gives the project one identifiable
+ *    User-Agent, a bounded query and a five-minute edge cache per query. The
+ *    Swiss swisstopo SearchServer stays as the fallback for Swiss places.
  *  - e-rara IIIF images/manifests normally allow CORS; `/api/fetch` is a
  *    *fallback* for clients/networks where the direct call fails. It is limited
  *    to a literal allowlist of hosts, so it cannot be used as an open proxy.
@@ -60,15 +63,20 @@ function health(request) {
     runtime: 'cloudflare-workers',
     upstreams: ALLOWLIST.map((r) => r.host),
     endpoints: ['/api/health', '/api/records', '/api/layers', '/api/sources', '/api/search/places', '/api/fetch'],
+    placeSearch: {
+      primary: NOMINATIM_SOURCE,
+      attribution: NOMINATIM_ATTRIBUTION,
+      fallback: 'swisstopo SearchServer (Swiss places)',
+    },
     time: new Date().toISOString(),
   });
 }
 
-/** GET /api/search/places?q=&limit= — swisstopo SearchServer (type=locations). */
+/** GET /api/search/places?q=&limit= — worldwide places, Swiss places as fallback. */
 async function searchPlaces(request, ctx) {
   const url = new URL(request.url);
   const q = (url.searchParams.get('q') || '').trim();
-  const limit = Math.min(Math.max(Number(url.searchParams.get('limit') || 8), 1), 20);
+  const limit = Math.min(Math.max(Number(url.searchParams.get('limit') || 8), 1), 10);
   if (q.length < 2 || q.length > 120) {
     return json({ error: 'query_too_short', detail: 'q must be 2..120 characters', results: [] }, { status: 400 });
   }
@@ -76,31 +84,55 @@ async function searchPlaces(request, ctx) {
     request,
     ctx,
     async () => {
-      const target = new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer');
-      target.searchParams.set('searchText', q);
-      target.searchParams.set('type', 'locations');
-      target.searchParams.set('sr', '4326'); // WGS84 lon/lat
-      target.searchParams.set('limit', String(limit));
-      const res = await upstream(target.toString(), { accept: 'application/json' });
-      if (!res.ok) {
-        return { results: [], upstreamStatus: res.status, note: 'swisstopo SearchServer error' };
+      // 1) The worldwide gazetteer. One request per distinct, cached query.
+      try {
+        const res = await upstream(nominatimUrl(q, { limit }), { accept: 'application/json' });
+        if (res.ok) {
+          const payload = searchPayload(await res.json(), { limit, query: q });
+          if (payload.results.length > 0) return payload;
+          // No worldwide hit: a Swiss micro-toponym may still exist, so fall
+          // through to swisstopo instead of answering “nothing” too early.
+        }
+      } catch {
+        // Network/timeout: the Swiss fallback below still answers.
       }
-      const data = await res.json();
-      const results = (data.results || []).map((r) => {
-        const a = r.attrs || {};
-        const box = (a.geom_st_box2d || 'BOX(0 0,0 0)').match(/BOX\(([-\d.]+) ([-\d.]+),([-\d.]+) ([-\d.]+)\)/);
+      // 2) Swiss fallback (documented SearchServer API, covers the country only).
+      try {
+        const target = new URL('https://api3.geo.admin.ch/rest/services/api/SearchServer');
+        target.searchParams.set('searchText', q);
+        target.searchParams.set('type', 'locations');
+        target.searchParams.set('sr', '4326'); // WGS84 lon/lat
+        target.searchParams.set('limit', String(limit));
+        const res = await upstream(target.toString(), { accept: 'application/json' });
+        if (!res.ok) {
+          return { results: [], query: q, upstreamStatus: res.status, note: 'Both place services failed.' };
+        }
+        const data = await res.json();
+        const results = (data.results || [])
+          .map((r) => {
+            const a = r.attrs || {};
+            const box = (a.geom_st_box2d || '').match(/BOX\(([-\d.]+) ([-\d.]+),([-\d.]+) ([-\d.]+)\)/);
+            return {
+              label: String(a.label || '').replace(/<[^>]*>/g, ''),
+              origin: a.origin || null,
+              lat: typeof a.lat === 'number' ? a.lat : null,
+              lon: typeof a.lon === 'number' ? a.lon : null,
+              layerBodId: a.layerBodId || null,
+              zoom: Number.isFinite(a.zoomlevel) && a.zoomlevel > 0 && a.zoomlevel <= 20 ? a.zoomlevel : null,
+              bbox: box ? { west: Number(box[1]), south: Number(box[2]), east: Number(box[3]), north: Number(box[4]) } : null,
+            };
+          })
+          .filter((r) => r.label && Number.isFinite(r.lat) && Number.isFinite(r.lon));
         return {
-          label: String(a.label || '').replace(/<[^>]*>/g, ''),
-          origin: a.origin || null,
-          lat: typeof a.lat === 'number' ? a.lat : null,
-          lon: typeof a.lon === 'number' ? a.lon : null,
-          layerBodId: a.layerBodId || null,
-          // upstream `zoomlevel` is a bitfield/uint32 for some origins; only pass sane values on
-          zoom: Number.isFinite(a.zoomlevel) && a.zoomlevel > 0 && a.zoomlevel <= 20 ? a.zoomlevel : null,
-          bbox: box ? { west: Number(box[1]), south: Number(box[2]), east: Number(box[3]), north: Number(box[4]) } : null,
+          results,
+          query: q,
+          source: 'swisstopo SearchServer (Swiss places)',
+          attribution: '© swisstopo',
+          ...(results.length === 0 ? { note: 'No place matches this query.' } : {}),
         };
-      });
-      return { results, source: 'swisstopo SearchServer', attribution: '© swisstopo' };
+      } catch (err) {
+        return { results: [], query: q, note: `Place search unavailable: ${String(err && err.message).slice(0, 80)}` };
+      }
     },
     300,
   );

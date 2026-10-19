@@ -413,9 +413,9 @@ try {
     `(() => { const imgs = [...document.querySelectorAll('#map img')]; return imgs.filter((i) => i.complete && i.naturalWidth > 0).length; })()`,
     { label: 'map tiles', timeout: 25_000 },
   );
-  check('interactive map loads swisstopo tiles', tiles > 0, `${tiles} tiles decoded`);
+  check('interactive map loads basemap tiles', tiles > 0, `${tiles} tiles decoded`);
   const attribution = await cdp.eval(`document.querySelector('#map .map-badge, .map-badge')?.textContent?.trim() || ''`);
-  check('swisstopo attribution is visible', /swisstopo/i.test(attribution), attribution.slice(0, 80));
+  check('the basemap attribution is visible', /OpenStreetMap|swisstopo/i.test(attribution), attribution.slice(0, 80));
   const yearSpan = await cdp.eval(`(() => {
     const from = document.querySelector('#year-from'), to = document.querySelector('#year-to');
     return from && to ? { min: from.min, max: from.max, from: from.value, to: to.value } : null;
@@ -3651,7 +3651,7 @@ try {
   }
   check(
     'the place box also offers the records that match the typed words',
-    Boolean(keywordOffer) && /Siegfriedkarte/.test(keywordOffer.text) && /Datensätze/.test(keywordOffer.text) && /Ortsvorschläge|Kein Ortsvorschlag/.test(keywordOffer.status),
+    Boolean(keywordOffer) && /Siegfriedkarte/.test(keywordOffer.text) && /records?/.test(keywordOffer.text) && /place suggestion|No place suggestion/i.test(keywordOffer.status),
     JSON.stringify(keywordOffer),
   );
 
@@ -3752,7 +3752,7 @@ try {
       labelledBy: group?.getAttribute('aria-labelledby'),
       labelText: label?.textContent || '',
       inSkipList: group?.closest('.app-map__skip') !== null,
-      loadedDefault: tiles.filter((i) => (i.getAttribute('src') || '').includes('pixelkarte-farbe') && i.naturalWidth > 0).length,
+      loadedDefault: tiles.filter((i) => (i.getAttribute('src') || '').includes('tile.openstreetmap.org') && i.naturalWidth > 0).length,
       badge: document.querySelector('.map-badge')?.textContent || '',
       // The view must not move when the base map changes: the transforms of the
       // tiles and markers are compared before/after the switch.
@@ -3761,16 +3761,16 @@ try {
     };
   })()`);
   check(
-    'the Grundkarte switch names its three documented layers and marks the default',
-    baseBefore.keys.join(',') === 'farbe,grau,luftbild' &&
-      baseBefore.pressed.join(',') === 'farbe' &&
-      baseBefore.names.every((n) => /^Grundkarte: \S/.test(n)) &&
+    'the Basemap switch names its documented layers and marks the worldwide default',
+    baseBefore.keys.join(',') === 'osm,farbe,grau,luftbild' &&
+      baseBefore.pressed.join(',') === 'osm' &&
+      baseBefore.names.every((n) => /^Basemap: \S/.test(n)) &&
       baseBefore.groupRole === 'group' &&
       baseBefore.labelledBy === 'base-layer-label' &&
-      /^Grundkarte$/.test(baseBefore.labelText) &&
+      /^Basemap$/.test(baseBefore.labelText) &&
       baseBefore.inSkipList &&
       baseBefore.loadedDefault > 0 &&
-      /© swisstopo/.test(baseBefore.badge),
+      /OpenStreetMap/.test(baseBefore.badge),
     JSON.stringify({ keys: baseBefore.keys, texts: baseBefore.texts, pressed: baseBefore.pressed, groupRole: baseBefore.groupRole, labelledBy: baseBefore.labelledBy, labelText: baseBefore.labelText, inSkipList: baseBefore.inSkipList, loadedDefault: baseBefore.loadedDefault, badge: baseBefore.badge }),
   );
 

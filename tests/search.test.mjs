@@ -41,7 +41,7 @@ test('fallback suggestions prefer the published point when there is one', () => 
   assert.equal(hit.lat, withGeo.geo.lat);
   assert.equal(hit.lon, withGeo.geo.lon);
   assert.equal(hit.recordId, withGeo.id);
-  assert.equal(hit.origin, 'Datensatz');
+  assert.equal(hit.origin, 'record');
 });
 
 test('fallback suggestions are bounded, truncated and empty on no match', () => {
@@ -60,8 +60,8 @@ test('the record search suggestion counts exactly the rows the filter will show'
   assert.equal(suggestion.count, expected);
   assert.equal(suggestion.kind, 'dataset');
   assert.equal(suggestion.query, 'Siegfriedkarte');
-  assert.match(suggestion.label, /Karten zum Stichwort „Siegfriedkarte“/);
-  assert.equal(suggestion.origin, expected === 1 ? '1 Datensatz' : `${expected} Datensätze`);
+  assert.match(suggestion.label, /Maps matching “Siegfriedkarte”/);
+  assert.equal(suggestion.origin, expected === 1 ? '1 record' : `${expected} records`);
 });
 
 test('the record search suggestion respects the time filter in its count', () => {

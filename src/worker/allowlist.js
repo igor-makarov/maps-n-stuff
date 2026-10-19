@@ -10,6 +10,12 @@ export const VERSION = '0.1.0';
 
 /** Hosts the proxy may talk to, and the path prefixes allowed per host. */
 export const ALLOWLIST = [
+  // Worldwide place search (OpenStreetMap, ODbL). `/search` only: the Worker is
+  // not a general Nominatim client, and the usage policy wants identified,
+  // cached, low-volume traffic.
+  { host: 'nominatim.openstreetmap.org', prefixes: ['/search'] },
+  // Swiss places/addresses: the fallback when the worldwide gazetteer is down or
+  // returns nothing, and the source of Swiss micro-toponyms Nominatim lacks.
   { host: 'api3.geo.admin.ch', prefixes: ['/rest/services/api/SearchServer'] },
   { host: 'www.e-rara.ch', prefixes: ['/i3f/', '/zuz/oai', '/oai'] },
   { host: 'wmts.geo.admin.ch', prefixes: ['/1.0.0/', '/EPSG/'] },
