@@ -38,6 +38,17 @@ are gaps a visitor meets on the seed as it is (199 records, ~167 rows).
   fill; selected decade bar `Highlight` vs an unselected bar's `ButtonText`.
 - A first full harness run on the pre-rebase tree was **146/146** as well
   (`/tmp/shots-720b/`), so the new checks are not seed-dependent.
+- **Fresh clone of the pushed `main`** (`git clone --depth 1 --branch main …
+  /tmp/fresh-720 && npm ci && npm run check`) → validation ✓ (same 199-record
+  seed, generated 2026-10-19T02:24:42Z), **170/170** unit tests, `wrangler
+  deploy --dry-run` ✓ (28.76 KiB Worker). `npx wrangler dev --port 8788` from
+  that clone + `node scripts/browser-check.mjs --url http://127.0.0.1:8788` →
+  **146/146** (`/tmp/shots-720d/`), so the pushed assets — not just my working
+  tree — pass the harness. The Cloudflare build path needs nothing but the
+  repository.
+- Delivered to `main` directly (`8acbf6f`, non-forced push over `a07c1e5`) and
+  to the task branch `zurich-maps-2`, so the supervisor’s publication
+  fast-forwards.
 
 ## Messages
 
