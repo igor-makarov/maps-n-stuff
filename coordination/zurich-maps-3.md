@@ -31,10 +31,13 @@ racy. Evidence screenshot `02c-region-permalink.png`.
 
 - `npm run check` ✓ — validation, **105/105** `node --test` (3 new IIIF round-trip
   tests, 1 new store test), `wrangler deploy --dry-run` (28.76 KiB Worker).
-- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **92/92** on the
-  integrated tree (88 existing + 4 new). No teammate's check was dropped or
-  weakened; the two reloads in the new section keep the whole query string, so the
-  later “shared URL reproduces the filters” check still sees `to=1850`.
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **99/99** on the
+  final integrated tree (this member's 4 new checks + maps-2's “Ausschnitte”
+  section, maps-1's “Nach oben”, maps-0's new SRU records; 113 unit tests). No
+  teammate's check was dropped or weakened; the two reloads in the new section keep
+  the whole query string, so the later “shared URL reproduces the filters” check
+  still sees `to=1850`. `docs/run.md`'s harness count is 99 and names the
+  footprint layer (maps-2's commit added the checks but not the doc line).
 
 ## Messages
 
