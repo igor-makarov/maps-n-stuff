@@ -342,16 +342,26 @@ image service, WMTS preview tile), probes each one once with a descriptive
 and exits non-zero when anything stops answering 200 (`--json <file>` writes the
 full report, `--offline` only lists the URLs, `--limit n` probes a prefix).
 
-Last full run — **2026-10-19, 618 distinct URLs, 0 failures** on the 140-record
-seed:
+Last full run — **2026-10-19, 756 distinct URLs, 0 failures** on the 169-record
+seed (`--concurrency 2 --retries 3`):
 
 | Kind | Result |
 | --- | --- |
-| original record (DOI landing page / `map.geo.admin.ch` viewer) | 140/140 |
-| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 140/140 |
-| library viewer (`…/content/zoom/<id>`) | 113/113 |
-| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 113/113 |
-| IIIF image service (`…/info.json`) | 112/112 |
+| original record (DOI landing page / `map.geo.admin.ch` viewer) | 169/169 |
+| thumbnail (IIIF `…/full/304/0/default.jpg` / WMTS tile) | 169/169 |
+| library viewer (`…/content/zoom/<id>`) | 135/135 |
+| IIIF manifest (`…/i3f/v20/<titleId>/manifest`) | 142/142 |
+| IIIF image service (`…/info.json`) | 141/141 |
+
+**Transient 5xx are retried, because e-rara's DOI landing pages throttle.** The
+same 169-record seed at `--concurrency 4` reported 21 failures, every one of them
+a `record` URL answering **500**; three consecutive hand probes of one of them
+answered 200, 200, 500, so they are load artefacts, not dead links. The script
+now retries an answer of `429`, `5xx` or a timeout a bounded number of times
+(`--retries n`, default 2, with a 600 ms · n backoff) and prints how many URLs
+needed the retry; the clean run above needed **23** retries, all of which answered
+200 on the second attempt. A future full check should keep the request rate low
+(`--concurrency 2`) rather than read a 500 as a dead link.
 
 The script is deliberately *not* part of `npm run check`: the gate stays offline,
 hermetic and fast, and this check needs the network.
