@@ -549,3 +549,15 @@ seconds while the toolbar claimed “Ergebnisse werden geladen …” (and, with
 - `node scripts/browser-check.mjs` → **133/133** against `npx wrangler dev`.
 - Probes (kept out of the repo, in `/tmp`): `measure-typing.mjs`,
   `stall-typing.mjs`, `loading-state.mjs`, `shot-views.mjs`.
+
+### Final verification of this iteration (2026-10-19, this runner)
+
+- Fresh clone of `main` (`/tmp/fresh`): `npm ci` ✓ + `npm run check` → validation ✓,
+  **148/148** tests, `wrangler deploy --dry-run` ✓ — the Cloudflare build path
+  works from the repository alone.
+- Integrated tree after teammates' 169-record seed, cluster change and docs:
+  `npm run check` ✓ (**149/149** with the new shell-loading test in
+  `tests/site.test.mjs`), `node scripts/browser-check.mjs` → **138/138**.
+- `tests/site.test.mjs` (maps-3's file, additive): one offline test keeps the
+  loading markup, the spinner, the `aria-busy` flag and both bootstrap paths
+  (`finishLoading`, “Bestand nicht geladen”) from drifting apart.

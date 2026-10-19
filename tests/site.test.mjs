@@ -127,6 +127,22 @@ test('every UI selectors used by the app modules exists in the shell', () => {
   }
 });
 
+test('the shell ships a visible loading state that the bootstrap always ends', () => {
+  // A slow seed must not look like an empty result list, and a failed seed must
+  // not keep claiming to load (maps-1, iteration 7-17): the block lives in
+  // index.html, the bootstrap ends it on success *and* on failure. The runtime
+  // behaviour is driven by scripts/browser-check.mjs; this keeps the markup and
+  // the two paths in the bootstrap from drifting apart offline.
+  assert.match(html, /id="results-loading"/, 'the loading block must be in the shell');
+  assert.match(html, /id="result-list"[^>]*aria-busy="true"/, 'the list must be busy while it loads');
+  assert.match(html, /class="zh-spinner"/, 'the cantonal loading circle is the indicator');
+  assert.match(css.app, /\.zh-state--loading/, 'the loading variant must have a rule');
+  assert.match(modules['main.js'], /function finishLoading\(/, 'the bootstrap owns ending the state');
+  assert.match(modules['main.js'], /qs\('#results-loading'\)/, 'it hides the block');
+  assert.match(modules['main.js'], /setAttribute\('aria-busy', 'false'\)/, 'and clears the busy flag');
+  assert.match(modules['main.js'], /Bestand nicht geladen/, 'the outage path must replace the “loading” claim');
+});
+
 test('the shell only references entry points that exist', async () => {
   const scripts = [...html.matchAll(/<script[^>]+src="(\/[^"]+)"/g)].map((m) => m[1]);
   assert.ok(scripts.includes('/app/main.js'), 'the app must be bootstrapped by a module script');
