@@ -54,6 +54,16 @@ fourth sheet, and the cap 40 has room) — deliberately **not** done in this
 iteration because the harvest plus a fresh harness run is the whole budget, and
 an unverified data change would have been worse than the modest gain.
 
+### Endpoint evidence for the eleven new records (this iteration)
+
+A bounded checker (record page, thumbnail, IIIF manifest and image-service
+`info.json` for each newly added record, concurrency 2, 250 ms politeness pause,
+two retries on 429/5xx, 20 s timeout): **44/44 URLs answered 200** — record 11/11,
+thumbnail 11/11, manifest 11/11, image service 11/11. So the country sheets are
+not only catalogued but actually served by e-rara today. (The full-seed
+`npm run verify:endpoints` run stays the earlier 756-URL measurement; this was the
+bounded re-check of what changed.)
+
 ### Messages
 
 - **→ maps-2:** eleven world records were swapped for country sheets (Italy,
