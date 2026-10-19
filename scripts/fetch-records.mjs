@@ -31,7 +31,7 @@ const args = process.argv.slice(2);
 const outDir = resolve(getArg('--out') || 'public/data');
 const writeOutput = !args.includes('--no-write');
 const OFFLINE = args.includes('--offline');
-const RETRIEVED = '2026-10-18';
+const RETRIEVED = '2026-10-19';
 const CACHE_DIR = new URL('../.cache/fetch/', import.meta.url);
 
 function getArg(name) {
@@ -797,6 +797,39 @@ const SRU_SEARCHES = {
     candidateCap: 40,
     recordCap: 16,
   },
+  /**
+   * The seed's second coverage area. The OldMapsOnline experience is a worldwide
+   * one, so the explorer must be able to answer a place outside Switzerland with
+   * real sheets — but the Zürich sets stay the centre of the seed. Discovery uses
+   * the catalogue's continent keywords and the two words its world maps carry.
+   * Probed on 2026-10-19: `dc.subject=Europa and dc.title=Karte` 30 hits,
+   * `dc.title=Weltkarte` 12, `dc.title=Erdkarte` 5, `dc.subject=Afrika` 9,
+   * `dc.subject=Amerika` 5, `dc.subject=Asien` 3; `dc.subject=Weltkarte` (1 hit)
+   * states no extent and is not queried.
+   */
+  worldOverview: {
+    id: 'weltuebersichten',
+    name: 'Übersichtskarten von Europa und der Welt',
+    queries: [
+      'dc.subject=Europa and dc.title=Karte',
+      'dc.title=Erdkarte',
+      'dc.title=Weltkarte',
+      'dc.subject=Afrika and dc.title=Karte',
+      'dc.subject=Amerika and dc.title=Karte',
+      'dc.subject=Asien and dc.title=Karte',
+    ],
+    rule:
+      'same gates as the other SRU sets (map genre, stated year, stated MODS coordinates, OAI ' +
+      'GetRecord + IIIF manifest with a stated holding institution and Kartendaten extent); the ' +
+      'centre of the stated extent must lie OUTSIDE the canton window — the mirror image of the ' +
+      'Zürich sets, so one keyword hit cannot appear in both — and the extent must span at least ' +
+      '5° of latitude or longitude, which is what makes it an overview map instead of a local ' +
+      'sheet; one entry per title and year, at most three records per publication decade. A '
+      + 'per-query quota was probed and rejected: only the Europe query answers many records '
+      + 'with a stated extent, so a quota would shrink the set without adding a continent',
+    candidateCap: 60,
+    recordCap: 24,
+  },
   zurichCityPlans: {
     id: 'zurich-stadtplaene',
     name: 'Grundrisse und Situationspläne der Stadt Zürich',
@@ -818,27 +851,40 @@ const SRU_SEARCHES = {
 };
 
 async function main() {
-  const [zuz, land, geneva, muse, planHits, karteHits, regionHitLists, cityHitLists, zurichWindow] =
-    await Promise.all([
-      oaiRecords('zuz', 32),
-      oaiRecords('landkarten', 12),
-      oaiRecords('cartesgeneve', 6),
-      oaiRecords('museecarto', 6),
-      sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
-      sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
-      Promise.all(SRU_SEARCHES.zurichRegion.queries.map((cql) => sruSearch(cql, 100))),
-      Promise.all(SRU_SEARCHES.zurichCityPlans.queries.map((cql) => sruSearch(cql, 100))),
-      zurichCantonWindow(),
-    ]);
+  const [
+    zuz,
+    land,
+    geneva,
+    muse,
+    planHits,
+    karteHits,
+    regionHitLists,
+    cityHitLists,
+    worldHitLists,
+    zurichWindow,
+  ] = await Promise.all([
+    oaiRecords('zuz', 32),
+    oaiRecords('landkarten', 12),
+    oaiRecords('cartesgeneve', 6),
+    oaiRecords('museecarto', 6),
+    sruSearch(SRU_SEARCHES.zurichPlans.queries[0], 200),
+    sruSearch(SRU_SEARCHES.zurichPlans.queries[1], 100),
+    Promise.all(SRU_SEARCHES.zurichRegion.queries.map((cql) => sruSearch(cql, 100))),
+    Promise.all(SRU_SEARCHES.zurichCityPlans.queries.map((cql) => sruSearch(cql, 100))),
+    Promise.all(SRU_SEARCHES.worldOverview.queries.map((cql) => sruSearch(cql, 100))),
+    zurichCantonWindow(),
+  ]);
   const regionHits = regionHitLists.flat();
   const cityHits = cityHitLists.flat();
+  const worldHits = worldHitLists.flat();
   console.log(
     `OAI: ${zuz.length} ZB records, ${land.length} landkarten, ${geneva.length} cartesgeneve, ${muse.length} museecarto`,
   );
   console.log(
     `SRU: ${planHits.length} + ${karteHits.length} Zürich plan hits, ${regionHits.length} region hits ` +
       `(${SRU_SEARCHES.zurichRegion.queries.length} queries), ${cityHits.length} city-plan hits ` +
-      `(${SRU_SEARCHES.zurichCityPlans.queries.length} queries); canton window ` +
+      `(${SRU_SEARCHES.zurichCityPlans.queries.length} queries), ${worldHits.length} overview hits ` +
+      `(${SRU_SEARCHES.worldOverview.queries.length} queries); canton window ` +
       (zurichWindow ? JSON.stringify(zurichWindow) : 'UNAVAILABLE (set skipped)'),
   );
 
@@ -986,15 +1032,17 @@ async function main() {
 
   /**
    * Shared selection for every SRU set: oldest first, one entry per title and
-   * year, optionally at most `perDecade` records per publication decade (so one
-   * productive decade cannot crowd the rest of the range out of the selection).
+   * year, at most `perDecade` records per publication decade (so one productive
+   * decade cannot crowd the rest of the range out of the selection). `accept`
+   * decides which area the set covers — Zürich sets want the centre of the stated
+   * extent inside the canton window, the overview set wants it outside.
    */
-  function selectSru(pooled, { cap, perDecade = 0, label }) {
+  function selectSru(pooled, { cap, perDecade = 0, label, accept = inZurich }) {
     const chosen = [];
     const decades = new Map();
     for (const r of pooled
       .filter(Boolean)
-      .filter((r) => r.extent && inZurich(r))
+      .filter((r) => r.extent && accept(r))
       .sort((a, b) => a.yearStart - b.yearStart)) {
       const key = `${r.title}|${r.yearStart}`;
       if (planSeen.has(key)) continue;
@@ -1048,6 +1096,31 @@ async function main() {
     label: `Zürich city-plan records of ${cityCandidates.length} candidates`,
   });
 
+  // --- SRU-discovered overview maps outside Switzerland ----------------------
+  // The seed's second coverage area: continent- and world-wide overview maps held
+  // by e-rara's partner libraries, so the worldwide place search can lead to real
+  // sheets instead of an empty map. The canton window is used the other way round
+  // here: the centre of a candidate's own stated extent must lie outside it, and a
+  // candidate must span at least 5° in one direction. Without the window the set
+  // is skipped like the Zürich sets (nothing is placed by guesswork).
+  const worldCandidates = collectSruCandidates(worldHits);
+  const worldHitsPooled = zurichWindow
+    ? await pool(worldCandidates.slice(0, SRU_SEARCHES.worldOverview.candidateCap), 3, (c) =>
+        sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.worldOverview.name, maxYear: 1930 }),
+      )
+    : [];
+  const spanDegrees = (r) => Math.max(r.extent.east - r.extent.west, r.extent.north - r.extent.south);
+  /** An overview map outside the canton window with a genuine continental extent. */
+  const isWorldOverview = (r) => !inZurich(r) && spanDegrees(r) >= 5;
+  const worldRecords = selectSru(worldHitsPooled, {
+    cap: SRU_SEARCHES.worldOverview.recordCap,
+    perDecade: 3,
+    accept: isWorldOverview,
+    label:
+      `overview maps outside the canton of ${worldCandidates.length} candidates ` +
+      `(${worldHitsPooled.filter((r) => r.extent && isWorldOverview(r)).length} passed the area gate)`,
+  });
+
   const { records: overlays, skipped: overlaySkipped } = await swisstopoOverlayRecords();
   const overlayLayers = await swisstopoOverlayLayers();
   const records = [
@@ -1058,6 +1131,7 @@ async function main() {
     ...zurichPlanRecords,
     ...zurichRegionRecords,
     ...zurichCityRecords,
+    ...worldRecords,
     ...overlays,
   ].sort(
     (a, b) => a.yearStart - b.yearStart || a.title.localeCompare(b.title, 'de'),
@@ -1075,9 +1149,16 @@ async function main() {
         // Derived from the harvested records, so the registry cannot drift from the data.
         institutions: [
           ...new Set(
-            [...zbRecords, ...ethRecords, ...geneveRecords, ...museRecords, ...zurichPlanRecords].map(
-              (r) => r.institution,
-            ),
+            [
+              ...zbRecords,
+              ...ethRecords,
+              ...geneveRecords,
+              ...museRecords,
+              ...worldRecords,
+              ...zurichPlanRecords,
+              ...zurichRegionRecords,
+              ...zurichCityRecords,
+            ].map((r) => r.institution),
           ),
         ].sort((a, b) => a.localeCompare(b, 'de')),
         homepage: 'https://www.e-rara.ch/',
@@ -1144,6 +1225,18 @@ async function main() {
               `SRU/CQL discovery (${SRU_SEARCHES.zurichRegion.queries.join(' | ')}): ` +
               `${regionCandidates.length} candidates with a stated extent, ` +
               `${zurichRegionRecords.length} records kept`,
+          },
+          {
+            id: SRU_SEARCHES.worldOverview.id,
+            name: SRU_SEARCHES.worldOverview.name,
+            // An actual harvested record from this search, not a guessed page.
+            record: worldRecords[0]?.recordUrl ?? SRU_SEARCHES.worldOverview.queries[0],
+            discovery: SRU_SEARCHES.worldOverview.queries.map((q) => sruUrl(q)).join(' | '),
+            note:
+              `SRU/CQL discovery (${SRU_SEARCHES.worldOverview.queries.join(' | ')}): ` +
+              `${worldCandidates.length} candidates with a stated extent, ` +
+              `${worldRecords.length} records kept — the second coverage area, outside the canton ` +
+              'window by rule',
           },
         ],
         endpoints: {
@@ -1245,9 +1338,11 @@ async function main() {
       'Presentation 2.0 manifest per title for ' +
       'verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated "Kartendaten" ' +
       'extent, plus the provider\'s own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 ' +
-      '(CQL via dc.title/dc.subject) for the Zürich plan, Zürich-region and Zürich city-plan material the sorted OAI paging does not reach, each hit ' +
-      'confirmed by OAI GetRecord and its manifest, and only kept when the centre of its stated extent lies inside the canton ' +
-      'of Zürich\'s window; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
+      '(CQL via dc.title/dc.subject) for the Zürich plan, Zürich-region, Zürich city-plan and Europe/world ' +
+      'overview material the sorted OAI paging does not reach, each hit ' +
+      'confirmed by OAI GetRecord and its manifest: the Zürich sets keep only records whose stated extent centre lies inside the canton ' +
+      'of Zürich\'s window, the overview set only records whose centre lies outside it and whose extent spans at least 5°; ' +
+      'swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise ' +
       'editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is ' +
       'invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. ' +
       'Regenerate with: node scripts/fetch-records.mjs --out public/data',
@@ -1302,6 +1397,19 @@ async function main() {
           'the centre of the record\'s own stated extent must lie inside it',
         rule: SRU_SEARCHES.zurichCityPlans.rule,
       },
+      'e-rara:sru-world-overview': {
+        queries: SRU_SEARCHES.worldOverview.queries,
+        considered: worldCandidates.length,
+        kept: worldRecords.length,
+        cantonWindow: zurichWindow,
+        outsideCantonWindow: true,
+        minSpanDegrees: 5,
+        cantonWindowSource:
+          'swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): ' +
+          'the centre of the record\'s own stated extent must lie OUTSIDE it (mirror image of the ' +
+          'Zürich sets; without the window the set is skipped)',
+        rule: SRU_SEARCHES.worldOverview.rule,
+      },
       'swisstopo:zeitreise': {
         considered: overlayLayers.find((l) => l.id === 'ch.swisstopo.zeitreihen')?.timeValues.length ?? 0,
         kept: overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length,
@@ -1344,7 +1452,7 @@ async function main() {
   console.log(
     `Built ${zbRecords.length} ZB maps, ${ethRecords.length} landkarten, ${geneveRecords.length} Genf, ${museRecords.length} Weltkarten, ` +
       `${zurichPlanRecords.length} Zürich plans, ${zurichRegionRecords.length} Zürich region, ` +
-      `${zurichCityRecords.length} Zürich city plans, ` +
+      `${zurichCityRecords.length} Zürich city plans, ${worldRecords.length} Übersichtskarten ausserhalb, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.zeitreihen').length} Zeitreise, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.hiks-siegfried').length} Siegfried, ` +
       `${overlays.filter((r) => r.overlay.layerId === 'ch.swisstopo.swissimage-product').length} SWISSIMAGE records ` +

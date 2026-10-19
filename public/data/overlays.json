@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-19T00:16:20.512Z",
-  "retrieved": "2026-10-18",
+  "generatedAt": "2026-10-19T00:41:57.680Z",
+  "retrieved": "2026-10-19",
   "generator": "scripts/fetch-records.mjs",
   "source": "swisstopo WMTS 1.0.0 GetCapabilities (georeferenced historical map and aerial-image services)",
   "capabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",

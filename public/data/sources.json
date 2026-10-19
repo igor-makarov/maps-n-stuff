@@ -1,5 +1,5 @@
 {
-  "retrieved": "2026-10-18",
+  "retrieved": "2026-10-19",
   "generatedBy": "scripts/fetch-records.mjs",
   "note": "Zürich and Swiss historical maps from primary institutional sources. Records are copied from upstream IIIF/OAI metadata; no dates or places are inferred.",
   "providers": [
@@ -60,6 +60,13 @@
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DUmgebung%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DZ%C3%BCrichsee&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DStadtplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
           "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Zürich | dc.subject=Zürichsee | dc.title=Stadtplan and dc.subject=Zürich): 24 candidates with a stated extent, 11 records kept"
+        },
+        {
+          "id": "weltuebersichten",
+          "name": "Übersichtskarten von Europa und der Welt",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-106164",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DEuropa%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DErdkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DWeltkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAfrika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAmerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAsien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.subject=Europa and dc.title=Karte | dc.title=Erdkarte | dc.title=Weltkarte | dc.subject=Afrika and dc.title=Karte | dc.subject=Amerika and dc.title=Karte | dc.subject=Asien and dc.title=Karte): 39 candidates with a stated extent, 21 records kept — the second coverage area, outside the canton window by rule"
         }
       ],
       "endpoints": {
@@ -72,7 +79,7 @@
       "rights": "Public Domain Mark 1.0 (PDM 1.0) per record; see each record and e-rara terms.",
       "attribution": "e-rara.ch / holding institution, CC0 metadata and PDM imagery",
       "terms": "https://www.e-rara.ch/terms",
-      "retrievalDate": "2026-10-18",
+      "retrievalDate": "2026-10-19",
       "apiHosts": [
         "www.e-rara.ch"
       ],
@@ -132,7 +139,7 @@
       "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
       "attribution": "© swisstopo",
       "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
-      "retrievalDate": "2026-10-18",
+      "retrievalDate": "2026-10-19",
       "apiHosts": [
         "wmts.geo.admin.ch",
         "api3.geo.admin.ch",
@@ -147,5 +154,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-19T00:16:20.512Z"
+  "generatedAt": "2026-10-19T00:41:57.680Z"
 }

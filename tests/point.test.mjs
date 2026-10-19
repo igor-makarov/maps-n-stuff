@@ -65,5 +65,17 @@ test('the committed seed has a real footprint for every record and Zürich is co
     assert.ok(47.3769 >= record.extent.south && 47.3769 <= record.extent.north);
     assert.ok(8.5417 >= record.extent.west && 8.5417 <= record.extent.east);
   }
-  assert.deepEqual(records.filter((record) => coversPoint(record, 52.52, 13.405)), [], 'a point outside every footprint keeps the empty state honest');
+  // The seed is no longer Switzerland-only: the “Übersichtskarten von Europa und
+  // der Welt” set states continental extents, so the honest-empty case must be
+  // checked with a point no record claims (Berlin used to be it until the
+  // overview maps landed — the assertion moved, the behaviour did not).
+  assert.deepEqual(
+    records.filter((record) => coversPoint(record, -25, -140)),
+    [],
+    'a point outside every documented footprint keeps the empty state honest',
+  );
+  assert.ok(
+    records.filter((record) => coversPoint(record, 48.2082, 16.3738)).length > 0,
+    'the overview set gives places outside Switzerland real footprints and a point filter answer',
+  );
 });
