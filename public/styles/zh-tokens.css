@@ -1,0 +1,185 @@
+/*!
+ * Design	tokens – Kanton Zürich
+ *
+ * Derived from the official design system repository
+ * https://github.com/Kanton-Zurich/frontend-designsystem (Apache-2.0),
+ * file `src/assets/css/globals/_variables.scss` (retrieved 2026-10-18) plus
+ * the guidance at https://www.zh.ch/de/webangebote-entwickeln-und-gestalten.html.
+ *
+ * Values are copied 1:1; only the naming scheme is ours (`--zh-*`), so the app
+ * stays recognisably Cantonal without redistributing the upstream SCSS.
+ * Inter (SIL OFL 1.1, see public/fonts/LICENSE-Inter-OFL.txt) is self-hosted,
+ * same files the canton ships.
+ */
+
+/* Fonts: same families and files as the official frontend (`_fonts.scss`). */
+@font-face {
+  font-family: 'InterRegular';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'InterBlack';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/Inter-Black.woff2') format('woff2');
+}
+
+:root {
+  /* ---- Colours (official token names in comments) ---- */
+  --zh-black: #000; /* $colorBlack */
+  --zh-black-80: #333; /* $colorBlack80 */
+  --zh-black-60: #666; /* $colorBlack60 – $colorAnthracite */
+  --zh-black-40: #949494; /* $colorBlack40 */
+  --zh-black-20: #ccc; /* $colorBlack20 */
+  --zh-black-15: #d9d9d9; /* $colorBlack15 */
+  --zh-black-10: #f0f0f0; /* $colorBlack10 */
+  --zh-black-5: #f7f7f7; /* $colorBlack5 – $colorBg */
+  --zh-white: #fff;
+
+  --zh-blue: #0070b4; /* $colorBlue */
+  --zh-darkblue: #00407c; /* $colorDarkBlue */
+  --zh-turquoise: #00797b; /* $colorTurqoise */
+  --zh-bordeaux: #b01657; /* $colorBordeaux */
+  --zh-magenta: #d40053; /* $colorMagenta */
+  --zh-violet: #7f3da7; /* $colorViolet */
+  --zh-green: #1a7f1f; /* $colorGreen */
+  --zh-cyan: #009ee0; /* $colorCyan */
+  --zh-red: #e2001a; /* $colorRed */
+
+  --zh-blue-soft: #edf5fa;
+  --zh-darkblue-soft: #e0e8ee;
+  --zh-turquoise-soft: #e8f3f2;
+  --zh-bordeaux-soft: #f6e3ea;
+  --zh-magenta-soft: #fcedf3;
+  --zh-violet-soft: #ece2f1;
+  --zh-green-soft: #ebf6eb;
+  --zh-neutral-soft: var(--zh-black-10);
+
+  /* Semantic colours */
+  --zh-color-text: var(--zh-black);
+  --zh-color-text-soft: var(--zh-black-60);
+  --zh-color-bg: var(--zh-black-5);
+  --zh-color-surface: var(--zh-white);
+  --zh-color-border: var(--zh-black-15);
+  --zh-color-border-strong: var(--zh-black-20);
+  --zh-color-accent: var(--zh-blue);
+  --zh-color-accent-dark: var(--zh-darkblue);
+  --zh-color-focus: var(--zh-blue);
+  --zh-color-danger: var(--zh-red);
+  --zh-color-warning: var(--zh-bordeaux);
+  --zh-color-success: var(--zh-green);
+
+  /* ---- Typography ---- */
+  --zh-font-base: 'InterRegular', 'Inter', Helvetica, Arial, sans-serif;
+  --zh-font-black: 'InterBlack', 'Inter', 'Arial Black', Helvetica, sans-serif;
+  --zh-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --zh-font-mini: 10px; /* $sizeFontMini */
+  --zh-font-tiny: 12px; /* $sizeFontTiny */
+  --zh-font-small: 14px; /* $sizeFontSmall */
+  --zh-font-regular: 16px; /* $sizeFontRegular (base) */
+  --zh-font-bigger-regular: 18px; /* $sizeFontBiggerRegular */
+  --zh-font-medium: 20px; /* $sizeFontMedium */
+  --zh-font-large: 24px; /* $sizeFontLarge */
+  --zh-font-small-big: 28px; /* $sizeFontSmallBig */
+  --zh-font-big: 32px; /* $sizeFontBig */
+  --zh-font-bigger-big: 40px; /* $sizeFontBiggerBig */
+  --zh-font-small-huge: 48px; /* $sizeFontSmallHuge */
+  --zh-font-huge: 56px; /* $sizeFontHuge */
+  --zh-font-giant: 72px; /* $sizeFontGiant */
+
+  --zh-line-narrower: 1; /* $sizeLineHeightNarrower */
+  --zh-line-narrow: 1.2; /* $sizeLineHeightNarrow */
+  --zh-line-medium: 1.3; /* $sizeLineHeightMedium */
+  --zh-line-subbase: 1.45; /* $sizeLineHeightSubBase */
+  --zh-line-bigger: 1.4; /* $sizeLineHeightBigger */
+  --zh-line-base: 1.5; /* $sizeLineHeightBase */
+  --zh-line-super: 1.8; /* $sizeLineHeightSuper */
+
+  /* ---- Spacing scale ($sizeMini … $sizeGiant) ---- */
+  --zh-size-mini: 4px;
+  --zh-size-tiny: 8px;
+  --zh-size-small-regular: 12px;
+  --zh-size-regular: 16px;
+  --zh-size-small-large: 20px;
+  --zh-size-large: 24px;
+  --zh-size-small-big: 28px;
+  --zh-size-big: 32px;
+  --zh-size-bigger-big: 40px;
+  --zh-size-small-huge: 48px;
+  --zh-size-huge: 56px;
+  --zh-size-giant: 80px;
+
+  /* ---- Layout ---- */
+  --zh-max-width: 1440px; /* $sizeGlobalMaxWidth */
+  --zh-content-width: 1168px; /* $sizeWidthContent */
+  --zh-text-width: 768px; /* $sizeWidthTextContent */
+  --zh-column-gap: 12px; /* columnGap curve, tiny */
+  --zh-wrapper-gap: 12px;
+
+  /* Controls: `$normalButtonSize: $sizeBiggerBig + $sizeTiny` = 40 + 8 = 48 px
+     is the height of the cantonal `.atm-button`; the official input scale is
+     72 / 60 / 48 px, so 48 px is also its smallest step. The app is
+     data-dense, so it uses the 48 px step for all its controls instead of the
+     72 px default, and `$sizeBig` (32 px) for the official `.atm-button--small`
+     variant. */
+  --zh-control-height: 48px;
+  --zh-control-height-small: 32px;
+  --zh-radius-input: 2px; /* form_input.scss */
+
+  /* Characteristic indentation of the cantonal design: content and headings sit
+     on a 4px rhythm rule, section headings carry a 3px top border and a
+     colour-variation bar on the left (see atm-heading--bordered, anchorlink). */
+  --zh-indent: 12px;
+  --zh-rule: 3px;
+
+  /* ---- Shape, motion, layers ---- */
+  --zh-radius: 1px; /* buttons: border-radius: 1px */
+  --zh-radius-tag: 5px; /* atm-tag */
+  --zh-transition-simple: 100ms;
+  --zh-transition-fade: 200ms;
+  --zh-transition-default: 250ms;
+  --zh-easing-default: ease;
+  --zh-easing-decelerate: cubic-bezier(0.01, 0.13, 0.63, 0.99);
+
+  --zh-z-header: 100;
+  --zh-z-overlay: 1000;
+  --zh-z-detail: 1100;
+  --zh-z-skiplink: 2000;
+
+  --zh-shadow-card: 0 1px 2px rgb(0 0 0 / 6%), 0 8px 24px rgb(0 0 0 / 6%);
+  --zh-shadow-header: 0 1px 0 var(--zh-color-border);
+}
+
+@media (min-width: 600px) {
+  :root {
+    --zh-indent: 16px;
+    --zh-column-gap: 16px;
+    --zh-wrapper-gap: 16px;
+  }
+}
+@media (min-width: 840px) {
+  :root {
+    --zh-column-gap: 24px;
+    --zh-wrapper-gap: 24px;
+  }
+}
+@media (min-width: 1280px) {
+  :root {
+    --zh-column-gap: 32px;
+    --zh-wrapper-gap: 32px;
+    --zh-indent: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --zh-transition-simple: 0ms;
+    --zh-transition-fade: 0ms;
+    --zh-transition-default: 0ms;
+  }
+}

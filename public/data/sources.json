@@ -1,0 +1,159 @@
+{
+  "retrieved": "2026-10-19",
+  "generatedBy": "scripts/fetch-records.mjs",
+  "note": "Zürich and Swiss historical maps from primary institutional sources. Records are copied from upstream IIIF/OAI metadata; no dates or places are inferred.",
+  "providers": [
+    {
+      "id": "e-rara",
+      "name": "e-rara.ch – Plattform für digitalisierte Drucke aus Schweizer Bibliotheken",
+      "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
+      "institutions": [
+        "Bibliothèque de Genève",
+        "ETH-Bibliothek Zürich",
+        "Universitätsbibliothek Basel",
+        "Universitätsbibliothek Bern",
+        "Zentralbibliothek Zürich"
+      ],
+      "homepage": "https://www.e-rara.ch/",
+      "home": "https://www.e-rara.ch/",
+      "collections": [
+        {
+          "id": "zuz-wildkarte",
+          "name": "Karte des Kantons Zürich 1:25 000 (Wildkarte)",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/zuz/search?query=Karte+des+Kantons+Z%C3%BCrich"
+        },
+        {
+          "id": "landkarten",
+          "name": "Schweizer Landkarten aus vier Jahrhunderten",
+          "record": "https://www.e-rara.ch/zuz/content/titleinfo/22142031",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten"
+        },
+        {
+          "id": "cartesgeneve",
+          "name": "Karten von Genf und seiner Umgebung (e-rara-Set cartesgeneve)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-90735",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=cartesgeneve"
+        },
+        {
+          "id": "museecarto",
+          "name": "Weltkarten aus dem Musée cartographique (e-rara-Set museecarto)",
+          "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
+          "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding library stated by the manifest or by its catalogue corpus"
+        },
+        {
+          "id": "zurich-plaene",
+          "name": "Pläne aus Zürich (Stadt und Umgebung)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 47 records kept"
+        },
+        {
+          "id": "zurich-stadtplaene",
+          "name": "Grundrisse und Situationspläne der Stadt Zürich",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-26719",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DGrundriss%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DSituationsplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.title=Grundriss and dc.subject=Zürich | dc.title=Situationsplan and dc.subject=Zürich): 35 candidates with a stated extent, 10 records kept"
+        },
+        {
+          "id": "zurich-region",
+          "name": "Zürich und Umgebung (Kanton, Stadt und See)",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DUmgebung%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DZ%C3%BCrichsee&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DStadtplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Zürich | dc.subject=Zürichsee | dc.title=Stadtplan and dc.subject=Zürich): 24 candidates with a stated extent, 11 records kept"
+        },
+        {
+          "id": "weltuebersichten",
+          "name": "Übersichtskarten von Europa und der Welt",
+          "record": "https://www.e-rara.ch/doi/10.3931/e-rara-12909",
+          "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DEuropa%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DErdkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DWeltkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAfrika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAmerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAsien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DDeutschland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DFrankreich%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DItalien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DOesterreich-Ungarn%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSpanien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DGrossbritannien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DS%C3%BCdamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DPal%C3%A4stina%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DT%C3%BCrkei%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DIndien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DNordamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DRussland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSyrien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DJapan%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods",
+          "note": "SRU/CQL discovery (dc.subject=Europa and dc.title=Karte | dc.title=Erdkarte | dc.title=Weltkarte | dc.subject=Afrika and dc.title=Karte | dc.subject=Amerika and dc.title=Karte | dc.subject=Asien and dc.title=Karte | dc.subject=Deutschland and dc.title=Karte | dc.subject=Frankreich and dc.title=Karte | dc.subject=Italien and dc.title=Karte | dc.subject=Oesterreich-Ungarn and dc.title=Karte | dc.subject=Spanien and dc.title=Karte | dc.subject=Grossbritannien and dc.title=Karte | dc.subject=Südamerika and dc.title=Karte | dc.subject=Palästina and dc.title=Karte | dc.subject=Türkei and dc.title=Karte | dc.subject=Indien and dc.title=Karte | dc.subject=Nordamerika and dc.title=Karte | dc.subject=Russland and dc.title=Karte | dc.subject=Syrien and dc.title=Karte | dc.subject=Japan and dc.title=Karte): 133 candidates with a stated extent, 35 records kept — the second coverage area, outside the canton window by rule"
+        }
+      ],
+      "endpoints": {
+        "oai": "https://www.e-rara.ch/oai",
+        "sru": "https://www.e-rara.ch/sru",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}",
+        "thumbnail": "IIIF thumbnail from the manifest"
+      },
+      "rights": "Public Domain Mark 1.0 (PDM 1.0) per record; see each record and e-rara terms.",
+      "attribution": "e-rara.ch / holding institution, CC0 metadata and PDM imagery",
+      "terms": "https://www.e-rara.ch/terms",
+      "retrievalDate": "2026-10-19",
+      "apiHosts": [
+        "www.e-rara.ch"
+      ],
+      "api": {
+        "oaiPmh": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set={setSpec} (sets: zuz, landkarten, cartesgeneve, museecarto; ListSets is paginated)",
+        "oaiGetRecord": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:www.e-rara.ch:{titleId}",
+        "sru": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query={cql}&startRecord={n}&maximumRecords=100&recordSchema=mods (CQL indexes: dc.title, dc.subject, dc.creator; MODS records carry <vl:id>, <vl:prefix> and <coordinates>)",
+        "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
+        "docs": "https://www.e-rara.ch/"
+      }
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo – Bundesamt für Landestopografie (geoadmin geoservices)",
+      "operator": "Bundesamt für Landestopografie swisstopo",
+      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+      "home": "https://www.swisstopo.admin.ch/",
+      "collections": [
+        {
+          "id": "zeitreise",
+          "name": "Zeitreise – Kartenwerke",
+          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        },
+        {
+          "id": "siegfriedkarte",
+          "name": "Siegfriedkarte 1:25 000 (1870–1949)",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
+        },
+        {
+          "id": "dufourkarte",
+          "name": "Dufourkarte Erstausgabe",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
+        },
+        {
+          "id": "swissimage-zeitreise",
+          "name": "SWISSIMAGE HIST (historische Luftbilder)",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
+        },
+        {
+          "id": "swissimage-1946",
+          "name": "SWISSIMAGE HIST 1946",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
+        }
+      ],
+      "endpoints": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "basemapTemplate": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
+        "search": "https://api3.geo.admin.ch/rest/services/api/SearchServer"
+      },
+      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
+      "attribution": "© swisstopo",
+      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
+      "retrievalDate": "2026-10-19",
+      "apiHosts": [
+        "wmts.geo.admin.ch",
+        "api3.geo.admin.ch",
+        "map.geo.admin.ch"
+      ],
+      "api": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "searchServer": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText={q}&type=locations&sr=4326&limit={n}",
+        "mapViewer": "https://map.geo.admin.ch/?lang=de&layers={layerId}&time={Time}"
+      }
+    }
+  ],
+  "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
+  "generatedAt": "2026-10-19T02:58:45.100Z"
+}

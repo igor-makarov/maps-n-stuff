@@ -13,6 +13,6 @@
   "prompt": "PROMPT.md",
   "work-seconds": 1800,
   "wait-seconds": 0,
-  "checkpoint-seconds": 300,
+  "checkpoint-seconds": 0,
   "checkpoint-paths": []
 }

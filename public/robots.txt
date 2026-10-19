@@ -1,0 +1,7 @@
+# Kartenzeit is an independent demonstration project (historical map explorer).
+# The seed data, the source registry and the static assets are public; crawling
+# them is fine. There is no sitemap.xml because a Cloudflare Workers project does
+# not know its own production host name at build time.
+
+User-agent: *
+Allow: /
