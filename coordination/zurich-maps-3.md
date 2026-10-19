@@ -1,5 +1,76 @@
 # zurich-maps-3 status
 
+Iteration 7-16 (2026-10-19, ~00:45–02:0x UTC). Member `zurich-maps-3`. Same paths:
+`public/app/detail.js`, `public/app/iiif.js`, `public/app/upstream.js` (new),
+`public/styles/detail.css`, `tests/**`, `scripts/browser-check.mjs` — plus a flagged,
+additive edit in maps-1's `public/app/compare.js` (see Messages).
+
+## Landed on `main` this iteration
+
+**The comparison view is no longer two flat images: each pane with a IIIF manifest
+hosts the real viewer, and a switch couples the panes through the extent the
+catalogue documents — a zoom in one sheet follows in the others.**
+
+| Change | File | Why |
+| --- | --- | --- |
+| `viewToExtent(view, bounds, extent)` / `extentToView(part, bounds, extent)` | `iiif.js` | Pure, unit-tested mapping between a visible image region and the record's **documented** extent (the same coarse linear assumption the map makes when it draws a footprint). Unusable input (missing/degenerate/off-earth extent, NaN region, zero-size sheet) returns `null` instead of guessed coordinates; `extentToView` clamps to the sheet and to `MIN_REGION_FRACTION`. 4 new test cases (linear mapping incl. the north-up direction, inverse round trip, clamping of a box reaching beyond the sheet, hostile input). |
+| `createViewer` is **exported**; the instance gained `getView()` and `setView(next)` | `detail.js` | One viewer factory for detail panel and comparison. `setView` clamps an outside region and re-fetches it **without reporting back**, which is what keeps two coupled viewers from ping-ponging. |
+| new `public/app/upstream.js` | `upstream.js`, `detail.js` | The manifest/`info.json` fetch ladder (same-origin `/api/fetch` first, direct call as fallback) moved out of `detail.js` so a comparison pane loads its manifest exactly like the detail panel — including the CSP-safe primary path. Behaviour unchanged; `tests/site.test.mjs` knows it as a helper module. |
+| comparison panes are interactive | `compare.js` (maps-1's file, flagged) | A record with `iiifManifest` gets a focusable `[data-compare-stage]` with the exported viewer (real region requests, keyboard pan/zoom, drag); a record without a manifest keeps the raster tile preview. A failed manifest shows the thumbnail plus the plain-German `describeUpstreamError` sentence, never an empty box. |
+| coupling switch `#compare-sync` + live hint `#compare-sync-hint` | `compare.js`, `detail.css` (additive) | `aria-pressed` chip, hidden unless at least two mounted panes document an extent; the hint names the basis literally (“gekoppelt über die im Katalog belegte Ausdehnung der Blätter, nicht über eine Georeferenzierung”) and says when coupling is off or impossible. Panes with 3–4 pinned records are all coupled; a pane without an extent stays independent. |
+| viewers are mounted only after the comparison is visible, and destroyed on close/rebuild | `compare.js` | The stage measures itself when the manifest arrives; mounting while `hidden` would request a 64-px region. `destroyViewers()` (+ a rebuild token) prevents a slow manifest from mounting into a closed view and removes the `resize`/fullscreen listeners. |
+| harness section **8c** rewritten + **8c2** (3 checks) | `browser-check.mjs` | 8c now reads both pane kinds (viewer stage or static tile) and asserts real IIIF request URLs; 8c2: a real viewer per pane + the switch state, two `+` presses in pane 1 pull pane 2 to a region (`Ausschnitt …`, screenshot `11-compare-coupled.png`), and the switch decouples again (pane 2 unmoved after a further zoom). |
+| harness comment renumbering | `browser-check.mjs` | maps-2 added a *second* section numbered “8p” (Grundkarte) while the pre-existing 8p is the georeferenced-layer toggle; the later one is now **8q**. Pure comment, no check changed. |
+
+### Verified on this runner
+
+- `npm run check` ✓ — validation, **136/136** `node --test` (my 4 new IIIF cases + 2 new
+  site-contract assertions for `upstream.js`, on top of maps-2's 4 map cases), `wrangler deploy --dry-run` (31 asset
+  files, 28.76 KiB Worker).
+- `node scripts/browser-check.mjs --url http://127.0.0.1:8787` → **126/126** on the
+  integrated tree (maps-2's Grundkarte 8q, maps-0's 140 records), including the new
+  8c2 checks: `pane 1 8602403/full/432 -> 781,1919,1243 · pane 2 8751737/full/524 ->
+  350,4384,2339 (Ausschnitt 4384×2339 von 11223×9039)`, then decoupled: `pane 2
+  stayed on 350,4384,2339`.
+- Independent CDP probe (`?cmp=e-rara:8602401,e-rara:8751735`): both panes request the
+  whole sheet first, two `+` presses give pane 1 `1497,1837,1919,1131` and pane 2
+  `3420,3456,4384,2127`; readouts `Auflösung 34 %` / `15 %`; toggle off → a further
+  zoom leaves pane 2 untouched; **no console error, no stray text node** in the
+  comparison body when the coupling UI is rebuilt.
+- Screenshot inspected by hand (`11-compare-coupled.png`): two real Zürich fortification
+  plans, same place in both, cantonal rules/focus ring intact, switch and hint legible.
+
+### Messages
+
+- **→ maps-1**: your `compare.js` gained the interactive panes and the coupling switch.
+  The edit is additive and self-contained: imports (`createViewer`, `fetchUpstreamJson`,
+  three iiif helpers), the pane markup (`paneImage`), the mount/destroy lifecycle, the
+  coupling functions, `openCompare` now unhides **before** `renderView()` (the stages
+  must have a layout when the manifest arrives), and `closeCompare` destroys the
+  viewers. Revert or reword freely; the store contract and `cmp` handling are untouched.
+  If you would rather own the toggle, the state is one boolean plus `propagate()`.
+- **→ maps-2**: I kept **your** two harness repairs (derived `uncoveredPoint`, prefix
+  comparison of the sheet-jump label) and dropped my duplicate attempts — thanks. My
+  8c rewrite no longer matches `.app-compare__image` for viewer panes, and 8c2 is new;
+  your Grundkarte checks are untouched except the section comment 8p → 8q (the
+  pre-existing 8p is the layer toggle). The harness now also has `waitForComparePane`.
+- **→ maps-0**: nothing needed. `viewToExtent` only uses `record.extent`, which every
+  record in the current seed documents; a record without one is simply not coupled and
+  the hint says so. The 65-sheet “Karte der Alpenländer” is now the largest work the
+  sheet checks exercise (they derive it from the seed, not a fixed id).
+- **→ all**: `main` is fine for the gate as of this commit — `npm run check` and the
+  full browser harness were re-run on the integrated tree after the rebase.
+
+### Next (my area)
+
+- Comparison regions as shareable state (e.g. `?cvv=` per pane) — today the `cmp` list
+  is shareable, the regions in the comparison view are not.
+- A third/fourth pane on a 320 px screen is stacked; the coupling is one-directional per
+  gesture (fine), but a per-pane “Ganzes Blatt” reset for the comparison panes would help.
+- Real-device touch check (still synthetic via `Input.dispatchTouchEvent`).
+
+---
+
 Iteration 7-15 (2026-10-19, ~00:15–01:0x UTC). Member `zurich-maps-3`. Same paths:
 `public/app/detail.js`, `public/app/iiif.js`, `public/styles/detail.css`, `tests/**`,
 `scripts/browser-check.mjs` (plus small noted edits in `docs/run.md`, `README.md`,

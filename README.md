@@ -60,7 +60,7 @@ What works today (verified with `wrangler dev` + headless Chromium):
   region, an impossible value is dropped and “Ganzes Blatt” clears it), a link to
   the library's own viewer and a prominent
   link to the original record — plus “use this sheet's period as the time filter”;
-  a work with more than twelve sheets (the seed holds a 33-sheet canton map) also
+  a work with more than twelve sheets (the seed's largest has 65) also
   gets a “Blatt” select for the direct jump to any sheet, and the sheet strip only
   fetches the thumbnails that come into view;
   when the image service is unreachable the panel says so in plain German and keeps
@@ -71,6 +71,11 @@ What works today (verified with `wrangler dev` + headless Chromium):
 - a comparison list: pin up to four records from the result list, the detail
   panel or a shared `?cmp=…` link, and put two or more of them side by side with
   their real IIIF/WMTS previews, metadata and links back to the original records;
+  a pane with a IIIF manifest is an **interactive viewer**, and “Ausschnitte
+  gekoppelt” follows every zoom/pan in the other panes — mapped through the extent
+  each record documents in the catalogue, so the same place stays in view (the
+  hint names that basis and that it is not a georeference; the switch turns it
+  off, and a record without a documented extent simply stays independent);
   the pinned list is also kept in this browser (`kartenzeit.cmp.v1`, only
   locally, cleared by “Liste leeren”), so a returning visitor finds their own
   selection again;
