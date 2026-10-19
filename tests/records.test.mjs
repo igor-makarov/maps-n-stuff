@@ -277,3 +277,77 @@ test('every committed extent is a finite, correctly ordered WGS84 box', async ()
     assert.ok(west < east && south < north, `${record.id}: invalid extent order`);
   }
 });
+
+/**
+ * swisscovery (ZB Zürich catalogue) Alma SRU discovery, added in iteration 7-69.
+ *
+ * The channel is discovery only: `parseAlmaRecord` reads the catalogue record's
+ * gates (DOI, year, genre, MARC 034 box) and `parseMarcCoordinate` reads a MARC
+ * coordinate; the record's real title/date/extent still comes from the e-rara IIIF
+ * manifest. These tests pin the parsing that decides whether a candidate is worth a
+ * manifest request — a wrong sign would re-introduce the 7-21 hemisphere defect for
+ * every Altkarte south or west of Greenwich.
+ */
+test('parseMarcCoordinate reads MARC 034 degrees-minutes-seconds and decimals', async () => {
+  const { parseMarcCoordinate } = await import('../scripts/fetch-records.mjs');
+  const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} != ${b}`);
+  close(parseMarcCoordinate('E0083200'), 8 + 32 / 60);
+  close(parseMarcCoordinate('E0083100'), 8 + 31 / 60);
+  close(parseMarcCoordinate('N0472300'), 47 + 23 / 60);
+  close(parseMarcCoordinate('W0245400'), -(24 + 54 / 60));
+  close(parseMarcCoordinate('S0220000'), -22);
+  close(parseMarcCoordinate('E1800000'), 180);
+  close(parseMarcCoordinate('8.5333'), 8.5333);
+  close(parseMarcCoordinate('-24.9'), -24.9);
+  assert.equal(parseMarcCoordinate(''), null);
+  assert.equal(parseMarcCoordinate(null), null);
+  assert.equal(parseMarcCoordinate('circa 8°'), null);
+  assert.equal(parseMarcCoordinate('E83200'), null);
+});
+
+test('parseAlmaRecord reads the ZB catalogue gates and keeps the sign of 034 W/S', async () => {
+  const { parseAlmaRecord } = await import('../scripts/fetch-records.mjs');
+  // A verbatim excerpt of the 1588 “Contrafactur der Statt Zürich” MARC record
+  // (swisscovery SRU, 2026-10-19): 024 DOI, 034 box, 245 title, 264 year,
+  // 655 genre, 700 creator.
+  const marc = `
+  <controlfield tag="008">970514s1588    fr        |     |   ger|d</controlfield>
+  <datafield ind1="7" ind2=" " tag="024"><subfield code="a">10.3931/e-rara-26717</subfield><subfield code="2">doi</subfield></datafield>
+  <datafield ind1="0" ind2=" " tag="034"><subfield code="a">a</subfield><subfield code="d">E0083200</subfield><subfield code="e">E0083300</subfield><subfield code="f">N0472300</subfield><subfield code="g">N0472100</subfield></datafield>
+  <datafield ind1="0" ind2="0" tag="245"><subfield code="a">Contrafactur der Statt Zürich anno 1588</subfield></datafield>
+  <datafield ind1=" " ind2="1" tag="264"><subfield code="c">1588</subfield></datafield>
+  <datafield ind1=" " ind2="7" tag="655"><subfield code="a">Altkarte</subfield><subfield code="2">gnd-content</subfield></datafield>
+  <datafield ind1="1" ind2=" " tag="700"><subfield code="a">Maurer, Christoph</subfield></datafield>
+  <datafield ind1=" " ind2=" " tag="AVA"><subfield code="d">3 Lb 02: 1</subfield></datafield>`;
+  const hit = parseAlmaRecord(marc);
+  assert.equal(hit.doi, '10.3931/e-rara-26717');
+  assert.equal(hit.year, 1588);
+  assert.equal(hit.title, 'Contrafactur der Statt Zürich anno 1588');
+  assert.equal(hit.isMap, true);
+  assert.deepEqual(hit.creators, ['Maurer, Christoph']);
+  assert.equal(hit.signature, '3 Lb 02: 1');
+  assert.ok(Math.abs(hit.coordinates.west - (8 + 32 / 60)) < 1e-9);
+  assert.ok(Math.abs(hit.coordinates.north - (47 + 23 / 60)) < 1e-9);
+
+  // A record without 034 or without a 4-digit year must not pass the gates.
+  const bare = parseAlmaRecord(
+    '<datafield tag="245"><subfield code="a">Karte ohne Datum</subfield></datafield>',
+  );
+  assert.equal(bare.coordinates, null);
+  assert.equal(bare.year, null);
+  assert.equal(bare.doi, null);
+  assert.equal(bare.isMap, false);
+});
+
+test('almaSruUrl states the documented endpoint, query and MARCXML schema', async () => {
+  const { almaSruUrl } = await import('../scripts/fetch-records.mjs');
+  const url = new URL(almaSruUrl('alma.genre_form=Altkarte and alma.all=Zürich', 51));
+  assert.equal(url.hostname, 'uzb.swisscovery.ch');
+  assert.equal(url.pathname, '/view/sru/41SLSP_UZB');
+  assert.equal(url.searchParams.get('version'), '1.1');
+  assert.equal(url.searchParams.get('operation'), 'searchRetrieve');
+  assert.equal(url.searchParams.get('recordSchema'), 'marcxml');
+  assert.equal(url.searchParams.get('startRecord'), '51');
+  assert.equal(url.searchParams.get('maximumRecords'), '50');
+  assert.equal(url.searchParams.get('query'), 'alma.genre_form=Altkarte and alma.all=Zürich');
+});
