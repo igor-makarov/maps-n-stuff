@@ -5,12 +5,35 @@
   "generation": 7,
   "iteration": 39,
   "startedAt": "2026-10-19T04:12:15.237Z",
-  "outcome": "running",
+  "outcome": "agent_failure",
   "journalId": "7-39",
   "source": "8eacb8a43d820adedbe8407869a26c4177723c87",
   "runtime": "e6ab3678c623de87338a610fc0a2222d0179f5d8",
   "provider": "opencode-go",
   "model": "deepseek-v4.1-flash",
   "reasoning": "max",
-  "workCommit": "8eacb8a43d820adedbe8407869a26c4177723c87"
+  "workCommit": "8eacb8a43d820adedbe8407869a26c4177723c87",
+  "finishedAt": "2026-10-19T04:12:23.980Z",
+  "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-2:7-39\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
+  "usage": {
+    "models": {
+      "opencode-go/deepseek-v4.1-flash": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "totalTokens": 0,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      }
+    },
+    "tools": {}
+  },
+  "minEntryId": 7,
+  "maxEntryId": 13
 }
