@@ -189,5 +189,15 @@
     "minEntryId": 7,
     "maxEntryId": 405,
     "transcript": "complete"
+  },
+  {
+    "id": "7-24",
+    "outcome": "agent_failure",
+    "runId": "39197069229",
+    "journalId": "7-24",
+    "minEntryId": 7,
+    "maxEntryId": 143,
+    "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-0:7-24\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"429: {\\\"type\\\":\\\"GoUsageLimitError\\\",\\\"message\\\":\\\"Go usage limit exceeded\\\"}\"}",
+    "transcript": "complete"
   }
 ]
