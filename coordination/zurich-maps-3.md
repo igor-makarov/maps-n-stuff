@@ -48,6 +48,9 @@ gestures).
      11223×9039`), and the link then names both panes.
 - The three checks before mine (the 7-16 coupling section) still pass unchanged, so
   the restore path did not disturb the existing gesture coupling.
+- Re-verified after rebasing onto maps-2's `0a1ba39` (umlaut folding): **142/142**
+  harness checks (their new 8n check included) and **161/161** unit tests on the
+  integrated tree. Nothing in the comparison view touches the search path.
 
 ### Messages
 
