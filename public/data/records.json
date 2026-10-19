@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T01:57:40.905Z",
+  "generatedAt": "2026-10-19T02:24:42.807Z",
   "retrieved": "2026-10-19",
   "generator": "scripts/fetch-records.mjs",
   "method": "e-rara OAI-PMH oai_dc (sets zuz, landkarten, cartesgeneve, museecarto) for discovery → IIIF Presentation 2.0 manifest per title for verbatim title, imprint, creators, holding institution, shelfmark, rights, thumbnail, canvas count and the stated \"Kartendaten\" extent, plus the provider's own canonical viewer URL from the DOI landing page (og:url); e-rara SRU 1.2 (CQL via dc.title/dc.subject) for the Zürich plan, Zürich-region, Zürich city-plan and Europe/world overview material the sorted OAI paging does not reach, each hit confirmed by OAI GetRecord and its manifest: the Zürich sets keep only records whose stated extent centre lies inside the canton of Zürich's window, the overview set only records whose centre lies outside it and whose extent spans at least 5°; swisstopo WMTS 1.0.0 GetCapabilities for the Zeitreise, Siegfriedkarte and SWISSIMAGE Zeitreise editions and for the comparison layers in overlays.json. No title, date, coordinate or holding library is invented: a record whose library is not stated by the manifest or by its catalogue corpus is dropped and listed in `skipped`. Regenerate with: node scripts/fetch-records.mjs --out public/data",
@@ -81,9 +81,15 @@
         "dc.title=Weltkarte",
         "dc.subject=Afrika and dc.title=Karte",
         "dc.subject=Amerika and dc.title=Karte",
-        "dc.subject=Asien and dc.title=Karte"
+        "dc.subject=Asien and dc.title=Karte",
+        "dc.subject=Deutschland and dc.title=Karte",
+        "dc.subject=Frankreich and dc.title=Karte",
+        "dc.subject=Italien and dc.title=Karte",
+        "dc.subject=Oesterreich-Ungarn and dc.title=Karte",
+        "dc.subject=Spanien and dc.title=Karte",
+        "dc.subject=Grossbritannien and dc.title=Karte"
       ],
-      "considered": 39,
+      "considered": 120,
       "kept": 21,
       "cantonWindow": {
         "west": 8.35184,
@@ -94,7 +100,7 @@
       "outsideCantonWindow": true,
       "minSpanDegrees": 5,
       "cantonWindowSource": "swisstopo SearchServer, type=locations&origins=kantone (GG25 canton layer): the centre of the record's own stated extent must lie OUTSIDE it (mirror image of the Zürich sets; without the window the set is skipped)",
-      "rule": "same gates as the other SRU sets (map genre, stated year, stated MODS coordinates, OAI GetRecord + IIIF manifest with a stated holding institution and Kartendaten extent); the centre of the stated extent must lie OUTSIDE the canton window — the mirror image of the Zürich sets, so one keyword hit cannot appear in both — and the extent must span at least 5° of latitude or longitude, which is what makes it an overview map instead of a local sheet; one entry per title and year, at most three records per publication decade. A per-query quota was probed and rejected: only the Europe query answers many records with a stated extent, so a quota would shrink the set without adding a continent"
+      "rule": "same gates as the other SRU sets (map genre, stated year, stated MODS coordinates, OAI GetRecord + IIIF manifest with a stated holding institution and Kartendaten extent); the centre of the stated extent must lie OUTSIDE the canton window — the mirror image of the Zürich sets, so one keyword hit cannot appear in both — and the extent must span at least 5° of latitude or longitude, which is what makes it an overview map instead of a local sheet; one entry per title and year, at most three records per publication decade. The pool is round-robined over the queries so a keyword that answers many hits (Deutschland) cannot crowd out the others, and a per-query quota of 7 bounds each keyword; the continent/world keywords and the country keywords are pooled together (7-20)"
     },
     "swisstopo:zeitreise": {
       "considered": 178,
@@ -597,6 +603,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/7203623",
       "shelfmark": "Rar KS 99",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/7203621",
       "imprint": "Genève : chez F. Monty, 1781"
     },
     {
@@ -904,6 +911,40 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751561",
       "imprint": "Zürich : Militar-Schule in Zürich, 1793"
+    },
+    {
+      "id": "e-rara:29478220",
+      "title": "Germania universa: 37. Post Karte durch ganz Deutschland",
+      "yearStart": 1795,
+      "yearEnd": 1795,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Walch, Johann"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-121164",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29478221/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29478220/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 2.7,
+        "east": 21.56667,
+        "north": 54.78333,
+        "south": 45.1
+      },
+      "geo": {
+        "lat": 49.94167,
+        "lon": 12.13333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29478221",
+      "shelfmark": "MUE Ryh 4306 : 37",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29478220",
+      "imprint": "In Augsburg : zu haben bei Joh. Walch, 1795"
     },
     {
       "id": "e-rara:7246431",
@@ -1552,6 +1593,74 @@
       "imprint": "[Zürich] : [Orell Füssli und Comp.], [1800?]"
     },
     {
+      "id": "e-rara:29478169",
+      "title": "Germania universa: 44. Post Karte durch ganz Deutschland",
+      "yearStart": 1801,
+      "yearEnd": 1801,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Walch, Johann"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-121147",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29478170/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29478169/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 2.81667,
+        "east": 18.65,
+        "north": 54.53333,
+        "south": 45.15
+      },
+      "geo": {
+        "lat": 49.84166,
+        "lon": 10.73333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29478170",
+      "shelfmark": "MUE Ryh 4306 : 44",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29478169",
+      "imprint": "In Augsburg : zu haben bey Joh: Walch, 1801"
+    },
+    {
+      "id": "e-rara:29478157",
+      "title": "Germania universa: 45. Neuste Post Karte von Deutschland und dessen angrenzenden Lænder",
+      "yearStart": 1801,
+      "yearEnd": 1801,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Walch, Johann"
+      ],
+      "providerId": "e-rara",
+      "institution": "Universitätsbibliothek Bern",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-121143",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/29478158/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/29478157/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 2.23333,
+        "east": 20.33333,
+        "north": 54.86667,
+        "south": 45.01667
+      },
+      "geo": {
+        "lat": 49.94167,
+        "lon": 11.28333
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/29478158",
+      "shelfmark": "MUE Ryh 4306 : 45",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/bes_1/content/zoom/29478157",
+      "imprint": "Augsburg : zu finden bey Ioh. Walch, 1801"
+    },
+    {
       "id": "e-rara:7258352",
       "title": "Sammelband ETH-BIB KS: Atlas Suisse, La comté de Neufchatel et partie des cantons de Leman et Fribourg",
       "yearStart": 1801,
@@ -1787,6 +1896,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/8602256",
       "shelfmark": "3 Kx 55: 1",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602254",
       "imprint": "[Zürich] : [Feuerwerker Gesellschaft], [1814]"
     },
     {
@@ -1854,6 +1964,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/8602439",
       "shelfmark": "3 Lb 05: 4 Expl 2",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602437",
       "imprint": "Zürich : Heinrich Keller, 1824"
     },
     {
@@ -2301,38 +2412,38 @@
       "imprint": "Wien : K.K. Militärisch Geografisches Institut, 1845"
     },
     {
-      "id": "e-rara:30566396",
-      "title": "Geognostische Karte des Oesterreichischen Kaiserstaates mit einem grossen Theile Deutschland's u. Italien",
+      "id": "e-rara:11639997",
+      "title": "Geologische Uibersichts-Karte zur Reise von Wien durch Oesterreich, Salzburg, Kärnthen, Steyermark und Tyrol bis München, mit Berücksichtigung der österreichischen Alpen und des Bayer. Hochgebirgs",
       "yearStart": 1847,
       "yearEnd": 1847,
       "depictedYearStart": null,
       "depictedYearEnd": null,
       "creators": [
-        "Scheda, Joseph von"
+        "Morlot, Adolph von"
       ],
       "providerId": "e-rara",
       "institution": "ETH-Bibliothek Zürich",
       "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-139206",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/30566397/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/30566396/manifest",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-38970",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/11639999/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/11639997/manifest",
       "type": "map",
       "collection": "Übersichtskarten von Europa und der Welt",
       "extent": {
-        "west": 7,
-        "east": 26,
-        "north": 51.5,
-        "south": 41.5
+        "west": 11.08333,
+        "east": 16.41667,
+        "north": 48.58333,
+        "south": 46.5
       },
       "geo": {
-        "lat": 46.5,
-        "lon": 16.5
+        "lat": 47.54166,
+        "lon": 13.75
       },
-      "imageService": "https://www.e-rara.ch/i3f/v20/30566397",
-      "shelfmark": "Rar KS 855",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/30566396",
-      "imprint": "Wien : [k.k. militärisch geographisches Institut], 1847"
+      "imageService": "https://www.e-rara.ch/i3f/v20/11639998",
+      "shelfmark": "Rar K 277",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/11639997",
+      "imprint": "Wien : Artaria & Co., 1847"
     },
     {
       "id": "e-rara:12007200",
@@ -2819,6 +2930,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 14 Expl 3",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924088",
       "sheet": "Kloten",
       "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
     },
@@ -2926,6 +3038,7 @@
       "depictedSource": "e-rara IIIF manifest: “in den Jahren 1843-1851 gemachten Aufnahmen”",
       "shelfmark": "4 Kb 76: 4: 18 Expl 2",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8924104",
       "sheet": "Zürich",
       "imprint": "[Zürich] : [Topographisches Bureau], [1854]"
     },
@@ -3394,6 +3507,40 @@
       "imprint": "[Zürich] : [Topographisches Bureau], [1859]"
     },
     {
+      "id": "e-rara:11640125",
+      "title": "General-Karte von Italien",
+      "yearStart": 1860,
+      "yearEnd": 1860,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Handtke, Friedrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-38980",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/11640127/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/11640125/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 6.58333,
+        "east": 18.53333,
+        "north": 47.08333,
+        "south": 35.23333
+      },
+      "geo": {
+        "lat": 41.15833,
+        "lon": 12.55833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/11640126",
+      "shelfmark": "Rar K 38",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/11640125",
+      "imprint": "Glogau : Flemming, 1860"
+    },
+    {
       "id": "e-rara:6697962",
       "title": "Karte des Kantons Zürich für den Schul- und Handgebrauch",
       "yearStart": 1860,
@@ -3779,6 +3926,7 @@
       "imageService": "https://www.e-rara.ch/i3f/v20/8602510",
       "shelfmark": "3 Lb 06: 2",
       "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602508",
       "imprint": "Zürich : Heinrich Keller, 1864"
     },
     {
@@ -3850,38 +3998,38 @@
       "imprint": "Zürich : J.J. Hofer, 1866"
     },
     {
-      "id": "e-rara:27231973",
-      "title": "Geologische Übersichts-Karte der Österreichisch-Ungarischen Monarchie",
-      "yearStart": 1867,
-      "yearEnd": 1867,
+      "id": "e-rara:22131481",
+      "title": "Übersichts-Karte des südlichen Kriegsschauplatzes 1866",
+      "yearStart": 1866,
+      "yearEnd": 1866,
       "depictedYearStart": null,
       "depictedYearEnd": null,
       "creators": [
-        "Hauer, Franz von"
+        "[s.n.]"
       ],
       "providerId": "e-rara",
       "institution": "ETH-Bibliothek Zürich",
       "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-97434",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/27231814/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/27231973/manifest",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-78560",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/22131482/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/22131481/manifest",
       "type": "map",
       "collection": "Übersichtskarten von Europa und der Welt",
       "extent": {
-        "west": 9,
-        "east": 26,
-        "north": 51,
-        "south": 42
+        "west": 6,
+        "east": 21,
+        "north": 48.5,
+        "south": 36.5
       },
       "geo": {
-        "lat": 46.5,
-        "lon": 17.5
+        "lat": 42.5,
+        "lon": 13.5
       },
-      "imageService": "https://www.e-rara.ch/i3f/v20/27231814",
-      "shelfmark": "Rar KS 164",
-      "canvasCount": 12,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/27231973",
-      "imprint": "Wien : Verlag der Beck'schen Universitäts-Buchhandlung (Alfred Hölder) ; Wien : Stich u. Druck d. Lith. Anstalt F. Köke, 1867-1871"
+      "imageService": "https://www.e-rara.ch/i3f/v20/22131482",
+      "shelfmark": "K 437002",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/22131481",
+      "imprint": "[Deutschland] : [Verlag nicht ermittelbar], [1866]"
     },
     {
       "id": "e-rara:14741865",
@@ -4293,72 +4441,38 @@
       "imprint": "Prag : In Commission der Buch- und Kunsthandlung C.H. Hunger's Nachfolger (Kosmack & Neugebauer), 1873"
     },
     {
-      "id": "e-rara:14741872",
-      "title": "Karte von Europa für Schulen",
+      "id": "e-rara:11583994",
+      "title": "Geologische Karte von Österreich-Ungarn",
       "yearStart": 1875,
       "yearEnd": 1875,
       "depictedYearStart": null,
       "depictedYearEnd": null,
       "creators": [
-        "Grob, E."
+        "Hauer, Franz von"
       ],
       "providerId": "e-rara",
       "institution": "ETH-Bibliothek Zürich",
       "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-54299",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/14741874/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/14741872/manifest",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-38546",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/11583997/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/11583994/manifest",
       "type": "map",
       "collection": "Übersichtskarten von Europa und der Welt",
       "extent": {
-        "west": 27,
-        "east": 47,
-        "north": 71.5,
-        "south": 31
+        "west": 9.33333,
+        "east": 26.58333,
+        "north": 51.16667,
+        "south": 42.16667
       },
       "geo": {
-        "lat": 51.25,
-        "lon": 37
+        "lat": 46.66667,
+        "lon": 17.95833
       },
-      "imageService": "https://www.e-rara.ch/i3f/v20/14741873",
-      "shelfmark": "Rar K 482",
+      "imageService": "https://www.e-rara.ch/i3f/v20/11583995",
+      "shelfmark": "Rar K 127",
       "canvasCount": 3,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/14741872",
-      "imprint": "Zürich : H. Keller's geogr. Verlag, [ca. 1875?]"
-    },
-    {
-      "id": "e-rara:14700945",
-      "title": "Post- & Reise-Karte von Deutschland und den Nachbar Staaten",
-      "yearStart": 1875,
-      "yearEnd": 1875,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Handtke, Friedrich"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-54049",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/14700952/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/14700945/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 1,
-        "east": 25,
-        "north": 56,
-        "south": 44
-      },
-      "geo": {
-        "lat": 50,
-        "lon": 13
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/14700946",
-      "shelfmark": "Rar K 383",
-      "canvasCount": 6,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/14700945",
-      "imprint": "Glogau : C. Flemming, 1875"
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/11583994",
+      "imprint": "Wien : Hölder, 1875"
     },
     {
       "id": "e-rara:29084068",
@@ -4665,40 +4779,6 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8602340",
       "imprint": "[Zürich] : [in Comm. Höhr], [1881]"
-    },
-    {
-      "id": "e-rara:11237570",
-      "title": "Karte von Europa für Schulen",
-      "yearStart": 1881,
-      "yearEnd": 1881,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Keller, Heinrich"
-      ],
-      "providerId": "e-rara",
-      "institution": "Zentralbibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-36751",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/11237571/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/11237570/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 27,
-        "east": 47,
-        "north": 71.5,
-        "south": 31
-      },
-      "geo": {
-        "lat": 51.25,
-        "lon": 37
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/11237571",
-      "shelfmark": "3 Ca 06: 3",
-      "canvasCount": 2,
-      "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/11237570",
-      "imprint": "Zürich : H. Keller, [1881-1884]"
     },
     {
       "id": "e-rara:8966367",
@@ -5043,41 +5123,6 @@
       "imprint": "Zürich : Hofer & Burger, 1885"
     },
     {
-      "id": "e-rara:21562861",
-      "title": "Floren-Karte von Österreich-Ungarn",
-      "yearStart": 1887,
-      "yearEnd": 1887,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Kerner von Marilaun, Anton",
-        "Wettstein, Richard"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-76516",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/21562862/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/21562861/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 8.33333,
-        "east": 27.33333,
-        "north": 51.33333,
-        "south": 42
-      },
-      "geo": {
-        "lat": 46.66666,
-        "lon": 17.83333
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/21562862",
-      "shelfmark": "K 380010",
-      "canvasCount": 4,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/21562861",
-      "imprint": "Wien : Verlag von Ed. Hölzel, [1887]"
-    },
-    {
       "id": "e-rara:7186901",
       "title": "Plan der Stadt Zürich und Umgebung mit Angabe der Hausnummern",
       "yearStart": 1887,
@@ -5144,40 +5189,6 @@
       "canvasCount": 1,
       "viewerUrl": "https://www.e-rara.ch/zuz/content/zoom/8751715",
       "imprint": "[Zürich] : [Verlag nicht ermittelbar], [nach 1888]"
-    },
-    {
-      "id": "e-rara:19253097",
-      "title": "Eisenbahn- und Dampfschiffrouten-Karte von Europa",
-      "yearStart": 1889,
-      "yearEnd": 1889,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Franz, J."
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-71239",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/19253098/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/19253097/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 24.5,
-        "east": 66,
-        "north": 71.18333,
-        "south": 34.61667
-      },
-      "geo": {
-        "lat": 52.9,
-        "lon": 45.25
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/19253098",
-      "shelfmark": "Rar KA 61",
-      "canvasCount": 41,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/19253097",
-      "imprint": "Glogau : Druck und Verlag von Carl Flemming, 1889"
     },
     {
       "id": "e-rara:7186807",
@@ -5554,40 +5565,6 @@
       "imprint": "[Zürich] : Verlag der Erziehungsdirection des Kantons Zürich, [1894]"
     },
     {
-      "id": "e-rara:30493254",
-      "title": "Geologische Karte von Österreich-Ungarn mit Bosnien und Montenegro",
-      "yearStart": 1895,
-      "yearEnd": 1895,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Hauer, Franz von"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-138310",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/30493255/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/30493254/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 9.33333,
-        "east": 26.58333,
-        "north": 51.16667,
-        "south": 41.75
-      },
-      "geo": {
-        "lat": 46.45834,
-        "lon": 17.95833
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/30493255",
-      "shelfmark": "Rar K 245",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/30493254",
-      "imprint": "Wien : Verlag v. Alfred Hölder, k.k. Hof u. Universitäts Buchhändler ; Wien : Lith. Inst. v. F. Köke, [1895]"
-    },
-    {
       "id": "swisstopo:zeitreise-18951231",
       "title": "Zeitreise – Kartenwerke, Ausgabe 1895",
       "yearStart": 1895,
@@ -5621,40 +5598,6 @@
         "north": 48.230651
       },
       "editionDate": "1895-12-31"
-    },
-    {
-      "id": "e-rara:30530083",
-      "title": "Geologische Karte von Österreich-Ungarn mit Bosnien und Montenegro",
-      "yearStart": 1896,
-      "yearEnd": 1896,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "Hauer, Franz von"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-138721",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/30530084/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/30530083/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 9,
-        "east": 26,
-        "north": 51,
-        "south": 41
-      },
-      "geo": {
-        "lat": 46,
-        "lon": 17.5
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/30530084",
-      "shelfmark": "Rar KS 822",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/30530083",
-      "imprint": "Wien : Verlag v. Alfred Hölder ; Wien : Druck d. kartogr. Anst. v. G. Freytag & Berndt, 1896"
     },
     {
       "id": "e-rara:10155594",
@@ -5794,6 +5737,40 @@
       "imprint": "Winterthur : J. Schlumpf, 1899"
     },
     {
+      "id": "e-rara:14658577",
+      "title": "Karte von Italien",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Bludau, Alois"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-53895",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/14658578/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/14658577/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 6.58333,
+        "east": 18.53333,
+        "north": 47.08333,
+        "south": 35.23333
+      },
+      "geo": {
+        "lat": 41.15833,
+        "lon": 12.55833
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/14658578",
+      "shelfmark": "Rar K 43",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/14658577",
+      "imprint": "Berlin ; Glogau : Flemming, [1900?]"
+    },
+    {
       "id": "swisstopo:siegfried-1900",
       "title": "Siegfriedkarte 1:25 000, Ausgabe 1900",
       "yearStart": 1900,
@@ -5928,6 +5905,40 @@
       "canvasCount": 5,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/32650376",
       "imprint": "Winterthur : Topogr. Anstalt Winterthur J. Schlumpf, 1902"
+    },
+    {
+      "id": "e-rara:30400264",
+      "title": "Übersichts-Karte der auf dem Gebiete der Länder der Ungarischen Krone vorkommenden wichtigeren Decorations- und Bau-Gesteine",
+      "yearStart": 1902,
+      "yearEnd": 1902,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Schafarzik, Ferenc"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-137294",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/30731563/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/30400264/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 13,
+        "east": 27,
+        "north": 49,
+        "south": 44
+      },
+      "geo": {
+        "lat": 46.5,
+        "lon": 20
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/30731563",
+      "shelfmark": "K 247022",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/30400264",
+      "imprint": "Budapest : Kojutowicz & Tarsa, 1902"
     },
     {
       "id": "e-rara:28226210",
@@ -6135,38 +6146,72 @@
       "imprint": "Winterthur : Kartographia Winterthur AG, 1912"
     },
     {
-      "id": "e-rara:28884093",
-      "title": "Karte der Alpenländer",
+      "id": "e-rara:28548520",
+      "title": "Karte der Deutsch-Französischen Grenzlande",
       "yearStart": 1914,
       "yearEnd": 1914,
       "depictedYearStart": null,
       "depictedYearEnd": null,
       "creators": [
-        "Scherrer, Karl"
+        "[s.n.]"
       ],
       "providerId": "e-rara",
       "institution": "ETH-Bibliothek Zürich",
       "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-109303",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/28884162/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28884093/manifest",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-104711",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/28548522/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28548520/manifest",
       "type": "map",
       "collection": "Übersichtskarten von Europa und der Welt",
       "extent": {
-        "west": 5,
-        "east": 15,
-        "north": 48,
-        "south": 45
+        "west": 1,
+        "east": 9,
+        "north": 51,
+        "south": 47
       },
       "geo": {
-        "lat": 46.5,
-        "lon": 10
+        "lat": 49,
+        "lon": 5
       },
-      "imageService": "https://www.e-rara.ch/i3f/v20/28884094",
-      "shelfmark": "K 630728",
-      "canvasCount": 65,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28884093",
-      "imprint": "Gotha : Justus Perthes ; [Gotha] : gestochen von M. Kern u. A. Kramer, 1914"
+      "imageService": "https://www.e-rara.ch/i3f/v20/28548521",
+      "shelfmark": "K 630375",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28548520",
+      "imprint": "Bielefeld ; Leipzig : Verlag von Velhagen & Klasing : Druck von C. Schönert, 1914"
+    },
+    {
+      "id": "e-rara:26762737",
+      "title": "Karte des italienischen Kriegsschauplatzes",
+      "yearStart": 1914,
+      "yearEnd": 1914,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Kettler, Julius Iwan"
+      ],
+      "providerId": "e-rara",
+      "institution": "ETH-Bibliothek Zürich",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-94415",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26762740/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26762737/manifest",
+      "type": "map",
+      "collection": "Übersichtskarten von Europa und der Welt",
+      "extent": {
+        "west": 9.66667,
+        "east": 14.66667,
+        "north": 46.75,
+        "south": 45.08333
+      },
+      "geo": {
+        "lat": 45.91666,
+        "lon": 12.16667
+      },
+      "imageService": "https://www.e-rara.ch/i3f/v20/26762738",
+      "shelfmark": "K 610285: 43",
+      "canvasCount": 4,
+      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/26762737",
+      "imprint": "Berlin ; Glogau : Flemming, [zwischen 1914 und 1918]"
     },
     {
       "id": "e-rara:29787896",
@@ -6235,40 +6280,6 @@
       "canvasCount": 2,
       "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/31580789",
       "imprint": "[Oerlikon] : Katasterbureau der Gemeinde Oerlikon, [1914]"
-    },
-    {
-      "id": "e-rara:28548633",
-      "title": "Militärisch-geographische Karte zur Übersicht der gegenwärtigen politischen Lage in Europa und den Mittelmeerländern",
-      "yearStart": 1915,
-      "yearEnd": 1915,
-      "depictedYearStart": null,
-      "depictedYearEnd": null,
-      "creators": [
-        "[s.n.]"
-      ],
-      "providerId": "e-rara",
-      "institution": "ETH-Bibliothek Zürich",
-      "rights": "PDM 1.0",
-      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-104715",
-      "thumbnail": "https://www.e-rara.ch/i3f/v21/28548634/full/304/0/default.jpg",
-      "iiifManifest": "https://www.e-rara.ch/i3f/v20/28548633/manifest",
-      "type": "map",
-      "collection": "Übersichtskarten von Europa und der Welt",
-      "extent": {
-        "west": 12,
-        "east": 27,
-        "north": 59,
-        "south": 30
-      },
-      "geo": {
-        "lat": 44.5,
-        "lon": 19.5
-      },
-      "imageService": "https://www.e-rara.ch/i3f/v20/28548634",
-      "shelfmark": "K 600183",
-      "canvasCount": 1,
-      "viewerUrl": "https://www.e-rara.ch/zut/content/zoom/28548633",
-      "imprint": "Berlin : Dietrich Reimer (Ernst Vohsen), [1915]"
     },
     {
       "id": "e-rara:29139364",

@@ -804,11 +804,20 @@ const SRU_SEARCHES = {
    * The seed's second coverage area. The OldMapsOnline experience is a worldwide
    * one, so the explorer must be able to answer a place outside Switzerland with
    * real sheets — but the Zürich sets stay the centre of the seed. Discovery uses
-   * the catalogue's continent keywords and the two words its world maps carry.
+   * the catalogue's continent keywords, the two words its world maps carry, and
+   * (added 2026-10-19, iteration 7-20) the country keywords whose maps span the
+   * 5° the area gate asks for.
    * Probed on 2026-10-19: `dc.subject=Europa and dc.title=Karte` 30 hits,
    * `dc.title=Weltkarte` 12, `dc.title=Erdkarte` 5, `dc.subject=Afrika` 9,
    * `dc.subject=Amerika` 5, `dc.subject=Asien` 3; `dc.subject=Weltkarte` (1 hit)
-   * states no extent and is not queried.
+   * states no extent and is not queried. Country keywords probed the same day:
+   * Deutschland 62 hits, Frankreich 17, Italien 20, Oesterreich-Ungarn 13,
+   * Preussen 12, Spanien 7, Grossbritannien 4, Niederlande 2 (its maps span only
+   * ~3.5°, so it cannot pass the 5° area gate and is not queried), Russland 2,
+   * Indien/China/Japan 1 each, Australien 0. The three country queries that answer
+   * the most records with a stated extent are pooled; the German-language subject
+   * heading is the catalogue's own (`Oesterreich-Ungarn`, not `Österreich`), and
+   * `Preussen` was dropped because its sheets are also `Deutschland` hits.
    */
   worldOverview: {
     id: 'weltuebersichten',
@@ -820,6 +829,12 @@ const SRU_SEARCHES = {
       'dc.subject=Afrika and dc.title=Karte',
       'dc.subject=Amerika and dc.title=Karte',
       'dc.subject=Asien and dc.title=Karte',
+      'dc.subject=Deutschland and dc.title=Karte',
+      'dc.subject=Frankreich and dc.title=Karte',
+      'dc.subject=Italien and dc.title=Karte',
+      'dc.subject=Oesterreich-Ungarn and dc.title=Karte',
+      'dc.subject=Spanien and dc.title=Karte',
+      'dc.subject=Grossbritannien and dc.title=Karte',
     ],
     rule:
       'same gates as the other SRU sets (map genre, stated year, stated MODS coordinates, OAI ' +
@@ -827,11 +842,13 @@ const SRU_SEARCHES = {
       'centre of the stated extent must lie OUTSIDE the canton window — the mirror image of the ' +
       'Zürich sets, so one keyword hit cannot appear in both — and the extent must span at least ' +
       '5° of latitude or longitude, which is what makes it an overview map instead of a local ' +
-      'sheet; one entry per title and year, at most three records per publication decade. A '
-      + 'per-query quota was probed and rejected: only the Europe query answers many records '
-      + 'with a stated extent, so a quota would shrink the set without adding a continent',
-    candidateCap: 60,
-    recordCap: 24,
+      'sheet; one entry per title and year, at most three records per publication decade. The ' +
+      'pool is round-robined over the queries so a keyword that answers many hits (Deutschland) ' +
+      'cannot crowd out the others, and a per-query quota of 7 bounds each keyword; the ' +
+      'continent/world keywords and the country keywords are pooled together (7-20)',
+    candidateCap: 170,
+    recordCap: 40,
+    perQueryQuota: 7,
   },
   zurichCityPlans: {
     id: 'zurich-stadtplaene',
@@ -1114,24 +1131,60 @@ async function main() {
    * decides which area the set covers — Zürich sets want the centre of the stated
    * extent inside the canton window, the overview set wants it outside.
    */
-  function selectSru(pooled, { cap, perDecade = 0, label, accept = inZurich }) {
-    const chosen = [];
-    const decades = new Map();
-    for (const r of pooled
+  function selectSru(pooled, { cap, perDecade = 0, quota = 0, quotaKey = null, interleave = false, label, accept = inZurich }) {
+    const ordered = pooled
       .filter(Boolean)
       .filter((r) => r.extent && accept(r))
-      .sort((a, b) => a.yearStart - b.yearStart)) {
+      .sort((a, b) => a.yearStart - b.yearStart);
+    // Coverage sets (the world overview) pick in rounds over their query groups, so
+    // every keyword contributes its earliest kept sheet before a productive keyword
+    // (Deutschland) offers its next one. The Zürich sets keep the plain oldest-first
+    // order: there a grouping would not mean anything.
+    const sequence = interleave && quotaKey ? byGroupRounds(ordered, quotaKey) : ordered;
+    const chosen = [];
+    const decades = new Map();
+    const quotas = new Map();
+    for (const r of sequence) {
       const key = `${r.title}|${r.yearStart}`;
       if (planSeen.has(key)) continue;
       const decade = Math.floor(r.yearStart / 10) * 10;
       if (perDecade && (decades.get(decade) || 0) >= perDecade) continue;
+      const group = quota && quotaKey ? quotaKey(r) : null;
+      if (group !== null && (quotas.get(group) || 0) >= quota) continue;
       planSeen.add(key);
       decades.set(decade, (decades.get(decade) || 0) + 1);
+      if (group !== null) quotas.set(group, (quotas.get(group) || 0) + 1);
       chosen.push(r);
       if (chosen.length >= cap) break;
     }
     console.log(`SRU kept ${chosen.length} ${label}`);
     return chosen;
+  }
+
+  /** Round-robin over the query groups of an already year-sorted list. */
+  function byGroupRounds(sorted, groupOf, fallback = -1) {
+    const buckets = new Map();
+    for (const r of sorted) {
+      const group = groupOf(r) ?? fallback;
+      if (!buckets.has(group)) buckets.set(group, []);
+      buckets.get(group).push(r);
+    }
+    const keys = [...buckets.keys()].sort(
+      (a, b) => buckets.get(a)[0].yearStart - buckets.get(b)[0].yearStart,
+    );
+    const out = [];
+    for (let i = 0; ; i += 1) {
+      let added = false;
+      for (const k of keys) {
+        const bucket = buckets.get(k);
+        if (i < bucket.length) {
+          out.push(bucket[i]);
+          added = true;
+        }
+      }
+      if (!added) break;
+    }
+    return out;
   }
 
   const zurichPlanRecords = selectSru(zurichPlanHits, {
@@ -1174,13 +1227,40 @@ async function main() {
   });
 
   // --- SRU-discovered overview maps outside Switzerland ----------------------
-  // The seed's second coverage area: continent- and world-wide overview maps held
-  // by e-rara's partner libraries, so the worldwide place search can lead to real
-  // sheets instead of an empty map. The canton window is used the other way round
-  // here: the centre of a candidate's own stated extent must lie outside it, and a
-  // candidate must span at least 5° in one direction. Without the window the set
-  // is skipped like the Zürich sets (nothing is placed by guesswork).
-  const worldCandidates = collectSruCandidates(worldHits);
+  // The seed's second coverage area: continent-, world- and country-wide overview
+  // maps held by e-rara's partner libraries, so the worldwide place search can
+  // lead to real sheets instead of an empty map. The canton window is used the
+  // other way round here: the centre of a candidate's own stated extent must lie
+  // outside it, and a candidate must span at least 5° in one direction. Without
+  // the window the set is skipped like the Zürich sets (nothing is placed by
+  // guesswork).
+  //
+  // The twelve queries answer very different numbers of hits (Deutschland 62,
+  // Europa 30, Italien 20, …; probed 7-20), so the pooled candidates are
+  // round-robined across the query groups and every query has its own quota: a
+  // keyword that happens to answer many sheets cannot crowd the other countries
+  // out of the set. `worldGroupOf` maps a built record back to the query that
+  // found it (records are `e-rara:<title id>`).
+  const worldQueryCandidates = worldHitLists.map((hits) => collectSruCandidates(hits));
+  const worldGroupOf = new Map();
+  worldQueryCandidates.forEach((group, i) => {
+    for (const c of group) if (!worldGroupOf.has(`e-rara:${c.titleId}`)) worldGroupOf.set(`e-rara:${c.titleId}`, i);
+  });
+  const roundRobin = (groups) => {
+    const out = [];
+    for (let i = 0; ; i += 1) {
+      let added = false;
+      for (const group of groups) {
+        if (i < group.length) {
+          out.push(group[i]);
+          added = true;
+        }
+      }
+      if (!added) break;
+    }
+    return out;
+  };
+  const worldCandidates = roundRobin(worldQueryCandidates);
   const worldHitsPooled = zurichWindow
     ? await pool(worldCandidates.slice(0, SRU_SEARCHES.worldOverview.candidateCap), 3, (c) =>
         sruPlanRecord(c, { sourceCollection: SRU_SEARCHES.worldOverview.name, maxYear: 1930 }),
@@ -1192,6 +1272,9 @@ async function main() {
   const worldRecords = selectSru(worldHitsPooled, {
     cap: SRU_SEARCHES.worldOverview.recordCap,
     perDecade: 3,
+    quota: SRU_SEARCHES.worldOverview.perQueryQuota,
+    quotaKey: (r) => worldGroupOf.get(r.id) ?? null,
+    interleave: true,
     accept: isWorldOverview,
     label:
       `overview maps outside the canton of ${worldCandidates.length} candidates ` +
