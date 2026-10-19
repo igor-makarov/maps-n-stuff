@@ -2837,9 +2837,14 @@ try {
   await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 5`, { label: 'typing history page' });
   await sleep(600);
   await cdp.click('#text-filter');
-  for (const char of 'Zürich') {
+  for (const [index, char] of [...'Zürich'].entries()) {
     await cdp.send('Input.insertText', { text: char });
-    await sleep(260); // slower than the field's own debounce, so every keystroke reaches the store
+    // Slower than the field's own debounce, so every keystroke reaches the store
+    // — plus one deliberate stall in the middle of the word: a busy main thread
+    // (or a visitor who pauses to read) must not cut one query into two history
+    // entries. This is where the check failed on 2026-10-19 (maps-1 fixed the
+    // store: HISTORY_TEXT_KEYS keeps a still-edited query in its entry).
+    await sleep(index === 2 ? 1_200 : 260);
   }
   await sleep(1200);
   const searchTyped = await cdp.eval(`({ q: new URLSearchParams(location.search).get('q'), rows: document.querySelectorAll('#result-list > *').length })`);

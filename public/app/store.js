@@ -12,7 +12,9 @@
  * forward buttons walk the way the user actually explored; continuous changes
  * (panning, zooming, dragging the year control, pinning records) only replace
  * the current entry, so one drag never floods the history. Repeated changes to
- * the same keys inside HISTORY_COALESCE_MS merge into the entry they started.
+ * the same keys inside HISTORY_COALESCE_MS merge into the entry they started,
+ * and a query that is still being edited (HISTORY_TEXT_KEYS) stays in its entry
+ * even across a longer pause — one “back” undoes the whole typed search.
  * `popstate` re-reads the URL and notifies the modules exactly like an ordinary
  * update does, so every view follows the browser buttons.
  *
@@ -101,6 +103,16 @@ export const HISTORY_PUSH_KEYS = Object.freeze([
 
 /** Repeated changes to the same keys inside this window replace instead of push. */
 export const HISTORY_COALESCE_MS = 900;
+
+/**
+ * Keys whose change is *typed text*. A pause inside one query must not cut the
+ * search into two history steps: the measured typing pace of a visitor can
+ * exceed HISTORY_COALESCE_MS (and a busy main thread does it on its own), and
+ * then “back” only undid the last keystroke instead of the whole search. A
+ * change to these keys therefore stays in the entry as long as the new text is
+ * a continuation of the text of that entry (see `isTypedContinuation`).
+ */
+export const HISTORY_TEXT_KEYS = Object.freeze(['q']);
 
 function coerce(key, value) {
   if (value === null || value === undefined || value === '') return STATE_DEFAULTS[key];
@@ -273,6 +285,9 @@ export function createStore({
   let lastPushSignature = '';
   let lastPushAt = 0;
   let suppressPushUntil = 0;
+  // The query text of the history entry we are on: a later keystroke that still
+  // continues it is the same gesture, however long the pause in between was.
+  let entryQ = String(state.q ?? '');
   // Flipped by the first pointer/key event; until then every URL write replaces.
   let userActed = false;
   const markUserAction = () => {
@@ -308,12 +323,31 @@ export function createStore({
    *    otherwise the first press of “back” would stay inside the app.
    *  - `suppressPushUntil` — the same for writes right after a popstate.
    */
+  /**
+   * Is this change a continuation of the text in the current history entry?
+   * Only for the typed keys, only for the same key set as the entry's push, and
+   * only while the text really continues it in either direction: typing and
+   * backspacing stay one step, a query rewritten from scratch (or one that
+   * starts from an empty box) is a step of its own.
+   */
+  function isTypedContinuation(changedKeys) {
+    if (changedKeys.length === 0) return false;
+    if (!changedKeys.every((key) => HISTORY_TEXT_KEYS.includes(key))) return false;
+    const before = entryQ;
+    const after = String(state.q ?? '');
+    if (before === '' || after === '') return false;
+    return before.startsWith(after) || after.startsWith(before);
+  }
+
   function shouldPush(changedKeys, stamp) {
     if (!userActed) return false;
     if (stamp < suppressPushUntil) return false;
     if (!changedKeys.some((key) => HISTORY_PUSH_KEYS.includes(key))) return false;
     const signature = signatureOf(changedKeys);
-    return !(signature === lastPushSignature && stamp - lastPushAt < HISTORY_COALESCE_MS);
+    if (signature !== lastPushSignature) return true;
+    if (stamp - lastPushAt < HISTORY_COALESCE_MS) return false;
+    // Same control, but the visitor kept editing the same query: still one step.
+    return !isTypedContinuation(changedKeys);
   }
 
   function syncUrl(mode = 'auto', changedKeys = []) {
@@ -332,6 +366,7 @@ export function createStore({
       // in the middle of the gesture.
       lastPushSignature = signatureOf(changedKeys);
       lastPushAt = stamp;
+      entryQ = String(state.q ?? '');
       lastUrl = next;
     } catch {
       urlSync = false; // sandboxed iframe or file:// – keep working without URL sync
@@ -368,6 +403,9 @@ export function createStore({
     const changed = Object.keys(defaults).filter((key) => state[key] !== parsed[key]);
     lastUrl = urlOf();
     lastPushSignature = '';
+    // The entry we just moved to owns its own query text; typing on from here
+    // continues *that* search, not the one we left.
+    entryQ = String(parsed.q ?? '');
     // A view that writes its clamped state back (for example a sheet number)
     // must not turn the entry we just navigated to into a second entry.
     suppressPushUntil = now() + HISTORY_COALESCE_MS;

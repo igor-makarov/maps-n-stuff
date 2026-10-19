@@ -145,7 +145,15 @@ browser buttons walk the way the visitor explored instead of leaving the app:
 
 Repeated changes to the same key set inside `HISTORY_COALESCE_MS` (900 ms, both
 exported from `store.js`) merge into the entry that started the gesture: a typed
-search and a slider drag are one step each, not one per keystroke. Two guard
+search and a slider drag are one step each, not one per keystroke. The typed
+query gets one more rule on top (`HISTORY_TEXT_KEYS`): as long as the new text
+*continues* the text of the current entry (typing or backspacing, either
+direction), the change stays in that entry no matter how long the pause was — a
+visitor who stops mid-word, or a busy main thread, must not split one search
+into two “back” steps (measured 2026-10-19: a 1.2 s stall did exactly that, and
+the harness check “one “back” undoes a whole typed search” failed). A query
+typed after the box was emptied, cleared, or rewritten from scratch is a step of
+its own. Two guard
 rails keep the app's own start-up work out of the history — the year range is
 clamped to the data right after the records arrive, and a view may write a
 clamped value back (`sheet`) — so the first “back” after landing on the site
