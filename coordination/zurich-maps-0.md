@@ -128,14 +128,18 @@ gone (`fetch-records.mjs` and `public/data/**` are unchanged). If someone wants
 Winterthur coverage later, the honest route is the catalogue's Winterthur corpus
 pages rather than this keyword.
 
-**Reproducibility of the committed 140-record seed re-proved from a cold cache.**
+**Reproducibility of the committed 140-record seed re-proved twice.**
 This runner started with no `.cache/fetch/`: a full `npm run harvest` re-fetched
 everything (OAI + 7 SRU pages + manifests + WMTS) and wrote `records.json`,
 `sources.json` and `overlays.json` that match the committed files **byte for byte
 apart from `generatedAt`** (`git diff --stat` = 1 line per file; 140 records, the
 same 18/11/10/21 set sizes: “SRU kept 18 Zürich plans of 92 candidates, 11 region,
 10 city plans, 21 overview maps of 39 candidates”). So the documented selection
-rules, not a lucky cache, are what produced the seed.
+rules, not a lucky cache, are what produced the seed. The warm run then confirmed the offline path too:
+`npm run harvest:offline` (no network) rewrote the same three files and
+`git diff --stat` showed the same one `generatedAt` line per file — 140 records,
+12 comparison layers, the same set sizes. `docs/data-sources.md` now states that
+check next to the two commands.
 
 ### 7. Final check of this iteration on the integrated `main` (`71f08e6`)
 

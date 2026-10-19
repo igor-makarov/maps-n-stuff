@@ -4,7 +4,9 @@ Machine-readable registry: [`public/data/sources.json`](../public/data/sources.j
 (providers, endpoints actually used, rights, attribution, retrieval date) and
 [`public/data/overlays.json`](../public/data/overlays.json) (georeferenced map
 layers). Refresh script: [`scripts/fetch-records.mjs`](../scripts/fetch-records.mjs)
-(`npm run harvest`, `npm run harvest:offline`).
+(`npm run harvest`, `npm run harvest:offline`; the offline rebuild reproduces the
+committed `public/data/**` byte for byte apart from `generatedAt` — re-checked
+2026-10-19 on a cold cache and again with the warm one).
 All checks below were run on **2026-10-18** (UTC) from this repository.
 
 OldMapsOnline was used only for *UX research* (information architecture: search →
