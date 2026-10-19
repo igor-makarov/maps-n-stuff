@@ -419,6 +419,57 @@ export function extentToView(part, bounds, extent) {
   return clampView({ x, y, w, h }, bounds);
 }
 
+/**
+ * The part of the world two documented extents have in common — `null` when
+ * they do not meet at all. Two sheets that overlap only along an edge have no
+ * shared *area*, which is also `null`.
+ */
+export function intersectExtents(a, b) {
+  const boxA = usableBox(a);
+  const boxB = usableBox(b);
+  if (!boxA || !boxB) return null;
+  const west = Math.max(boxA.west, boxB.west);
+  const east = Math.min(boxA.east, boxB.east);
+  const south = Math.max(boxA.south, boxB.south);
+  const north = Math.min(boxA.north, boxB.north);
+  if (east <= west || north <= south) return null;
+  return { west, south, east, north };
+}
+
+/** Degree tolerance for “the same box”: extents are stated to the minute. */
+const COVER_EPSILON = 1e-6;
+
+/**
+ * The view a coupled partner pane can honestly show for a geographic box, plus
+ * how much of that box the partner's sheet really covers:
+ *
+ * - `outside` — the box lies beside the documented extent. There is no region to
+ *   show, and the pane must say so instead of silently jumping to its whole
+ *   sheet (which would look like the coupling did nothing).
+ * - `partial` — only the shared part of the box is on this sheet, so that part
+ *   is shown. The pane notes that the sheet does not reach further.
+ * - `full` — the whole box is inside the documented extent.
+ *
+ * The region is the intersection, not the clamped box: a box that reaches far
+ * beyond the sheet must not be squeezed onto the sheet edges, which would show
+ * the wrong place. Returns `null` when the inputs are unusable.
+ */
+export function coupledView(box, bounds, extent) {
+  const source = usableBox(box);
+  const target = usableBox(extent);
+  if (!source || !target || !usableSheet(bounds)) return null;
+  const shared = intersectExtents(source, target);
+  if (!shared) return { view: null, coverage: 'outside' };
+  const view = extentToView(shared, bounds, target);
+  if (!view) return null;
+  const partial =
+    shared.west > source.west + COVER_EPSILON ||
+    shared.east < source.east - COVER_EPSILON ||
+    shared.south > source.south + COVER_EPSILON ||
+    shared.north < source.north - COVER_EPSILON;
+  return { view, coverage: partial ? 'partial' : 'full' };
+}
+
 /* ----------------------------------- cut-outs of several sheets at once */
 
 /** One record id as the data contract writes it (`<providerId>:<recordId>`). */

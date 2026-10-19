@@ -12,6 +12,7 @@ import {
   MAX_OUTPUT_WIDTH,
   boundsForCanvas,
   clampView,
+  coupledView,
   describeUpstreamError,
   eRaraTitleId,
   eRaraViewerUrl,
@@ -30,6 +31,7 @@ import {
   sheetOptionLabel,
   sheetThumbUrl,
   extentToView,
+  intersectExtents,
   viewForCanvas,
   viewToExtent,
   zoomPercent,
@@ -450,11 +452,64 @@ test('the coupling helpers refuse unusable input instead of guessing coordinates
   for (const bad of [null, undefined, {}, { west: 8.5, east: 8.5, north: 47.4, south: 47.3 }, { west: 9, east: 8, north: 47.4, south: 47.3 }, { west: 8.5, east: 8.6, north: 47.3, south: 47.4 }, { west: NaN, east: 8.6, north: 47.4, south: 47.3 }, { west: -200, east: 8.6, north: 47.4, south: 47.3 }]) {
     assert.equal(viewToExtent({ x: 0, y: 0, w: 100, h: 100 }, bounds, bad), null, `extent ${JSON.stringify(bad)}`);
     assert.equal(extentToView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, bounds, bad), null);
+    assert.equal(coupledView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, bounds, bad), null);
   }
   assert.equal(viewToExtent({ x: 0, y: 0, w: 0, h: 100 }, bounds, CITY_EXTENT), null);
   assert.equal(viewToExtent({ x: 0, y: Number.NaN, w: 100, h: 100 }, bounds, CITY_EXTENT), null);
   assert.equal(viewToExtent({ x: 0, y: 0, w: 100, h: 100 }, { x: 0, y: 0, w: 0, h: 0 }, CITY_EXTENT), null);
   assert.equal(extentToView({ west: 8.5, east: 8.52, north: 47.36, south: 47.35 }, null, CITY_EXTENT), null);
+  assert.equal(coupledView(null, bounds, CITY_EXTENT), null);
+  assert.equal(coupledView(CITY_EXTENT, bounds, null), null);
+  assert.equal(coupledView(CITY_EXTENT, null, CITY_EXTENT), null);
+});
+
+test('intersectExtents returns only the area two stated extents really share', () => {
+  const europe = { west: -25, east: 60, north: 72, south: 34 };
+  const switzerland = { west: 5.95, east: 10.5, north: 47.81, south: 45.82 };
+  assert.deepEqual(intersectExtents(europe, switzerland), switzerland, 'the smaller box inside the larger one');
+  assert.deepEqual(intersectExtents(switzerland, europe), switzerland, 'order does not matter');
+  assert.deepEqual(
+    intersectExtents({ west: 8, east: 12, north: 48, south: 46 }, { west: 10, east: 14, north: 50, south: 47 }),
+    { west: 10, east: 12, south: 47, north: 48 },
+    'the shared rectangle of two overlapping boxes'
+  );
+  assert.equal(intersectExtents(europe, { west: 100, east: 110, north: 10, south: 0 }), null, 'disjoint boxes');
+  assert.equal(
+    intersectExtents({ west: 8, east: 9, north: 48, south: 47 }, { west: 9, east: 10, north: 48, south: 47 }),
+    null,
+    'boxes that only touch along an edge share no area'
+  );
+  assert.equal(intersectExtents({ west: 9, east: 8, north: 48, south: 47 }, CITY_EXTENT), null, 'an unusable box');
+});
+
+test('coupledView shows the shared area — and names it when a sheet does not reach', () => {
+  const world = { west: -180, east: 180, north: 90, south: -90 };
+  const bounds = boundsForCanvas(1000, 500);
+
+  // The box lies entirely inside the partner's stated extent: the whole box.
+  const inside = coupledView(CITY_EXTENT, bounds, { west: 8, east: 9, north: 48, south: 47 });
+  assert.equal(inside.coverage, 'full');
+  assert.deepEqual(inside.view, extentToView(CITY_EXTENT, bounds, { west: 8, east: 9, north: 48, south: 47 }));
+
+  // The box reaches beyond the sheet: only the shared part is shown, and the
+  // caller can say so — the clamped variant would have shown 8.5…8.55 as if the
+  // sheet documented the whole of 8…9.
+  const partial = coupledView({ west: 8, east: 9, north: 48, south: 47 }, bounds, CITY_EXTENT);
+  assert.equal(partial.coverage, 'partial');
+  assert.equal(partial.view.x, 0, 'the shared part starts at the sheet edge');
+  assert.equal(partial.view.y, 0);
+  assert.equal(partial.view.w, 1000, 'and reaches the opposite edge');
+  assert.equal(partial.view.h, 500);
+
+  // The measured case: a zoomed-out world sheet whose cut-out (the tropics) does
+  // not touch the Zürich sheet at all. Nothing to show — and no invented region.
+  const elsewhere = coupledView({ west: -70, east: 70, north: 32, south: -32 }, bounds, CITY_EXTENT);
+  assert.deepEqual(elsewhere, { view: null, coverage: 'outside' });
+  assert.equal(
+    coupledView(world, bounds, CITY_EXTENT).coverage,
+    'partial',
+    'the whole world meets a Zürich sheet in the Zürich box'
+  );
 });
 
 /* ----------------------------------- cut-outs of several sheets at once */
