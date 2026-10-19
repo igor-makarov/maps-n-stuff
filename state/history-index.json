@@ -588,5 +588,15 @@
     "maxEntryId": 387,
     "error": "{\"conversationId\":1,\"requestId\":\"zurich-maps-3:7-62\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Stream ended without finish_reason\"}",
     "transcript": "complete"
+  },
+  {
+    "id": "7-63",
+    "outcome": "timeout",
+    "runId": "39202003673",
+    "journalId": "7-63",
+    "minEntryId": 7,
+    "maxEntryId": 539,
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
