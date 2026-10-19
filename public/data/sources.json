@@ -45,7 +45,7 @@
           "name": "Pläne aus Zürich (Stadt und Umgebung)",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
-          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 18 records kept"
+          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 47 records kept"
         },
         {
           "id": "zurich-stadtplaene",
@@ -154,5 +154,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-19T00:41:57.680Z"
+  "generatedAt": "2026-10-19T01:29:20.659Z"
 }

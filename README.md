@@ -124,8 +124,8 @@ and troubleshooting: [docs/run.md](docs/run.md). Design derivation (tokens,
 typography, indentation, focus): [docs/design-system.md](docs/design-system.md).
 Source registry and verification evidence: [docs/data-sources.md](docs/data-sources.md).
 
-Known limitations: the seed set holds 140 records (113 e-rara maps and atlases — 26 ZB Zürich
-Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 18 Zürich plans and
+Known limitations: the seed set holds 169 records (142 e-rara maps and atlases — 26 ZB Zürich
+Wildkarte sheets, 26 Swiss maps from ETH-Bibliothek holdings, 47 Zürich plans and
 canton maps found through the catalogue's SRU search (1852 “Plan der Stadt Zürich
 nach Breitinger”, the 1754 “Plan des Zürich-Sees”, the 1852/1858/1860 canton maps),
 11 further Zürich-region maps from three more SRU questions (18th-century lake
