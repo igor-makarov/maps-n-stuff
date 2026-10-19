@@ -333,7 +333,7 @@ export function init(ctx) {
     'Political borders change. Pick a year to draw the world as the historical-basemaps dataset records it — the represented snapshot is always named, because the source publishes discrete maps, not continuous borders.',
   );
   const status = el('p', { class: 'hz__status', id: 'hz-status', role: 'status', 'aria-live': 'polite' }, 'Loading the snapshot index …');
-  const header = el('header', { class: 'hz__head' }, heading, lead, status);
+  const header = el('header', { class: 'hz__head' }, [heading, lead, status]);
 
   const canvas = el('canvas', {
     class: 'hz__canvas',
@@ -347,24 +347,22 @@ export function init(ctx) {
   const zoomOut = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-out' }, 'Zoom out');
   const zoomReset = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__zoom', type: 'button', 'data-hz': 'zoom-reset' }, 'Whole world');
   const labelsToggle = el('input', { type: 'checkbox', id: 'hz-labels', checked: true });
-  const labelsLabel = el('label', { class: 'hz__toggle', for: 'hz-labels' }, labelsToggle, el('span', {}, 'Labels'));
-  const controls = el('div', { class: 'hz__controls' }, zoomIn, zoomOut, zoomReset, labelsLabel);
+  const labelsLabel = el('label', { class: 'hz__toggle', for: 'hz-labels' }, [labelsToggle, el('span', {}, 'Labels')]);
+  const controls = el('div', { class: 'hz__controls' }, [zoomIn, zoomOut, zoomReset, labelsLabel]);
   const keyboardHint = el(
     'p',
     { class: 'hz__hint' },
     'Drag to pan, scroll or + / − to zoom, arrow keys to move, Home for the whole world. Tab to the year control or the polity list for keyboard-only browsing.',
   );
-  const legend = el(
-    'ul',
-    { class: 'hz__legend' },
+  const legend = el('ul', { class: 'hz__legend' }, [
     el('li', { class: 'hz__legend-item hz__legend-item--solid' }, 'Solid border: moderately precise or set by international law'),
     el('li', { class: 'hz__legend-item hz__legend-item--dashed' }, 'Dashed border: approximate or not stated by the source'),
-  );
+  ]);
   const loading = el('p', { class: 'hz__loading', id: 'hz-loading' }, 'Loading snapshot …');
   const error = el('div', { class: 'hz__error', id: 'hz-error', role: 'alert', hidden: true });
   const errorRetry = el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-hz': 'retry' }, 'Try again');
   error.append(el('span', { class: 'hz__error-text' }, 'The snapshot could not be loaded.'), errorRetry);
-  const mapwrap = el('div', { class: 'hz__mapwrap' }, canvas, controls, hover, legend, keyboardHint, loading, error);
+  const mapwrap = el('div', { class: 'hz__mapwrap' }, [canvas, controls, hover, legend, keyboardHint, loading, error]);
 
   /* --- details panel ---------------------------------------------- */
   const details = el('aside', { class: 'hz__panel', id: 'hz-details', hidden: true, 'aria-labelledby': 'hz-details-title' });
@@ -372,9 +370,9 @@ export function init(ctx) {
   const detailsBody = el('dl', { class: 'hz__facts' });
   const detailsSource = el('p', { class: 'hz__source-line' });
   const detailsClose = el('button', { class: 'zh-button zh-button--small zh-button--ghost hz__panel-close', type: 'button', 'data-hz': 'close-details' }, 'Close');
-  details.append(el('div', { class: 'hz__panel-head' }, detailsTitle, detailsClose), detailsBody, detailsSource);
+  details.append(el('div', { class: 'hz__panel-head' }, [detailsTitle, detailsClose]), detailsBody, detailsSource);
 
-  const body = el('div', { class: 'hz__body' }, mapwrap, details);
+  const body = el('div', { class: 'hz__body' }, [mapwrap, details]);
 
   /* --- timeline ---------------------------------------------------- */
   const prev = el('button', { class: 'zh-button zh-button--small zh-button--ghost', type: 'button', 'data-hz': 'prev' }, '← Earlier snapshot');
@@ -383,29 +381,25 @@ export function init(ctx) {
   const range = el('input', { class: 'hz__range', type: 'range', id: 'hz-range', min: '0', max: '0', step: '1', value: '0', 'aria-label': 'Published snapshot' });
   const yearInput = el('input', { class: 'zh-input hz__year', type: 'text', id: 'hz-year-input', inputmode: 'numeric', size: '9', 'aria-describedby': 'hz-year-hint' });
   const yearApply = el('button', { class: 'zh-button zh-button--small', type: 'button', 'data-hz': 'apply-year' }, 'Show year');
-  const yearForm = el(
-    'form',
-    { class: 'hz__yearform', id: 'hz-year-form' },
+  const yearForm = el('form', { class: 'hz__yearform', id: 'hz-year-form' }, [
     el('label', { class: 'hz__yearlabel', for: 'hz-year-input' }, 'Year'),
     yearInput,
     yearApply,
     el('span', { class: 'hz__yearhint', id: 'hz-year-hint' }, 'negative = BCE, e.g. -1000 or 1000 BCE'),
-  );
+  ]);
   const note = el('p', { class: 'hz__note', id: 'hz-note' }, '');
-  const timeline = el('div', { class: 'hz__timeline' }, el('div', { class: 'hz__timeline-row' }, prev, play, next), range, el('div', { class: 'hz__timeline-row hz__timeline-row--form' }, yearForm, note));
+  const timeline = el('div', { class: 'hz__timeline' }, [el('div', { class: 'hz__timeline-row' }, [prev, play, next]), range, el('div', { class: 'hz__timeline-row hz__timeline-row--form' }, [yearForm, note])]);
 
   /* --- polity search ---------------------------------------------- */
   const politySelect = el('select', { class: 'zh-input hz__polity', id: 'hz-polity', 'aria-label': 'Polity or region in this snapshot' });
   const searchInput = el('input', { class: 'zh-input', type: 'search', id: 'hz-search', placeholder: 'Find a polity across all snapshots, e.g. “Prussia”', 'aria-label': 'Search polities across snapshots', 'aria-describedby': 'hz-search-hint' });
   const searchResults = el('ul', { class: 'hz__search-results', id: 'hz-search-results', 'aria-label': 'Polity search results' });
   const searchHint = el('p', { class: 'hz__yearhint', id: 'hz-search-hint' }, 'Searches the names the dataset publishes for its 54 snapshots.');
-  const search = el(
-    'div',
-    { class: 'hz__search' },
-    el('div', { class: 'hz__search-row' }, searchInput, politySelect),
+  const search = el('div', { class: 'hz__search' }, [
+    el('div', { class: 'hz__search-row' }, [searchInput, politySelect]),
     searchHint,
     searchResults,
-  );
+  ]);
 
   const sourceNote = el('p', { class: 'hz__source' });
   section.append(header, body, timeline, search, sourceNote);
@@ -422,6 +416,8 @@ export function init(ctx) {
     selected: null,
     view: null,
     size: { width: 800, height: 520 },
+    /** true while the window is still the automatic world fit (no hv, no gesture) */
+    viewAuto: true,
     loadingYear: null,
     playing: null,
     labels: true,
@@ -434,25 +430,36 @@ export function init(ctx) {
   }
 
   function currentViewFromState() {
-    const fallback = clampView({ lat: 20, lon: 0, zoom: fitWorldZoom(state.size) });
-    return parseViewParam(store.getState().hv, fallback);
+    const fallback = clampView({ lat: 20, lon: 0, zoom: fitWorldZoom(state.size) }, VIEW_MIN_ZOOM, VIEW_MAX_ZOOM);
+    const shared = store.getState().hv;
+    if (!shared) {
+      state.viewAuto = true;
+      return fallback;
+    }
+    const parsed = parseViewParam(shared, fallback);
+    state.viewAuto = parsed === fallback && shared !== formatViewParam(fallback) ? state.viewAuto : false;
+    return parsed;
   }
 
   /* --- rendering ---------------------------------------------------- */
   const context = canvas.getContext('2d');
 
   function resize() {
-    const rect = mapwrap.getBoundingClientRect();
-    const width = Math.max(320, Math.round(rect.width || mapwrap.clientWidth || state.size.width));
-    const height = Math.max(280, Math.round(rect.height || mapwrap.clientHeight || state.size.height));
+    // The map box is sized by CSS (a fixed height); the canvas fills it. Never
+    // size the canvas from the box's own height: the canvas is the box's only
+    // content, so that feedback would grow the view on every pass.
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(280, Math.round(rect.width || mapwrap.clientWidth || state.size.width));
+    const height = Math.max(240, Math.round(rect.height || mapwrap.clientHeight || state.size.height));
     state.size = { width, height };
     const ratio = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     if (!state.view) state.view = currentViewFromState();
+    // An untouched view keeps fitting the box: the first measurement can happen
+    // before layout has a real height, and a phone rotation changes the fit.
+    if (state.viewAuto) state.view = clampView({ lat: state.view.lat, lon: state.view.lon, zoom: fitWorldZoom(state.size) }, VIEW_MIN_ZOOM, VIEW_MAX_ZOOM);
     draw();
   }
 
@@ -635,7 +642,9 @@ export function init(ctx) {
       const key = `${offset}|${v.lat.toFixed(3)}|${v.lon.toFixed(3)}|${v.zoom.toFixed(2)}|${s.width}x${s.height}`;
       if (!styled.cache.has(key)) {
         if (styled.cache.size > 8) styled.cache.clear();
-        styled.cache.set(key, ringsToPath(styled.parts, (lat, lon) => project(lat, lon, offset)));
+        // Path2D takes the SVG path string that ringsToPath() builds (and that
+        // the unit tests can check without a canvas).
+        styled.cache.set(key, new Path2D(ringsToPath(styled.parts, (lat, lon) => project(lat, lon, offset))));
       }
       return styled.cache.get(key);
     };
@@ -849,6 +858,7 @@ export function init(ctx) {
 
   let viewTimer = null;
   function afterViewChange() {
+    state.viewAuto = false;
     draw();
     clearTimeout(viewTimer);
     viewTimer = setTimeout(publishView, 250);
@@ -924,6 +934,7 @@ export function init(ctx) {
   }
 
   function resetView() {
+    state.viewAuto = true;
     state.view = clampView({ lat: 20, lon: 0, zoom: fitWorldZoom(state.size) }, VIEW_MIN_ZOOM, VIEW_MAX_ZOOM);
     afterViewChange();
     publishView();
@@ -1041,13 +1052,11 @@ export function init(ctx) {
           {},
           el(
             'button',
-            {
-              class: 'hz__search-hit',
-              type: 'button',
-              onclick: () => jumpToPolity(hit.name),
-            },
-            el('span', { class: 'hz__search-name' }, hit.name),
-            el('span', { class: 'hz__search-years' }, `${hit.years.length} snapshot${hit.years.length === 1 ? '' : 's'}: ${hit.years.slice(0, 6).map(formatYear).join(', ')}${hit.years.length > 6 ? ' …' : ''}`),
+            { class: 'hz__search-hit', type: 'button', onclick: () => jumpToPolity(hit.name) },
+            [
+              el('span', { class: 'hz__search-name' }, hit.name),
+              el('span', { class: 'hz__search-years' }, `${hit.years.length} snapshot${hit.years.length === 1 ? '' : 's'}: ${hit.years.slice(0, 6).map(formatYear).join(', ')}${hit.years.length > 6 ? ' …' : ''}`),
+            ],
           ),
         ),
       ),
@@ -1100,6 +1109,7 @@ export function init(ctx) {
     if (changed.includes('view')) applyMode(state.view);
     if (changed.includes('hv') && state.view === 'history') {
       const next = parseViewParam(state.hv, state.view ?? currentViewFromState());
+      state.viewAuto = false;
       if (state.view && (Math.abs(next.lat - state.view.lat) > 1e-4 || Math.abs(next.lon - state.view.lon) > 1e-4 || Math.abs(next.zoom - state.view.zoom) > 1e-3)) {
         state.view = next;
         draw();
