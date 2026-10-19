@@ -43,6 +43,15 @@ What works today (verified with `wrangler dev` + headless Chromium):
   interface;
 - publication-year range, collection, type and “only in the current map view”
   filters that drive both the result list and the map markers;
+- **Grundkarte chooseable: colour, grey or air photo** — three documented swisstopo
+  WMTS layers (`ch.swisstopo.pixelkarte-farbe`, `…-grau`, `ch.swisstopo.swissimage`)
+  behind one `aria-pressed` chip per layer under the map, shareable as `base=grau`
+  (absent = the colour default) and resolved against the same list the renderer
+  uses, so an unknown key falls back to the default instead of breaking the map.
+  The grey Landeskarte is the calm background for footprints, markers and the
+  historical comparison layers; the air photo is the modern reference for them.
+  Switching keeps the view (pan/zoom, markers, footprints) exactly where it was
+  and the map badge always credits the layer in use (`© swisstopo`);
 - coordinated result list ↔ map selection, list/map/split view switch;
 - detail panel with publication vs depicted dates, institution, shelfmark, rights,
   an interactive IIIF deep-zoom viewer (region requests, drag/pinch/keyboard, sheet
@@ -70,7 +79,7 @@ What works today (verified with `wrangler dev` + headless Chromium):
   at 612 px of a 900 px viewport), with a “Direkt zur Karte” link, a keyboard
   route to every map action and the cantonal “Nach oben” control once the page
   is scrolled;
-- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
+- shareable URL state (`q`, `from`, `to`, `p`, `t`, `c`, `base`, `vp`, `ex`, `at`, `place`, `lat`, `lon`,
   `z`, `sel`, `sh`, `vv`, `view`, `sort`, `ov`, `ot`, `cmp`) and a keyboard route for every
   map action (`sh` = sheet of a multi-sheet digitised work; the thumbnail strip in
   the detail viewer is one tab stop and ←/→/Home/End walk the sheets, so a

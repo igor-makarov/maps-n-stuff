@@ -1,5 +1,100 @@
 # zurich-maps-2 status
 
+Iteration 7-16 (2026-10-19, ~00:5x–01:2x UTC). Member `zurich-maps-2` (map,
+search, results). Files: `public/app/map.js`, `public/app/search.js`,
+`public/app/results.js`, plus additive edits in maps-1's `store.js`,
+`public/index.html`, `public/styles/app.css`, `docs/run.md`, `README.md`,
+maps-0's `docs/data-sources.md` and maps-3's `scripts/browser-check.mjs` /
+`tests/map.test.mjs`.
+
+## Landed on `main` this iteration
+
+**The Grundkarte is chooseable: farbig, grau oder Luftbild.** The map drew one
+hard-coded base layer (the colourful Landeskarte) even though the catalogue we
+reproduce (OldMapsOnline) lets a visitor pick the background, and the loud colour
+map fights exactly the things our map is for — blue cluster pins, the green
+“Ausschnitte” outlines and the historical comparison layer. Two more documented
+swisstopo layers are now one click (or one URL parameter) away.
+
+| Content | Files |
+| --- | --- |
+| `BASE_LAYERS` — the three documented swisstopo WMTS layers with `key` (`farbe`/`grau`/`luftbild`), official layer id, title, chip label, hint, tile template, `maxZoom` and attribution; `DEFAULT_BASE`; `BASE_LAYER` kept as an alias; `baseLayerFor(key)` (pure) resolves a URL key and falls back to the default for anything unknown instead of erroring. | `map.js` |
+| The switch itself: `base:${activeBase.key}` is part of the **tile cache key** (a layer switch must never reuse the previous layer's tile) and the old layer's tiles are removed from the DOM when the base changes — verified: after switching, `document.querySelectorAll('.map-tile[src*="pixelkarte-farbe"]').length === 0`. The view does not move: pan/zoom, marker positions and cluster counts are untouched (the harness compares the inline transforms before/after). | `map.js` |
+| The control: `#base-layer-switch` under the map (inside the existing keyboard control row `ul.app-map__skip`) with one `aria-pressed` chip per layer, `role="group"` + `aria-labelledby` a visible “Grundkarte” label, built by `map.js` from `BASE_LAYERS` so control and renderer cannot drift apart. The map badge now credits the layer in use (`© swisstopo – Landeskarte (grau)`), and one sentence in the map hint says where to switch. | `map.js`, `index.html`, `app.css` |
+| Shareable state `?base=grau` (absent = the colour default). `store.js`: `base` + `PARAM.base` + the `string` type + one `sanitise` line (`/^[a-z0-9-]{1,24}$/`; a hand-edited value never reaches the map). Replace-only history key, like `ov`/`view`/`sort` — it is a view option, not a search step. | `store.js` (maps-1, additive, flagged) |
+| `tests/map.test.mjs`: 4 new cases — every documented layer has a unique short key + official `ch.swisstopo.*` id, an OGD tile template with all three placeholders, `maxZoom` ≤ 18 and a `© swisstopo` credit; `baseLayerFor()` resolves `grau`/`luftbild`/`farbe`, tolerates `'  GRAU '` and falls back for `''`/junk/objects/layer ids; each layer renders its own tile URL without leftover placeholders; `?base=` survives `sanitise`/`stateToQuery` (and an invalid shape does not). | tests (132/132 with maps-3's new sheet-jump test) |
+| Harness section **8o** (5 checks): the three chips, their accessible names, the labelled group and loaded default tiles; clicking “grau” loads real grey WMTS tiles (`pixelkarte-grau/…/3857/12/2143/1433.jpeg`, `naturalWidth > 0`), writes `base=grau`, credits it, drops the old tiles and leaves the tile/marker grid identical; a shared `?base=luftbild` link opens on SWISSIMAGE; `Enter` on the focused “farbig” chip switches back and removes `base=`; 390 px keeps the three chips inside the page. Screenshot `09-grundkarte.png`. | `browser-check.mjs` (maps-3, additive, flagged) |
+
+**Upstream evidence (fetched on this runner, 2026-10-19):**
+`https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml` → 200 (1.7 MB);
+all three layers are listed there with style id = layer id, `image/jpeg` and the
+`3857_19` / `3857_20` matrix sets. `…/ch.swisstopo.pixelkarte-grau/default/current/3857/12/2143/1432.jpeg`
+and `…/ch.swisstopo.swissimage/default/current/3857/12/2143/1432.jpeg` → 200
+`image/jpeg`, `access-control-allow-origin: *`. Recorded in
+`docs/data-sources.md` with the retrieval date.
+
+### Integration
+
+`main` moved twice while this was building (maps-0's city ground/site plans,
+maps-3's “Blatt” jump + thumbnail lazy loading). Rebased over both; the conflict
+in `docs/run.md` was resolved by keeping their facts (115 checks, the sheet jump)
+and adding mine, the status board row is mine as before, and no teammate check or
+fact was dropped. Harness count on the merged tree: **120/120**.
+
+### Verified (rebased tree, this runner, `wrangler dev` on 127.0.0.1:8787)
+
+- `npm run check` ✓ — validation (119 records), **132/132** `node --test`,
+  `wrangler deploy --dry-run` (30 asset files, 28.76 KiB Worker).
+- `node scripts/browser-check.mjs` → **120/120** (115 before this iteration +
+  section 8o), including the whole legacy suite (deep zoom, touch, compare,
+  history, footprints, point filter, contrast, degraded upstream, 320/390 px).
+- Manual CDP probes: default page loads 12 `pixelkarte-farbe` tiles; `?base=grau`
+  loads the grey one with the badge `© swisstopo – Landeskarte (grau)`; clicking
+  through all three layers never logs a console error and never requests a tile
+  of a layer that is not selected.
+
+## Messages
+
+- **→ maps-1**: additive edits in your files, all flagged here — `store.js`
+  (`base: ''` in `STATE_DEFAULTS`, `base: 'base'` in `PARAM`, one `TYPES.string`
+  entry, one `sanitise` line); `index.html` (one `<li class="app-map__skipbase">`
+  in the keyboard control row with a visible `Grundkarte` label and an empty
+  `#base-layer-switch`, plus one sentence in the map hint); `app.css` (one
+  `.app-map__skipbase/.app-map__skiplabel/.app-map__skipgroup` block appended at
+  the end); `docs/run.md` + `README.md` rows. Revert/reword freely — the harness
+  asserts the ids/attributes, not the styling. **Question, not a request:** the
+  grey Landeskarte is arguably the better default for a historical-map explorer
+  (markers, footprints and the Zeitreise overlays read much better on it). I kept
+  the colour map as the default because you own the shell and every screenshot;
+  say the word (or change `DEFAULT_BASE`) and I will flip it in one line.
+- **→ maps-0**: `docs/data-sources.md` now names all three base layers and the
+  capabilities/tile evidence (your file, additive, flagged — reword freely). One
+  request for `npm run verify:endpoints`: it probes a `pixelkarte-farbe` tile, so
+  a renamed `pixelkarte-grau`/`swissimage` layer would only show up in the browser
+  harness. Two more tile URLs (grau + swissimage at the Zürich tile) in that list
+  would make the online check catch it first.
+- **→ maps-3**: section 8o is in your harness file (after 8n, before the console
+  hygiene block) and `tests/map.test.mjs` gained 4 cases for the pure layer
+  resolution — both additive, nothing else touched. Two notes: the check details
+  print only summary fields (the grid/marker transforms are compared but not
+  dumped), and the “grau” check asserts tile *loading* (`naturalWidth > 0`), so it
+  needs the runner's network access like the other upstream checks.
+- **→ all**: the shared gate stays `npm run check` + `node scripts/browser-check.mjs`
+  (**120/120** now). URL state gained `base` (replace-only, documented in
+  `store.js`/`docs/run.md`); nothing else changed in the store contract.
+
+### Next (my area)
+
+- The histogram could show the distribution of the *current* filter scope (like
+  the facet counts already do) instead of the whole corpus, and accept a drag
+  brush — today one click sets one decade, which is honest but coarse.
+- A footprint-aware map click (`Alt`+click selects the smallest footprint under
+  the cursor) — still deliberately not done: it competes with the documented
+  map-click point filter.
+- Screen-reader pass over the histogram and the marker preview card at 320 px.
+
+---
+
 Iteration 7-15 (2026-10-19, ~00:0x–00:5x UTC). Member `zurich-maps-2` (map,
 search, results). Files: `public/app/map.js`, `public/app/search.js`,
 `public/app/results.js`, plus additive edits in maps-1's `store.js`,

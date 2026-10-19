@@ -30,6 +30,7 @@ export const STATE_DEFAULTS = Object.freeze({
   provider: '', // providerId or '' for all
   type: '', // record type or '' for all
   collection: '', // upstream series/collection name or '' for all (facet from the data)
+  base: '', // short key of the chosen Grundkarte ('farbe' | 'grau' | 'luftbild'); '' = the default layer
   viewport: '', // '1' = only records inside the current map view
   extents: '', // '1' = draw the documented footprints of the filtered records on the map
   at: '', // "lat,lon" point filter: only records whose documented extent covers this point
@@ -55,6 +56,7 @@ export const PARAM = {
   provider: 'p',
   type: 't',
   collection: 'c',
+  base: 'base',
   viewport: 'vp',
   extents: 'ex',
   at: 'at',
@@ -73,7 +75,7 @@ export const PARAM = {
 };
 
 const TYPES = {
-  string: ['q', 'provider', 'type', 'collection', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv'],
+  string: ['q', 'provider', 'type', 'collection', 'base', 'viewport', 'extents', 'at', 'place', 'selected', 'view', 'sort', 'overlay', 'otime', 'cmp', 'vv'],
   number: ['from', 'to', 'lat', 'lon', 'zoom', 'sheet'],
 };
 
@@ -195,6 +197,9 @@ export function sanitise(state) {
   // A collection name comes from the data (never invented) and from the URL, so
   // keep it short and printable; an unknown name simply yields no results.
   out.collection = String(out.collection || '').slice(0, 120);
+  // Which Grundkarte the map draws (`?base=grau`). The map resolves the key and
+  // falls back to the default layer, so only the shape has to be safe here.
+  out.base = /^[a-z0-9-]{1,24}$/.test(String(out.base ?? '')) ? String(out.base) : '';
   // Which sheet of a multi-sheet work the detail viewer shows. The real canvas
   // count is only known after the manifest loads, so the hard bound stays wide;
   // detail.js clamps to the actual count and writes the corrected value back.

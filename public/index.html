@@ -296,12 +296,19 @@
             <li><button class="zh-chip" type="button" data-map-cmd="fitresults">Treffer einpassen</button></li>
             <li><button class="zh-chip" type="button" data-map-cmd="point">Punktfilter (Kartenmitte)</button></li>
             <li><button class="zh-chip" type="button" data-map-cmd="extents" aria-pressed="false">Ausschnitte zeigen</button></li>
+            <!-- Grundkarte: the chips are built by map.js from its documented
+                 BASE_LAYERS, so control and renderer cannot drift apart. -->
+            <li class="app-map__skipbase">
+              <span class="app-map__skiplabel" id="base-layer-label">Grundkarte</span>
+              <span class="app-map__skipgroup" id="base-layer-switch" role="group" aria-labelledby="base-layer-label"></span>
+            </li>
           </ul>
           <p class="app-map__hint zh-hint">
             Karte ziehen zum Verschieben, Mausrad oder <kbd>+</kbd>/<kbd>−</kbd> zum Zoomen, Pfeiltasten bewegen die Karte.
             Ein Klick (oder <kbd>P</kbd>) filtert die Treffer auf den Punkt;
             <button class="app-map__hintlink" type="button" data-map-cmd="extents" data-map-cmd-label="fixed" aria-pressed="false">„Ausschnitte“</button>
             zeichnet die dokumentierten Kartengrenzen der gefilterten Treffer.
+            Die Grundkarte (farbig, grau oder Luftbild) wechselt in der Leiste unter der Karte.
             <span id="map-attribution-extra"></span>
           </p>
           <p class="app-map__hint zh-hint" id="map-visible-count" role="status" aria-live="polite"></p>

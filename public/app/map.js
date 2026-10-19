@@ -21,15 +21,73 @@ import { parsePoint, sanitisePoint } from './store.js';
 
 const TILE = 256;
 
-/** Base map: documented swisstopo WMTS tile template (CORS `*`, OGD). */
-export const BASE_LAYER = {
-  id: 'ch.swisstopo.pixelkarte-farbe',
-  title: 'Landeskarte (swisstopo)',
-  urlTemplate:
-    'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
-  maxZoom: 18,
-  attribution: '© swisstopo – Landeskarte',
-};
+/**
+ * Base maps (Grundkarten): the documented swisstopo WMTS layers a visitor can
+ * choose from. Tiles are public geoservices and carry
+ * `Access-Control-Allow-Origin: *`.
+ *
+ * Verified against the official capabilities document
+ * https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml (fetched
+ * 2026-10-19): all three layers are published there with style id = layer id,
+ * `image/jpeg` tiles and the 3857_19 / 3857_20 tile matrix sets, so the same
+ * 256 px `{TileMatrix}/{TileCol}/{TileRow}` template serves each of them.
+ * `maxZoom: 18` is the deepest matrix every one of them has (the store clamps
+ * the zoom to 18 as well), so no request can ask for a missing tile.
+ *
+ * `key` is what the URL carries (`?base=grau`): short, stable, printable.
+ */
+export const BASE_LAYERS = Object.freeze([
+  {
+    key: 'farbe',
+    id: 'ch.swisstopo.pixelkarte-farbe',
+    title: 'Landeskarte (farbig)',
+    chip: 'farbig',
+    hint: 'Die farbige Landeskarte von swisstopo – die gewohnte Kartenansicht.',
+    maxZoom: 18,
+    urlTemplate:
+      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
+    attribution: '© swisstopo – Landeskarte (farbig)',
+  },
+  {
+    key: 'grau',
+    id: 'ch.swisstopo.pixelkarte-grau',
+    title: 'Landeskarte (grau)',
+    chip: 'grau',
+    hint: 'Die graue Landeskarte: ein ruhiger Hintergrund für Markierungen, Ausschnitte und historische Ebenen.',
+    maxZoom: 18,
+    urlTemplate:
+      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
+    attribution: '© swisstopo – Landeskarte (grau)',
+  },
+  {
+    key: 'luftbild',
+    id: 'ch.swisstopo.swissimage',
+    title: 'SWISSIMAGE (Luftbild)',
+    chip: 'Luftbild',
+    hint: 'Das aktuelle Luftbild von swisstopo (SWISSIMAGE) – gut zum Vergleich mit alten Karten.',
+    maxZoom: 18,
+    urlTemplate:
+      'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg',
+    attribution: '© swisstopo – SWISSIMAGE',
+  },
+]);
+
+/** The base map of a fresh visit — also the fallback for an unknown key. */
+export const DEFAULT_BASE = BASE_LAYERS[0];
+
+/** Kept for callers that only need the default layer. */
+export const BASE_LAYER = DEFAULT_BASE;
+
+/**
+ * Resolve a `?base=` key to a layer. An empty or unknown key yields the default:
+ * never an error, never a guessed layer.
+ */
+export function baseLayerFor(key) {
+  const wanted = String(key ?? '')
+    .trim()
+    .toLowerCase();
+  return BASE_LAYERS.find((layer) => layer.key === wanted) ?? DEFAULT_BASE;
+}
 
 export const ZURICH = { lat: 47.3769, lon: 8.5417, zoom: 12 };
 export const SWITZERLAND = { west: 5.140242, east: 11.47757, south: 45.398181, north: 48.230651 };
@@ -226,6 +284,7 @@ export function init(ctx) {
   const footprints = new Map(); // record id -> footprint <div>
   const clusters = new Map(); // cell key -> { element, members, x, y }
   let lastOverlayKey = ''; // layer + edition currently displayed
+  let activeBase = baseLayerFor(ctx.store.getState().base); // Grundkarte in the URL ('' = default)
   let previewId = ''; // record id whose preview card is visible
 
   const PREVIEW_WIDTH = 248;
@@ -305,7 +364,9 @@ export function init(ctx) {
     const originX = centerX - w / 2;
     const originY = centerY - h / 2;
 
-    renderTiles(baseLayer, cache, 'base', BASE_LAYER.urlTemplate, null, originX, originY, w, h, z, scale);
+    // The base layer id is part of the cache key: switching the Grundkarte must
+    // never reuse a tile of the previous one.
+    renderTiles(baseLayer, cache, `base:${activeBase.key}`, activeBase.urlTemplate, null, originX, originY, w, h, z, activeBase.maxZoom);
     if (state.overlay) {
       // Switching the layer or its edition replaces the overlay completely; the
       // old tiles stay in the cache (bounded) but must leave the DOM, otherwise
@@ -315,7 +376,19 @@ export function init(ctx) {
         overlayLayer.replaceChildren();
         lastOverlayKey = overlayKey;
       }
-      renderTiles(overlayLayer, cache, `ov:${state.overlay.id}`, state.overlay.urlTemplate, state.overlayTime, originX, originY, w, h, z, scale);
+      renderTiles(
+        overlayLayer,
+        cache,
+        `ov:${state.overlay.id}`,
+        state.overlay.urlTemplate,
+        state.overlayTime,
+        originX,
+        originY,
+        w,
+        h,
+        z,
+        Number(state.overlay.maxZoom ?? 18),
+      );
     } else {
       overlayLayer.replaceChildren();
       lastOverlayKey = '';
@@ -329,9 +402,10 @@ export function init(ctx) {
     updateLive();
   }
 
-  function renderTiles(layerEl, tileCache, kind, template, time, originX, originY, w, h, z, scale) {
-    const maxZoom = kind === 'base' ? BASE_LAYER.maxZoom : Number(state.overlay?.maxZoom ?? 18);
-    const tileZ = Math.min(z, maxZoom);
+  function renderTiles(layerEl, tileCache, kind, template, time, originX, originY, w, h, z, maxZoom) {
+    const role = kind.startsWith('ov:') ? 'overlay' : 'base';
+    const tileZ = Math.min(z, Number.isFinite(maxZoom) ? maxZoom : 18);
+    const scale = 2 ** tileZ;
     const visible = new Set();
     const x0 = Math.floor(originX / TILE);
     const x1 = Math.floor((originX + w - 1) / TILE);
@@ -348,7 +422,7 @@ export function init(ctx) {
         let img = tileCache.get(key);
         if (!img) {
           img = document.createElement('img');
-          img.className = kind === 'base' ? 'map-tile' : 'map-tile map-overlay-tile';
+          img.className = role === 'base' ? 'map-tile' : 'map-tile map-overlay-tile';
           img.alt = '';
           img.decoding = 'async';
           img.src = tileUrl(template, { z: tileZ, x: wrapped, y, time });
@@ -615,6 +689,63 @@ export function init(ctx) {
     }
   }
 
+  /* ---------------- Grundkarte (base map) ---------------- */
+
+  const baseSwitch = qs('#base-layer-switch');
+
+  /**
+   * The base-map chips are built from BASE_LAYERS, so the control cannot drift
+   * from the layers the renderer actually knows. One `aria-pressed` chip is on,
+   * and the accessible name repeats the action: “Grundkarte … wählen”.
+   */
+  function syncBaseChips() {
+    if (!baseSwitch) return;
+    if (baseSwitch.childElementCount === 0) {
+      baseSwitch.replaceChildren(
+        ...BASE_LAYERS.map((layer) =>
+          el(
+            'button',
+            {
+              class: 'zh-chip',
+              type: 'button',
+              'data-base-key': layer.key, // the switch is handled here, not by the generic data-map-cmd loop
+              title: `${layer.hint} (${layer.id})`,
+              'aria-pressed': 'false',
+              onclick: () => ctx.store.update({ base: layer.key === DEFAULT_BASE.key ? '' : layer.key }),
+            },
+            [layer.chip],
+          ),
+        ),
+      );
+    }
+    for (const chip of baseSwitch.querySelectorAll('[data-base-key]')) {
+      const layer = baseLayerFor(chip.dataset.baseKey);
+      const on = layer.key === activeBase.key;
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      // Toggle-button pattern: `aria-pressed` carries the state, so the
+      // accessible name only says what the switch controls.
+      chip.setAttribute('aria-label', `Grundkarte: ${layer.title}`);
+    }
+  }
+
+  /**
+   * Switch the base map. The tiles of the previous layer are dropped from the
+   * DOM (the cache keeps them keyed by layer, so switching back is cheap), and
+   * nothing else in the view moves: markers, footprints and the point filter
+   * keep their positions because pan/zoom did not change.
+   */
+  function setBase(key) {
+    const next = baseLayerFor(key);
+    if (next.key === activeBase.key) {
+      syncBaseChips();
+      return;
+    }
+    activeBase = next;
+    baseLayer.replaceChildren();
+    syncBaseChips();
+    render();
+  }
+
   function renderExtent(originX, originY, z) {
     shapeLayer.replaceChildren();
     const record = ctx.data.recordIndex?.get(state.selected) ?? state.records.find((r) => r.id === state.selected);
@@ -655,7 +786,7 @@ export function init(ctx) {
 
   function updateBadge() {
     const items = [
-      el('span', { class: 'zh-tag', text: BASE_LAYER.attribution }),
+      el('span', { class: 'zh-tag', text: activeBase.attribution }),
       state.overlay ? el('span', { class: 'zh-tag zh-tag--solid', text: `${state.overlay.title}${state.overlayTime ? ` · ${formatTime(state.overlayTime)}` : ''}` }) : null,
     ].filter(Boolean);
     badge.replaceChildren(...items);
@@ -925,6 +1056,7 @@ export function init(ctx) {
       syncExtentChip();
       render();
     }
+    if (changed.includes('base') && baseLayerFor(next.base).key !== activeBase.key) setBase(next.base);
     const interesting = changed.filter((key) => ['lat', 'lon', 'zoom'].includes(key));
     if (interesting.length === 0) return;
     if (Math.abs(next.lat - state.lat) < 1e-6 && Math.abs(next.lon - state.lon) < 1e-6 && Math.round(next.zoom) === state.zoom) return;
@@ -998,6 +1130,7 @@ export function init(ctx) {
   else window.addEventListener('resize', resize);
 
   syncExtentChip();
+  syncBaseChips();
   render();
 
   ctx.map = {
@@ -1006,8 +1139,11 @@ export function init(ctx) {
     zoomBy,
     setPoint,
     setOverlay,
+    setBase,
     setExtents: (on) => ctx.store.update({ extents: on ? '1' : '' }),
-    getView: () => ({ ...state }),
+    getView: () => ({ ...state, base: activeBase.key }),
+    baseLayers: BASE_LAYERS,
+    getBase: () => activeBase,
     getMarkers: () => ({
       individual: markers.size,
       clusters: clusters.size,

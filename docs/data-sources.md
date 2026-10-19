@@ -202,8 +202,10 @@ document):
 | `ch.swisstopo.pixelkarte-farbe-pk50.noscale` | Landeskarte 1:50 000 | 90 |
 | `…pk100/pk200/pk500/pk1000`, `…grau-pk1000` | Landeskarten 1:100 000 … 1:1 Mio. | 1 each |
 
-Base map of the application: `ch.swisstopo.pixelkarte-farbe` (documented WMTS
-template, `3857` matrix set), attribution shown on the map as `© swisstopo`.
+Base maps of the application (switchable on the map, owner: zurich-maps-2):
+`ch.swisstopo.pixelkarte-farbe` (default), `ch.swisstopo.pixelkarte-grau` and
+`ch.swisstopo.swissimage` (air photo) — same documented WMTS template and
+`3857` matrix set, each credited on the map (`© swisstopo`, `?base=` in the link).
 
 Verification evidence:
 
@@ -216,6 +218,14 @@ GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage-product_1946/default
     -> 200 image/jpeg (~24 kB, Zürich aerial)
 GET https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Zürich&type=locations&sr=4326
     -> 200 application/json (label "Zürich (ZH)", lat/lon, geom_st_box2d)
+GET https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml
+    -> 200 (1.7 MB); the three base layers are listed there with style id =
+       layer id, format image/jpeg, matrix sets 3857_19 (farbig, grau) and
+       3857_20 (swissimage) — retrieved 2026-10-19
+GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/12/2143/1432.jpeg
+    -> 200 image/jpeg, access-control-allow-origin: *
+GET https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/12/2143/1432.jpeg
+    -> 200 image/jpeg, access-control-allow-origin: *
 ```
 
 Preview/thumbnail rule: every `overlay` record stores the tile URL the harvest

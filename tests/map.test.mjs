@@ -10,7 +10,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CLUSTER_CELL, clusterByCell, extentRects, latToTileY, lonToTileX } from '../public/app/map.js';
+import {
+  BASE_LAYERS,
+  CLUSTER_CELL,
+  DEFAULT_BASE,
+  baseLayerFor,
+  clusterByCell,
+  extentRects,
+  latToTileY,
+  lonToTileX,
+  tileUrl,
+} from '../public/app/map.js';
+import { STATE_DEFAULTS, sanitise, stateToQuery } from '../public/app/store.js';
 
 test('points in one cell become one cluster with a centroid and a count', () => {
   const cells = clusterByCell([
@@ -149,4 +160,69 @@ test('records that share one extent become one rectangle with all their ids', ()
   const swiss = info.rects.find((r) => r.ids.length === 2);
   assert.deepEqual(swiss.ids.sort(), ['sheet-a', 'sheet-b']);
   assert.ok(info.rects[0].width > info.rects[1].width, 'country-wide extent first');
+});
+
+/* ------------------------------------------------------------------ Grundkarte */
+
+test('every documented base map is a real swisstopo WMTS layer with attribution', () => {
+  assert.equal(BASE_LAYERS.length, 3, 'farbig, grau and Luftbild are the documented choice');
+  const keys = new Set();
+  const ids = new Set();
+  for (const layer of BASE_LAYERS) {
+    assert.match(layer.key, /^[a-z0-9-]{1,24}$/, `URL-safe key: ${layer.key}`);
+    assert.ok(!keys.has(layer.key), `unique key: ${layer.key}`);
+    keys.add(layer.key);
+    assert.match(layer.id, /^ch\.swisstopo\.[a-z0-9-]+$/, `official layer id: ${layer.id}`);
+    assert.ok(!ids.has(layer.id), `unique id: ${layer.id}`);
+    ids.add(layer.id);
+    assert.match(layer.title, /\S/);
+    assert.match(layer.chip, /\S/);
+    assert.match(layer.hint, /\S/);
+    // The tile template must be the public OGD endpoint and carry every
+    // placeholder `tileUrl()` replaces – a typo would silently request one
+    // endless tile.
+    assert.ok(layer.urlTemplate.startsWith('https://wmts.geo.admin.ch/1.0.0/'), layer.urlTemplate);
+    assert.ok(layer.urlTemplate.includes(`/${layer.id}/`), 'template serves the layer it names');
+    for (const placeholder of ['{TileMatrix}', '{TileCol}', '{TileRow}']) {
+      assert.ok(layer.urlTemplate.includes(placeholder), `${layer.id} needs ${placeholder}`);
+    }
+    // swisstopo publishes 3857_19 (zoom 0–18); the store clamps the zoom to 18.
+    assert.ok(Number.isInteger(layer.maxZoom) && layer.maxZoom >= 15 && layer.maxZoom <= 18, `${layer.id} maxZoom ${layer.maxZoom}`);
+    assert.match(layer.attribution, /^© swisstopo/, `${layer.id} must credit swisstopo`);
+  }
+});
+
+test('baseLayerFor resolves the URL key and falls back to the default', () => {
+  assert.equal(baseLayerFor('grau').id, 'ch.swisstopo.pixelkarte-grau');
+  assert.equal(baseLayerFor('luftbild').id, 'ch.swisstopo.swissimage', 'the Luftbild key maps to SWISSIMAGE');
+  assert.equal(baseLayerFor('farbe'), DEFAULT_BASE);
+  // Empty, unknown, hand-edited or non-string values never break the map.
+  for (const junk of ['', '  ', null, undefined, 'FARBE X', 'nope', 'ch.swisstopo.pixelkarte-grau', 42, {}, []]) {
+    assert.equal(baseLayerFor(junk), DEFAULT_BASE, `fallback for ${JSON.stringify(junk)}`);
+  }
+  // Case and surrounding whitespace are tolerated (a hand-typed link).
+  assert.equal(baseLayerFor('  GRAU ').key, 'grau');
+});
+
+test('each base map renders its own tile URL, without leftovers', () => {
+  for (const layer of BASE_LAYERS) {
+    const url = tileUrl(layer.urlTemplate, { z: 12, x: 2143, y: 1432 });
+    assert.ok(url.includes(`/${layer.id}/`), url);
+    assert.match(url, /\/12\/2143\/1432\.jpeg$/, url);
+    assert.ok(!url.includes('{'), `no placeholder left in ${url}`);
+  }
+  assert.notEqual(
+    tileUrl(BASE_LAYERS[1].urlTemplate, { z: 12, x: 2143, y: 1432 }),
+    tileUrl(BASE_LAYERS[0].urlTemplate, { z: 12, x: 2143, y: 1432 }),
+  );
+});
+
+test('the Grundkarte key is shareable URL state but never trusted blindly', () => {
+  assert.equal(sanitise({ base: 'grau' }).base, 'grau');
+  assert.equal(sanitise({ base: '' }).base, '');
+  assert.equal(sanitise({ base: 'GR AU' }).base, '', 'only the documented shape survives');
+  assert.equal(sanitise({ base: '<script>' }).base, '');
+  assert.equal(sanitise({ base: 'x'.repeat(40) }).base, '');
+  assert.equal(stateToQuery({ ...STATE_DEFAULTS, base: 'luftbild', from: 1781 }), 'from=1781&base=luftbild');
+  assert.equal(stateToQuery({ ...STATE_DEFAULTS }), '', 'the default layer stays out of the URL');
 });

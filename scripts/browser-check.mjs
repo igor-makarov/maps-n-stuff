@@ -2618,6 +2618,173 @@ try {
     `"${String(keywordEmpty).slice(0, 120)}"`,
   );
 
+  /* --- 8o. Grundkarte: farbig / grau / Luftbild ------------------------- */
+  // The map offers the three documented swisstopo WMTS base layers. The chips
+  // are built by map.js from BASE_LAYERS, so this section checks the real
+  // tiles, the attribution, the shared URL state and the keyboard route.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&to=1900` });
+  await cdp.waitFor(`document.querySelectorAll('#result-list > *').length > 0`, { label: 'Grundkarte page' });
+  await cdp.waitFor(`document.querySelectorAll('.map-tile').length > 0`, { label: 'base tiles', timeout: 15_000 });
+  await sleep(600);
+  const baseBefore = await cdp.eval(`(() => {
+    const chips = [...document.querySelectorAll('#base-layer-switch [data-base-key]')];
+    const group = document.querySelector('#base-layer-switch');
+    const label = document.querySelector('#base-layer-label');
+    const tiles = [...document.querySelectorAll('.map-tile')];
+    return {
+      keys: chips.map((c) => c.dataset.baseKey),
+      texts: chips.map((c) => c.textContent.trim()),
+      pressed: chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.baseKey),
+      names: chips.map((c) => c.getAttribute('aria-label') || ''),
+      groupRole: group?.getAttribute('role'),
+      labelledBy: group?.getAttribute('aria-labelledby'),
+      labelText: label?.textContent || '',
+      inSkipList: group?.closest('.app-map__skip') !== null,
+      loadedDefault: tiles.filter((i) => (i.getAttribute('src') || '').includes('pixelkarte-farbe') && i.naturalWidth > 0).length,
+      badge: document.querySelector('.map-badge')?.textContent || '',
+      // The view must not move when the base map changes: the transforms of the
+      // tiles and markers are compared before/after the switch.
+      grid: [...document.querySelectorAll('.map-tile')].map((i) => i.style.transform).join('|'),
+      markers: [...document.querySelectorAll('.map-marker')].map((i) => i.style.transform).join('|'),
+    };
+  })()`);
+  check(
+    'the Grundkarte switch names its three documented layers and marks the default',
+    baseBefore.keys.join(',') === 'farbe,grau,luftbild' &&
+      baseBefore.pressed.join(',') === 'farbe' &&
+      baseBefore.names.every((n) => /^Grundkarte: \S/.test(n)) &&
+      baseBefore.groupRole === 'group' &&
+      baseBefore.labelledBy === 'base-layer-label' &&
+      /^Grundkarte$/.test(baseBefore.labelText) &&
+      baseBefore.inSkipList &&
+      baseBefore.loadedDefault > 0 &&
+      /© swisstopo/.test(baseBefore.badge),
+    JSON.stringify({ keys: baseBefore.keys, texts: baseBefore.texts, pressed: baseBefore.pressed, groupRole: baseBefore.groupRole, labelledBy: baseBefore.labelledBy, labelText: baseBefore.labelText, inSkipList: baseBefore.inSkipList, loadedDefault: baseBefore.loadedDefault, badge: baseBefore.badge }),
+  );
+
+  // One click switches the layer: new real tiles, honest attribution, shareable
+  // URL — and the previous layer's tiles must leave the DOM (they would paint
+  // over the new ones).
+  await cdp.click('#base-layer-switch [data-base-key="grau"]');
+  let baseGrau = null;
+  try {
+    baseGrau = await cdp.waitFor(
+      `(() => {
+        const loaded = [...document.querySelectorAll('.map-tile')].filter((i) => (i.getAttribute('src') || '').includes('pixelkarte-grau') && i.naturalWidth > 0);
+        if (loaded.length === 0) return '';
+        const chips = [...document.querySelectorAll('#base-layer-switch [data-base-key]')];
+        return {
+          url: location.search,
+          loaded: loaded.length,
+          tile: loaded[0].getAttribute('src'),
+          pressed: chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.baseKey),
+          oldTiles: document.querySelectorAll('.map-tile[src*="pixelkarte-farbe"]').length,
+          badge: document.querySelector('.map-badge')?.textContent || '',
+          grid: [...document.querySelectorAll('.map-tile')].map((i) => i.style.transform).join('|'),
+          markers: [...document.querySelectorAll('.map-marker')].map((i) => i.style.transform).join('|'),
+        };
+      })()`,
+      { label: 'grau tiles loaded', timeout: 15_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'choosing “grau” loads the real grey WMTS tiles, credits them and is shareable',
+    Boolean(baseGrau) &&
+      /pixelkarte-grau\/default\/current\/3857\/\d+\/\d+\/\d+\.jpeg$/.test(baseGrau.tile) &&
+      baseGrau.loaded > 0 &&
+      baseGrau.url.includes('base=grau') &&
+      baseGrau.pressed.join(',') === 'grau' &&
+      baseGrau.oldTiles === 0 &&
+      /grau/.test(baseGrau.badge) &&
+      baseGrau.grid === baseBefore.grid &&
+      baseGrau.markers === baseBefore.markers,
+    `before ${JSON.stringify({ ...baseBefore, grid: baseBefore.grid.length, markers: baseBefore.markers.length })} -> ${JSON.stringify({ ...baseGrau, grid: baseGrau.grid.length, markers: baseGrau.markers.length })}`,
+  );
+  await cdp.screenshot(path.join(OUT_DIR, '09-grundkarte.png')).then(() => report.screenshots.push('09-grundkarte.png'));
+
+  // A shared link opens on the named layer: the URL is the state (D4/D6).
+  await cdp.send('Page.navigate', { url: `${BASE_URL}/?from=1781&base=luftbild` });
+  let baseShared = null;
+  try {
+    baseShared = await cdp.waitFor(
+      `(() => {
+        const loaded = [...document.querySelectorAll('.map-tile')].filter((i) => (i.getAttribute('src') || '').includes('swissimage') && i.naturalWidth > 0);
+        if (loaded.length === 0) return '';
+        const chips = [...document.querySelectorAll('#base-layer-switch [data-base-key]')];
+        return {
+          url: location.search,
+          loaded: loaded.length,
+          pressed: chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.baseKey),
+          badge: document.querySelector('.map-badge')?.textContent || '',
+        };
+      })()`,
+      { label: 'shared Luftbild link', timeout: 15_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'a shared ?base=luftbild link opens on the aerial layer',
+    Boolean(baseShared) &&
+      baseShared.url.includes('base=luftbild') &&
+      baseShared.loaded > 0 &&
+      baseShared.pressed.join(',') === 'luftbild' &&
+      /SWISSIMAGE/.test(baseShared.badge),
+    JSON.stringify(baseShared),
+  );
+
+  // Keyboard: the switch is a toggle-button group, so Enter on the focused chip
+  // must switch back — the same route a keyboard-only user takes.
+  await cdp.eval(`document.querySelector('#base-layer-switch [data-base-key="farbe"]').focus(); true`);
+  await cdp.pressKey('Enter');
+  let baseKeyboard = null;
+  try {
+    baseKeyboard = await cdp.waitFor(
+      `(() => {
+        const chip = document.querySelector('#base-layer-switch [data-base-key="farbe"]');
+        if (chip?.getAttribute('aria-pressed') !== 'true') return '';
+        const loaded = [...document.querySelectorAll('.map-tile')].filter((i) => (i.getAttribute('src') || '').includes('pixelkarte-farbe') && i.naturalWidth > 0).length;
+        return { url: location.search, loaded, active: document.activeElement?.dataset?.baseKey ?? null, badge: document.querySelector('.map-badge')?.textContent || '' };
+      })()`,
+      { label: 'keyboard base switch', timeout: 15_000 },
+    );
+  } catch {
+    /* reported below */
+  }
+  check(
+    'the focused Grundkarte chip switches the layer with Enter',
+    Boolean(baseKeyboard) &&
+      !baseKeyboard.url.includes('base=') &&
+      baseKeyboard.loaded > 0 &&
+      baseKeyboard.active === 'farbe' &&
+      /farbig/.test(baseKeyboard.badge),
+    JSON.stringify(baseKeyboard),
+  );
+
+  // Phone: the row has to wrap inside the page and stay operable.
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true, screenWidth: 390, screenHeight: 844 });
+  await sleep(600);
+  const baseMobile = await cdp.eval(`(() => {
+    const group = document.querySelector('#base-layer-switch');
+    const chips = [...document.querySelectorAll('#base-layer-switch [data-base-key]')];
+    const inside = chips.filter((c) => { const r = c.getBoundingClientRect(); return r.left >= 0 && r.right <= window.innerWidth + 1; }).length;
+    return {
+      visible: group ? group.getBoundingClientRect().height > 0 : false,
+      chips: chips.length,
+      inside,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  })()`);
+  check(
+    '390 px: the Grundkarte chips stay inside the page',
+    baseMobile.visible && baseMobile.chips === 3 && baseMobile.inside === 3 && baseMobile.overflow <= 1,
+    JSON.stringify(baseMobile),
+  );
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+
   // (the series section runs after 8j and opens another record of the seed)
   /* --- console hygiene -------------------------------------------------- */
   const realErrors = consoleMessages.filter((m) => m.level !== 'warning' && !/favicon/i.test(m.text));

@@ -27,7 +27,7 @@ comparison list. Design reference: Canton Zürich design system (see
 | `npm run harvest:offline` | rebuilds the same files from the `.cache/fetch/` responses without network access |
 | `npm run verify:endpoints` | online check of every URL the data promises (original record, library viewer, thumbnail, IIIF manifest, image service, WMTS preview). Prints a per-kind summary, writes `--json <file>`, exits 1 on any non-200. 2026-10-19: **513/513 URLs, 0 failures** on the 119-record seed |
 | `node scripts/browser-smoke.mjs http://127.0.0.1:8787/ --out /tmp/shot.png` | headless Chromium walkthrough: place search, year filter, viewport filter, overlay, detail/IIIF, keyboard — reports console errors and a DOM snapshot (`--mobile` for a phone viewport) |
-| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 118 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home; thumbnails are fetched as they come into view), the “Blatt” jump control of a 33-sheet work (options, sheet 7 really loaded and centred, 390 px, no control on a 3-sheet work), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), the record search inside the place box (“Karten zum Stichwort …” applies the keyword filter, its count matches the list, an unmatched query says so), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the georeferenced WMTS record's own “Kartenebene” toggle (on from the panel: `ov`/`ot` set, sidebar select agrees, real overlay tiles; a second press removes it again), the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
+| `node scripts/browser-check.mjs --url http://127.0.0.1:8787 --out /tmp/shots` | assertion harness (owner: zurich-maps-3): 123 checks — search + keyboard selection, time range, deep-zoom region requests, keyboard pan/Home, `?sel=` deep links, the shareable viewer region (`?vv=`: written on zoom/pan, restored by a reload, impossible values dropped, cleared by “Ganzes Blatt”/closing), multi-sheet navigation (`?sh=`) with the sheet strip (one tab stop, ←/→/Home; thumbnails are fetched as they come into view), the “Blatt” jump control of a 33-sheet work (options, sheet 7 really loaded and centred, 390 px, no control on a 3-sheet work), real fullscreen, the panel staying unscrolled on a phone deep link, the “other sheets of this series” list, period hand-off, collection/histogram/compare, the point filter (keyboard `P` and skip-list chip, map click, `?at=` link, empty state, 390 px), **browser history** (the app adds no entry of its own while it starts up, “forward” restores it, “back” closes an open record and keeps the search, a map drag is not a step, one “back” undoes a whole typed search), map-only and list-only view layouts, marker pins, marker clustering, the sticky map, the “Ausschnitte” footprint layer (chip + inline switch, shared `?ex=1` link, footprint covering the point-filter crosshair, row-hover highlight, 390 px clipping), the record search inside the place box (“Karten zum Stichwort …” applies the keyword filter, its count matches the list, an unmatched query says so), “Nach oben”, 320 px list layout, map-first layout, pin/unpin from the detail panel, the georeferenced WMTS record's own “Kartenebene” toggle (on from the panel: `ov`/`ot` set, sidebar select agrees, real overlay tiles; a second press removes it again), the **Grundkarte switch** (three documented swisstopo layers, default marked, real grey tiles after a click with the old layer's tiles gone and the view unchanged, shared `?base=luftbild` link, Enter on the focused chip, 390 px), the device-local remembered list, “Suchlink kopieren”, no placeholder text (`null`/`undefined`) in the UI, CSP/console/network hygiene, WCAG 2.2 AA contrast sweep, mobile layout, and a **degraded-upstream section**: it blocks the image service and the place-search API on purpose and asserts that both fall back to plain German messages, local title suggestions and working provider links. Screenshots + `report.json` in `--out`; exit code 1 on any failure |
 
 ## Cloudflare Workers deployment
 
@@ -99,8 +99,8 @@ throws is reported in the UI (`#app-notices`) and in
 | `detail.js` | detail panel with the IIIF viewer and the original-record link (owner: zurich-maps-3) |
 | `compare.js` | comparison list: pin up to four records (`?cmp=`), open two or more side by side with their IIIF/WMTS previews (owner: zurich-maps-1). Also keeps the pinned ids in this browser (`localStorage['kartenzeit.cmp.v1']`, ids only, never sent to a server); a link that carries `?cmp=` always wins over the stored list |
 
-URL state is documented in `store.js`: `q, from, to, p, t, c, vp, ex, at, place, lat,
-lon, z, sel, sh, vv, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the
+URL state is documented in `store.js`: `q, from, to, p, t, c, base, vp, ex, at,
+place, lat, lon, z, sel, sh, vv, view, sort, ov, ot, cmp`. `sh` is the 1-based sheet of the
 open digitised work (detail.js clamps it to the real canvas count and shows the
 same sheet in the IIIF viewer; a work with more than twelve sheets also gets a
 “Blatt” select for the direct jump to any sheet, and the strip below the viewer
@@ -115,6 +115,12 @@ whose documented extent covers that point remain in the list and on the map
 outlines on the map (“Ausschnitte”; `extentRects()` in `map.js` — purely visual,
 `pointer-events: none`, identical extents are one rectangle, records without an
 extent are counted in the status line instead of guessed).
+`base` is the chosen Grundkarte (`farbe` | `grau` | `luftbild`; absent = the
+default colour Landeskarte). `map.js` resolves the key against its documented
+`BASE_LAYERS` and falls back to the default for an unknown or hand-edited value,
+so a shared link always opens on a real swisstopo layer — the chips under the map
+(`#base-layer-switch`, one `aria-pressed` button per layer) are built from that
+same list, and the map badge carries the attribution of the layer in use.
 
 ### Browser history (back/forward)
 
@@ -124,7 +130,7 @@ browser buttons walk the way the visitor explored instead of leaving the app:
 | Behaviour | Keys |
 | --- | --- |
 | New history entry (`pushState`) | `q, from, to, provider, type, collection, viewport, at, place, selected` |
-| Replaces the current entry (`replaceState`) | `lat, lon, zoom, sheet, vv, extents, view, sort, overlay, otime, cmp` — panning, dragging the year control, walking the sheets of a work, the visible viewer cut-out, the footprint layer, the pinned comparison list |
+| Replaces the current entry (`replaceState`) | `lat, lon, zoom, sheet, vv, extents, base, view, sort, overlay, otime, cmp` — panning, dragging the year control, walking the sheets of a work, the visible viewer cut-out, the footprint layer, the chosen Grundkarte, the pinned comparison list |
 
 Repeated changes to the same key set inside `HISTORY_COALESCE_MS` (900 ms, both
 exported from `store.js`) merge into the entry that started the gesture: a typed

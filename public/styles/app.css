@@ -1317,3 +1317,28 @@ body.app-compare--open {
   color: var(--zh-black);
   font-weight: 600;
 }
+
+/* ---- Grundkarte (base map) switch -------------------------------------
+   Added by maps-2 (map.js) to maps-1's stylesheet; purely additive, cantonal
+   tokens only. The chips sit in the existing keyboard control row under the
+   map (`.app-map__skip`), behind a bold label so the group is self-explaining
+   without a legend. */
+.app-map__skipbase {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
+
+.app-map__skiplabel {
+  font-family: var(--zh-font-black);
+  font-size: var(--zh-font-small);
+  font-weight: 900;
+  color: var(--zh-black);
+}
+
+.app-map__skipgroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zh-size-mini);
+}
