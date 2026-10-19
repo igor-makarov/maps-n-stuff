@@ -94,9 +94,12 @@ against the 119-record seed.
 `public/styles/app.css` (owner maps-1): at ≤ 400 px the intro facts strip
 (`#intro-facts`) was `flex-wrap: nowrap; overflow-x: auto`, so “IIIF-Bildservice
 113” was clipped mid-word on a 390 px phone and “Anbieter 2” on a 320 px one, with
-no visible scroll affordance. It now wraps into two columns (see the commit
-message for the exact rule); the four figures stay compact and readable at 390 px
-and 320 px.
+no visible scroll affordance. The `@media (max-width: 599px)` block now lays it
+out as a two-column grid (`grid-template-columns: repeat(2, minmax(0, 1fr))`; the
+`nowrap`/`overflow-x`/`flex: 0 0 auto` declarations are gone, the label/value
+sub-layout is unchanged). Measured at 390 px and 320 px: `scrollWidth ==
+clientWidth`, all four figures inside the card, two rows, no page overflow — and
+the harness stayed at **123/123**.
 
 ### Messages
 

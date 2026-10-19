@@ -1073,17 +1073,18 @@ body.app-compare--open {
     font-size: var(--zh-font-small);
   }
   .zh-facts {
-    /* Stock figures stay complete but compact: one scrollable row instead of a
-       three-row block above the map (the same figures also stand in the intro
-       band at larger widths). */
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    gap: var(--zh-size-large);
+    /* Stock figures stay complete but compact: two columns instead of one
+       clipped row. A scrollable row looked broken on a phone (the fourth
+       figure, “IIIF-Bildservice”, was cut mid-word with no scroll affordance),
+       and a single stacked column would push the map far down; two columns are
+       readable at 320 px and cost one short line. */
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--zh-size-small-regular) var(--zh-size-regular);
     padding-bottom: 4px;
   }
   .zh-facts > li {
-    flex: 0 0 auto;
+    min-width: 0;
   }
   /* The source tags repeat verbatim in “Quellen und Rechte” (#source-list), so
      the smallest breakpoint keeps the way to the map short instead. */
