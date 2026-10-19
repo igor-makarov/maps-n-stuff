@@ -67,6 +67,12 @@ position is not reused; `undefined` input is empty).
 - **After maps-0's `b9eb0cd` (199 records)** the equality still holds on the
   integrated seed: `Zürich` = `Zuerich` = `Zurich` = **168**, `Zürichsee` =
   `Zuerichsee` = 2, `Geneve` = `Genève` = 3, and `npm run check` is 163/163.
+- A **full harness run on that 199-record seed** (`--out /tmp/shots5`) is
+  **142/142** with `markerPoints` and the folding in place — every legacy check
+  still passes, no console errors, no failed requests.
+- **Fresh clone of `main`** (`git clone … /tmp/fresh2 && npm ci && npm run
+  check`) → validation ✓, **163/163**, `wrangler deploy --dry-run` ✓ (31 asset
+  files). The Cloudflare build path needs nothing but the repository.
 
 ## Messages
 
