@@ -3,12 +3,14 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **16,178
+[global integration notes](global-integration.md). The bundle contains **17,178
 records**: 4,464 Stanford public-domain maps, 10,242 Boston Public Library
 (Leventhal) maps, 972 Digital Commonwealth partner-held maps, 1,437 e-rara maps,
-27 swisstopo and 8 Library of Congress records. There are **117 native
-georeferenced rasters**. USGS remains a registered live-search provider; that
-registration does not claim imported records.
+27 swisstopo and 36 Library of Congress records. The Library of Congress slice is a verified partial import (civil-war-maps
+scope, pages 1), not the whole institution; see the member-1 sourcing note for the
+rate-limit cursor. There are **117 native georeferenced rasters**. USGS remains a
+registered live-search provider; that registration does not claim imported
+records.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
