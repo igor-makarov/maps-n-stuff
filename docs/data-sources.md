@@ -3,17 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **24,803
+[global integration notes](global-integration.md). The bundle contains **30,801
 records** from eight providers: 4,464 Stanford public-domain maps, 10,242 Boston
 Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
-5,950 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 1,437 e-rara maps, 27 swisstopo and 49 Library of
+11,947 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
+Library of Finland maps, 1,437 e-rara maps, 27 swisstopo and 50 Library of
 Congress records. The Library of Congress and USGS slices are verified partial
 imports, not the whole institutions; both record their resumable cursors. There
-are **117 native Stanford COGs plus 5,950 USGS GeoTIFF records**; the USGS
-raster sample (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
-renderer) is representative, not a claim that every one of the 5,950 was
-individually opened.
+are **117 native Stanford COGs plus 11,947 USGS GeoTIFF records**; the USGS
+raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
+renderer on each slice) are representative, not a claim that every one of the
+11,947 was individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -463,13 +463,13 @@ Refresh: `npm run harvest:history` (network) or `npm run harvest:history:offline
 | Thumbnail | `previewGraphicURL` (`_tn.jpg` on the same host) |
 | Rights | USGS: “USGS-authored or produced data and information are considered to be in the U.S. Public Domain.” <https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits> (retrieved 2026-10-20; the FAQ URL returns 403 to non-browser clients, the copyrights page is the primary policy used) |
 | Attribution | “U.S. Geological Survey” |
-| Publication dates | 1883–1994 in the bundled slice, 52 state/territory codes, scales 1:10,000, 1:12,000, 1:100,000 and 1:125,000 |
+| Publication dates | 1883–1994 in the bundled slice, 53 state/territory/foreign codes (adds GU; `IT` is retained verbatim from the upstream state field), scales 1:10,000, 1:12,000, 1:20,000, 1:21,120, 1:24,000, 1:100,000, 1:125,000 and 1:192,000 |
 
 The TNM API returns about **186,061** HTMC products. The bundle imports a
-reproducible prefix of 5,950 products (six 1,000-product pages; 50 products had
-no delivered GeoTIFF and were withheld) so the merged catalogue still loads in
-the browser. `records.json.selection["usgs:htmc"].resumable.nextOffset` records
-where the next run continues:
+reproducible prefix of 11,947 products (twelve 1,000-product pages; 53 products
+had no delivered GeoTIFF and were withheld) so the merged catalogue still loads
+in the browser. `records.json.selection["usgs:htmc"].resumable.nextOffset`
+records where the next run continues (12000):
 
 ```
 node scripts/harvest-usgs.mjs --pages 6
@@ -479,7 +479,7 @@ node scripts/harvest-usgs.mjs --start-offset 6000 --pages 6
 Each record keeps the product title, publication date (never the depicted
 period), USGS footprint and the original GeoTIFF URL. Date evidence: every
 bundled title ends in a single edition year and that year equals the API
-`publicationDate` for all 5,950 records (`titleEditionYearMismatches: 0` in the
+`publicationDate` for all 11,947 records (`titleEditionYearMismatches: 0` in the
 selection), so the field is not a hidden digital-upload date; no depicted or
 survey date is inferred. The GeoTIFF is labelled
 `georeference.kind = "cog"` with `status = "provider-supplied"` because the
