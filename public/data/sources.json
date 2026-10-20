@@ -4,6 +4,85 @@
   "note": "Historical maps from primary institutional catalogues, including a curated international Library of Congress selection. Coverage varies by region and period; metadata keeps original titles and rights statements.",
   "providers": [
     {
+      "id": "digitalcommonwealth",
+      "name": "Digital Commonwealth partner collections",
+      "operator": "Digital Commonwealth (Boston Public Library)",
+      "homepage": "https://www.digitalcommonwealth.org/",
+      "home": "https://www.digitalcommonwealth.org/",
+      "institutions": [
+        "Filson Historical Society",
+        "George Washington Presidential Library at Mount Vernon",
+        "Lucius Beebe Memorial Library",
+        "Massachusetts Archives",
+        "National Archives and Records Administration",
+        "New-York Historical Society",
+        "Phillips Academy"
+      ],
+      "rights": "The verbatim rights and licence statement from the contributing institution is retained on every record. Bundled records carry an affirmative no-known-copyright-restrictions / no-restrictions-on-use determination, NoC-US, CC0 or CC BY. Items without such a determination are not imported.",
+      "attribution": "Contributing institutions via Digital Commonwealth",
+      "retrieved": "2026-10-20",
+      "api": {
+        "catalogue": "https://collections.leventhalmap.org/search.json",
+        "manifest": "https://ark.digitalcommonwealth.org/ark:/50959/{id}/manifest",
+        "image": "https://iiif.digitalcommonwealth.org/iiif/2/{imageId}/full/304,/0/default.jpg",
+        "documentation": "https://www.digitalcommonwealth.org/api"
+      },
+      "apiHosts": [
+        "collections.leventhalmap.org",
+        "ark.digitalcommonwealth.org",
+        "iiif.digitalcommonwealth.org"
+      ],
+      "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over the Digital Commonwealth inventory, restricted to partner-held records with per-record rights evidence; no decade, geography, institution or record-count cap.",
+      "rightsPolicy": {
+        "copyright": "https://www.digitalcommonwealth.org/copyright",
+        "apiDocumentation": "https://www.digitalcommonwealth.org/api",
+        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is cited to the catalogue and each contributing institution, and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination."
+      },
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 30,
+        "thumbnailOk": 30,
+        "imageInfoOk": 30,
+        "examples": [
+          {
+            "id": "digitalcommonwealth:commonwealth:z890vr23m",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "digitalcommonwealth:commonwealth:8623mr352",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "digitalcommonwealth:commonwealth:h415x419s",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "digitalcommonwealth:commonwealth:2227ng74b",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "digitalcommonwealth:commonwealth:2227nj34s",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          }
+        ]
+      }
+    },
+    {
       "id": "e-rara",
       "name": "e-rara — historic maps and atlases",
       "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
@@ -160,109 +239,6 @@
       }
     },
     {
-      "id": "swisstopo",
-      "name": "swisstopo",
-      "operator": "Bundesamt für Landestopografie swisstopo",
-      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
-      "home": "https://www.swisstopo.admin.ch/",
-      "collections": [
-        {
-          "id": "zeitreise",
-          "name": "Historical topographic maps",
-          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
-        },
-        {
-          "id": "siegfriedkarte",
-          "name": "Siegfried map series, 1870–1949",
-          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
-        },
-        {
-          "id": "dufourkarte",
-          "name": "Dufour map, first edition",
-          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
-        },
-        {
-          "id": "swissimage-zeitreise",
-          "name": "Historical aerial imagery — Switzerland",
-          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
-        },
-        {
-          "id": "swissimage-1946",
-          "name": "SWISSIMAGE HIST 1946",
-          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
-        }
-      ],
-      "endpoints": {
-        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
-      },
-      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
-      "attribution": "© swisstopo",
-      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
-      "retrievalDate": "2026-10-19",
-      "apiHosts": [
-        "wmts.geo.admin.ch",
-        "map.geo.admin.ch"
-      ],
-      "api": {
-        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
-        "mapViewer": "https://map.geo.admin.ch/?lang=en&layers={layerId}&time={Time}"
-      }
-    },
-    {
-      "id": "loc",
-      "name": "Library of Congress",
-      "operator": "Library of Congress, United States",
-      "homepage": "https://www.loc.gov/maps/",
-      "rights": "See each original catalogue record for its Rights Advisory. Geography and Map Division material is generally free to use and reuse unless otherwise stated.",
-      "attribution": "Library of Congress, Geography and Map Division",
-      "retrieved": "2026-10-19",
-      "api": {
-        "catalogue": "https://www.loc.gov/item/{id}/?fo=json",
-        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
-        "image": "https://tile.loc.gov/image-services/iiif/",
-        "documentation": "https://www.loc.gov/apis/"
-      },
-      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov.",
-      "liveSearch": "https://www.loc.gov/maps/?fo=json"
-    },
-    {
-      "id": "stanford",
-      "name": "Stanford University Libraries",
-      "operator": "Stanford University Libraries",
-      "homepage": "https://earthworks.stanford.edu/",
-      "attribution": "Stanford University Libraries / original collection",
-      "rights": "Metadata CC0 1.0. Only public map records with an explicit Public Domain Mark or CC0 image statement are included; original per-item rights are retained.",
-      "terms": "https://github.com/OpenGeoMetadata/edu.stanford.purl/blob/ff804e306fb2f79ac837c5045c7e0d9acb1d979b/LICENSE",
-      "api": {
-        "metadata": "https://github.com/OpenGeoMetadata/edu.stanford.purl",
-        "manifest": "https://purl.stanford.edu/{druid}/iiif3/manifest",
-        "images": "https://stacks.stanford.edu/image/iiif/",
-        "raster": "https://stacks.stanford.edu/file/druid:{druid}/{file}"
-      },
-      "sourceRevision": "ff804e306fb2f79ac837c5045c7e0d9acb1d979b",
-      "retrieved": "2026-10-19"
-    },
-    {
-      "id": "usgs",
-      "name": "USGS Historical Topographic Maps",
-      "homepage": "https://ngmdb.usgs.gov/topoview/",
-      "attribution": "U.S. Geological Survey",
-      "rights": "USGS-produced historical topographic maps are public domain; retain source credits.",
-      "api": {
-        "catalogue": "https://tnmaccess.nationalmap.gov/api/v1/products",
-        "terms": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted"
-      },
-      "mode": "live-search",
-      "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
-    },
-    {
       "id": "leventhal",
       "name": "Leventhal Map & Education Center — Boston Public Library",
       "operator": "Boston Public Library, Norman B. Leventhal Map & Education Center",
@@ -363,8 +339,111 @@
           }
         ]
       }
+    },
+    {
+      "id": "loc",
+      "name": "Library of Congress",
+      "operator": "Library of Congress, United States",
+      "homepage": "https://www.loc.gov/maps/",
+      "rights": "See each original catalogue record for its Rights Advisory. Geography and Map Division material is generally free to use and reuse unless otherwise stated.",
+      "attribution": "Library of Congress, Geography and Map Division",
+      "retrieved": "2026-10-19",
+      "api": {
+        "catalogue": "https://www.loc.gov/item/{id}/?fo=json",
+        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
+        "image": "https://tile.loc.gov/image-services/iiif/",
+        "documentation": "https://www.loc.gov/apis/"
+      },
+      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov.",
+      "liveSearch": "https://www.loc.gov/maps/?fo=json"
+    },
+    {
+      "id": "stanford",
+      "name": "Stanford University Libraries",
+      "operator": "Stanford University Libraries",
+      "homepage": "https://earthworks.stanford.edu/",
+      "attribution": "Stanford University Libraries / original collection",
+      "rights": "Metadata CC0 1.0. Only public map records with an explicit Public Domain Mark or CC0 image statement are included; original per-item rights are retained.",
+      "terms": "https://github.com/OpenGeoMetadata/edu.stanford.purl/blob/ff804e306fb2f79ac837c5045c7e0d9acb1d979b/LICENSE",
+      "api": {
+        "metadata": "https://github.com/OpenGeoMetadata/edu.stanford.purl",
+        "manifest": "https://purl.stanford.edu/{druid}/iiif3/manifest",
+        "images": "https://stacks.stanford.edu/image/iiif/",
+        "raster": "https://stacks.stanford.edu/file/druid:{druid}/{file}"
+      },
+      "sourceRevision": "ff804e306fb2f79ac837c5045c7e0d9acb1d979b",
+      "retrieved": "2026-10-19"
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo",
+      "operator": "Bundesamt für Landestopografie swisstopo",
+      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+      "home": "https://www.swisstopo.admin.ch/",
+      "collections": [
+        {
+          "id": "zeitreise",
+          "name": "Historical topographic maps",
+          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        },
+        {
+          "id": "siegfriedkarte",
+          "name": "Siegfried map series, 1870–1949",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
+        },
+        {
+          "id": "dufourkarte",
+          "name": "Dufour map, first edition",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
+        },
+        {
+          "id": "swissimage-zeitreise",
+          "name": "Historical aerial imagery — Switzerland",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
+        },
+        {
+          "id": "swissimage-1946",
+          "name": "SWISSIMAGE HIST 1946",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
+        }
+      ],
+      "endpoints": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
+      },
+      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
+      "attribution": "© swisstopo",
+      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
+      "retrievalDate": "2026-10-19",
+      "apiHosts": [
+        "wmts.geo.admin.ch",
+        "map.geo.admin.ch"
+      ],
+      "api": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "mapViewer": "https://map.geo.admin.ch/?lang=en&layers={layerId}&time={Time}"
+      }
+    },
+    {
+      "id": "usgs",
+      "name": "USGS Historical Topographic Maps",
+      "homepage": "https://ngmdb.usgs.gov/topoview/",
+      "attribution": "U.S. Geological Survey",
+      "rights": "USGS-produced historical topographic maps are public domain; retain source credits.",
+      "api": {
+        "catalogue": "https://tnmaccess.nationalmap.gov/api/v1/products",
+        "terms": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted"
+      },
+      "mode": "live-search",
+      "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T10:37:41.998Z"
+  "generatedAt": "2026-10-20T10:44:12.199Z"
 }
