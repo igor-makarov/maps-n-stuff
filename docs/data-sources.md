@@ -3,13 +3,14 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **37,774
-records** from eight providers: 4,464 Stanford public-domain maps, 10,242 Boston
+[global integration notes](global-integration.md). The bundle contains **37,879
+records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
 Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
 17,947 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 2,410 e-rara maps, 27 swisstopo and 50 Library of
-Congress records. The Library of Congress and USGS slices are verified partial
-imports, not the whole institutions; both record their resumable cursors. There
+Library of Finland maps, 2,410 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
+and 50 Library of Congress records. The Library of Congress and USGS slices are
+verified partial imports, not the whole institutions; both record their resumable
+cursors. There
 are **117 native Stanford COGs plus 17,947 USGS GeoTIFF records**; the USGS
 raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
 renderer on each of the three slices) are representative, not a claim that every
@@ -521,6 +522,30 @@ usable when the upstream is unavailable.
 
 The 186,061 total is not claimed as bundled coverage. The remaining products
 stay reachable through the live USGS search and through the recorded cursor.
+
+## 6. SLUB Dresden — Karten und Ansichten (imported 2026-10-20)
+
+The Sächsische Landesbibliothek – Staats- und Universitätsbibliothek Dresden
+publishes the documented OAI-PMH set `maps` (“Karten und Ansichten”) in
+`metadataPrefix=mets`. The set reports **161 records**; **105** are imported
+into `/data/records/slub.json` and 56 are withheld with reasons.
+
+| Field | Value |
+| --- | --- |
+| Discovery | `https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps` (7 pages, resumption tokens) |
+| Record | `https://digital.slub-dresden.de/id285992066` (example); PURL/URN retained |
+| Rights (item) | MODS `accessCondition type="use and reproduction"` → Public Domain Mark 1.0, corroborated by `dv:license=pdm` and `slubarchiv:copyrightStatus=publicdomain` |
+| Rights (policy) | SLUB “Nutzungsbestimmungen für die Digitalen Sammlungen”, <https://nutzungshinweis.slub-dresden.de/> (retrieved 2026-10-20): digitised objects whose copyright has expired are made available under PDM 1.0; the source citation (SLUB Dresden, PURL/URN, licence) is required |
+| Metadata reuse | The METS metadata is reused with the required attribution and a link to the original record. SLUB publishes no separate metadata licence, so none is asserted. |
+| Images | Per-item THUMBS/DEFAULT/ORIGINAL bitstreams from `digital.slub-dresden.de`; direct JPEG originals and per-page PDFs, no IIIF service is invented |
+| Withheld | 48 records state “Freier Zugang - Rechte vorbehalten 1.0” and 8 are `rightsstatements.org/vocab/CNE/1.0/` (Copyright Not Evaluated); none is labelled public domain |
+| Verification | 24/24 sampled thumbnails, 24/24 original JPEGs and 24/24 record pages returned HTTP 200/206 |
+| Dates | 105/105 dated, publication span 1536–1909; no depicted date, extent or place is inferred |
+
+Example: `slub:285992066` — “Atlas selectus von allen Königreichen und Ländern
+der Welt”, Johann Georg Schreiber, Leipzig 1730, 155 digitised pages, PDM 1.0.
+The Kartenforum / Deutsche Fotothek search index is **not** imported: its public
+index has no per-record rights field, so it remains research-only.
 
 ## Fetching policy (politeness, caching, failure behaviour)
 

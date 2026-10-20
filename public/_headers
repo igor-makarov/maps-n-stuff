@@ -10,7 +10,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://www.e-rara.ch https://wmts.geo.admin.ch https://map.geo.admin.ch https://tile.openstreetmap.org https://tile.loc.gov https://www.loc.gov https://gibs.earthdata.nasa.gov https://stacks.stanford.edu https://purl.stanford.edu https://collections.leventhalmap.org https://iiif.digitalcommonwealth.org https://allmaps.xyz https://prd-tnm.s3.amazonaws.com https://ngmdb.usgs.gov https://www.sciencebase.gov https://www.doria.fi; connect-src 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://www.e-rara.ch https://wmts.geo.admin.ch https://map.geo.admin.ch https://tile.openstreetmap.org https://tile.loc.gov https://www.loc.gov https://gibs.earthdata.nasa.gov https://stacks.stanford.edu https://purl.stanford.edu https://collections.leventhalmap.org https://iiif.digitalcommonwealth.org https://www.doria.fi https://digital.slub-dresden.de https://allmaps.xyz https://prd-tnm.s3.amazonaws.com https://ngmdb.usgs.gov https://www.sciencebase.gov; connect-src 'self'
 
 # Fonts never change under the same file name: cache them hard.
 /fonts/*

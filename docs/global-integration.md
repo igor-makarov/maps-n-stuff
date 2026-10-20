@@ -5,10 +5,10 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 37,774 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+The bundle contains 37,879 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
 Library, 972 Digital Commonwealth partner-held, 17,947 USGS Historical
 Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
-2,410 e-rara, 27 swisstopo and 50 Library of Congress records. Stanford and
+2,410 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records. Stanford and
 Doria contribute worldwide holdings; USGS adds public-domain coverage of the
 United States and its territories. Dates, thumbnails, extents and alignment are
 optional. Image reuse rights are not.
@@ -16,8 +16,8 @@ optional. Image reuse rights are not.
 The bundled providers are published either in the core document or in one of the
 registered shards (`/data/records/leventhal.json`,
 `/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
-`/data/records/doria.json`, `/data/records/usgs.json`,
-`/data/records/usgs-2.json`). The browser loader and
+`/data/records/doria.json`, `/data/records/slub.json`,
+`/data/records/usgs.json`, `/data/records/usgs-2.json`). The browser loader and
 the Worker merge them; a failed shard is reported without discarding the rest of
 the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
 feed; the full feed remains available through live search.

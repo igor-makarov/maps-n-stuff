@@ -239,6 +239,9 @@ test('global atlas branding stays independent of the design reference', async ()
   // Doria's provider originals and thumbnails are plain <img> URLs, so CSP must
   // admit that exact host or every Doria preview is blocked in the browser.
   assert.match(headers, /img-src[^;]+https:\/\/www\.doria\.fi/);
+  // SLUB publishes direct thumbnail/original JPEGs from its own digitisation
+  // server; the CSP must admit that exact host too.
+  assert.match(headers, /img-src[^;]+https:\/\/digital\.slub-dresden\.de/);
 });
 
 test('provider originals are linked when the collection has no IIIF service', () => {
