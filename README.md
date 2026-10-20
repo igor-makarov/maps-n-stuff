@@ -25,6 +25,11 @@ Cloudflare’s connected repository integration handles build and deployment fro
 - Deploy command: `npx wrangler deploy`
 - Root directory: repository root
 
+The [Cloudflare build workflow](.github/workflows/cloudflare-build.yml) calls the
+repository Actions secret `CF_WEBHOOK` every 30 minutes (at minutes 00 and 30 UTC).
+It can also be run manually from Actions. GitHub only triggers the hook;
+Cloudflare performs the build and deployment.
+
 The package, Wrangler Worker and new Shurik member names are `maps-n-stuff`, matching the repository. The Cloudflare connected Worker must also be named `maps-n-stuff`; an existing `zurich-maps` project needs that dashboard migration and any custom-domain reassignment. Changing this repository does not rename an account-side Worker. No Cloudflare credentials belong in Shurik or this repository.
 
 ## Sources and refreshes
