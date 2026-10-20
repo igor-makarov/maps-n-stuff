@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "1-1",
+    "outcome": "interrupted",
+    "runId": "39397634260",
+    "journalId": "1-1",
+    "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
+    "recovery": "diagnostics/recovery/39397634260-1.json",
+    "transcript": "unavailable"
+  }
+]
