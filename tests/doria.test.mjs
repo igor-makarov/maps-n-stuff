@@ -84,6 +84,9 @@ test('rights gate accepts explicit PDM/CC0 but rejects restrictive or unknown st
   assert.equal(rightsGate(['Public Domain', 'All rights reserved']).basis, null);
   assert.equal(rightsGate(['Copyright not evaluated']).basis, null);
   assert.equal(rightsGate([]).basis, null);
+  // A CC0 URI on the same line does not cancel an explicit restriction.
+  assert.equal(rightsGate(['https://creativecommons.org/publicdomain/zero/1.0/ ; All rights reserved.']).basis, null);
+  assert.equal(rightsGate(['Public Domain ; This work is non-commercial; all rights reserved.']).basis, null);
 });
 
 test('a CC0 legal waiver is not mistaken for a restriction', () => {
@@ -118,6 +121,22 @@ test('recordFrom withholds non-maps, missing images and uncleared rights', () =>
   assert.equal(recordFrom({ ...base, dc: { ...base.dc, types: ['image'] } }).record, null);
   assert.equal(recordFrom({ ...base, ore: { thumbnail: null, bitstreams: [] } }).record, null);
   assert.equal(recordFrom({ ...base, dc: { ...base.dc, rights: ['All rights reserved'] }, mods: { ...base.mods, access: [] } }).record, null);
+  assert.equal(recordFrom({ ...base, dc: { ...base.dc, rights: ['Public Domain ; All rights reserved.'] } }).record, null);
+});
+
+test('a missing Doria thumbnail does not exclude a rights-cleared original scan', () => {
+  const base = { id: '31270', dc: parseDc(dcRecord), mods: parseMods(modsRecord), ore: parseOre(oreRecord) };
+  // An original JPEG is a truthful preview when the repository omits its thumbnail.
+  const jpegOnly = recordFrom({ ...base, ore: { thumbnail: null, bitstreams: base.ore.bitstreams.filter((b) => b.url.endsWith('.jpg')) } }).record;
+  assert.ok(jpegOnly);
+  assert.equal(jpegOnly.thumbnail, 'https://www.doria.fi/bitstream/10024/31270/1/Nord-ost_Land.jpg');
+  assert.equal(jpegOnly.imageUrl, jpegOnly.thumbnail);
+  // A PDF-only work keeps its document link and no invented image thumbnail.
+  const pdf = '<record><metadata><atom:entry><rdf:Description rdf:about="https://www.doria.fi/bitstream/10024/31270/4/map.pdf"><dcterms:description>ORIGINAL</dcterms:description></rdf:Description><atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="https://www.doria.fi/bitstream/10024/31270/4/map.pdf" type="application/pdf" /></atom:entry></metadata></record>';
+  const pdfOnly = recordFrom({ ...base, ore: parseOre(pdf) }).record;
+  assert.ok(pdfOnly);
+  assert.equal(pdfOnly.thumbnail, undefined);
+  assert.deepEqual(pdfOnly.documents, ['https://www.doria.fi/bitstream/10024/31270/4/map.pdf']);
 });
 
 test('englishSetName reads the official English set label', () => {

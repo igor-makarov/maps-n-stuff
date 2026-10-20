@@ -84,14 +84,14 @@
     },
     {
       "id": "e-rara",
-      "name": "e-rara — historic maps and atlases",
-      "operator": "Zentralbibliothek Zürich (ZB) mit Schweizer Hochschulbibliotheken",
+      "name": "e-rara \u2014 historic maps and atlases",
+      "operator": "Zentralbibliothek Z\u00fcrich (ZB) mit Schweizer Hochschulbibliotheken",
       "institutions": [
-        "Bibliothèque de Genève",
-        "ETH-Bibliothek Zürich",
-        "Universitätsbibliothek Basel",
-        "Universitätsbibliothek Bern",
-        "Zentralbibliothek Zürich"
+        "Biblioth\u00e8que de Gen\u00e8ve",
+        "ETH-Bibliothek Z\u00fcrich",
+        "Universit\u00e4tsbibliothek Basel",
+        "Universit\u00e4tsbibliothek Bern",
+        "Zentralbibliothek Z\u00fcrich"
       ],
       "homepage": "https://www.e-rara.ch/",
       "home": "https://www.e-rara.ch/",
@@ -116,7 +116,7 @@
         },
         {
           "id": "museecarto",
-          "name": "Weltkarten aus dem Musée cartographique (e-rara-Set museecarto)",
+          "name": "Weltkarten aus dem Mus\u00e9e cartographique (e-rara-Set museecarto)",
           "discovery": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
           "note": "probing 53 map candidates yields 0 records: no manifest of this set states a \"Kartendaten\" extent, and its works come from several libraries, so a record would also need the holding library stated by the manifest or by its catalogue corpus"
         },
@@ -125,28 +125,28 @@
           "name": "Zurich city and surroundings",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-118979",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DPlan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DKarte%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
-          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Zürich | dc.title=Karte and dc.subject=Zürich): 92 candidates with a stated extent, 47 records kept"
+          "note": "SRU/CQL discovery (dc.title=Plan and dc.subject=Z\u00fcrich | dc.title=Karte and dc.subject=Z\u00fcrich): 92 candidates with a stated extent, 47 records kept"
         },
         {
           "id": "zurich-stadtplaene",
           "name": "Zurich city plans and site maps",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-26719",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DGrundriss%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DSituationsplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
-          "note": "SRU/CQL discovery (dc.title=Grundriss and dc.subject=Zürich | dc.title=Situationsplan and dc.subject=Zürich): 35 candidates with a stated extent, 10 records kept"
+          "note": "SRU/CQL discovery (dc.title=Grundriss and dc.subject=Z\u00fcrich | dc.title=Situationsplan and dc.subject=Z\u00fcrich): 35 candidates with a stated extent, 10 records kept"
         },
         {
           "id": "zurich-region",
           "name": "Zurich canton, city and lake",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-117736",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DUmgebung%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DZ%C3%BCrichsee&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DStadtplan%20and%20dc.subject%3DZ%C3%BCrich&startRecord=1&maximumRecords=100&recordSchema=mods",
-          "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Zürich | dc.subject=Zürichsee | dc.title=Stadtplan and dc.subject=Zürich): 24 candidates with a stated extent, 11 records kept"
+          "note": "SRU/CQL discovery (dc.title=Umgebung and dc.subject=Z\u00fcrich | dc.subject=Z\u00fcrichsee | dc.title=Stadtplan and dc.subject=Z\u00fcrich): 24 candidates with a stated extent, 11 records kept"
         },
         {
           "id": "weltuebersichten",
           "name": "Maps of Europe and the world",
           "record": "https://www.e-rara.ch/doi/10.3931/e-rara-12909",
           "discovery": "https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DEuropa%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DErdkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.title%3DWeltkarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAfrika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAmerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DAsien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DDeutschland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DFrankreich%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DItalien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DOesterreich-Ungarn%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSpanien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DGrossbritannien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DS%C3%BCdamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DPal%C3%A4stina%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DT%C3%BCrkei%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DIndien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DNordamerika%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DRussland%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DSyrien%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods | https://www.e-rara.ch/sru?operation=searchRetrieve&version=1.2&query=dc.subject%3DJapan%20and%20dc.title%3DKarte&startRecord=1&maximumRecords=100&recordSchema=mods",
-          "note": "SRU/CQL discovery (dc.subject=Europa and dc.title=Karte | dc.title=Erdkarte | dc.title=Weltkarte | dc.subject=Afrika and dc.title=Karte | dc.subject=Amerika and dc.title=Karte | dc.subject=Asien and dc.title=Karte | dc.subject=Deutschland and dc.title=Karte | dc.subject=Frankreich and dc.title=Karte | dc.subject=Italien and dc.title=Karte | dc.subject=Oesterreich-Ungarn and dc.title=Karte | dc.subject=Spanien and dc.title=Karte | dc.subject=Grossbritannien and dc.title=Karte | dc.subject=Südamerika and dc.title=Karte | dc.subject=Palästina and dc.title=Karte | dc.subject=Türkei and dc.title=Karte | dc.subject=Indien and dc.title=Karte | dc.subject=Nordamerika and dc.title=Karte | dc.subject=Russland and dc.title=Karte | dc.subject=Syrien and dc.title=Karte | dc.subject=Japan and dc.title=Karte): 133 candidates with a stated extent, 35 records kept — the second coverage area, outside the canton window by rule"
+          "note": "SRU/CQL discovery (dc.subject=Europa and dc.title=Karte | dc.title=Erdkarte | dc.title=Weltkarte | dc.subject=Afrika and dc.title=Karte | dc.subject=Amerika and dc.title=Karte | dc.subject=Asien and dc.title=Karte | dc.subject=Deutschland and dc.title=Karte | dc.subject=Frankreich and dc.title=Karte | dc.subject=Italien and dc.title=Karte | dc.subject=Oesterreich-Ungarn and dc.title=Karte | dc.subject=Spanien and dc.title=Karte | dc.subject=Grossbritannien and dc.title=Karte | dc.subject=S\u00fcdamerika and dc.title=Karte | dc.subject=Pal\u00e4stina and dc.title=Karte | dc.subject=T\u00fcrkei and dc.title=Karte | dc.subject=Indien and dc.title=Karte | dc.subject=Nordamerika and dc.title=Karte | dc.subject=Russland and dc.title=Karte | dc.subject=Syrien and dc.title=Karte | dc.subject=Japan and dc.title=Karte): 133 candidates with a stated extent, 35 records kept \u2014 the second coverage area, outside the canton window by rule"
         }
       ],
       "endpoints": {
@@ -278,7 +278,7 @@
     },
     {
       "id": "leventhal",
-      "name": "Leventhal Map & Education Center — Boston Public Library",
+      "name": "Leventhal Map & Education Center \u2014 Boston Public Library",
       "operator": "Boston Public Library, Norman B. Leventhal Map & Education Center",
       "homepage": "https://collections.leventhalmap.org/",
       "home": "https://collections.leventhalmap.org/",
@@ -398,7 +398,7 @@
     {
       "id": "swisstopo",
       "name": "swisstopo",
-      "operator": "Bundesamt für Landestopografie swisstopo",
+      "operator": "Bundesamt f\u00fcr Landestopografie swisstopo",
       "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
       "home": "https://www.swisstopo.admin.ch/",
       "collections": [
@@ -410,7 +410,7 @@
         },
         {
           "id": "siegfriedkarte",
-          "name": "Siegfried map series, 1870–1949",
+          "name": "Siegfried map series, 1870\u20131949",
           "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
         },
@@ -422,7 +422,7 @@
         },
         {
           "id": "swissimage-zeitreise",
-          "name": "Historical aerial imagery — Switzerland",
+          "name": "Historical aerial imagery \u2014 Switzerland",
           "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
           "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
         },
@@ -437,8 +437,8 @@
         "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
         "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
       },
-      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
-      "attribution": "© swisstopo",
+      "rights": "Open Government Data; source reference \u00ab\u00a9swisstopo\u00bb mandatory.",
+      "attribution": "\u00a9 swisstopo",
       "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
       "retrievalDate": "2026-10-19",
       "apiHosts": [
@@ -466,7 +466,7 @@
     },
     {
       "id": "loc",
-      "name": "Library of Congress — Geography and Map Division",
+      "name": "Library of Congress \u2014 Geography and Map Division",
       "operator": "Library of Congress, Geography and Map Division",
       "homepage": "https://www.loc.gov/maps/",
       "home": "https://www.loc.gov/maps/",
@@ -565,14 +565,14 @@
     },
     {
       "id": "doria",
-      "name": "Doria — National Library of Finland map collections",
+      "name": "Doria \u2014 National Library of Finland map collections",
       "operator": "National Library of Finland (Kansalliskirjasto)",
       "homepage": "https://www.doria.fi/",
       "home": "https://www.doria.fi/",
       "institutions": [
         "National Library of Finland (Kansalliskirjasto)"
       ],
-      "rights": "Per-item rights: Public Domain Mark, CC0, or an explicit “Public domain” statement. The verbatim Doria/MODS statements are retained on every record; restrictive or conflicting statements are withheld.",
+      "rights": "Per-item rights: Public Domain Mark, CC0, or an explicit \u201cPublic domain\u201d statement. The verbatim Doria/MODS statements are retained on every record; restrictive or conflicting statements are withheld.",
       "attribution": "National Library of Finland / Doria",
       "retrieved": "2026-10-20",
       "terms": "https://www.doria.fi/page/terms",
@@ -600,7 +600,7 @@
         },
         {
           "id": "nordenskiold",
-          "name": "The Nordenskiöld Map Collection",
+          "name": "The Nordenski\u00f6ld Map Collection",
           "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216"
         },
         {
@@ -657,6 +657,11 @@
             "record": 200
           }
         ]
+      },
+      "metadataReuse": {
+        "status": "unresolved-pending",
+        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found.",
+        "claim": "No metadata licence is claimed. Catalogue facts are retained with attribution, the original record link and URN; this gap is pending, not cleared."
       }
     }
   ],
