@@ -706,126 +706,6 @@
       }
     },
     {
-      "id": "usgs",
-      "name": "USGS Historical Topographic Maps",
-      "operator": "U.S. Geological Survey",
-      "homepage": "https://www.usgs.gov/programs/national-geospatial-program/historical-topographic-maps-preserving-past",
-      "institutions": [
-        "U.S. Geological Survey"
-      ],
-      "rights": "U.S. Public Domain (USGS-produced data and information). Credit: U.S. Geological Survey.",
-      "rightsUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
-      "attribution": "U.S. Geological Survey",
-      "retrieved": "2026-10-20",
-      "mode": "bundled + live-search",
-      "api": {
-        "catalogue": "https://tnmaccess.nationalmap.gov/api/v1/products",
-        "documentation": "https://tnmaccess.nationalmap.gov/api/v1/docs",
-        "terms": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits"
-      },
-      "apiHosts": [
-        "tnmaccess.nationalmap.gov",
-        "prd-tnm.s3.amazonaws.com",
-        "www.sciencebase.gov"
-      ],
-      "method": "Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, GeoPDF/GeoTIFF downloads and the USGS public-domain policy. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.",
-      "collections": [
-        {
-          "id": "htmc",
-          "name": "Historical Topographic Map Collection",
-          "discovery": "https://tnmaccess.nationalmap.gov/api/v1/products"
-        }
-      ],
-      "verification": {
-        "retrieved": "2026-10-20",
-        "sample": 8,
-        "previewOk": 8,
-        "previewChecked": 8,
-        "rasterRangeOk": 8,
-        "rasterChecked": 8,
-        "rasterReadable": 8,
-        "rasterCrsOk": 8,
-        "examples": [
-          {
-            "id": "usgs:5a8a5047e4b00f54eb4096b7",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6689023",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6042,
-              "height": 7988,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          },
-          {
-            "id": "usgs:5a8a29cbe4b00f54eb3c76e4",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/4395730",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6692,
-              "height": 8171,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          },
-          {
-            "id": "usgs:5a8a5288e4b00f54eb40ddad",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/13558202",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6617,
-              "height": 8067,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          },
-          {
-            "id": "usgs:5a8a29f2e4b00f54eb3c7b09",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/10998927",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6633,
-              "height": 8071,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "loc",
       "name": "Library of Congress — Geography and Map Division",
       "operator": "Library of Congress, Geography and Map Division",
@@ -930,8 +810,142 @@
         "complete": false,
         "note": "Partial Civil War Maps import; the LoC edge challenge (HTTP 429) interrupted item fetching. The cursor replays page 1 and the shard count is not the size of the collection."
       }
+    },
+    {
+      "id": "usgs",
+      "name": "USGS Historical Topographic Maps",
+      "operator": "U.S. Geological Survey",
+      "homepage": "https://www.usgs.gov/programs/national-geospatial-program/historical-topographic-maps-preserving-past",
+      "institutions": [
+        "U.S. Geological Survey"
+      ],
+      "rights": "U.S. Public Domain (USGS-produced data and information). Credit: U.S. Geological Survey.",
+      "rightsUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "attribution": "U.S. Geological Survey",
+      "retrieved": "2026-10-20",
+      "mode": "bundled + live-search",
+      "api": {
+        "catalogue": "https://tnmaccess.nationalmap.gov/api/v1/products",
+        "documentation": "https://tnmaccess.nationalmap.gov/api/v1/docs",
+        "terms": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits"
+      },
+      "apiHosts": [
+        "tnmaccess.nationalmap.gov",
+        "prd-tnm.s3.amazonaws.com",
+        "www.sciencebase.gov"
+      ],
+      "method": "Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, GeoPDF/GeoTIFF downloads and the USGS public-domain policy. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.",
+      "collections": [
+        {
+          "id": "htmc",
+          "name": "Historical Topographic Map Collection",
+          "discovery": "https://tnmaccess.nationalmap.gov/api/v1/products"
+        }
+      ],
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 8,
+        "previewOk": 8,
+        "previewChecked": 8,
+        "rasterRangeOk": 7,
+        "rasterChecked": 7,
+        "rasterReadable": 7,
+        "rasterCrsOk": 7,
+        "geopdfChecked": 1,
+        "geopdfOk": 1,
+        "examples": [
+          {
+            "id": "usgs:5a8a27e9e4b00f54eb3c4854",
+            "hasGeoreference": true,
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/6169437",
+            "tiffMagic": true,
+            "pdfStatus": null,
+            "pdfMagic": false,
+            "readable": {
+              "images": 8,
+              "width": 5063,
+              "height": 6033,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          },
+          {
+            "id": "usgs:5a8a4a23e4b00f54eb3fe68e",
+            "hasGeoreference": true,
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/6963341",
+            "tiffMagic": true,
+            "pdfStatus": null,
+            "pdfMagic": false,
+            "readable": {
+              "images": 8,
+              "width": 4833,
+              "height": 5929,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          },
+          {
+            "id": "usgs:5a8a53dee4b00f54eb410852",
+            "hasGeoreference": true,
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/8529648",
+            "tiffMagic": true,
+            "pdfStatus": null,
+            "pdfMagic": false,
+            "readable": {
+              "images": 8,
+              "width": 4963,
+              "height": 6517,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          },
+          {
+            "id": "usgs:5a8a5022e4b00f54eb409227",
+            "hasGeoreference": true,
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/5362244",
+            "tiffMagic": true,
+            "pdfStatus": null,
+            "pdfMagic": false,
+            "readable": {
+              "images": 8,
+              "width": 4746,
+              "height": 6363,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          }
+        ]
+      }
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:52:45.566Z"
+  "generatedAt": "2026-10-20T12:34:39.507Z"
 }

@@ -5,7 +5,7 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 31,637 maps: 23,945 USGS Historical Topographic Map
+The bundle contains 31,692 maps: 24,000 USGS Historical Topographic Map
 Collection sheets, 4,464 Stanford, 3,045 e-rara, 105 SLUB Dresden, 51 Library of
 Congress and 27 swisstopo records. Stanford and e-rara contribute worldwide
 holdings; USGS adds public-domain coverage of the United States and its
@@ -44,8 +44,10 @@ to copy the entire OldMapsOnline index.
 ## Image alignment
 
 117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
-and every one of the 23,945 bundled USGS HTMC records carries its original tiled
-GeoTIFF (main image plus internal overviews). The raster viewer uses their
+and 23,945 of the 24,000 bundled USGS HTMC records carry their original tiled
+GeoTIFF (main image plus internal overviews). The other 55 are GeoPDF-only
+products: they keep the original PDF download and make no COG/georeference or
+pixel-transform claim. The raster viewer uses their
 GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
 raster resolution. It inverse-projects the current Web Mercator viewport into
 source pixels, reads a bounded raster window and paints it as an
@@ -77,7 +79,7 @@ georeferencing job or guaranteed alignment accuracy is claimed.
 **Search more original collections** queries institutional JSON APIs, rather
 than scraping the aggregator. It offers Library of Congress, Leventhal Map &
 Education Center and USGS Historical Topographic Maps. Each request is bounded
-to 12 results with pagination and caching; USGS also has a bundled 23,945-record
+to 12 results with pagination and caching; USGS also has a bundled 24,000-record
 partial slice, but live search still covers the whole feed. The first two require item-level
 compatible rights evidence; unknown, noncommercial and conflicting statements
 are withheld. USGS requests are confined to its public-domain historical-map

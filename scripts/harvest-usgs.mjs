@@ -9,11 +9,14 @@
  *
  * Every admitted record is a USGS-produced historical quadrangle. The API
  * supplies its own ScienceBase item URL, publication date, footprint and the
- * original GeoPDF *and* GeoTIFF downloads. The GeoTIFF is a tiled raster with
+ * original GeoPDF *and* GeoTIFF downloads. A GeoTIFF is a tiled raster with
  * internal overviews; the catalogue records it as a provider-supplied native
  * raster so the existing GeoTIFF renderer can show it without inventing any
- * pixel-to-ground control points. The bounding box is the product footprint,
- * never a substitute for the raster's own georeferencing.
+ * pixel-to-ground control points. A product that delivers only a GeoPDF is
+ * still a real map and stays eligible: it keeps the original PDF download but
+ * gets no `georeference`/COG claim and no transform inferred from its bbox.
+ * The bounding box is the product footprint, never a substitute for the
+ * raster's own georeferencing.
  *
  * Rights: USGS states "USGS-authored or produced data and information are
  * considered to be in the U.S. Public Domain." Each record carries that
@@ -122,9 +125,14 @@ const GEOPDF_PATH = /^\/StagedProducts\/Maps\/HistoricalTopo\/PDF\/.+\.pdf$/i;
 const PREVIEW_PATH = /^\/StagedProducts\/Maps\/HistoricalTopo\/PDF\/.+_tn\.jpg$/i;
 const S3_HOSTS = ['prd-tnm.s3.amazonaws.com'];
 
+function usgsDownload(item) {
+  return httpsUrl(item?.urls?.GeoTIFF, S3_HOSTS, GEOTIFF_PATH);
+}
+
 /**
  * One TNM product → catalogue record. Returns null for products that are not
- * USGS HTMC maps or do not deliver the original GeoTIFF we claim. No missing
+ * USGS HTMC maps or do not deliver an original raster/PDF download. A
+ * GeoPDF-only product is admitted without a `georeference` claim. No missing
  * metadata is filled in: an undated sheet stays undated.
  */
 export function usgsProductRecord(item) {
@@ -133,8 +141,8 @@ export function usgsProductRecord(item) {
   const title = clean(item?.title);
   if (!title) return null;
   const geotiff = httpsUrl(item?.urls?.GeoTIFF, S3_HOSTS, GEOTIFF_PATH);
-  if (!geotiff) return null;
   const geospatialPdf = httpsUrl(item?.urls?.GeoPDF, S3_HOSTS, GEOPDF_PATH);
+  if (!geotiff && !geospatialPdf) return null;
   const preview = httpsUrl(item?.previewGraphicURL, S3_HOSTS, PREVIEW_PATH);
   const metaUrl = httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov']);
   if (!metaUrl) return null;
@@ -167,17 +175,22 @@ export function usgsProductRecord(item) {
           lon: (extent.west + extent.east) / 2,
         }
       : null,
-    geoNote:
-      'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.',
-    georeference: {
-      kind: 'cog',
-      url: geotiff,
-      source: metaUrl,
-      status: 'provider-supplied',
-      format: 'GeoTIFF',
-    },
+    geoNote: geotiff
+      ? 'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.'
+      : 'Catalogue extent is the USGS product footprint. This GeoPDF-only product has no verified pixel georeferencing; the footprint is not used as an image transform.',
+    ...(geotiff
+      ? {
+          georeference: {
+            kind: 'cog',
+            url: geotiff,
+            source: metaUrl,
+            status: 'provider-supplied',
+            format: 'GeoTIFF',
+          },
+        }
+      : {}),
     downloads: [
-      { label: 'GeoTIFF', url: geotiff },
+      ...(geotiff ? [{ label: 'GeoTIFF', url: geotiff }] : []),
       ...(geospatialPdf ? [{ label: 'GeoPDF', url: geospatialPdf }] : []),
     ],
     format: clean(item?.format) || null,
@@ -211,7 +224,10 @@ async function fetchPage(offset) {
       const body = await response.text();
       if (!body.trimStart().startsWith('{'))
         throw new Error(`non-JSON response from ${url.href}`);
-      return JSON.parse(body);
+      const page = JSON.parse(body);
+      if (!validProductsPage(page))
+        throw new Error(`error document instead of a products page from ${url.href}`);
+      return page;
     } catch (error) {
       last = error;
       if (attempt < 4) await sleep(1200 * attempt);
@@ -220,11 +236,23 @@ async function fetchPage(offset) {
   throw last;
 }
 
+export function validProductsPage(page) {
+  return Boolean(
+    page &&
+      !page.errorMessage &&
+      Array.isArray(page.items) &&
+      Number.isFinite(Number(page.total)),
+  );
+}
+
 async function cachedPage(offset) {
   const file = resolve(CACHE, 'products', `${PAGE_SIZE}-${offset}.json`);
   if (!REFRESH) {
     try {
-      return JSON.parse(await readFile(file, 'utf8'));
+      const cached = JSON.parse(await readFile(file, 'utf8'));
+      // A cached error document ({errorMessage: "Search timed out"}) is not a
+      // page of maps: refetch it instead of silently treating it as empty.
+      if (validProductsPage(cached)) return cached;
     } catch {}
   }
   const body = await fetchPage(offset);
@@ -261,12 +289,16 @@ async function ranged(url, accept = 'image/tiff') {
       bytes.length >= 4 &&
       ((bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
         (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a));
+    const pdf =
+      bytes.length >= 5 &&
+      bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2d;
     return {
       status: response.status,
       type: response.headers.get('content-type'),
       bytes: bytes.length,
       range: response.headers.get('content-range'),
       tiff: magic,
+      pdf,
     };
   } catch (error) {
     return { status: 0, error: String(error.message) };
@@ -288,7 +320,13 @@ export async function verify(records, limit = 8) {
     const preview = record.thumbnail
       ? await ranged(record.thumbnail, 'image/jpeg')
       : { status: null };
-    const raster = await ranged(record.georeference.url);
+    const raster = record.georeference
+      ? await ranged(record.georeference.url)
+      : { status: null };
+    const pdfDownload = record.georeference
+      ? null
+      : record.downloads?.find((download) => /pdf/i.test(download.label));
+    const pdf = pdfDownload ? await ranged(pdfDownload.url, 'application/pdf') : { status: null };
     let readable = null;
     if (raster.status === 206 && raster.tiff) {
       try {
@@ -329,6 +367,7 @@ export async function verify(records, limit = 8) {
     }
     return {
       id: record.id,
+      hasGeoreference: Boolean(record.georeference),
       previewStatus: preview.status,
       previewType: preview.type,
       rasterStatus: raster.status,
@@ -336,6 +375,9 @@ export async function verify(records, limit = 8) {
       rasterBytes: raster.bytes,
       rasterRange: raster.range,
       tiffMagic: raster.tiff,
+      pdfStatus: pdf.status,
+      pdfType: pdf.type,
+      pdfMagic: pdf.pdf ?? false,
       readable,
     };
   });
@@ -349,6 +391,8 @@ export async function verify(records, limit = 8) {
     rasterChecked: results.filter((r) => r.rasterStatus != null).length,
     rasterReadable: results.filter((r) => r.readable && !r.readable.error && r.readable.images > 0).length,
     rasterCrsOk: results.filter((r) => r.readable?.crsOk).length,
+    geopdfChecked: results.filter((r) => !r.hasGeoreference && r.pdfStatus != null).length,
+    geopdfOk: results.filter((r) => !r.hasGeoreference && (r.pdfStatus === 200 || r.pdfStatus === 206) && r.pdfMagic).length,
     examples: results.map((r) => ({
       ...r,
       readable: r.readable
@@ -405,11 +449,12 @@ async function main() {
       seen.add(sourceId);
       const record = usgsProductRecord(item);
       if (!record) {
-        const reason = !item?.urls?.GeoTIFF
-          ? 'no GeoTIFF download delivered'
-          : !httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov'])
-            ? 'no ScienceBase item URL'
-            : 'identity gate (title/source id)';
+        const reason =
+          !usgsDownload(item) && !httpsUrl(item?.urls?.GeoPDF, S3_HOSTS, GEOPDF_PATH)
+            ? 'no GeoTIFF or GeoPDF download delivered'
+            : !httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov'])
+              ? 'no ScienceBase item URL'
+              : 'identity gate (title/source id)';
         withheld[reason] = (withheld[reason] || 0) + 1;
         continue;
       }
@@ -484,6 +529,8 @@ async function main() {
   if (!recordsDoc.method?.includes('USGS Historical Topographic Map Collection records are imported'))
     recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in ${shard}.`;
   recordsDoc.selection ??= {};
+  const previousNextOffset =
+    Number(recordsDoc.selection['usgs:htmc']?.resumable?.nextOffset) || 0;
   recordsDoc.selection['usgs:htmc'] = {
     scope: 'USGS Historical Topographic Map Collection (HTMC)',
     upstreamTotal,
@@ -509,11 +556,11 @@ async function main() {
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',
     rule:
-      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps, carries a ScienceBase item URL and a delivered original GeoTIFF download. Undated products and products without a preview stay eligible; products without a GeoTIFF are withheld. The bbox is the product footprint, not an image transform.',
+      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps, carries a ScienceBase item URL and a delivered original GeoTIFF or GeoPDF download. Undated products and products without a preview stay eligible. A GeoTIFF is recorded as a provider-supplied COG; a GeoPDF-only product keeps its original PDF download and no georeference/COG claim is invented. The bbox is the product footprint, not an image transform.',
     resumable: {
-      nextOffset: START_OFFSET + PAGES * PAGE_SIZE,
+      nextOffset: Math.max(previousNextOffset, START_OFFSET + PAGES * PAGE_SIZE),
       pageSize: PAGE_SIZE,
-      note: 'Re-run with --start-offset <nextOffset> to continue the feed. Existing ids are preserved and merged, never replaced by a smaller page.',
+      note: 'Re-run with --start-offset <nextOffset> to continue the feed. Existing ids are preserved and merged, never replaced by a smaller page; re-running an earlier slice never moves the recorded cursor backwards.',
     },
     verification,
   };
@@ -554,7 +601,7 @@ async function main() {
     retrieved: RETRIEVED,
     providerId: 'usgs',
     method:
-      'USGS TNM Access API, Historical Topographic Maps dataset; original GeoTIFF retained as provider-supplied native raster.',
+      'USGS TNM Access API, Historical Topographic Maps dataset; original GeoTIFF retained as provider-supplied native raster, GeoPDF-only products retained as original PDF downloads without a georeference claim.',
     selection: recordsDoc.selection['usgs:htmc'],
     records: shardRecords,
   };

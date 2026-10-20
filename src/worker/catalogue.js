@@ -222,8 +222,9 @@ export function usgsRecord(item) {
       status: "provider-supplied",
       format: "GeoTIFF",
     };
-  record.geoNote =
-    "Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.";
+  record.geoNote = geotiff
+    ? "Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox."
+    : "Catalogue extent is the USGS product footprint. No verified pixel georeferencing is claimed; the footprint is not used as an image transform.";
   return record;
 }
 export const LIVE_PROVIDERS = [
