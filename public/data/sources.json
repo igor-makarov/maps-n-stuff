@@ -824,17 +824,55 @@
         "rasterCrsOk": 8,
         "examples": [
           {
-            "id": "usgs:5a8a3baae4b00f54eb3e5542",
+            "id": "usgs:5a8a5047e4b00f54eb4096b7",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/4319085",
+            "rasterRange": "bytes 0-65535/6689023",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 6546,
+              "width": 6042,
+              "height": 7988,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          },
+          {
+            "id": "usgs:5a8a29cbe4b00f54eb3c76e4",
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/4395730",
+            "tiffMagic": true,
+            "readable": {
+              "images": 8,
+              "width": 6692,
+              "height": 8171,
+              "modelType": 1,
+              "projectedCrs": 32767,
+              "geographicCrs": 4267,
+              "crsOk": true
+            }
+          },
+          {
+            "id": "usgs:5a8a5288e4b00f54eb40ddad",
+            "previewStatus": 206,
+            "previewType": "image/jpeg",
+            "rasterStatus": 206,
+            "rasterType": "image/tiff",
+            "rasterBytes": 65536,
+            "rasterRange": "bytes 0-65535/13558202",
+            "tiffMagic": true,
+            "readable": {
+              "images": 8,
+              "width": 6617,
               "height": 8067,
               "modelType": 1,
               "projectedCrs": 32767,
@@ -843,56 +881,18 @@
             }
           },
           {
-            "id": "usgs:5a8a49c9e4b00f54eb3fdee0",
+            "id": "usgs:5a8a29f2e4b00f54eb3c7b09",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/10068228",
+            "rasterRange": "bytes 0-65535/10998927",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 6763,
-              "height": 8233,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          },
-          {
-            "id": "usgs:5a8a3f52e4b00f54eb3eb603",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/13949431",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6592,
-              "height": 8038,
-              "modelType": 1,
-              "projectedCrs": 32767,
-              "geographicCrs": 4267,
-              "crsOk": true
-            }
-          },
-          {
-            "id": "usgs:5a8a4b7fe4b00f54eb400950",
-            "previewStatus": 206,
-            "previewType": "image/jpeg",
-            "rasterStatus": 206,
-            "rasterType": "image/tiff",
-            "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8494199",
-            "tiffMagic": true,
-            "readable": {
-              "images": 8,
-              "width": 6908,
-              "height": 8058,
+              "width": 6633,
+              "height": 8071,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -904,5 +904,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:46:34.493Z"
+  "generatedAt": "2026-10-20T11:50:00.000Z"
 }
