@@ -5,14 +5,21 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 23,141 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+The bundle contains 24,803 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
 Library, 972 Digital Commonwealth partner-held, 5,950 USGS Historical
-Topographic Map Collection sheets, 1,437 e-rara, 27 swisstopo and 49 Library of
-Congress records.
-Stanford contributes worldwide holdings, including Africa, Asia, Europe and the
-Americas. There are 304 undated Stanford maps; dates, thumbnails, extents and
-alignment are optional. Image reuse rights are not.
+Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
+1,437 e-rara, 27 swisstopo and 49 Library of Congress records. Stanford and
+Doria contribute worldwide holdings; USGS adds public-domain coverage of the
+United States and its territories. Dates, thumbnails, extents and alignment are
+optional. Image reuse rights are not.
 
+The bundled providers are published either in the core document or in one of the
+registered shards (`/data/records/leventhal.json`,
+`/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
+`/data/records/doria.json`, `/data/records/usgs.json`). The browser loader and
+the Worker merge them; a failed shard is reported without discarding the rest of
+the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
+feed; the full feed remains available through live search.
 The importer reads all 27,783 metadata files at Stanford's institutional
 OpenGeoMetadata revision `ff804e306fb2f79ac837c5045c7e0d9acb1d979b`.
 The repository metadata licence is CC0. An item additionally needs public
@@ -63,7 +70,8 @@ georeferencing job or guaranteed alignment accuracy is claimed.
 **Search more original collections** queries institutional JSON APIs, rather
 than scraping the aggregator. It offers Library of Congress, Leventhal Map &
 Education Center and USGS Historical Topographic Maps. Each request is bounded
-to 12 results with pagination and caching. The first two require item-level
+to 12 results with pagination and caching; USGS also has a bundled 5,950-record
+partial slice, but live search still covers the whole feed. The first two require item-level
 compatible rights evidence; unknown, noncommercial and conflicting statements
 are withheld. USGS requests are confined to its public-domain historical-map
 dataset. USGS searches the current map area; its results are displayed without

@@ -555,7 +555,7 @@ async function main() {
   if (WRITE) {
     await mkdir(dirname(shardPath(OUT, shard)), { recursive: true });
     await writeFile(shardPath(OUT, shard), `${JSON.stringify(shardDoc)}\n`);
-    await writeFile(recordsPath, `${JSON.stringify(recordsDoc)}\n`);
+    await writeFile(recordsPath, `${JSON.stringify(recordsDoc, null, 2)}\n`);
     await writeFile(sourcesPath, `${JSON.stringify(sourcesDoc, null, 2)}\n`);
     console.log('Wrote', OUT, 'and', shard);
   }

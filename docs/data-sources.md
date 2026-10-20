@@ -3,16 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **23,141
-records**: 4,464 Stanford public-domain maps, 10,242 Boston Public Library
-(Leventhal) maps, 972 Digital Commonwealth partner-held maps, 5,950 USGS
-Historical Topographic Map Collection sheets, 1,437 e-rara maps, 27 swisstopo
-and 49 Library of Congress records. The Library of Congress slice and the USGS
-slice are verified partial imports, not the whole institutions; both record
-their resumable cursors. There are **117 native Stanford COGs plus 5,950 USGS
-GeoTIFF records**; the USGS raster sample (8/8 readable tiled GeoTIFFs with
-internal overviews) is representative, not a claim that every one of the 5,950
-was individually opened.
+[global integration notes](global-integration.md). The bundle contains **24,803
+records** from eight providers: 4,464 Stanford public-domain maps, 10,242 Boston
+Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
+5,950 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
+Library of Finland maps, 1,437 e-rara maps, 27 swisstopo and 49 Library of
+Congress records. The Library of Congress and USGS slices are verified partial
+imports, not the whole institutions; both record their resumable cursors. There
+are **117 native Stanford COGs plus 5,950 USGS GeoTIFF records**; the USGS
+raster sample (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
+renderer) is representative, not a claim that every one of the 5,950 was
+individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -406,9 +407,10 @@ Note: the `zoomlevel` attribute of some search results is a uint32 bitfield
 
 ## 3. Local fixture provider
 
-The committed registry contains only the two real providers above. Tests that need
-synthetic records build them in memory (`tests/records.test.mjs`), so no fixture
-metadata can appear in the public data or the UI.
+The committed registry contains only the real providers documented in this file.
+Tests that need synthetic records build them in memory (`tests/records.test.mjs`
+and the provider-specific regressions), so no fixture metadata can appear in the
+public data or the UI.
 
 ## 4. historical-basemaps — historical borders (the History view)
 
@@ -616,6 +618,7 @@ only where the item states one: all 11 CC BY items name
 also supplies the stated `attribution`; the version (`4.0`) and credit are kept
 per item. No known-copyright statement is relabelled public domain or CC0, and
 no licence version is inferred when the item does not state it.
+
 `Rights status not evaluated.`, `Contact host institution`, all-rights-reserved,
 CC BY-NC/NC-SA/NC-ND, permission-required and copyright-undetermined records are
 withheld and counted in `records.json.selection["leventhal:bpl"]`.
