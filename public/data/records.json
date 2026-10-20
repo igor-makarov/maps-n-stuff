@@ -1017,7 +1017,11 @@
             "manifestType": "text/html; charset=UTF-8"
           }
         ]
-      }
+      },
+      "alreadyBundled": 15,
+      "newAdmitted": 1,
+      "totalBundled": 51,
+      "note": "The last replay fetched 16 item records before the edge challenge; 15 ids were already bundled and one (loc:2009581125) was newly admitted, so the shard now holds 51 records. kept/preserved describe this run, not the whole collection."
     },
     "doria:maps": {
       "source": "Doria — National Library of Finland (Kansalliskirjasto)",

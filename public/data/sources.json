@@ -900,6 +900,13 @@
             "manifestType": "text/html; charset=UTF-8"
           }
         ]
+      },
+      "catalogue": {
+        "bundled": 51,
+        "collection": "civil-war-maps",
+        "remainingCandidates": 483,
+        "complete": false,
+        "note": "Partial Civil War Maps import; the LoC edge challenge (HTTP 429) interrupted item fetching. The cursor replays page 1 and the shard count is not the size of the collection."
       }
     }
   ],
