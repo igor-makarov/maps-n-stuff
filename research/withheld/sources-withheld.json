@@ -1,0 +1,309 @@
+{
+ "decided": "2026-10-20",
+ "providers": [
+  {
+   "id": "doria",
+   "name": "Doria — National Library of Finland map collections",
+   "operator": "National Library of Finland (Kansalliskirjasto)",
+   "homepage": "https://www.doria.fi/",
+   "home": "https://www.doria.fi/",
+   "institutions": [
+    "National Library of Finland (Kansalliskirjasto)"
+   ],
+   "rights": "Per-item rights: Public Domain Mark, CC0, or an explicit “Public domain” statement. The verbatim Doria/MODS statements are retained on every record; restrictive or conflicting statements are withheld.",
+   "attribution": "National Library of Finland / Doria",
+   "retrieved": "2026-10-20",
+   "terms": "https://www.doria.fi/page/terms",
+   "api": {
+    "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232",
+    "sets": "https://www.doria.fi/oai/request?verb=ListSets",
+    "formats": [
+     "oai_dc",
+     "mods",
+     "ore"
+    ],
+    "record": "https://www.doria.fi/handle/10024/{id}",
+    "bitstream": "https://www.doria.fi/bitstream/10024/{id}/{sequence}/{name}",
+    "documentation": "https://www.doria.fi/"
+   },
+   "apiHosts": [
+    "www.doria.fi"
+   ],
+   "method": "Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232, combining oai_dc discovery, MODS date/rights and ORE bitstreams; rights-gated and published as a catalogue shard.",
+   "collections": [
+    {
+     "id": "kartat",
+     "name": "Kartat / Maps (National Library of Finland)",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232"
+    },
+    {
+     "id": "nordenskiold",
+     "name": "The Nordenskiöld Map Collection",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216"
+    },
+    {
+     "id": "suomen-karttoja",
+     "name": "Maps and Atlases of Finland",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_78800"
+    }
+   ],
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "originalOk": 30,
+    "recordOk": 30,
+    "examples": [
+     {
+      "id": "doria:84494",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:99099",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:87762",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:90184",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:87739",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     }
+    ]
+   },
+   "metadataReuse": {
+    "status": "withheld",
+    "decided": "2026-10-20",
+    "decision": "Bundled records withheld from the shipped reusable catalogue in commit for 2026-10-20 because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are not the question here and are unchanged; full records are retained under research/withheld/ with their original rights evidence.",
+    "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found."
+   },
+   "bundled": false,
+   "recordsBundled": 0,
+   "status": "withheld-metadata-rights"
+  },
+  {
+   "id": "leventhal",
+   "name": "Leventhal Map & Education Center — Boston Public Library",
+   "operator": "Boston Public Library, Norman B. Leventhal Map & Education Center",
+   "homepage": "https://collections.leventhalmap.org/",
+   "home": "https://collections.leventhalmap.org/",
+   "institutions": [
+    "Boston Public Library"
+   ],
+   "rights": "The verbatim rights and licence statement is retained on every record. Bundled records carry an affirmative no-known-copyright-restrictions / no-restrictions-on-use determination, NoC-US, CC0 or CC BY. Items without such a determination are not imported.",
+   "attribution": "Norman B. Leventhal Map & Education Center, Boston Public Library",
+   "retrieved": "2026-10-20",
+   "api": {
+    "catalogue": "https://collections.leventhalmap.org/search.json",
+    "manifest": "https://ark.digitalcommonwealth.org/ark:/50959/{id}/manifest",
+    "image": "https://iiif.digitalcommonwealth.org/iiif/2/{imageId}/full/304,/0/default.jpg",
+    "documentation": "https://www.digitalcommonwealth.org/"
+   },
+   "apiHosts": [
+    "collections.leventhalmap.org",
+    "ark.digitalcommonwealth.org",
+    "iiif.digitalcommonwealth.org"
+   ],
+   "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over every Boston Public Library-held cartographic record, with per-record rights evidence; no decade, geography, collection or record-count cap.",
+   "rightsPolicy": {
+    "copyright": "https://www.digitalcommonwealth.org/copyright",
+    "apiDocumentation": "https://www.digitalcommonwealth.org/api",
+    "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.",
+    "imageRightsBasis": {
+     "no-known-restrictions": "rights_ss \"No known copyright restrictions.\" + license_ss \"No known restrictions on use.\" + reuse_allowed_ssi \"no restrictions\" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.",
+     "cc-by": "license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.",
+     "no-copyright-us": "rights_ss states NoC-US; the rightsstatements.org URI is retained when supplied.",
+     "cc0": "rights_ss/license_ss explicitly names CC0.",
+     "public-domain": "rights_ss explicitly names the public domain with no restrictions on use."
+    }
+   },
+   "collections": [
+    {
+     "id": "boston-new-england",
+     "name": "Boston and New England Maps",
+     "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Boston+and+New+England+Maps"
+    },
+    {
+     "id": "revolutionary-war",
+     "name": "American Revolutionary War-Era Maps",
+     "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=American+Revolutionary+War-Era+Maps"
+    },
+    {
+     "id": "maritime",
+     "name": "Maritime Charts and Atlases",
+     "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Maritime+Charts+and+Atlases"
+    },
+    {
+     "id": "urban",
+     "name": "Urban Maps",
+     "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Urban+Maps"
+    }
+   ],
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "imageInfoOk": 30,
+    "examples": [
+     {
+      "id": "leventhal:commonwealth:3f462s124",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:cj82m003h",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:cj82kp493",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:wd3765045",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:3f462v69p",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     }
+    ]
+   },
+   "bundled": false,
+   "recordsBundled": 0,
+   "status": "withheld-metadata-rights",
+   "metadataReuse": {
+    "status": "withheld",
+    "decided": "2026-10-20",
+    "decision": "Bundled records withheld from the shipped reusable catalogue in commit for 2026-10-20 because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are not the question here and are unchanged; full records are retained under research/withheld/ with their original rights evidence.",
+    "evidence": "No separate metadata licence was found; readable API/OAI access and attribution alone were not treated as a grant."
+   }
+  },
+  {
+   "id": "digitalcommonwealth",
+   "name": "Digital Commonwealth partner collections",
+   "operator": "Digital Commonwealth (Boston Public Library)",
+   "homepage": "https://www.digitalcommonwealth.org/",
+   "home": "https://www.digitalcommonwealth.org/",
+   "institutions": [
+    "Filson Historical Society",
+    "George Washington Presidential Library at Mount Vernon",
+    "Lucius Beebe Memorial Library",
+    "Massachusetts Archives",
+    "National Archives and Records Administration",
+    "New-York Historical Society",
+    "Phillips Academy"
+   ],
+   "rights": "The verbatim rights and licence statement from the contributing institution is retained on every record. Bundled records carry an affirmative no-known-copyright-restrictions / no-restrictions-on-use determination, NoC-US, CC0 or CC BY. Items without such a determination are not imported.",
+   "attribution": "Contributing institutions via Digital Commonwealth",
+   "retrieved": "2026-10-20",
+   "api": {
+    "catalogue": "https://collections.leventhalmap.org/search.json",
+    "manifest": "https://ark.digitalcommonwealth.org/ark:/50959/{id}/manifest",
+    "image": "https://iiif.digitalcommonwealth.org/iiif/2/{imageId}/full/304,/0/default.jpg",
+    "documentation": "https://www.digitalcommonwealth.org/api"
+   },
+   "apiHosts": [
+    "collections.leventhalmap.org",
+    "ark.digitalcommonwealth.org",
+    "iiif.digitalcommonwealth.org"
+   ],
+   "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over the Digital Commonwealth inventory, restricted to partner-held records with per-record rights evidence; no decade, geography, institution or record-count cap.",
+   "rightsPolicy": {
+    "copyright": "https://www.digitalcommonwealth.org/copyright",
+    "apiDocumentation": "https://www.digitalcommonwealth.org/api",
+    "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is cited to the catalogue and each contributing institution, and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination."
+   },
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "imageInfoOk": 30,
+    "examples": [
+     {
+      "id": "digitalcommonwealth:commonwealth:z890vr23m",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:8623mr352",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:h415x419s",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:2227ng74b",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:2227nj34s",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     }
+    ]
+   },
+   "bundled": false,
+   "recordsBundled": 0,
+   "status": "withheld-metadata-rights",
+   "metadataReuse": {
+    "status": "withheld",
+    "decided": "2026-10-20",
+    "decision": "Bundled records withheld from the shipped reusable catalogue in commit for 2026-10-20 because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are not the question here and are unchanged; full records are retained under research/withheld/ with their original rights evidence.",
+    "evidence": "No separate metadata licence was found; readable API/OAI access and attribution alone were not treated as a grant."
+   }
+  }
+ ]
+}

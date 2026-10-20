@@ -483,6 +483,18 @@ async function main() {
     }
     records.push(record);
   });
+  // The item JSON sometimes advertises an older tile.loc.gov service that now
+  // answers 404 (measured 2026-10-20 on the eight general-map records). A dead
+  // thumbnail is a broken image in the UI, so verify every newly harvested
+  // service once and keep the record without inventing a replacement URL.
+  await pool(records, 2, async (record) => {
+    if (!record.imageService) return;
+    const info = await head(`${record.imageService}/info.json`, 'application/json');
+    if (info.status === 200 || info.status === 206) return;
+    record.imageNote = `The Library of Congress image service advertised in the item metadata answered HTTP ${info.status || 'error'} on ${RETRIEVED}; the dead derivative was withheld while the original record and viewer links remain.`;
+    delete record.thumbnail;
+    delete record.imageService;
+  });
   records.sort(
     (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
   );

@@ -1,27 +1,33 @@
-# Metadata-reuse decision — 2026-10-20 (member 0)
+# Metadata-reuse evidence and decision — 2026-10-20
 
-Observed runner time when the decision was recorded: **2026-10-20T12:16Z**
+Observed runner time when this note was first written: **2026-10-20T12:16Z**
 (`date -u` on the GitHub runner; all primary pages below were fetched in the
-same session between 12:10 and 12:16 UTC).
+same session between 12:10 and 12:16 UTC). The note was reconciled with the
+merged decision of 12:15 UTC after `origin/main` published the withholding
+commit `7fd2bff9`; it records **evidence**, not a clearance.
 
-This closes the `unresolved-pending` metadata status that the 12:00 UTC steering
-required to be decided during the run. It covers **Digital Commonwealth
-(BPL/Leventhal and the seven partner institutions)** and **Doria / National
-Library of Finland**, and records the basis for **SLUB Dresden** as well. It is a
-recorded basis, **not a licence claim**: no provider publishes a standalone
-metadata licence for these scopes and none is invented here. Image rights remain
-a separate, per-item gate and are unchanged.
+## Outcome on the merged tree
 
-## Decision
+Three scopes are **withheld** from the shipped reusable catalogue because no
+primary metadata-reuse licence or other substantiated redistribution basis was
+established for bulk catalogue redistribution:
 
-Status for all three scopes: **`basis-recorded`**. The catalogue keeps the
-records; it does not label their metadata as CC0/PDM or as "cleared by a
-licence". The basis consists of (a) the factual character of the redistributed
-description fields, (b) the institution's affirmative publication of those
-records for machine reuse, and (c) a per-item rights condition that is retained
-verbatim and, for images, still gates admission. If any institution later states
-a restriction on catalogue data, the affected records must be withheld pending
-review rather than re-labelled.
+| Scope | Records | Shipped? | Status |
+| --- | ---: | --- | --- |
+| Doria / National Library of Finland | 1,662 | no — `research/withheld/doria.json` | `metadataReuse.status = "withheld"` |
+| Leventhal / Boston Public Library | 10,242 | no — `research/withheld/leventhal.json` | `metadataReuse.status = "withheld"` |
+| Digital Commonwealth partner holdings (7 institutions) | 972 | no — `research/withheld/digitalcommonwealth.json` | `metadataReuse.status = "withheld"` |
+
+**SLUB Dresden stays bundled** (105 records): its primary digital-collections
+terms explicitly license the digital objects under Public Domain Mark 1.0 with a
+source citation, which the merged decision accepted as the basis for the
+factual descriptions published with those PDM objects. Its structured
+`metadataReuse` entry is `basis-recorded`.
+
+This closes the earlier `unresolved-pending` state in the sense the 12:00 UTC
+steering required: no affected scope is left publicly served as “pending”.
+Image rights are a separate decision and are unchanged. Nothing here labels an
+image or a catalog record as CC0/PDM beyond what the institution itself states.
 
 ## 1. Digital Commonwealth / Boston Public Library / Leventhal
 
@@ -33,9 +39,8 @@ Primary pages retrieved 2026-10-20:
   > Commonwealth collections, allowing this content to be used in other
   > applications and data services."
   The same page documents the OAI-PMH feed
-  (`https://oai.digitalcommonwealth.org/catalog/oai`) and JSON item/search
-  views. This is the institution's own statement of purpose for the metadata
-  feed: reuse in other applications and data services, not merely human reading.
+  (`https://oai.digitalcommonwealth.org/catalog/oai`) and the JSON item/search
+  views.
 - <https://www.digitalcommonwealth.org/copyright>
   > "Digital Commonwealth provides access to copyrighted materials strictly for
   > noncommercial educational and research purposes and places no restrictions on
@@ -43,21 +48,17 @@ Primary pages retrieved 2026-10-20:
   > "Digital Commonwealth does not charge permission fees for use of such
   > material and does not grant or deny permission to publish or otherwise
   > distribute material in its collections."
-  The page also says that, unless terms are clearly stated for an individual
-  item, visitors must seek permission from the copyright owner. We therefore do
-  **not** read this as a blanket image grant; every admitted image still carries
-  an affirmative item determination (no-known-copyright/no-restrictions, NoC-US,
-  CC0, CC BY) and restrictive items stay withheld.
+  The page adds that, unless terms are clearly stated for an individual item,
+  visitors must seek permission from the copyright owner.
 
-Basis recorded: the redistributed fields are the factual catalogue description
-(title, creator, date, publisher, language, identifiers, holding, links) that
-Digital Commonwealth/BPL publish through a documented API explicitly intended
-for use in other applications and data services; no separate rights in those
-description fields are asserted. No metadata licence is claimed.
-
-Limits: applies to the descriptive fields and links only. It does not cover an
-image whose own statement is restrictive; the existing per-item image gate and
-verbatim rights wording are unchanged.
+Assessment: the API sentence is an affirmative statement of machine access and
+an intended use in applications, but it is **not a licence to redistribute the
+catalogue metadata in bulk**, and the copyright page explicitly declines to
+grant or deny publication/distribution permission for collection material. The
+per-item statements (no-known-copyright/no-restrictions, NoC-US, CC0, CC BY)
+are image/item rights, not a metadata licence. No separate metadata licence was
+found. The scope therefore remains withheld; the quotes are retained here for a
+future clearance review, not treated as clearance.
 
 ## 2. Doria / National Library of Finland
 
@@ -69,26 +70,18 @@ Primary evidence retrieved 2026-10-20:
   condition as:
   > `<mods:accessCondition type="useAndReproduction">http://creativecommons.org/publicdomain/zero/1.0/</mods:accessCondition>`
   > `<mods:accessCondition type="useAndReproduction">Public Domain</mods:accessCondition>`
-  Every admitted Doria record keeps its verbatim PDM/CC0/plain-public-domain
-  statement (`rights`, `rightsBasis`, `rightsUrl`), and restrictive or
-  conflicting statements are withheld.
 - <https://www.doria.fi/page/terms> answers HTTP 200 but the body contains only
   the unfilled template placeholders `StaticPageBodyHead` / `StaticPageBodyPara`;
-  <https://www.doria.fi/page/about> is likewise an unfilled template. There is no
-  repository-wide metadata licence or bulk-redistribution grant to cite.
+  <https://www.doria.fi/page/about> is likewise an unfilled template.
 
-Basis recorded: the National Library of Finland supplies each admitted item with
-a CC0 1.0 / Public Domain use-and-reproduction condition and publishes the
-description through the documented OAI-PMH interface (`oai_dc`, `mods`, `ore`).
-The redistributed fields are the factual description of the item (title,
-creator, date, publisher, language, URN, handle). No separate metadata licence
-is published and none is asserted.
+Assessment: the per-item CC0 1.0 / Public Domain condition is a use-and-
+reproduction statement for the described digital object; Doria publishes no
+repository-wide metadata licence or bulk-redistribution grant, and the empty
+terms page supplies no additional permission to cite. The factual description
+alone is not treated here as a substantiated redistribution basis for the
+database as a whole. The scope remains withheld.
 
-Limits: the CC0/PDM condition belongs to the described item as stated by Doria;
-this note does not relabel the catalogue metadata itself CC0. Only records whose
-own statement is PDM/CC0/plain public domain are admitted.
-
-## 3. SLUB Dresden
+## 3. SLUB Dresden (kept)
 
 Primary page retrieved 2026-10-20:
 <https://nutzungshinweis.slub-dresden.de/> ("Nutzungsbestimmungen für die
@@ -104,33 +97,34 @@ Digitalen Sammlungen"):
 
 The policy also requires the source citation (SLUB Dresden, PURL/URN, licence) on
 reuse. Every imported SLUB object carries an explicit PDM 1.0 MODS/DFG-viewer
-statement and the SLUB/DFG-viewer `slubarchiv:copyrightStatus=publicdomain`
-corroboration; 56 rights-reserved/CNE objects are withheld.
+statement and the `slubarchiv:copyrightStatus=publicdomain` corroboration; 56
+rights-reserved/CNE objects are withheld. The 105-record scope is kept, with the
+PDM statement applied only to the objects that state it.
 
-Basis recorded: the redistributed description is the factual catalogue data
-published with a PDM 1.0 object whose policy permits copying, modification,
-distribution and performance, including commercially, with attribution. SLUB
-publishes no separate metadata licence; none is asserted.
+## What this note does not do
 
-Limits: only PDM-admitted objects; the PDM statement is not stretched to
-rights-reserved or unevaluated objects, and the required attribution/URN stays on
-each record.
-
-## What this does not do
-
+- It does not restore, relabel or release any withheld record or image.
 - It does not make the metadata files CC0/PDM and does not remove attribution.
 - It does not clear any image that the item-level gate withholds.
-- It does not cover a provider outside the three scopes above (USGS and LoC rely
-  on their own U.S. public-domain statements recorded per record; Stanford uses
-  its pinned CC0 metadata revision; e-rara/swisstopo keep their stated terms).
-- It does not convert a registry entry into evidence of coverage.
+- It does not convert a registry listing into evidence of coverage.
+
+## Restoration criteria
+
+A future iteration may move a withheld shard back into `public/data/records/`
+and set it bundled only after recording an applicable primary metadata-reuse
+permission or another substantiated redistribution basis in
+`public/data/sources.json`, with URL, scope and retrieval date, and after
+re-running the image/rights and browser verification. Until then the full
+records and evidence stay under `research/withheld/` and are not served.
 
 ## Verification
 
-- `public/data/sources.json` now carries `status: "basis-recorded"`, the primary
-  URLs, exact quotes, limits and this note for the three scopes; no shipped
-  provider entry says `unresolved-pending`.
-- `tests/data.test.mjs` asserts the new structured basis and that the old pending
-  marker is gone.
-- `npm test` and `npm run check` are run on the merged tree after this change;
-  the result is recorded in the member-0 note and the final status addendum.
+- `public/data/sources.json`: the three scopes are `bundled: false` with
+  `metadataReuse.status = "withheld"`, the evidence above and this note linked;
+  SLUB is `basis-recorded` with the two primary quotes. No provider entry says
+  `unresolved-pending`.
+- `tests/data.test.mjs` asserts the withheld statuses/evidence, the SLUB basis,
+  and the absence of the pending marker; it does not weaken the withheld-scope
+  test published with `7fd2bff9`.
+- `npm run check` / `npm test` are run on the merged tree after reconciliation;
+  the result is in the member-0 note and the commit that adds this file.

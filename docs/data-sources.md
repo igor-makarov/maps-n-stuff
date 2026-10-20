@@ -3,14 +3,21 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **44,513
-records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
-Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
-23,945 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 3,045 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
-and 51 Library of Congress records. The Library of Congress and USGS slices are
-verified partial imports, not the whole institutions; both record their resumable
-cursors. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
+[global integration notes](global-integration.md). The bundle contains **31,637
+records** from six bundled providers: 23,945 USGS Historical Topographic Map
+Collection sheets, 4,464 Stanford public-domain maps, 3,045 e-rara maps, 105
+SLUB Dresden maps, 51 Library of Congress records and 27 swisstopo entries. The
+Library of Congress and USGS slices are verified partial imports, not the whole
+institutions; both record their resumable cursors.
+
+Three further scopes were harvested with per-item **image** rights evidence but
+are **withheld** from the shipped catalogue because no primary metadata-reuse
+licence or other substantiated redistribution basis was established for their
+catalogue records: Doria / National Library of Finland (1,662), Leventhal /
+Boston Public Library (10,242) and the Digital Commonwealth partner-held scope
+(972). Their full records, provider endpoints and policy evidence are retained
+under `research/withheld/` (not served) and are not counted above. Image rights
+for those scopes are unchanged and are not a grant for this metadata reuse. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
 the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
 browser renderer on each of the three slices) are representative, not a claim
 that every one of the 23,945 was individually opened.
@@ -625,6 +632,13 @@ hermetic and fast, and this check needs the network.
 
 ## Leventhal Map & Education Center — Boston Public Library (imported 2026-10-20)
 
+> **Withheld 2026-10-20 (metadata reuse):** this scope's per-item image rights
+> are documented, but no primary metadata-reuse licence or other substantiated
+> redistribution basis was established. The full harvested shard and evidence
+> are now in `research/withheld/` and are **not** part of the shipped catalogue
+> or served assets. The counts and verification below describe the harvest,
+> not current bundled coverage. See `research/withheld/README.md`.
+
 The catalogues at `collections.leventhalmap.org` are a Blacklight application
 over the Digital Commonwealth repository. The documented JSON view is
 `https://collections.leventhalmap.org/search.json`; a complete cartographic
@@ -675,25 +689,33 @@ The metadata endpoints are documented at
 `https://www.digitalcommonwealth.org/api`. That page states the API's purpose:
 "APIs ... provide programmatic machine-based interaction with metadata and image
 content from items in the Digital Commonwealth collections, allowing this
-content to be used in other applications and data services." On 2026-10-20 the
-metadata status was closed as `basis-recorded` (not "cleared by a licence"):
-the redistributed fields are factual catalogue descriptions published through
-that documented API, Digital Commonwealth/BPL publish no separate metadata
-licence (so none is claimed), and the [copyright page](https://www.digitalcommonwealth.org/copyright)
+content to be used in other applications and data services." On 2026-10-20
+the scope was re-reviewed and **stayed withheld**: that sentence documents
+machine access, not a metadata-redistribution licence; Digital Commonwealth/BPL
+publish no separate metadata licence, and the [copyright page](https://www.digitalcommonwealth.org/copyright)
 places no restrictions on public-domain material while leaving each item's own
-statement as the image gate. See `coordination/metadata-rights-decision-20261020.md`.
+statement as the image gate. The primary quotes are retained in
+`coordination/metadata-rights-decision-20261020.md` for a future clearance
+review. The metadata status is `withheld`, not "pending" and not "cleared".
 One upstream quirk is recorded in the harvester: an ARK manifest request with
 `Accept: application/json` alone gets a 404, while `application/ld+json`
 returns the IIIF manifest. The importer asks for the latter and verifies the
 JSON response; it does not treat the 404 as a rights decision.
 
-All currently admitted Boston Public Library scope is imported. The 4,828
+The harvest admitted the Boston Public Library scope described above; it is now **withheld** from the shipped catalogue for lack of a metadata-reuse licence. The 4,828
 partner-held records in the same discovery feed remain excluded, and 163
 BPL-held records are withheld by the rights/metadata gate; none is counted as
 coverage. The shard is 16.73 MiB and the core is 9.57 MiB, both below
 Cloudflare's per-asset limit; the loader merges shards at runtime.
 
 ## Digital Commonwealth partner collections (imported 2026-10-20)
+
+> **Withheld 2026-10-20 (metadata reuse):** this scope's per-item image rights
+> are documented, but no primary metadata-reuse licence or other substantiated
+> redistribution basis was established. The full harvested shard and evidence
+> are now in `research/withheld/` and are **not** part of the shipped catalogue
+> or served assets. The counts and verification below describe the harvest,
+> not current bundled coverage. See `research/withheld/README.md`.
 
 Digital Commonwealth is the Massachusetts statewide digital-library service
 operated by the Boston Public Library; its documented JSON/IIIF API is the same
@@ -721,7 +743,7 @@ The 4,828 partner-held records are *not* all imported: only the 972 with an
 affirmative rights determination are; the rest remain visible research scope and
 are not counted as coverage. This is one consortium provider with real holding
 institutions, not an inflation of the provider count by splitting a feed. The
-same `basis-recorded` metadata decision (2026-10-20) applies here: factual
-catalogue descriptions published through Digital Commonwealth's documented API
-for use in other applications, no separate metadata licence claimed, and the
-per-item image gate unchanged.
+same metadata-reuse review (2026-10-20) applies here: the documented API
+sentence describes machine access, not a redistribution licence, so this
+partner-held scope is withheld with BPL/Leventhal and its per-item image rights
+are unchanged. Evidence: `coordination/metadata-rights-decision-20261020.md`.

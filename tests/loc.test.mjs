@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
   locItemRecord,
@@ -187,4 +188,45 @@ test('a --max-items truncation and an unattempted candidate both block the curso
   });
   assert.equal(withheld.complete, true);
   assert.equal(withheld.nextPage, 4);
+});
+
+test('the bundled shard omits the eight dead general-map image services', async () => {
+  const shard = JSON.parse(
+    await readFile(new URL('../public/data/records/loc.json', import.meta.url), 'utf8'),
+  );
+  const dead = [
+    'loc:00561384',
+    'loc:88694044',
+    'loc:gm71005209',
+    'loc:2006458330',
+    'loc:2003682776',
+    'loc:2001620473',
+    'loc:2001620477',
+    'loc:2009580102',
+  ];
+  for (const id of dead) {
+    const record = shard.records.find((value) => value.id === id);
+    assert.ok(record, `${id} must stay in the catalogue`);
+    // The advertised tile.loc.gov service answered 404 on 2026-10-20. Keeping
+    // it would render a broken image; the record and viewer links must remain.
+    assert.equal(record.thumbnail, undefined, `${id}: dead thumbnail must not return`);
+    assert.equal(record.imageService, undefined, `${id}: dead image service must not return`);
+    assert.match(record.imageNote, /HTTP 404/);
+    assert.ok(record.recordUrl.startsWith('https://www.loc.gov/item/'));
+    assert.ok(record.viewerUrl.startsWith('https://www.loc.gov/resource/'));
+    assert.ok(record.rights.length > 0);
+  }
+  const verification = shard.selection.verification;
+  assert.equal(verification.checked, 51);
+  assert.equal(verification.imageInfoOk, 43);
+  assert.equal(verification.withheldDeadImageServices, 8);
+  assert.deepEqual(verification.deadImageServiceIds, dead);
+  // The 42 kept services are the ones that answered; do not let a future
+  // rebuild silently restore a whole-item service without the collection class.
+  const kept = shard.records.filter((record) => record.imageService);
+  assert.equal(kept.length, 43);
+  for (const record of kept) {
+    assert.match(record.imageService, /^https:\/\/tile\.loc\.gov\/image-services\/iiif\/service:gmd:/);
+    assert.match(record.imageService, /:gmd(?:\d+m?|3m):/);
+  }
 });

@@ -36,31 +36,7 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are published for machine reuse, and Digital Commonwealth's API page states that its metadata content may be used in other applications and data services; Digital Commonwealth/BPL does not publish a separate metadata licence, so none is claimed. The redistributed fields are factual catalogue descriptions; per-item rights statements are retained verbatim and images are reused only where the item itself carries an affirmative determination. See metadataReuseBasis and coordination/metadata-rights-decision-20261020.md.",
-        "metadataReuseBasis": {
-          "status": "basis-recorded",
-          "decided": "2026-10-20T12:16Z",
-          "basis": "The redistributed fields are the factual catalogue description (title, creator, date, publisher, language, identifiers, holding, links) that Digital Commonwealth and the Boston Public Library publish through a documented API explicitly intended for use in other applications and data services. No separate rights in those description fields are asserted. No metadata licence is published and none is claimed; image reuse stays a separate per-item gate.",
-          "primaryEvidence": [
-            {
-              "url": "https://www.digitalcommonwealth.org/api",
-              "retrieved": "2026-10-20",
-              "quote": "APIs (Application Programming Interface) provide programmatic machine-based interaction with metadata and image content from items in the Digital Commonwealth collections, allowing this content to be used in other applications and data services."
-            },
-            {
-              "url": "https://www.digitalcommonwealth.org/copyright",
-              "retrieved": "2026-10-20",
-              "quote": "Digital Commonwealth provides access to copyrighted materials strictly for noncommercial educational and research purposes and places no restrictions on public domain material."
-            },
-            {
-              "url": "https://www.digitalcommonwealth.org/copyright",
-              "retrieved": "2026-10-20",
-              "quote": "Digital Commonwealth does not charge permission fees for use of such material and does not grant or deny permission to publish or otherwise distribute material in its collections."
-            }
-          ],
-          "limits": "Descriptive fields and links only. Image admission remains gated per item (no-known-copyright/no-restrictions, NoC-US, CC0 or CC BY) with the verbatim rights statement retained; restrictive items stay withheld. Any future institution statement restricting catalogue data requires withholding the affected records pending review, not relabelling.",
-          "decisionNote": "coordination/metadata-rights-decision-20261020.md"
-        }
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content to be used in other applications and data services. Digital Commonwealth/BPL do not publish a separate metadata licence, so none is claimed; the API sentence documents machine access, not a redistribution licence. This scope is withheld from the shipped catalogue pending an applicable primary metadata-reuse permission or another substantiated basis; image rights remain separate and unchanged. See metadataReuse and coordination/metadata-rights-decision-20261020.md."
       },
       "verification": {
         "retrieved": "2026-10-20",
@@ -104,6 +80,16 @@
             "infoType": "application/json;charset=utf-8"
           }
         ]
+      },
+      "bundled": false,
+      "recordsBundled": 0,
+      "status": "withheld-metadata-rights",
+      "metadataReuse": {
+        "status": "withheld",
+        "decided": "2026-10-20",
+        "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
+        "evidence": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content 'to be used in other applications and data services' (retrieved 2026-10-20). https://www.digitalcommonwealth.org/copyright places no restrictions on public-domain material but does not grant a metadata licence and leaves each item's own terms as the gate. The API sentence documents machine access, not a redistribution licence; no separate metadata licence was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
@@ -202,24 +188,15 @@
         ]
       },
       "metadataReuse": {
-        "status": "basis-recorded",
-        "decided": "2026-10-20T12:16Z",
-        "basis": "The National Library of Finland supplies each admitted item with a CC0 1.0 / Public Domain use-and-reproduction condition and publishes the description through the documented OAI-PMH interface (oai_dc, mods, ore). The redistributed fields are the factual description of the item (title, creator, date, publisher, language, URN, handle). No separate metadata licence is published and none is asserted; the CC0/PDM condition is not relabelled as a metadata licence.",
-        "primaryEvidence": [
-          {
-            "url": "https://www.doria.fi/oai/request?verb=GetRecord&metadataPrefix=mods&identifier=oai:www.doria.fi:10024/84494",
-            "retrieved": "2026-10-20",
-            "quote": "<mods:accessCondition type=\"useAndReproduction\">http://creativecommons.org/publicdomain/zero/1.0/</mods:accessCondition> and <mods:accessCondition type=\"useAndReproduction\">Public Domain</mods:accessCondition>"
-          },
-          {
-            "url": "https://www.doria.fi/page/terms",
-            "retrieved": "2026-10-20",
-            "quote": "HTTP 200 but the body contains only the unfilled template placeholders StaticPageBodyHead / StaticPageBodyPara; no repository-wide metadata licence or bulk-redistribution grant is published."
-          }
-        ],
-        "limits": "Only items whose own statement is PDM, CC0 or plain public domain are admitted; restrictive or conflicting statements are withheld with the verbatim wording retained. Attribution, the Doria handle and the URN stay on every record.",
+        "status": "withheld",
+        "decided": "2026-10-20",
+        "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
+        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). Each admitted item's MODS record states a CC0 1.0 / Public Domain use-and-reproduction condition (e.g. https://www.doria.fi/oai/request?verb=GetRecord&metadataPrefix=mods&identifier=oai:www.doria.fi:10024/84494, HTTP 200, retrieved 2026-10-20). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static body contains only the unfilled template placeholders StaticPageBodyHead / StaticPageBodyPara; https://www.doria.fi/page/about is an unfilled template. The per-item condition is an item/image right, not a repository-wide metadata licence; no such licence or bulk-redistribution grant was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
         "decisionNote": "coordination/metadata-rights-decision-20261020.md"
-      }
+      },
+      "bundled": false,
+      "recordsBundled": 0,
+      "status": "withheld-metadata-rights"
     },
     {
       "id": "e-rara",
@@ -534,37 +511,13 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are published for machine reuse, and Digital Commonwealth's API page states that its metadata content may be used in other applications and data services; Digital Commonwealth/BPL does not publish a separate metadata licence, so none is claimed. The redistributed fields are factual catalogue descriptions; per-item rights statements are retained verbatim and images are reused only where the item itself carries an affirmative determination. See metadataReuseBasis and coordination/metadata-rights-decision-20261020.md.",
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content to be used in other applications and data services. Digital Commonwealth/BPL do not publish a separate metadata licence, so none is claimed; the API sentence documents machine access, not a redistribution licence. This scope is withheld from the shipped catalogue pending an applicable primary metadata-reuse permission or another substantiated basis; image rights remain separate and unchanged. See metadataReuse and coordination/metadata-rights-decision-20261020.md.",
         "imageRightsBasis": {
           "no-known-restrictions": "rights_ss \"No known copyright restrictions.\" + license_ss \"No known restrictions on use.\" + reuse_allowed_ssi \"no restrictions\" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.",
           "cc-by": "license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.",
           "no-copyright-us": "rights_ss states NoC-US; the rightsstatements.org URI is retained when supplied.",
           "cc0": "rights_ss/license_ss explicitly names CC0.",
           "public-domain": "rights_ss explicitly names the public domain with no restrictions on use."
-        },
-        "metadataReuseBasis": {
-          "status": "basis-recorded",
-          "decided": "2026-10-20T12:16Z",
-          "basis": "The redistributed fields are the factual catalogue description (title, creator, date, publisher, language, identifiers, holding, links) that Digital Commonwealth and the Boston Public Library publish through a documented API explicitly intended for use in other applications and data services. No separate rights in those description fields are asserted. No metadata licence is published and none is claimed; image reuse stays a separate per-item gate.",
-          "primaryEvidence": [
-            {
-              "url": "https://www.digitalcommonwealth.org/api",
-              "retrieved": "2026-10-20",
-              "quote": "APIs (Application Programming Interface) provide programmatic machine-based interaction with metadata and image content from items in the Digital Commonwealth collections, allowing this content to be used in other applications and data services."
-            },
-            {
-              "url": "https://www.digitalcommonwealth.org/copyright",
-              "retrieved": "2026-10-20",
-              "quote": "Digital Commonwealth provides access to copyrighted materials strictly for noncommercial educational and research purposes and places no restrictions on public domain material."
-            },
-            {
-              "url": "https://www.digitalcommonwealth.org/copyright",
-              "retrieved": "2026-10-20",
-              "quote": "Digital Commonwealth does not charge permission fees for use of such material and does not grant or deny permission to publish or otherwise distribute material in its collections."
-            }
-          ],
-          "limits": "Descriptive fields and links only. Image admission remains gated per item (no-known-copyright/no-restrictions, NoC-US, CC0 or CC BY) with the verbatim rights statement retained; restrictive items stay withheld. Any future institution statement restricting catalogue data requires withholding the affected records pending review, not relabelling.",
-          "decisionNote": "coordination/metadata-rights-decision-20261020.md"
         }
       },
       "collections": [
@@ -631,6 +584,16 @@
             "infoType": "application/json;charset=utf-8"
           }
         ]
+      },
+      "bundled": false,
+      "recordsBundled": 0,
+      "status": "withheld-metadata-rights",
+      "metadataReuse": {
+        "status": "withheld",
+        "decided": "2026-10-20",
+        "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
+        "evidence": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content 'to be used in other applications and data services' (retrieved 2026-10-20). https://www.digitalcommonwealth.org/copyright places no restrictions on public-domain material but does not grant a metadata licence and leaves each item's own terms as the gate. The API sentence documents machine access, not a redistribution licence; no separate metadata licence was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
