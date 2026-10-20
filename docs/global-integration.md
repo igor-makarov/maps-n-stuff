@@ -6,9 +6,8 @@ development logs and implements the recommendations in the Swiss/language audit.
 ## What is available
 
 The bundle contains 31,692 maps: 24,000 USGS Historical Topographic Map
-Collection sheets (23,945 with an original GeoTIFF and 55 GeoPDF-only scans),
-4,464 Stanford, 3,045 e-rara, 105 SLUB Dresden, 51 Library of Congress and 27
-swisstopo records. Stanford and e-rara contribute worldwide
+Collection sheets, 4,464 Stanford, 3,045 e-rara, 105 SLUB Dresden, 51 Library of
+Congress and 27 swisstopo records. Stanford and e-rara contribute worldwide
 holdings; USGS adds public-domain coverage of the United States and its
 territories. Dates, thumbnails, extents and alignment are optional. Image reuse
 rights are not.
@@ -45,10 +44,8 @@ to copy the entire OldMapsOnline index.
 ## Image alignment
 
 117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
-and 23,945 bundled USGS HTMC records carry their original tiled GeoTIFF (main
-image plus internal overviews). The 55 GeoPDF-only USGS products have no bundled
-pixel transform and are offered as original scans/downloads without an overlay,
-not labelled `kind: cog`. The raster viewer uses their
+and every one of the 23,945 bundled USGS GeoTIFF records carries its original tiled
+GeoTIFF (main image plus internal overviews). The raster viewer uses their
 GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
 raster resolution. It inverse-projects the current Web Mercator viewport into
 source pixels, reads a bounded raster window and paints it as an

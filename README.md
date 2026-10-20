@@ -4,8 +4,8 @@ A global historical atlas in English, inspired by OldMapsOnline’s Maps and His
 
 - **Maps:** worldwide OpenStreetMap and NASA satellite reference layers, global place search, date and collection filters, original-record links, IIIF previews, and saved comparisons. NASA Blue Marble is a 500 m overview; zooming closer enlarges the imagery.
 - **Borders through time:** 54 bundled world snapshots from [André Ourednik’s Historical Basemaps](https://github.com/aourednik/historical-basemaps), with a timeline, playback, BCE/CE year entry, polygon details, cross-period polity search, and shareable map positions. Open `/?view=history`.
-- **Original sources:** 31,637 bundled catalogue records: 23,945 USGS Historical Topographic Map Collection sheets, 4,464 explicitly public-domain Stanford maps, 3,045 e-rara maps, 105 SLUB Dresden maps, 51 Library of Congress Geography and Map Division records and 27 swisstopo entries, all with per-item rights evidence. Search additional original LoC and USGS collections on demand. Live adapters require network access to those institutions and admit only compatible rights statements; they are not a claim to have imported every holding. Doria/National Library of Finland, Leventhal/Boston Public Library and the Digital Commonwealth partner scope were harvested with per-item image rights but are withheld from the shipped catalogue because a primary metadata-reuse licence was not established; their records and evidence remain in `research/withheld/`.
-- **Georeferencing:** 117 provider-supplied Stanford GeoTIFF overlays plus 23,945 USGS GeoTIFF records read their own CRS and pixel transform; the USGS raster links are provider-supplied and sampled rather than each individually decoded. Other IIIF scans can look up reusable Allmaps alignments or open in its georeferencing editor. A missing alignment, date, extent or thumbnail does not exclude an otherwise eligible scan. Source titles and institution names retain their original language.
+- **Original sources:** 31,692 bundled catalogue records: 24,000 USGS Historical Topographic Map Collection sheets, 4,464 explicitly public-domain Stanford maps, 3,045 e-rara maps, 105 SLUB Dresden maps, 51 Library of Congress Geography and Map Division records and 27 swisstopo entries, all with per-item rights evidence. Search additional original LoC and USGS collections on demand. Live adapters require network access to those institutions and admit only compatible rights statements; they are not a claim to have imported every holding. Doria/National Library of Finland, Leventhal/Boston Public Library and the Digital Commonwealth partner scope were harvested with per-item image rights but are withheld from the shipped catalogue because a primary metadata-reuse licence was not established; their records and evidence remain in `research/withheld/`.
+- **Georeferencing:** 117 provider-supplied Stanford GeoTIFF overlays plus 23,945 USGS GeoTIFF records read their own CRS and pixel transform; a further 55 USGS GeoPDF-only scans are retained with their original PDF and no invented raster alignment; the USGS raster links are provider-supplied and sampled rather than each individually decoded. Other IIIF scans can look up reusable Allmaps alignments or open in its georeferencing editor. A missing alignment, date, extent or thumbnail does not exclude an otherwise eligible scan. Source titles and institution names retain their original language.
 - **Honest geography:** publication dates and depicted periods are separate. Border gaps use an explicitly named nearest snapshot. Approximate place anchors for international archive records are labelled; they never become fabricated map extents. Optional Swiss overlays cover Switzerland.
 
 ## Run and check
@@ -42,7 +42,11 @@ The [global catalogue audit](docs/global-catalogue-audit.md) records integration
 
 The authorized 20 October sourcing run uses **three** DeepSeek v4.1 Flash agents
 with max reasoning, 30-minute iteration budgets, zero waiting and automatic task
-checkpoints disabled. Its hard deadline is **16:00 Asia/Jerusalem (13:00 UTC)**.
+checkpoints disabled. The user extended its hard deadline to **19:00
+Asia/Jerusalem (16:00 UTC)**; the authorization is recorded in
+`.github/shurik/sourcing-extension.json` and applied to the three existing
+native controls. Wrap-up begins at 18:00 local. The original launch request is
+retained as immutable evidence and does not restart the run.
 The agents coordinate themselves and commit validated source integrations to `main`.
 Read [the sourcing brief](SOURCING_PROMPT.md) and [current steering](SOURCING_STEERING.md).
 

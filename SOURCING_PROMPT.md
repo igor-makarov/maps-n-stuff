@@ -8,9 +8,14 @@ This brief supersedes older four-agent, German or Zurich-first instructions.
 
 You are one of **three** Shurik agents using
 `opencode-go/deepseek-v4.1-flash` with **max** reasoning. The iteration budget is
-**1,800 seconds**, with **zero waiting** between iterations. The authoritative
-deadline is in `.github/shurik/sourcing-run.json`: **20 October 2026, 16:00
-Asia/Jerusalem (13:00 UTC)**. Do not extend it or resume after it.
+**1,800 seconds**, with **zero waiting** between iterations. The user extended
+this existing run to **20 October 2026, 19:00 Asia/Jerusalem (16:00 UTC)**.
+The native member controls hold that deadline; the authorization is recorded in
+`.github/shurik/sourcing-extension.json`. The original `sourcing-run.json` is
+immutable launch evidence, with the superseded original deadline. This extension
+supersedes earlier 15:00 local wrap-up and 16:00 local stop instructions.
+Switch to wrap-up at **18:00 local (15:00 UTC)**. Do not extend further or resume
+after 19:00. All model/count/budget/commit/rights requirements remain in force.
 
 Coordinate with the other two agents and figure out your own division of work,
 communication method, source ownership and integration cadence. Avoid duplicate
