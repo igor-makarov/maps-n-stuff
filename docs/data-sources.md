@@ -477,7 +477,11 @@ node scripts/harvest-usgs.mjs --start-offset 6000 --pages 6
 ```
 
 Each record keeps the product title, publication date (never the depicted
-period), USGS footprint and the original GeoTIFF URL. The GeoTIFF is labelled
+period), USGS footprint and the original GeoTIFF URL. Date evidence: every
+bundled title ends in a single edition year and that year equals the API
+`publicationDate` for all 5,950 records (`titleEditionYearMismatches: 0` in the
+selection), so the field is not a hidden digital-upload date; no depicted or
+survey date is inferred. The GeoTIFF is labelled
 `georeference.kind = "cog"` with `status = "provider-supplied"` because the
 product carries its own tiled pixel georeferencing; the catalogue bounding box
 is **not** used as an image transform. The Worker's `/api/raster` now accepts

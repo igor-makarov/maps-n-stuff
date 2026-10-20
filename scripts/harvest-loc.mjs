@@ -234,6 +234,44 @@ export function locItemRecord(data) {
 }
 
 /** Why an item was withheld, for the selection evidence. */
+/**
+ * Resume state for a search-page budget. A challenge, a fetch failure or a
+ * --max-items truncation leaves unprocessed candidates on the scanned pages;
+ * in that case the cursor must replay those pages (the item and search caches
+ * make the replay cheap and stable-id dedupe makes it safe), never skip to the
+ * next page. Only a fully processed page budget advances the cursor.
+ */
+export function locResumeState({
+  documents,
+  queue,
+  fetchedIds,
+  startPage,
+  lastPage,
+  challenged,
+  failed = [],
+  pageCount = null,
+}) {
+  const unattempted = documents
+    .map((document) => document.id)
+    .filter((id) => !fetchedIds.has(id));
+  const truncatedByMaxItems = documents.length > queue.length;
+  const complete =
+    !challenged && failed.length === 0 && unattempted.length === 0;
+  return {
+    complete,
+    nextPage: complete ? lastPage + 1 : startPage,
+    pageCount,
+    scannedPages: `${startPage}-${lastPage}`,
+    considered: documents.length,
+    queued: queue.length,
+    fetched: fetchedIds.size,
+    unattemptedCount: unattempted.length,
+    truncatedByMaxItems,
+    pendingItems: unattempted.slice(0, 1000),
+    pendingItemsTruncated: unattempted.length > 1000,
+  };
+}
+
 export function locRejection(item) {
   const partOf = (item?.partof ?? []).map((p) => locText(p?.title ?? p));
   if (!partOf.some((p) => DIVISION.test(p))) return 'outside Geography and Map Division';
@@ -408,6 +446,8 @@ async function main() {
   const withheld = {};
   const records = [];
   const failed = [];
+  const fetchedIds = new Set();
+  let unattemptedCachedOnly = 0;
   let challenged = null;
   await pool(queue, CONCURRENCY, async ({ id }) => {
     if (challenged) return;
@@ -416,8 +456,9 @@ async function main() {
     if (CACHED_ONLY) {
       try {
         body = JSON.parse(await readFile(cache, 'utf8'));
+        fetchedIds.add(id);
       } catch {
-        withheld['not fetched yet (cached-only run)'] = (withheld['not fetched yet (cached-only run)'] || 0) + 1;
+        unattemptedCachedOnly++;
         return;
       }
     } else {
@@ -432,6 +473,7 @@ async function main() {
         return;
       }
     }
+    fetchedIds.add(id);
     const item = body.item ?? body;
     const record = locItemRecord(body);
     if (!record) {
@@ -444,11 +486,22 @@ async function main() {
   records.sort(
     (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
   );
-  console.log(`Eligible: ${records.length}; withheld ${Object.values(withheld).reduce((a, b) => a + b, 0)}; item fetch failures ${failed.length}`);
+  const resume = locResumeState({
+    documents,
+    queue,
+    fetchedIds,
+    startPage: START_PAGE,
+    lastPage,
+    challenged,
+    failed,
+    pageCount,
+  });
+  console.log(`Eligible: ${records.length}; withheld ${Object.values(withheld).reduce((a, b) => a + b, 0)}; item fetch failures ${failed.length}; unattempted ${resume.unattemptedCount}${CACHED_ONLY ? ` (${unattemptedCachedOnly} lacking cache)` : ''}`);
   console.log('Rights bases:', records.reduce((acc, r) => ((acc[r.rightsBasis] = (acc[r.rightsBasis] || 0) + 1), acc), {}));
   console.log('Top withholding reasons:', Object.entries(withheld).sort((a, b) => b[1] - a[1]).slice(0, 6));
   if (failed.length) console.log('Fetch failures:', failed.slice(0, 5));
-  if (challenged) console.log(`STOPPED by the LoC edge challenge; ${queue.length - records.length - Object.values(withheld).reduce((a, b) => a + b, 0)} item requests were skipped. ${challenged}`);
+  if (challenged) console.log(`STOPPED by the LoC edge challenge; ${resume.unattemptedCount} item requests were not attempted. ${challenged}`);
+  console.log(`Resume: ${resume.complete ? `next page ${resume.nextPage}` : `replay page ${resume.nextPage} (${resume.unattemptedCount} pending ids)`}`);
 
   const recordsPath = resolve(OUT, 'records.json');
   const sourcesPath = resolve(OUT, 'sources.json');
@@ -475,7 +528,8 @@ async function main() {
   recordsDoc.records = recordsDoc.records.filter((record) => record.providerId !== 'loc');
   recordsDoc.generatedAt = new Date().toISOString();
   recordsDoc.retrieved = RETRIEVED;
-  recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}Library of Congress Geography and Map Division records are imported from documented item JSON with per-item rights evidence; they are bundled in ${shard}.`;
+  if (!recordsDoc.method?.includes('Library of Congress Geography and Map Division records are imported'))
+    recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}Library of Congress Geography and Map Division records are imported from documented item JSON with per-item rights evidence; they are bundled in ${shard}.`;
   recordsDoc.selection ??= {};
   const selection = {
     scope: scopeName,
@@ -494,12 +548,22 @@ async function main() {
     withheld,
     fetchFailures: failed.length,
     edgeChallenge: challenged ?? false,
+    unattempted: resume.unattemptedCount,
+    truncatedByMaxItems: resume.truncatedByMaxItems,
     rule: `Library of Congress ${SCOPE.label}: ${SCOPE.rule}. Admitted only when the item's partof names the Geography and Map Division, the item's own rights statement affirmatively permits free reuse or names the public domain, and no Rights Advisory states a restriction. Public access or age alone is not evidence.`,
     resumable: {
       scope: scopeName,
-      nextPage: lastPage + 1,
+      complete: resume.complete,
+      nextPage: resume.nextPage,
       pageCount: pageCount ?? null,
-      note: 'Re-running the harvester with --start-page continues the collection; cached item JSON is reused and identifiers already in the shard are preserved.',
+      fetchedItems: resume.fetched,
+      unattemptedCount: resume.unattemptedCount,
+      pendingItems: resume.pendingItems,
+      pendingItemsTruncated: resume.pendingItemsTruncated,
+      truncatedByMaxItems: resume.truncatedByMaxItems,
+      note: resume.complete
+        ? 'Every candidate on the scanned pages was fetched and admitted or explicitly withheld. Re-running with --start-page continues the collection; cached JSON and stable ids make the replay safe.'
+        : 'Unprocessed candidates remain on the scanned pages; nextPage intentionally replays them after a permitted cooldown. Cached search pages and item JSON are reused, and stable-id dedupe makes the replay safe. The cursor advances only after every candidate on the page budget is fetched and admitted or explicitly withheld.',
     },
     verification,
   };

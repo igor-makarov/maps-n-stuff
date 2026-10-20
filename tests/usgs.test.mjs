@@ -116,6 +116,7 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
   const selection = shard.selection;
   assert.ok(selection.upstreamTotal >= 186000);
   assert.ok(selection.resumable.nextOffset >= 6000);
+  assert.equal(selection.dateEvidence.titleEditionYearMismatches, 0);
   assert.ok(selection.verification.previewOk >= 8);
   assert.ok(selection.verification.rasterRangeOk >= 8);
   assert.ok(selection.verification.rasterReadable >= 8);
@@ -132,8 +133,11 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
     assert.match(record.recordUrl, /^https:\/\/www\.sciencebase\.gov\/catalog\/item\//);
     assert.equal(record.georeference.kind, 'cog');
     assert.ok(rasterUrl(record.georeference.url), record.id);
-    if (record.yearStart != null)
+    if (record.yearStart != null) {
       assert.ok(record.yearStart >= 1800 && record.yearStart <= 2100);
+      const printed = record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1];
+      if (printed) assert.equal(Number(printed), record.yearStart);
+    }
     if (record.extent)
       assert.ok(
         record.extent.west < record.extent.east &&

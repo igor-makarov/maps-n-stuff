@@ -433,6 +433,12 @@ async function main() {
     (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
   );
 
+  const titleYearMismatches = records.filter((record) => {
+    const titleYear = Number(
+      record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1] ?? NaN,
+    );
+    return Number.isFinite(titleYear) && titleYear !== record.yearStart;
+  }).length;
   const verification = await verify(records);
   console.log('Verification:', JSON.stringify(verification).slice(0, 600));
 
@@ -442,7 +448,8 @@ async function main() {
   recordsDoc.records = (recordsDoc.records ?? []).filter((record) => record.providerId !== 'usgs');
   recordsDoc.generatedAt = new Date().toISOString();
   recordsDoc.retrieved = RETRIEVED;
-  recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in ${shard}.`;
+  if (!recordsDoc.method?.includes('USGS Historical Topographic Map Collection records are imported'))
+    recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in ${shard}.`;
   recordsDoc.selection ??= {};
   recordsDoc.selection['usgs:htmc'] = {
     scope: 'USGS Historical Topographic Map Collection (HTMC)',
@@ -458,6 +465,11 @@ async function main() {
     withheld,
     stateCounts,
     scaleCounts,
+    dateEvidence: {
+      sourceField: 'publicationDate',
+      titleEditionYearMismatches: titleYearMismatches,
+      note: 'The API publicationDate is retained as the publication year. For every bundled product the title ends in a single edition year; this slice has no mismatch between that printed year and publicationDate. No depicted/survey date is inferred.',
+    },
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',
     rule:
