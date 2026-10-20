@@ -37,5 +37,15 @@
     "minEntryId": 7,
     "maxEntryId": 327,
     "transcript": "complete"
+  },
+  {
+    "id": "1-5",
+    "outcome": "timeout",
+    "runId": "39410707750",
+    "journalId": "1-5",
+    "minEntryId": 7,
+    "maxEntryId": 647,
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
