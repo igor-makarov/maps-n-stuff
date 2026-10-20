@@ -632,6 +632,13 @@ hermetic and fast, and this check needs the network.
 
 ## Leventhal Map & Education Center — Boston Public Library (imported 2026-10-20)
 
+> **Withheld 2026-10-20 (metadata reuse):** this scope's per-item image rights
+> are documented, but no primary metadata-reuse licence or other substantiated
+> redistribution basis was established. The full harvested shard and evidence
+> are now in `research/withheld/` and are **not** part of the shipped catalogue
+> or served assets. The counts and verification below describe the harvest,
+> not current bundled coverage. See `research/withheld/README.md`.
+
 The catalogues at `collections.leventhalmap.org` are a Blacklight application
 over the Digital Commonwealth repository. The documented JSON view is
 `https://collections.leventhalmap.org/search.json`; a complete cartographic
@@ -688,13 +695,20 @@ upstream quirk is recorded in the harvester: an ARK manifest request with
 returns the IIIF manifest. The importer asks for the latter and verifies the
 JSON response; it does not treat the 404 as a rights decision.
 
-All currently admitted Boston Public Library scope is imported. The 4,828
+The harvest admitted the Boston Public Library scope described above; it is now **withheld** from the shipped catalogue for lack of a metadata-reuse licence. The 4,828
 partner-held records in the same discovery feed remain excluded, and 163
 BPL-held records are withheld by the rights/metadata gate; none is counted as
 coverage. The shard is 16.73 MiB and the core is 9.57 MiB, both below
 Cloudflare's per-asset limit; the loader merges shards at runtime.
 
 ## Digital Commonwealth partner collections (imported 2026-10-20)
+
+> **Withheld 2026-10-20 (metadata reuse):** this scope's per-item image rights
+> are documented, but no primary metadata-reuse licence or other substantiated
+> redistribution basis was established. The full harvested shard and evidence
+> are now in `research/withheld/` and are **not** part of the shipped catalogue
+> or served assets. The counts and verification below describe the harvest,
+> not current bundled coverage. See `research/withheld/README.md`.
 
 Digital Commonwealth is the Massachusetts statewide digital-library service
 operated by the Boston Public Library; its documented JSON/IIIF API is the same

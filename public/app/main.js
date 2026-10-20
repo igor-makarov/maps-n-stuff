@@ -155,6 +155,9 @@ function renderIntro() {
       entries.push(el('dt', { text: source.name || source.id }));
       entries.push(
         el('dd', {}, [
+          source.bundled === false
+            ? el('span', { class: 'zh-tag zh-tag--turquoise', text: 'Not bundled: metadata-reuse licence not established. ' })
+            : null,
           source.attribution ? el('span', { text: `${source.attribution}. ` }) : null,
           source.rights ? el('span', { text: `${source.rights} ` }) : null,
           source.homepage ? el('a', { href: source.homepage, rel: 'noopener', text: source.homepage.replace(/^https?:\/\//, '') }) : null,
