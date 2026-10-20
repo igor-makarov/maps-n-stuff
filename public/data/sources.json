@@ -508,6 +508,144 @@
       }
     },
     {
+      "id": "loc",
+      "name": "Library of Congress — Geography and Map Division",
+      "operator": "Library of Congress, Geography and Map Division",
+      "homepage": "https://www.loc.gov/maps/",
+      "home": "https://www.loc.gov/maps/",
+      "institutions": [
+        "Library of Congress"
+      ],
+      "rights": "Each record retains the Library of Congress rights statement read from its item record. Admitted items carry the division's \"free to use and reuse\" statement, the Sanborn Maps Collection public-domain statement, or an explicit public-domain statement, and have no restricting Rights Advisory. Credit: Library of Congress, Geography and Map Division.",
+      "attribution": "Library of Congress, Geography and Map Division",
+      "retrieved": "2026-10-20",
+      "rightsUrl": "https://www.loc.gov/legal/",
+      "api": {
+        "catalogue": "https://www.loc.gov/collections/{collection}/?fo=json",
+        "item": "https://www.loc.gov/item/{id}/?fo=json",
+        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
+        "image": "https://tile.loc.gov/image-services/iiif/{service}",
+        "documentation": "https://www.loc.gov/apis/"
+      },
+      "apiHosts": [
+        "www.loc.gov",
+        "tile.loc.gov"
+      ],
+      "method": "Documented LoC JSON search (100 per page) over the Civil War Maps scope, with the item JSON rights statement and Rights Advisory checked for every admitted record. No date, geography or record-count cap; the collection cursor is recorded so the next run continues from the last scanned page.",
+      "collections": [
+        {
+          "id": "civil-war-maps",
+          "name": "Civil War Maps",
+          "discovery": "https://www.loc.gov/collections/civil-war-maps/",
+          "about": "https://www.loc.gov/collections/civil-war-maps/about-this-collection/"
+        }
+      ],
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 10,
+        "imageInfoOk": 10,
+        "imageInfoChecked": 10,
+        "thumbnailOk": 10,
+        "manifestOk": 0,
+        "manifestChecked": 10,
+        "examples": [
+          {
+            "id": "loc:map45000245",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2007627199",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:map46000376",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2008626958",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:99447025",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2006458033",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "slub",
+      "name": "SLUB Dresden — Karten und Ansichten",
+      "operator": "Sächsische Landesbibliothek - Staats- und Universitätsbibliothek Dresden (SLUB)",
+      "homepage": "https://digital.slub-dresden.de/",
+      "home": "https://digital.slub-dresden.de/",
+      "institutions": [
+        "SLUB Dresden"
+      ],
+      "rights": "Per-object Public Domain Mark 1.0 (MODS use-and-reproduction and DFG-viewer dv:license), corroborated by slubarchiv:copyrightStatus=publicdomain. Restrictive or unstated records are withheld; the verbatim statements stay on each record.",
+      "attribution": "SLUB Dresden, digital.slub-dresden.de",
+      "terms": "https://nutzungshinweis.slub-dresden.de/",
+      "retrieved": "2026-10-20",
+      "api": {
+        "discovery": "https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps",
+        "sets": "https://digital.slub-dresden.de/oai/?verb=ListSets",
+        "formats": [
+          "mets"
+        ],
+        "record": "https://digital.slub-dresden.de/id{id}",
+        "oaiRecord": "https://digital.slub-dresden.de/oai/?verb=GetRecord&metadataPrefix=mets&identifier={oaiId}",
+        "documentation": "https://digital.slub-dresden.de/"
+      },
+      "apiHosts": [
+        "digital.slub-dresden.de",
+        "nutzungshinweis.slub-dresden.de"
+      ],
+      "method": "SLUB Dresden OAI-PMH set maps in METS: per-object MODS/DFG-viewer Public Domain Mark gate, original JPEG/PDF bitstreams and a resumable shard.",
+      "collections": [
+        {
+          "id": "maps",
+          "name": "Karten und Ansichten",
+          "discovery": "https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps"
+        }
+      ],
+      "verification": {
+        "sample": 0
+      }
+    },
+    {
       "id": "stanford",
       "name": "Stanford University Libraries",
       "operator": "Stanford University Libraries",
@@ -581,105 +719,6 @@
       }
     },
     {
-      "id": "loc",
-      "name": "Library of Congress — Geography and Map Division",
-      "operator": "Library of Congress, Geography and Map Division",
-      "homepage": "https://www.loc.gov/maps/",
-      "home": "https://www.loc.gov/maps/",
-      "institutions": [
-        "Library of Congress"
-      ],
-      "rights": "Each record retains the Library of Congress rights statement read from its item record. Admitted items carry the division's \"free to use and reuse\" statement, the Sanborn Maps Collection public-domain statement, or an explicit public-domain statement, and have no restricting Rights Advisory. Credit: Library of Congress, Geography and Map Division.",
-      "attribution": "Library of Congress, Geography and Map Division",
-      "retrieved": "2026-10-20",
-      "rightsUrl": "https://www.loc.gov/legal/",
-      "api": {
-        "catalogue": "https://www.loc.gov/collections/{collection}/?fo=json",
-        "item": "https://www.loc.gov/item/{id}/?fo=json",
-        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
-        "image": "https://tile.loc.gov/image-services/iiif/{service}",
-        "documentation": "https://www.loc.gov/apis/"
-      },
-      "apiHosts": [
-        "www.loc.gov",
-        "tile.loc.gov"
-      ],
-      "method": "Documented LoC JSON search (100 per page) over the Civil War Maps scope, with the item JSON rights statement and Rights Advisory checked for every admitted record. No date, geography or record-count cap; the collection cursor is recorded so the next run continues from the last scanned page.",
-      "collections": [
-        {
-          "id": "civil-war-maps",
-          "name": "Civil War Maps",
-          "discovery": "https://www.loc.gov/collections/civil-war-maps/",
-          "about": "https://www.loc.gov/collections/civil-war-maps/about-this-collection/"
-        }
-      ],
-      "verification": {
-        "retrieved": "2026-10-20",
-        "sample": 12,
-        "imageInfoOk": 12,
-        "imageInfoChecked": 12,
-        "thumbnailOk": 12,
-        "manifestOk": 0,
-        "manifestChecked": 12,
-        "examples": [
-          {
-            "id": "loc:2014589394",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          },
-          {
-            "id": "loc:99447042",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          },
-          {
-            "id": "loc:99447043",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          },
-          {
-            "id": "loc:99447045",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          },
-          {
-            "id": "loc:99447061",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          },
-          {
-            "id": "loc:99447063",
-            "info": 206,
-            "infoType": "application/json",
-            "thumbnail": 206,
-            "thumbnailType": "image/jpeg",
-            "manifest": 403,
-            "manifestType": "text/html; charset=UTF-8"
-          }
-        ]
-      }
-    },
-    {
       "id": "usgs",
       "name": "USGS Historical Topographic Maps",
       "operator": "U.S. Geological Survey",
@@ -721,18 +760,18 @@
         "rasterCrsOk": 8,
         "examples": [
           {
-            "id": "usgs:5a8a27e9e4b00f54eb3c4854",
+            "id": "usgs:5a8a3baae4b00f54eb3e5542",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6169437",
+            "rasterRange": "bytes 0-65535/4319085",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 5063,
-              "height": 6033,
+              "width": 6546,
+              "height": 8067,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -740,18 +779,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4bede4b00f54eb4015fc",
+            "id": "usgs:5a8a49c9e4b00f54eb3fdee0",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6613339",
+            "rasterRange": "bytes 0-65535/10068228",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 5088,
-              "height": 6213,
+              "width": 6763,
+              "height": 8233,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -759,18 +798,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4d2ee4b00f54eb4037da",
+            "id": "usgs:5a8a3f52e4b00f54eb3eb603",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8141880",
+            "rasterRange": "bytes 0-65535/13949431",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4929,
-              "height": 5946,
+              "width": 6592,
+              "height": 8038,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -778,18 +817,18 @@
             }
           },
           {
-            "id": "usgs:5a8a5327e4b00f54eb40f039",
+            "id": "usgs:5a8a4b7fe4b00f54eb400950",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/7987504",
+            "rasterRange": "bytes 0-65535/8494199",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4913,
-              "height": 6213,
+              "width": 6908,
+              "height": 8058,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -801,5 +840,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:38:13.779Z"
+  "generatedAt": "2026-10-20T11:41:07.919Z"
 }

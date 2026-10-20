@@ -28,14 +28,20 @@
  * Usage:
  *   node scripts/harvest-usgs.mjs --pages 8
  *   node scripts/harvest-usgs.mjs --start-offset 8000 --pages 4
+ *   node scripts/harvest-usgs.mjs --start-offset 12000 --pages 6 --shard usgs-2
  *   node scripts/harvest-usgs.mjs --refresh --no-write
+ *
+ * `--shard` selects the target shard (default `usgs`). Existing USGS records in
+ * every registered shard are preserved; the new records are appended only to
+ * the selected shard, so the catalogue can grow without any one static asset
+ * approaching the 25 MiB limit.
  */
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fromUrl } from 'geotiff';
 import { rasterProjection } from '../src/browser/cog.js';
-import { readCore, shardPath, shardUrl } from './catalogue.mjs';
+import { readCore, readShard, shardPath, shardUrl } from './catalogue.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
@@ -51,6 +57,7 @@ const WRITE = !has('no-write');
 const PAGE_SIZE = Math.max(1, Math.min(1000, Number(value('page-size', '1000')) || 1000));
 const START_OFFSET = Math.max(0, Number(value('start-offset', '0')) || 0);
 const PAGES = Math.max(1, Number(value('pages', '6')) || 6);
+const SHARD_NAME = value('shard', 'usgs');
 const CONCURRENCY = Math.max(1, Math.min(4, Number(value('concurrency', '2')) || 2));
 const RETRIEVED = '2026-10-20';
 const API = 'https://tnmaccess.nationalmap.gov/api/v1/products';
@@ -421,19 +428,45 @@ async function main() {
   if (!records.length) throw new Error('No eligible USGS records; leaving the catalogue unchanged.');
 
   const core = await readCore(OUT);
-  const shard = shardUrl('usgs');
+  const shard = shardUrl(SHARD_NAME);
+  // Preserve every existing USGS record across every registered shard. Only
+  // the selected target shard receives the new records; a rerun never moves or
+  // drops records that another shard already owns.
   const existing = new Map();
-  if ((core.shards ?? []).includes(shard)) {
-    const doc = JSON.parse(await readFile(shardPath(OUT, shard), 'utf8'));
-    for (const record of doc.records ?? []) existing.set(record.id, record);
+  const targetExisting = new Map();
+  for (const url of core.shards ?? []) {
+    let doc;
+    try {
+      doc = await readShard(OUT, url);
+    } catch {
+      continue;
+    }
+    for (const record of doc.records ?? []) {
+      if (record.providerId !== 'usgs') continue;
+      existing.set(record.id, record);
+      if (url === shard) targetExisting.set(record.id, record);
+    }
   }
   const preserved = existing.size;
-  for (const record of records) existing.set(record.id, record);
-  const shardRecords = [...existing.values()].sort(
+  for (const record of records) {
+    existing.set(record.id, record);
+    targetExisting.set(record.id, record);
+  }
+  const shardRecords = [...targetExisting.values()].sort(
+    (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
+  );
+  const mergedRecords = [...existing.values()].sort(
     (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
   );
 
   const titleYearMismatches = records.filter((record) => {
+    const titleYear = Number(
+      record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1] ?? NaN,
+    );
+    return Number.isFinite(titleYear) && titleYear !== record.yearStart;
+  }).length;
+  // The merged shard, not only this slice, is what the catalogue presents.
+  const mergedTitleYearMismatches = mergedRecords.filter((record) => {
     const titleYear = Number(
       record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1] ?? NaN,
     );
@@ -461,14 +494,17 @@ async function main() {
     considered: seen.size,
     kept: records.length,
     preserved,
-    totalAfterMerge: shardRecords.length,
+    totalAfterMerge: mergedRecords.length,
+    shard,
     withheld,
     stateCounts,
     scaleCounts,
     dateEvidence: {
       sourceField: 'publicationDate',
-      titleEditionYearMismatches: titleYearMismatches,
-      note: 'The API publicationDate is retained as the publication year. For every bundled product the title ends in a single edition year; this slice has no mismatch between that printed year and publicationDate. No depicted/survey date is inferred.',
+      titleEditionYearMismatches: mergedTitleYearMismatches,
+      titleEditionYearMismatchesInSlice: titleYearMismatches,
+      mergedRecordsChecked: mergedRecords.length,
+      note: 'The API publicationDate is retained as the publication year. For every bundled product the title ends in a single edition year; this merged shard has no mismatch between that printed year and publicationDate (and neither did this slice on its own). No depicted/survey date is inferred.',
     },
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',
@@ -525,7 +561,7 @@ async function main() {
   const coreBytes = Buffer.byteLength(JSON.stringify(recordsDoc));
   const shardBytes = Buffer.byteLength(JSON.stringify(shardDoc));
   console.log(
-    `Core ${(coreBytes / 1048576).toFixed(2)} MiB, usgs shard ${(shardBytes / 1048576).toFixed(2)} MiB`,
+    `Core ${(coreBytes / 1048576).toFixed(2)} MiB, ${SHARD_NAME} shard ${(shardBytes / 1048576).toFixed(2)} MiB (${shardRecords.length} records; ${mergedRecords.length} USGS total)`,
   );
   if (coreBytes > 24 * 1048576 || shardBytes > 24 * 1048576)
     throw new Error('A catalogue asset exceeds 24 MiB; split it before writing.');

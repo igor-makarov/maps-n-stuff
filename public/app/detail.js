@@ -775,13 +775,17 @@ export function init(ctx) {
           text: i === 0 ? 'Open original scan ↗' : `Open original scan ${i + 1} ↗`,
         }),
       ),
-      ...documentUrls.map((href) =>
+      ...documentUrls.map((href, i) =>
         el('a', {
           class: 'zh-button zh-button--ghost zh-button--small',
           href,
           target: '_blank',
           rel: 'noopener',
-          text: /\.pdf(?:$|[?#])/i.test(href) ? 'Open original PDF ↗' : 'Open original document ↗',
+          text: /\.pdf(?:$|[?#])/i.test(href)
+            ? documentUrls.length > 1
+              ? `Open original PDF ${i + 1} ↗`
+              : 'Open original PDF ↗'
+            : 'Open original document ↗',
         }),
       ),
     ];
@@ -855,7 +859,8 @@ export function init(ctx) {
           ? `W ${record.extent.west.toFixed(2)}° / E ${record.extent.east.toFixed(2)}° / S ${record.extent.south.toFixed(2)}° / N ${record.extent.north.toFixed(2)}°`
           : 'not stated',
       ],
-      ['Digitized pages', record.canvasCount ? `${record.canvasCount} pages` : 'not stated'],
+      ['Digitized pages', record.canvasCount || record.pageCount ? `${record.canvasCount ?? record.pageCount} pages` : 'not stated'],
+      ['Physical description', record.physicalExtent || 'not stated'],
       ['Source', `${record.providerId} · ${record.id}`],
     ];
     return el('section', {}, [

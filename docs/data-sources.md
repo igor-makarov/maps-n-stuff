@@ -3,17 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **26,360
-records** from eight providers: 4,464 Stanford public-domain maps, 10,242 Boston
+[global integration notes](global-integration.md). The bundle contains **38,463
+records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
 Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
-5,950 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 2,994 e-rara maps, 27 swisstopo and 49 Library of
-Congress records. The Library of Congress and USGS slices are verified partial
-imports, not the whole institutions; both record their resumable cursors. There
-are **117 native Stanford COGs plus 5,950 USGS GeoTIFF records**; the USGS
-raster sample (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
-renderer) is representative, not a claim that every one of the 5,950 was
-individually opened.
+17,947 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
+Library of Finland maps, 2,994 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
+and 50 Library of Congress records. The Library of Congress and USGS slices are
+verified partial imports, not the whole institutions; both record their resumable
+cursors. There are **117 native Stanford COGs plus 17,947 USGS GeoTIFF records**;
+the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
+browser renderer on each of the three slices) are representative, not a claim
+that every one of the 17,947 was individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -463,23 +463,29 @@ Refresh: `npm run harvest:history` (network) or `npm run harvest:history:offline
 | Thumbnail | `previewGraphicURL` (`_tn.jpg` on the same host) |
 | Rights | USGS: “USGS-authored or produced data and information are considered to be in the U.S. Public Domain.” <https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits> (retrieved 2026-10-20; the FAQ URL returns 403 to non-browser clients, the copyrights page is the primary policy used) |
 | Attribution | “U.S. Geological Survey” |
-| Publication dates | 1883–1994 in the bundled slice, 52 state/territory codes, scales 1:10,000, 1:12,000, 1:100,000 and 1:125,000 |
+| Publication dates | 1883–1994 in the bundled slice, 53 state/territory/foreign codes (adds GU; `IT` is retained verbatim from the upstream state field), scales 1:10,000, 1:12,000, 1:20,000, 1:21,120, 1:24,000, 1:100,000, 1:125,000 and 1:192,000 |
 
 The TNM API returns about **186,061** HTMC products. The bundle imports a
-reproducible prefix of 5,950 products (six 1,000-product pages; 50 products had
-no delivered GeoTIFF and were withheld) so the merged catalogue still loads in
-the browser. `records.json.selection["usgs:htmc"].resumable.nextOffset` records
-where the next run continues:
+reproducible prefix of 17,947 products (eighteen 1,000-product pages; 53 products
+had no delivered GeoTIFF and were withheld). The prefix is split into two
+registered shards (`usgs.json` 19.22 MiB / 11,947 records and `usgs-2.json`
+9.71 MiB / 6,000 records) so neither static asset approaches the 25 MiB limit.
+`records.json.selection["usgs:htmc"].resumable.nextOffset` records where the
+next run continues (18000):
 
 ```
 node scripts/harvest-usgs.mjs --pages 6
 node scripts/harvest-usgs.mjs --start-offset 6000 --pages 6
+node scripts/harvest-usgs.mjs --start-offset 12000 --pages 6 --shard usgs-2
 ```
+
+`--shard <name>` selects the target shard; records already in other shards are
+preserved and only the new slice is appended to the named one.
 
 Each record keeps the product title, publication date (never the depicted
 period), USGS footprint and the original GeoTIFF URL. Date evidence: every
 bundled title ends in a single edition year and that year equals the API
-`publicationDate` for all 5,950 records (`titleEditionYearMismatches: 0` in the
+`publicationDate` for all 17,947 records (`titleEditionYearMismatches: 0` in the
 selection), so the field is not a hidden digital-upload date; no depicted or
 survey date is inferred. The GeoTIFF is labelled
 `georeference.kind = "cog"` with `status = "provider-supplied"` because the
@@ -515,6 +521,30 @@ usable when the upstream is unavailable.
 
 The 186,061 total is not claimed as bundled coverage. The remaining products
 stay reachable through the live USGS search and through the recorded cursor.
+
+## 6. SLUB Dresden — Karten und Ansichten (imported 2026-10-20)
+
+The Sächsische Landesbibliothek – Staats- und Universitätsbibliothek Dresden
+publishes the documented OAI-PMH set `maps` (“Karten und Ansichten”) in
+`metadataPrefix=mets`. The set reports **161 records**; **105** are imported
+into `/data/records/slub.json` and 56 are withheld with reasons.
+
+| Field | Value |
+| --- | --- |
+| Discovery | `https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps` (7 pages, resumption tokens) |
+| Record | `https://digital.slub-dresden.de/id285992066` (example); PURL/URN retained |
+| Rights (item) | MODS `accessCondition type="use and reproduction"` → Public Domain Mark 1.0, corroborated by `dv:license=pdm` and `slubarchiv:copyrightStatus=publicdomain` |
+| Rights (policy) | SLUB “Nutzungsbestimmungen für die Digitalen Sammlungen”, <https://nutzungshinweis.slub-dresden.de/> (retrieved 2026-10-20): digitised objects whose copyright has expired are made available under PDM 1.0; the source citation (SLUB Dresden, PURL/URN, licence) is required |
+| Metadata reuse | The METS metadata is reused with the required attribution and a link to the original record. SLUB publishes no separate metadata licence, so none is asserted. |
+| Images | Per-item THUMBS/DEFAULT/ORIGINAL bitstreams from `digital.slub-dresden.de`; direct JPEG originals and per-page PDFs, no IIIF service is invented |
+| Withheld | 48 records state “Freier Zugang - Rechte vorbehalten 1.0” and 8 are `rightsstatements.org/vocab/CNE/1.0/` (Copyright Not Evaluated); none is labelled public domain |
+| Verification | 24/24 sampled thumbnails, 24/24 original JPEGs and 24/24 record pages returned HTTP 200/206 |
+| Dates | 105/105 dated, publication span 1536–1909; no depicted date, extent or place is inferred |
+
+Example: `slub:285992066` — “Atlas selectus von allen Königreichen und Ländern
+der Welt”, Johann Georg Schreiber, Leipzig 1730, 155 digitised pages, PDM 1.0.
+The Kartenforum / Deutsche Fotothek search index is **not** imported: its public
+index has no per-record rights field, so it remains research-only.
 
 ## Fetching policy (politeness, caching, failure behaviour)
 

@@ -55,6 +55,25 @@ test('rights-not-evaluated, contact-host and all-rights-reserved records are wit
   }
 });
 
+test('an open licence elsewhere cannot override an explicit all-rights-reserved statement', () => {
+  // Reproduced from the steering review: contradictory evidence must withhold,
+  // not select the permissive half of the pair.
+  assert.equal(
+    rightsBasis({ rights_ss: 'Under copyright. All rights reserved.', license_ss: 'CC0', reuse_allowed_ssi: 'no restrictions' }),
+    null,
+  );
+  assert.equal(
+    rightsBasis({ rights_ss: 'No known copyright restrictions.', license_ss: 'All rights reserved.', reuse_allowed_ssi: 'no restrictions' }),
+    null,
+  );
+  // A real CC0 waiver is still admitted: its legal text is not a restriction.
+  const waiver = {
+    rights_ss: 'Public domain',
+    license_ss: 'This work is in the public domain under a Creative Commons No Rights Reserved License (CC0).',
+  };
+  assert.equal(rightsBasis(waiver), 'cc0');
+});
+
 test('CC0, NoC-US and CC BY are admitted; non-commercial CC licences are not', () => {
   const cc0 = { ...base.attributes, rights_ss: 'Public domain', license_ss: 'This work is in the public domain under a Creative Commons No Rights Reserved License (CC0).' };
   assert.equal(rightsBasis(cc0), 'cc0');

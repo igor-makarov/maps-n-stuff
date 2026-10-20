@@ -117,6 +117,11 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
   assert.ok(selection.upstreamTotal >= 186000);
   assert.ok(selection.resumable.nextOffset >= 6000);
   assert.equal(selection.dateEvidence.titleEditionYearMismatches, 0);
+  assert.equal(
+    selection.dateEvidence.mergedRecordsChecked,
+    shard.records.length,
+    'the date evidence covers the whole merged shard, not only the last slice',
+  );
   assert.ok(selection.verification.previewOk >= 8);
   assert.ok(selection.verification.rasterRangeOk >= 8);
   assert.ok(selection.verification.rasterReadable >= 8);
@@ -144,4 +149,34 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
           record.extent.south < record.extent.north,
       );
   }
+});
+
+test('the USGS prefix is split across registered shards without duplicates', async () => {
+  const core = JSON.parse(
+    await readFile(path.join(root, 'public/data/records.json'), 'utf8'),
+  );
+  const urls = (core.shards ?? []).filter((url) =>
+    /^\/data\/records\/usgs(?:-\d+)?\.json$/.test(url),
+  );
+  assert.deepEqual(urls, ['/data/records/usgs-2.json', '/data/records/usgs.json']);
+  const ids = new Set();
+  let total = 0;
+  for (const url of urls) {
+    const doc = JSON.parse(
+      await readFile(path.join(root, 'public', url.replace(/^\//, '')), 'utf8'),
+    );
+    const bytes = Buffer.byteLength(JSON.stringify(doc));
+    assert.ok(bytes < 24 * 1048576, `${url} is ${bytes} B`);
+    for (const record of doc.records) {
+      assert.ok(!ids.has(record.id), `duplicate ${record.id} in ${url}`);
+      ids.add(record.id);
+      assert.equal(record.providerId, 'usgs');
+      assert.equal(record.georeference.kind, 'cog');
+      assert.ok(rasterUrl(record.georeference.url), record.id);
+    }
+    total += doc.records.length;
+  }
+  assert.equal(core.selection['usgs:htmc'].totalAfterMerge, total);
+  assert.equal(core.selection['usgs:htmc'].resumable.nextOffset, 18000);
+  assert.equal(core.selection['usgs:htmc'].dateEvidence.mergedRecordsChecked, total);
 });

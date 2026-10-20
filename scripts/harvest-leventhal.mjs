@@ -137,6 +137,10 @@ const NOC_US = /No Copyright - United States|rightsstatements\.org\/vocab\/NoC-U
 const CC_BY = /Creative Commons Attribution License \(CC BY\)/i;
 const PUBLIC_DOMAIN = /^(?:Public Domain|Public domain)\b/i;
 const BLOCKING = /non[ -]?commercial|all rights reserved|permission (?:is )?required|prior written permission|contact (?:the )?host|rights status not evaluated|copyright undetermined|not in the public domain|may be restricted|under copyright|protected by copyright|copyright \(c\)|copyright ©|copyright expired|^(?:copyright|©)\b/i;
+// A restriction on reuse is not rescued by an open licence named elsewhere: an
+// item that says both "All rights reserved" and "CC0" is contradictory and must
+// stay out of the reusable catalogue.
+const STRICT_RESTRICTION = /all rights reserved|(?<!no )rights reserved|may not be (?:used|reproduced|distributed|published)|reproduction (?:is )?prohibited|permission (?:is )?required|prior written permission|non[ -]?commercial/i;
 
 /**
  * Return a named rights basis or null. The check is deliberately narrow and
@@ -148,6 +152,7 @@ export function rightsBasis(attributes) {
   const reuse = String(attributes.reuse_allowed_ssi ?? '').trim();
   const combined = `${rights} ${license}`;
   if (!rights) return null;
+  if (STRICT_RESTRICTION.test(rights) || STRICT_RESTRICTION.test(license)) return null;
   if (BLOCKING.test(combined)) {
     // An explicit public-domain/CC0 statement wins over a generic "copyright"
     // word only when it names the public domain directly.
