@@ -1,0 +1,17 @@
+{
+  "runId": "maps-n-stuff-sources-20261020",
+  "authorization": "User explicitly requested: extend until 19:00",
+  "recordedAt": "2026-10-20T12:27:16Z",
+  "timezone": "Asia/Jerusalem",
+  "previousDeadline": "2026-10-20T13:00:00Z",
+  "deadline": "2026-10-20T16:00:00Z",
+  "localDeadline": "2026-10-20T19:00:00+03:00",
+  "wrapUpAt": "2026-10-20T15:00:00Z",
+  "members": [
+    "maps-n-stuff-sources-20261020-0",
+    "maps-n-stuff-sources-20261020-1",
+    "maps-n-stuff-sources-20261020-2"
+  ],
+  "method": "Normal non-forced commits changed only deadline in each existing control.json; owners, generation, model, count and iteration settings were preserved.",
+  "launchRequest": "The original sourcing-run.json is immutable launch evidence; this extension does not request a new start or resume."
+}

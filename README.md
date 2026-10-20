@@ -42,7 +42,11 @@ The [global catalogue audit](docs/global-catalogue-audit.md) records integration
 
 The authorized 20 October sourcing run uses **three** DeepSeek v4.1 Flash agents
 with max reasoning, 30-minute iteration budgets, zero waiting and automatic task
-checkpoints disabled. Its hard deadline is **16:00 Asia/Jerusalem (13:00 UTC)**.
+checkpoints disabled. The user extended its hard deadline to **19:00
+Asia/Jerusalem (16:00 UTC)**; the authorization is recorded in
+`.github/shurik/sourcing-extension.json` and applied to the three existing
+native controls. Wrap-up begins at 18:00 local. The original launch request is
+retained as immutable evidence and does not restart the run.
 The agents coordinate themselves and commit validated source integrations to `main`.
 Read [the sourcing brief](SOURCING_PROMPT.md) and [current steering](SOURCING_STEERING.md).
 
