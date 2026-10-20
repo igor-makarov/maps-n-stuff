@@ -474,8 +474,25 @@ async function main() {
     withheld,
     rule:
       'Every item in Doria’s documented OAI-PMH Maps set (com_10024_109232) is a candidate. It is imported only when oai_dc type includes map, the Doria/MODS statements carry an explicit Public Domain Mark or CC0 licence URL or an explicit “Public domain” statement, no separate restrictive statement appears in either record, and ORE publishes a thumbnail plus an original bitstream. Titles, creators, publisher, language, URN and the Doria handle are retained verbatim; no date, extent, creator or rights statement is inferred.',
-    metadataReuse:
-      'Doria’s catalogue facts are reused with attribution and a link to every original record. The site’s public terms page (https://www.doria.fi/page/terms) was empty at retrieval, so no separate metadata licence URL is claimed; the image rights are the per-item PDM/CC0/public-domain statements recorded on each catalogue entry.',
+    metadataReuse: {
+      "status": "basis-recorded",
+      "decided": "2026-10-20T12:16Z",
+      "basis": "The National Library of Finland supplies each admitted item with a CC0 1.0 / Public Domain use-and-reproduction condition and publishes the description through the documented OAI-PMH interface (oai_dc, mods, ore). The redistributed fields are the factual description of the item (title, creator, date, publisher, language, URN, handle). No separate metadata licence is published and none is asserted; the CC0/PDM condition is not relabelled as a metadata licence.",
+      "primaryEvidence": [
+        {
+          "url": "https://www.doria.fi/oai/request?verb=GetRecord&metadataPrefix=mods&identifier=oai:www.doria.fi:10024/84494",
+          "retrieved": "2026-10-20",
+          "quote": "<mods:accessCondition type=\"useAndReproduction\">http://creativecommons.org/publicdomain/zero/1.0/</mods:accessCondition> and <mods:accessCondition type=\"useAndReproduction\">Public Domain</mods:accessCondition>"
+        },
+        {
+          "url": "https://www.doria.fi/page/terms",
+          "retrieved": "2026-10-20",
+          "quote": "HTTP 200 but the body contains only the unfilled template placeholders StaticPageBodyHead / StaticPageBodyPara; no repository-wide metadata licence or bulk-redistribution grant is published."
+        }
+      ],
+      "limits": "Only items whose own statement is PDM, CC0 or plain public domain are admitted; restrictive or conflicting statements are withheld with the verbatim wording retained. Attribution, the Doria handle and the URN stay on every record.",
+      "decisionNote": "coordination/metadata-rights-decision-20261020.md"
+    },
     verification,
     retrieved: RETRIEVED,
   };
@@ -504,6 +521,7 @@ async function main() {
     },
     apiHosts: ['www.doria.fi'],
     method,
+    metadataReuse: selection.metadataReuse,
     collections: [
       { id: 'kartat', name: 'Kartat / Maps (National Library of Finland)', discovery: `${OAI}?verb=ListRecords&metadataPrefix=oai_dc&set=${SET}` },
       { id: 'nordenskiold', name: 'The Nordenskiöld Map Collection', discovery: `${OAI}?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216` },

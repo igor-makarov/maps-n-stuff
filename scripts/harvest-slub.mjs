@@ -466,6 +466,25 @@ async function main() {
     },
     apiHosts: ['digital.slub-dresden.de', 'nutzungshinweis.slub-dresden.de'],
     method,
+    metadataReuse: {
+      "status": "basis-recorded",
+      "decided": "2026-10-20T12:16Z",
+      "basis": "Every admitted SLUB object carries an explicit Public Domain Mark 1.0 MODS/DFG-viewer statement corroborated by slubarchiv:copyrightStatus=publicdomain, and SLUB's policy permits copying, modification, distribution and performance of PDM objects, including commercially, with the required source citation. The redistributed fields are the factual description published with that object. SLUB publishes no separate metadata licence; none is asserted.",
+      "primaryEvidence": [
+        {
+          "url": "https://nutzungshinweis.slub-dresden.de/",
+          "retrieved": "2026-10-20",
+          "quote": "Die Lizenz-, Rechte- oder Nutzungshinweise der SLUB werden für jede Kollektion und sukzessive für jedes Objekt angegeben."
+        },
+        {
+          "url": "https://nutzungshinweis.slub-dresden.de/",
+          "retrieved": "2026-10-20",
+          "quote": "Diese digitalen Objekte werden daher in der Regel unter der Public Domain Mark 1.0 zugänglich gemacht. Sie dürfen diese Werke kopieren, verändern, verbreiten und aufführen, sogar zu kommerziellen Zwecken, ohne irgendwie um Erlaubnis bitten zu müssen."
+        }
+      ],
+      "limits": "Only PDM-admitted objects; the rights-reserved and Copyright-Not-Evaluated objects remain withheld. The PDM statement is not stretched to those objects. Attribution and the PURL/URN stay on every record.",
+      "decisionNote": "coordination/metadata-rights-decision-20261020.md"
+    },
     collections: [
       { id: SET, name: 'Karten und Ansichten', discovery: `${OAI}?verb=ListRecords&metadataPrefix=mets&set=${SET}` },
     ],

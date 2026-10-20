@@ -537,7 +537,7 @@ into `/data/records/slub.json` and 56 are withheld with reasons.
 | Record | `https://digital.slub-dresden.de/id285992066` (example); PURL/URN retained |
 | Rights (item) | MODS `accessCondition type="use and reproduction"` → Public Domain Mark 1.0, corroborated by `dv:license=pdm` and `slubarchiv:copyrightStatus=publicdomain` |
 | Rights (policy) | SLUB “Nutzungsbestimmungen für die Digitalen Sammlungen”, <https://nutzungshinweis.slub-dresden.de/> (retrieved 2026-10-20): digitised objects whose copyright has expired are made available under PDM 1.0; the source citation (SLUB Dresden, PURL/URN, licence) is required |
-| Metadata reuse | The METS metadata is reused with the required attribution and a link to the original record. SLUB publishes no separate metadata licence, so none is asserted. |
+| Metadata reuse | Declared `basis-recorded` on 2026-10-20: the redistributed fields are the factual description published with a PDM 1.0 object, and SLUB's [Nutzungsbestimmungen](https://nutzungshinweis.slub-dresden.de/) states that PDM 1.0 objects may be copied, modified, distributed and performed, even commercially, with the required source citation. SLUB publishes no separate metadata licence, so none is asserted; the PDM statement is not stretched to the rights-reserved/CNE objects. Evidence: `coordination/metadata-rights-decision-20261020.md`. |
 | Images | Per-item ORIGINAL JPEG and PDF bitstreams from `digital.slub-dresden.de`; no IIIF service is invented. The bitstreams sit behind SLUB’s Anubis bot check for browser user agents, so no `<img>` thumbnail is shipped (it would render a challenge page); the original scan/PDF links and the record page are exposed instead. |
 | Withheld | 48 records state “Freier Zugang - Rechte vorbehalten 1.0” and 8 are `rightsstatements.org/vocab/CNE/1.0/` (Copyright Not Evaluated); none is labelled public domain |
 | Verification | 24/24 sampled original JPEGs and 24/24 record pages returned HTTP 200/206 with the harvest user-agent. A Chrome user-agent receives SLUB’s Anubis challenge (`text/html`) for the same bitstream, recorded honestly in the selection’s `browserNote`; browser access is via the record page. |
@@ -672,11 +672,17 @@ sample verified on 2026-10-20 returned 30/30 HTTP 200 thumbnails and 30/30
 `verification` field in `public/data/sources.json`.
 
 The metadata endpoints are documented at
-`https://www.digitalcommonwealth.org/api`. The JSON search and item views are
-publicly readable, but Digital Commonwealth publishes no separate metadata
-licence; the registry therefore cites the catalogue and retains each item's
-rights statement rather than asserting a blanket metadata licence. One
-upstream quirk is recorded in the harvester: an ARK manifest request with
+`https://www.digitalcommonwealth.org/api`. That page states the API's purpose:
+"APIs ... provide programmatic machine-based interaction with metadata and image
+content from items in the Digital Commonwealth collections, allowing this
+content to be used in other applications and data services." On 2026-10-20 the
+metadata status was closed as `basis-recorded` (not "cleared by a licence"):
+the redistributed fields are factual catalogue descriptions published through
+that documented API, Digital Commonwealth/BPL publish no separate metadata
+licence (so none is claimed), and the [copyright page](https://www.digitalcommonwealth.org/copyright)
+places no restrictions on public-domain material while leaving each item's own
+statement as the image gate. See `coordination/metadata-rights-decision-20261020.md`.
+One upstream quirk is recorded in the harvester: an ARK manifest request with
 `Accept: application/json` alone gets a 404, while `application/ld+json`
 returns the IIIF manifest. The importer asks for the latter and verifies the
 JSON response; it does not treat the 404 as a rights decision.
@@ -714,4 +720,8 @@ Example: `digitalcommonwealth:commonwealth:2227nq92q` (Massachusetts Archives).
 The 4,828 partner-held records are *not* all imported: only the 972 with an
 affirmative rights determination are; the rest remain visible research scope and
 are not counted as coverage. This is one consortium provider with real holding
-institutions, not an inflation of the provider count by splitting a feed.
+institutions, not an inflation of the provider count by splitting a feed. The
+same `basis-recorded` metadata decision (2026-10-20) applies here: factual
+catalogue descriptions published through Digital Commonwealth's documented API
+for use in other applications, no separate metadata licence claimed, and the
+per-item image gate unchanged.

@@ -36,7 +36,31 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is cited to the catalogue and each contributing institution, and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination."
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are published for machine reuse, and Digital Commonwealth's API page states that its metadata content may be used in other applications and data services; Digital Commonwealth/BPL does not publish a separate metadata licence, so none is claimed. The redistributed fields are factual catalogue descriptions; per-item rights statements are retained verbatim and images are reused only where the item itself carries an affirmative determination. See metadataReuseBasis and coordination/metadata-rights-decision-20261020.md.",
+        "metadataReuseBasis": {
+          "status": "basis-recorded",
+          "decided": "2026-10-20T12:16Z",
+          "basis": "The redistributed fields are the factual catalogue description (title, creator, date, publisher, language, identifiers, holding, links) that Digital Commonwealth and the Boston Public Library publish through a documented API explicitly intended for use in other applications and data services. No separate rights in those description fields are asserted. No metadata licence is published and none is claimed; image reuse stays a separate per-item gate.",
+          "primaryEvidence": [
+            {
+              "url": "https://www.digitalcommonwealth.org/api",
+              "retrieved": "2026-10-20",
+              "quote": "APIs (Application Programming Interface) provide programmatic machine-based interaction with metadata and image content from items in the Digital Commonwealth collections, allowing this content to be used in other applications and data services."
+            },
+            {
+              "url": "https://www.digitalcommonwealth.org/copyright",
+              "retrieved": "2026-10-20",
+              "quote": "Digital Commonwealth provides access to copyrighted materials strictly for noncommercial educational and research purposes and places no restrictions on public domain material."
+            },
+            {
+              "url": "https://www.digitalcommonwealth.org/copyright",
+              "retrieved": "2026-10-20",
+              "quote": "Digital Commonwealth does not charge permission fees for use of such material and does not grant or deny permission to publish or otherwise distribute material in its collections."
+            }
+          ],
+          "limits": "Descriptive fields and links only. Image admission remains gated per item (no-known-copyright/no-restrictions, NoC-US, CC0 or CC BY) with the verbatim rights statement retained; restrictive items stay withheld. Any future institution statement restricting catalogue data requires withholding the affected records pending review, not relabelling.",
+          "decisionNote": "coordination/metadata-rights-decision-20261020.md"
+        }
       },
       "verification": {
         "retrieved": "2026-10-20",
@@ -178,9 +202,23 @@
         ]
       },
       "metadataReuse": {
-        "status": "unresolved-pending",
-        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found.",
-        "claim": "No metadata licence is claimed. Catalogue facts are retained with attribution, the original record link and URN; this gap is pending, not cleared."
+        "status": "basis-recorded",
+        "decided": "2026-10-20T12:16Z",
+        "basis": "The National Library of Finland supplies each admitted item with a CC0 1.0 / Public Domain use-and-reproduction condition and publishes the description through the documented OAI-PMH interface (oai_dc, mods, ore). The redistributed fields are the factual description of the item (title, creator, date, publisher, language, URN, handle). No separate metadata licence is published and none is asserted; the CC0/PDM condition is not relabelled as a metadata licence.",
+        "primaryEvidence": [
+          {
+            "url": "https://www.doria.fi/oai/request?verb=GetRecord&metadataPrefix=mods&identifier=oai:www.doria.fi:10024/84494",
+            "retrieved": "2026-10-20",
+            "quote": "<mods:accessCondition type=\"useAndReproduction\">http://creativecommons.org/publicdomain/zero/1.0/</mods:accessCondition> and <mods:accessCondition type=\"useAndReproduction\">Public Domain</mods:accessCondition>"
+          },
+          {
+            "url": "https://www.doria.fi/page/terms",
+            "retrieved": "2026-10-20",
+            "quote": "HTTP 200 but the body contains only the unfilled template placeholders StaticPageBodyHead / StaticPageBodyPara; no repository-wide metadata licence or bulk-redistribution grant is published."
+          }
+        ],
+        "limits": "Only items whose own statement is PDM, CC0 or plain public domain are admitted; restrictive or conflicting statements are withheld with the verbatim wording retained. Attribution, the Doria handle and the URN stay on every record.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
@@ -496,13 +534,37 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.",
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are published for machine reuse, and Digital Commonwealth's API page states that its metadata content may be used in other applications and data services; Digital Commonwealth/BPL does not publish a separate metadata licence, so none is claimed. The redistributed fields are factual catalogue descriptions; per-item rights statements are retained verbatim and images are reused only where the item itself carries an affirmative determination. See metadataReuseBasis and coordination/metadata-rights-decision-20261020.md.",
         "imageRightsBasis": {
           "no-known-restrictions": "rights_ss \"No known copyright restrictions.\" + license_ss \"No known restrictions on use.\" + reuse_allowed_ssi \"no restrictions\" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.",
           "cc-by": "license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.",
           "no-copyright-us": "rights_ss states NoC-US; the rightsstatements.org URI is retained when supplied.",
           "cc0": "rights_ss/license_ss explicitly names CC0.",
           "public-domain": "rights_ss explicitly names the public domain with no restrictions on use."
+        },
+        "metadataReuseBasis": {
+          "status": "basis-recorded",
+          "decided": "2026-10-20T12:16Z",
+          "basis": "The redistributed fields are the factual catalogue description (title, creator, date, publisher, language, identifiers, holding, links) that Digital Commonwealth and the Boston Public Library publish through a documented API explicitly intended for use in other applications and data services. No separate rights in those description fields are asserted. No metadata licence is published and none is claimed; image reuse stays a separate per-item gate.",
+          "primaryEvidence": [
+            {
+              "url": "https://www.digitalcommonwealth.org/api",
+              "retrieved": "2026-10-20",
+              "quote": "APIs (Application Programming Interface) provide programmatic machine-based interaction with metadata and image content from items in the Digital Commonwealth collections, allowing this content to be used in other applications and data services."
+            },
+            {
+              "url": "https://www.digitalcommonwealth.org/copyright",
+              "retrieved": "2026-10-20",
+              "quote": "Digital Commonwealth provides access to copyrighted materials strictly for noncommercial educational and research purposes and places no restrictions on public domain material."
+            },
+            {
+              "url": "https://www.digitalcommonwealth.org/copyright",
+              "retrieved": "2026-10-20",
+              "quote": "Digital Commonwealth does not charge permission fees for use of such material and does not grant or deny permission to publish or otherwise distribute material in its collections."
+            }
+          ],
+          "limits": "Descriptive fields and links only. Image admission remains gated per item (no-known-copyright/no-restrictions, NoC-US, CC0 or CC BY) with the verbatim rights statement retained; restrictive items stay withheld. Any future institution statement restricting catalogue data requires withholding the affected records pending review, not relabelling.",
+          "decisionNote": "coordination/metadata-rights-decision-20261020.md"
         }
       },
       "collections": [
@@ -608,6 +670,25 @@
       ],
       "verification": {
         "sample": 0
+      },
+      "metadataReuse": {
+        "status": "basis-recorded",
+        "decided": "2026-10-20T12:16Z",
+        "basis": "Every admitted SLUB object carries an explicit Public Domain Mark 1.0 MODS/DFG-viewer statement corroborated by slubarchiv:copyrightStatus=publicdomain, and SLUB's policy permits copying, modification, distribution and performance of PDM objects, including commercially, with the required source citation. The redistributed fields are the factual description published with that object. SLUB publishes no separate metadata licence; none is asserted.",
+        "primaryEvidence": [
+          {
+            "url": "https://nutzungshinweis.slub-dresden.de/",
+            "retrieved": "2026-10-20",
+            "quote": "Die Lizenz-, Rechte- oder Nutzungshinweise der SLUB werden für jede Kollektion und sukzessive für jedes Objekt angegeben."
+          },
+          {
+            "url": "https://nutzungshinweis.slub-dresden.de/",
+            "retrieved": "2026-10-20",
+            "quote": "Diese digitalen Objekte werden daher in der Regel unter der Public Domain Mark 1.0 zugänglich gemacht. Sie dürfen diese Werke kopieren, verändern, verbreiten und aufführen, sogar zu kommerziellen Zwecken, ohne irgendwie um Erlaubnis bitten zu müssen."
+          }
+        ],
+        "limits": "Only PDM-admitted objects; the rights-reserved and Copyright-Not-Evaluated objects remain withheld. The PDM statement is not stretched to those objects. Attribution and the PURL/URN stay on every record.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {

@@ -267,3 +267,27 @@ test('every bundled Leventhal record carries its primary rights evidence without
   assert.equal(provider.rightsPolicy.copyright, 'https://www.digitalcommonwealth.org/copyright');
   assert.match(provider.rightsPolicy.metadataReuse, /does not publish a separate metadata licence/i);
 });
+
+test('the 2026-10-20 metadata-reuse decision is recorded for every affected scope', () => {
+  const decisionNote = 'coordination/metadata-rights-decision-20261020.md';
+  for (const id of ['doria', 'slub']) {
+    const reuse = providerById.get(id).metadataReuse;
+    assert.equal(reuse?.status, 'basis-recorded', `${id}: the pending marker must be closed by a recorded basis`);
+    assert.equal(reuse.decisionNote, decisionNote, `${id}: the decision note is linked`);
+    assert.ok(reuse.primaryEvidence?.length >= 2, `${id}: primary evidence is retained`);
+    for (const evidence of reuse.primaryEvidence) {
+      assert.match(evidence.url, /^https:\/\//, `${id}: primary evidence URL`);
+      assert.ok(evidence.quote?.length > 20, `${id}: primary evidence quote`);
+    }
+    assert.ok(reuse.limits?.length > 40, `${id}: the limits are explicit`);
+  }
+  for (const id of ['digitalcommonwealth', 'leventhal']) {
+    const policy = providerById.get(id).rightsPolicy;
+    assert.match(policy.metadataReuse, /(?:does not|do not) publish a separate metadata licence/i, `${id}: no invented licence`);
+    assert.equal(policy.metadataReuseBasis?.status, 'basis-recorded', `${id}: the pending marker must be closed by a recorded basis`);
+    assert.equal(policy.metadataReuseBasis.decisionNote, decisionNote, `${id}: the decision note is linked`);
+    assert.match(policy.metadataReuseBasis.primaryEvidence[0].url, /^https:\/\/www\.digitalcommonwealth\.org\/(api|copyright)$/);
+  }
+  const shipped = JSON.stringify(sourcesFile);
+  assert.ok(!shipped.includes('unresolved-pending'), 'no shipped provider metadata status stays unresolved');
+});

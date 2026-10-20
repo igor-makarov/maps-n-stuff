@@ -495,7 +495,31 @@ async function main() {
       copyright: RIGHTS_POLICY_URL,
       apiDocumentation: API_DOCUMENTATION_URL,
       metadataReuse:
-        'The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.',
+        "The documented JSON search, OAI-PMH feed and item endpoints are published for machine reuse, and Digital Commonwealth's API page states that its metadata content may be used in other applications and data services; Digital Commonwealth/BPL does not publish a separate metadata licence, so none is claimed. The redistributed fields are factual catalogue descriptions; per-item rights statements are retained verbatim and images are reused only where the item itself carries an affirmative determination. See metadataReuseBasis and coordination/metadata-rights-decision-20261020.md.",
+      metadataReuseBasis: {
+        "status": "basis-recorded",
+        "decided": "2026-10-20T12:16Z",
+        "basis": "The redistributed fields are the factual catalogue description (title, creator, date, publisher, language, identifiers, holding, links) that Digital Commonwealth and the Boston Public Library publish through a documented API explicitly intended for use in other applications and data services. No separate rights in those description fields are asserted. No metadata licence is published and none is claimed; image reuse stays a separate per-item gate.",
+        "primaryEvidence": [
+          {
+            "url": "https://www.digitalcommonwealth.org/api",
+            "retrieved": "2026-10-20",
+            "quote": "APIs (Application Programming Interface) provide programmatic machine-based interaction with metadata and image content from items in the Digital Commonwealth collections, allowing this content to be used in other applications and data services."
+          },
+          {
+            "url": "https://www.digitalcommonwealth.org/copyright",
+            "retrieved": "2026-10-20",
+            "quote": "Digital Commonwealth provides access to copyrighted materials strictly for noncommercial educational and research purposes and places no restrictions on public domain material."
+          },
+          {
+            "url": "https://www.digitalcommonwealth.org/copyright",
+            "retrieved": "2026-10-20",
+            "quote": "Digital Commonwealth does not charge permission fees for use of such material and does not grant or deny permission to publish or otherwise distribute material in its collections."
+          }
+        ],
+        "limits": "Descriptive fields and links only. Image admission remains gated per item (no-known-copyright/no-restrictions, NoC-US, CC0 or CC BY) with the verbatim rights statement retained; restrictive items stay withheld. Any future institution statement restricting catalogue data requires withholding the affected records pending review, not relabelling.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
+      },
       imageRightsBasis: {
         'no-known-restrictions':
           'rights_ss "No known copyright restrictions." + license_ss "No known restrictions on use." + reuse_allowed_ssi "no restrictions" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.',

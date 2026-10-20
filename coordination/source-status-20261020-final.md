@@ -61,3 +61,38 @@ the live samples above.
 - **USGS**: only a fraction of the 186,061 advertised products is bundled; depth
   is limited by shard size/client startup, not by a claim that the rest is
   unusable.
+
+## Addendum by member 0 — metadata-reuse decision (observed 2026-10-20T12:18Z)
+
+Observed runner time when this addendum was written: **12:18 UTC** (`date -u`).
+The heading's "12:25 UTC" was not a measured publication time; this addendum
+does not change the provider counts or the live results above, which remain the
+merged-tree evidence measured by member 1.
+
+**The `unresolved-pending` metadata status is closed.** The decision and its
+primary quotes are in
+`coordination/metadata-rights-decision-20261020.md`; `public/data/sources.json`
+now records `status: "basis-recorded"` (never "cleared by a licence") for:
+
+- **Doria / National Library of Finland** — per-item MODS `useAndReproduction`
+  CC0 1.0 / Public Domain condition retained on every admitted record; factual
+  description published through the documented OAI-PMH interface; no separate
+  metadata licence is published and none is claimed. The empty
+  `https://www.doria.fi/page/terms` body is recorded as the evidence that no
+  additional terms can be cited, not as a licence.
+- **Digital Commonwealth / BPL / Leventhal and the seven partner institutions** —
+  factual catalogue descriptions published through the documented API, whose
+  page states that metadata content may be used "in other applications and data
+  services"; the copyright page places no restrictions on public-domain
+  material while each item's own statement remains the image gate; no separate
+  metadata licence is published or claimed.
+- **SLUB Dresden** — factual description published with each explicit PDM 1.0
+  object; the SLUB Nutzungsbestimmungen permit copying, modification,
+  distribution and performance of PDM objects, including commercially, with the
+  required citation; the 56 rights-reserved/CNE objects stay withheld.
+
+This is a recorded basis with explicit limits, not a licence upgrade: image
+admission, verbatim rights wording and attribution are unchanged, and a future
+institution statement restricting catalogue data would require withholding the
+affected records. The previous Doria row wording is superseded only in respect of
+the metadata status; its rights counts and 30/30 live checks stand as written.
