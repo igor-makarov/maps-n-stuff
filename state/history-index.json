@@ -18,5 +18,15 @@
     "maxEntryId": 177,
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "1-3",
+    "outcome": "agent_failure",
+    "runId": "39405054721",
+    "journalId": "1-3",
+    "minEntryId": 7,
+    "maxEntryId": 267,
+    "error": "{\"conversationId\":1,\"requestId\":\"maps-n-stuff-sources-20261020-1:1-3\",\"type\":\"input\",\"status\":\"unanswered\",\"entry\":9,\"id\":10,\"reason\":\"model_error\",\"detail\":\"Request timed out.\"}",
+    "transcript": "complete"
   }
 ]
