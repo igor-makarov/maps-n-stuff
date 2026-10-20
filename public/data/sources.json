@@ -286,6 +286,18 @@
         "iiif.digitalcommonwealth.org"
       ],
       "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over every Boston Public Library-held cartographic record, with per-record rights evidence; no decade, geography, collection or record-count cap.",
+      "rightsPolicy": {
+        "copyright": "https://www.digitalcommonwealth.org/copyright",
+        "apiDocumentation": "https://www.digitalcommonwealth.org/api",
+        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.",
+        "imageRightsBasis": {
+          "no-known-restrictions": "rights_ss \"No known copyright restrictions.\" + license_ss \"No known restrictions on use.\" + reuse_allowed_ssi \"no restrictions\" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.",
+          "cc-by": "license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.",
+          "no-copyright-us": "rights_ss states NoC-US; the rightsstatements.org URI is retained when supplied.",
+          "cc0": "rights_ss/license_ss explicitly names CC0.",
+          "public-domain": "rights_ss explicitly names the public domain with no restrictions on use."
+        }
+      },
       "collections": [
         {
           "id": "boston-new-england",
@@ -354,5 +366,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T10:14:48.790Z"
+  "generatedAt": "2026-10-20T10:37:41.998Z"
 }

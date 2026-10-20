@@ -60,11 +60,11 @@ const COLLECTIONS = [
 const ALL_BPL = has('all-bpl');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function fetchJson(url, { attempts = 3 } = {}) {
+async function fetchJson(url, { attempts = 3, accept = 'application/json' } = {}) {
   let last;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      const res = await fetch(url, { headers: { accept: 'application/json', 'user-agent': UA } });
+      const res = await fetch(url, { headers: { accept, 'user-agent': UA } });
       if (res.ok) return await res.json();
       last = new Error(`${res.status} ${url}`);
       if (res.status !== 429 && res.status < 500) break;
@@ -128,6 +128,8 @@ function publicationYears(attributes) {
   return { start, end };
 }
 
+export const RIGHTS_POLICY_URL = 'https://www.digitalcommonwealth.org/copyright';
+export const API_DOCUMENTATION_URL = 'https://www.digitalcommonwealth.org/api';
 const NO_KNOWN = /^No known copyright restrictions\.?$/i;
 const NO_RESTRICTIONS = /^No known restrictions on use\.?$/i;
 const CC0 = /(?:CC0|public domain under a creative commons no rights reserved license|creativecommons\.org\/publicdomain\/zero)/i;
@@ -171,6 +173,67 @@ function plain(value) {
     .trim();
 }
 
+/**
+ * Per-record rights evidence exactly as the holding institution's catalogue
+ * states it. The search feed's `license_uri_ss` is an item-level licence URI;
+ * it is kept verbatim when present and never synthesised from a free-text
+ * statement. The policy URL is Digital Commonwealth's own copyright/terms page
+ * (the service provider, not a licence applied to the item).
+ */
+function canonicalRightsUrl(value) {
+  const raw = String(value ?? '').trim();
+  // The canonical deed URLs are served over HTTPS. Upstream manifests sometimes
+  // still spell creativecommons.org/rightsstatements.org with http; normalise
+  // only those two known licence hosts, and keep anything else exactly as stated.
+  const known = raw.match(/^http:\/\/((?:www\.)?creativecommons\.org\/|rightsstatements\.org\/)/i);
+  if (known) return `https://${raw.slice(7)}`;
+  return /^https:\/\//.test(raw) ? raw : null;
+}
+
+export function rightsEvidence(attributes, id = '') {
+  const rightsStatement = plain(attributes.rights_ss);
+  const licenseStatement = plain(attributes.license_ss);
+  const licenceUri = canonicalRightsUrl(attributes.license_uri_ss) ?? '';
+  const evidence = {
+    rightsStatement,
+    licenseStatement,
+    rightsPolicyUrl: RIGHTS_POLICY_URL,
+  };
+  if (licenceUri) evidence.rightsUrl = licenceUri;
+  if (/^commonwealth:[a-z0-9]+$/.test(id)) {
+    evidence.metadataSource = `https://collections.leventhalmap.org/search/${id}.json`;
+  }
+  return evidence;
+}
+
+/**
+ * CC BY items get their versioned licence URI and the credit line from the
+ * item's own IIIF manifest. A missing manifest field stays unknown: the search
+ * feed's licence URI, when present, is retained; no licence version or credit
+ * is invented. Other rights bases are returned unchanged.
+ */
+export async function enrichCcBy(records, fetchJson) {
+  const enriched = [];
+  for (const record of records) {
+    if (record.rightsBasis !== 'cc-by' || typeof fetchJson !== 'function') continue;
+    try {
+      const manifest = await fetchJson(record.iiifManifest);
+      const licence = String(manifest?.license ?? '').trim();
+      const attribution = plain(manifest?.attribution);
+      const canonical = canonicalRightsUrl(licence);
+      if (canonical) record.rightsUrl = canonical;
+      const version = canonical?.match(/\/licenses\/[a-z-]+\/(\d+\.\d+)\//i);
+      if (version) record.licenseVersion = version[1];
+      if (attribution) record.attribution = attribution;
+      record.rightsEvidenceSource = record.iiifManifest;
+      enriched.push(record.id);
+    } catch (error) {
+      record.rightsEvidenceNote = `The IIIF manifest did not answer when the rights evidence was read (${String(error.message ?? error)}); the catalogue statements above are retained unchanged.`;
+    }
+  }
+  return enriched;
+}
+
 export function recordOf(document) {
   const a = document.attributes ?? {};
   if (!Array.isArray(a.genre_basic_ssim) || !a.genre_basic_ssim.includes('Maps')) return null;
@@ -192,6 +255,7 @@ export function recordOf(document) {
   const imageService = `https://iiif.digitalcommonwealth.org/iiif/2/${imageId}`;
   const collection = (a.collection_name_ssim ?? []).map(plain).filter(Boolean).join(' / ') || 'Norman B. Leventhal Map & Education Center Collection';
   const creators = (a.name_tsim ?? []).map(plain).filter(Boolean);
+  const evidence = rightsEvidence(a, String(id));
   const record = {
     id: `leventhal:${id}`,
     title,
@@ -199,8 +263,10 @@ export function recordOf(document) {
     providerId: 'leventhal',
     institution: 'Boston Public Library, Norman B. Leventhal Map & Education Center',
     rights: [plain(a.rights_ss), plain(a.license_ss)].filter(Boolean).join(' '),
+    ...evidence,
     rightsBasis: basis,
     reuseAllowed: plain(a.reuse_allowed_ssi),
+    creditLine: 'Norman B. Leventhal Map & Education Center at the Boston Public Library',
     recordUrl: `https://collections.leventhalmap.org/search/${id}`,
     viewerUrl: /^https:\/\//.test(String(a.identifier_uri_ss ?? '')) ? String(a.identifier_uri_ss) : null,
     thumbnail: `${imageService}/full/304,/0/default.jpg`,
@@ -322,9 +388,37 @@ async function main() {
   if (!records.length) throw new Error('No eligible Leventhal records; leaving the catalogue unchanged.');
   records.sort((a, b) => (a.yearStart ?? Infinity) - (b.yearStart ?? Infinity) || a.id.localeCompare(b.id));
 
+  // CC BY items are a small, explicitly licensed subset: read the versioned
+  // licence URI and the stated credit from their own manifests, cached so a
+  // refresh is reproducible. A manifest failure is recorded, never guessed.
+  const ccEnriched = await enrichCcBy(records, async (url) => {
+    const match = String(url).match(/ark:\/50959\/([a-z0-9]+)\/manifest$/);
+    const item = match ? match[1] : createHash('sha1').update(String(url)).digest('hex').slice(0, 16);
+    const path = resolve(CACHE, 'manifests', `${item}.json`);
+    try {
+      return JSON.parse(await readFile(path, 'utf8'));
+    } catch {
+      // not cached yet
+    }
+    // Digital Commonwealth's ARK endpoint answers 404 when a request asks for
+    // `application/json` alone; its IIIF manifests are `application/ld+json`.
+    // Ask for that (the response is still JSON) rather than weakening the check.
+    const body = await fetchJson(url, { accept: 'application/ld+json' });
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, JSON.stringify(body));
+    return body;
+  });
+
   console.log(`Eligible Boston Public Library records: ${records.length}`);
   const basis = {};
   for (const record of records) basis[record.rightsBasis] = (basis[record.rightsBasis] || 0) + 1;
+  const rights = {
+    withRightsUrl: records.filter((record) => record.rightsUrl).length,
+    withPolicyUrl: records.filter((record) => record.rightsPolicyUrl).length,
+    ccByManifestEnriched: ccEnriched.length,
+    ccByEvidenceFailed: records.filter((record) => record.rightsEvidenceNote).length,
+  };
+  console.log('Rights evidence:', rights);
   console.log('Rights bases:', basis);
   console.log('With a catalogue extent:', records.filter((r) => r.extent).length, 'with a point:', records.filter((r) => r.geo).length);
   console.log('Withheld:', Object.fromEntries(Object.entries(rejected).sort((a, b) => b[1] - a[1]).slice(0, 8)));
@@ -350,6 +444,7 @@ async function main() {
     kept: records.length,
     shard,
     rightsBasis: basis,
+    rightsEvidence: rights,
     withheld: rejected,
     rule:
       (ALL_BPL ? 'every' : 'every record in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections') + ' Boston Public Library cartographic record in the Leventhal discovery feed with an affirmative reuse determination (No known copyright restrictions + No known restrictions on use + no restrictions, NoC-US, CC0, CC BY, or an explicit Public Domain statement). Partner-held items are excluded so one feed is not split into pretend institutions; rights not evaluated, contact-host, all-rights-reserved, non-commercial and permission-required records stay out.',
@@ -377,6 +472,21 @@ async function main() {
       (ALL_BPL
         ? 'Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over every Boston Public Library-held cartographic record, with per-record rights evidence; no decade, geography, collection or record-count cap.'
         : 'Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages), filtered to Boston Public Library holdings in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections, with per-record rights evidence; no decade, geography or record-count cap.'),
+    rightsPolicy: {
+      copyright: RIGHTS_POLICY_URL,
+      apiDocumentation: API_DOCUMENTATION_URL,
+      metadataReuse:
+        'The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.',
+      imageRightsBasis: {
+        'no-known-restrictions':
+          'rights_ss "No known copyright restrictions." + license_ss "No known restrictions on use." + reuse_allowed_ssi "no restrictions" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.',
+        'cc-by':
+          'license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.',
+        'no-copyright-us': 'rights_ss states NoC-US; the rightsstatements.org URI is retained when supplied.',
+        cc0: 'rights_ss/license_ss explicitly names CC0.',
+        'public-domain': 'rights_ss explicitly names the public domain with no restrictions on use.',
+      },
+    },
     collections: [
       { id: 'boston-new-england', name: 'Boston and New England Maps', discovery: 'https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Boston+and+New+England+Maps' },
       { id: 'revolutionary-war', name: 'American Revolutionary War-Era Maps', discovery: 'https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=American+Revolutionary+War-Era+Maps' },

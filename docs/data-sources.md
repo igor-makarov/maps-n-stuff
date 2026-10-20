@@ -1,12 +1,14 @@
 # Data sources — registry, rights and verification evidence
 
-## Current global atlas (2026-10-19)
+## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **4,685
-records** from four institutions, including **4,464 Stanford public-domain maps**
-and **117 native georeferenced rasters**. Two further providers are registered
-for explicit live searches; that registration does not claim imported records.
+[global integration notes](global-integration.md). The bundle contains **16,178
+records**: 4,464 Stanford public-domain maps, 10,242 Boston Public Library
+(Leventhal) maps, 1,437 e-rara maps, 27 swisstopo and 8 Library of Congress
+records. There are **117 native georeferenced rasters**. Two further providers
+are registered for explicit live searches; that registration does not claim
+imported records.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -529,15 +531,25 @@ inventory is `q=&per_page=100&page=N&f%5Bgenre_basic_ssim%5D%5B%5D=Maps`
 Imported scope: every Boston Public Library record in the complete **Boston and
 New England Maps**, **American Revolutionary War-Era Maps**, **Maritime Charts
 and Atlases** and **Urban Maps** collections whose catalogue entry carries an
-affirmative rights determination — 4,781 records, publication years 1478–2021.
-Partner-held items in the same discovery feed (British Library, Library of
-Congress, Clements, Phillips Academy, …) are not imported: they are other
-institutions' collections.
+affirmative rights determination — **10,242 records**, publication years
+1478–2021. Partner-held items in the same discovery feed (British Library,
+Library of Congress, Clements, Phillips Academy, …) are not imported: they are
+other institutions' collections. The shard is
+`public/data/records/leventhal.json`; the core document keeps the selection
+evidence and the provider registry.
 
 Rights are read per record, not from public access. The bundled records have
 `rights_ss` *No known copyright restrictions.* plus `license_ss` *No known
-restrictions on use.* and `reuse_allowed_ssi` *no restrictions* (4,770), or an
-explicit CC BY licence (11). The verbatim statements stay on every record.
+restrictions on use.* and `reuse_allowed_ssi` *no restrictions* (**10,231**), or
+an explicit CC BY licence (**11**). Every record keeps the verbatim
+`rightsStatement` and `licenseStatement`, a `rightsPolicyUrl` to Digital
+Commonwealth's [copyright & terms page](https://www.digitalcommonwealth.org/copyright),
+and a per-item `metadataSource` JSON URL. A licence URI (`rightsUrl`) is stored
+only where the item states one: all 11 CC BY items name
+`https://creativecommons.org/licenses/by/4.0/` in their own IIIF manifest, which
+also supplies the stated `attribution`; the version (`4.0`) and credit are kept
+per item. No known-copyright statement is relabelled public domain or CC0, and
+no licence version is inferred when the item does not state it.
 `Rights status not evaluated.`, `Contact host institution`, all-rights-reserved,
 CC BY-NC/NC-SA/NC-ND, permission-required and copyright-undetermined records are
 withheld and counted in `records.json.selection["leventhal:bpl"]`.
@@ -554,7 +566,18 @@ sample verified on 2026-10-20 returned 30/30 HTTP 200 thumbnails and 30/30
 `info.json` responses; the full sample is recorded under the provider's
 `verification` field in `public/data/sources.json`.
 
-The remaining 5,461 eligible BPL records are deliberately not in this first
-increment: `records.json` is 14.76 MiB and must stay below Cloudflare's 25 MiB
-static-asset limit. They need catalogue sharding (or a larger-budget refresh)
-before import; they are not counted as coverage today.
+The metadata endpoints are documented at
+`https://www.digitalcommonwealth.org/api`. The JSON search and item views are
+publicly readable, but Digital Commonwealth publishes no separate metadata
+licence; the registry therefore cites the catalogue and retains each item's
+rights statement rather than asserting a blanket metadata licence. One
+upstream quirk is recorded in the harvester: an ARK manifest request with
+`Accept: application/json` alone gets a 404, while `application/ld+json`
+returns the IIIF manifest. The importer asks for the latter and verifies the
+JSON response; it does not treat the 404 as a rights decision.
+
+All currently admitted Boston Public Library scope is imported. The 4,828
+partner-held records in the same discovery feed remain excluded, and 163
+BPL-held records are withheld by the rights/metadata gate; none is counted as
+coverage. The shard is 16.73 MiB and the core is 9.57 MiB, both below
+Cloudflare's per-asset limit; the loader merges shards at runtime.
