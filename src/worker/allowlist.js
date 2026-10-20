@@ -17,6 +17,7 @@ export const ALLOWLIST = [
   { host: 'purl.stanford.edu', prefixes: ['/'] },
   { host: 'stacks.stanford.edu', prefixes: ['/image/iiif/'] },
   { host: 'collections.leventhalmap.org', prefixes: ['/search/commonwealth:'] },
+  { host: 'ark.digitalcommonwealth.org', prefixes: ['/ark:/50959/'] },
   { host: 'iiif.digitalcommonwealth.org', prefixes: ['/iiif/'] },
   { host: 'www.loc.gov', prefixes: ['/item/'] },
   { host: 'tile.loc.gov', prefixes: ['/image-services/iiif/service:gmd:'] },
@@ -33,6 +34,7 @@ export function isAllowed(target) {
   if (target.username || target.password || target.port) return false;
   if (target.hostname === 'purl.stanford.edu') return /^\/[a-z]{2}\d{3}[a-z]{2}\d{4}\/iiif3?\/manifest$/.test(target.pathname);
   if (target.hostname === 'collections.leventhalmap.org') return /^\/search\/commonwealth:[a-z0-9]+\/manifest$/.test(target.pathname);
+  if (target.hostname === 'ark.digitalcommonwealth.org') return /^\/ark:\/50959\/[a-z0-9]+\/manifest$/.test(target.pathname);
   const rule = ALLOWLIST.find((r) => r.host === target.hostname);
   if (!rule) return false;
   return rule.prefixes.some((prefix) => target.pathname.startsWith(prefix));

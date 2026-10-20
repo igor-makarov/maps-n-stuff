@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T09:22:37.263Z",
+  "generatedAt": "2026-10-20T09:23:01.975Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
   "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation.",

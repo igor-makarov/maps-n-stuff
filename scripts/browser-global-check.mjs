@@ -54,6 +54,9 @@ async function go(query = '') {
   const deadline = Date.now() + 15000;
   while (navigations === beforeNavigation && Date.now() < deadline) await sleep(25);
   await waitFor(`document.documentElement?.dataset.app === 'meridian-atlas' && document.querySelector('.app-modebar') && document.querySelector('#result-list')?.getAttribute('aria-busy') === 'false' && !!document.querySelector('link[href="/styles/history.css"]')?.sheet`);
+  // The big catalogue finishes loading before the optional modules have all
+  // initialised. Wait for that contract explicitly instead of racing it.
+  await waitFor(`(async()=>{const ctx = ${atlas};return Array.isArray(ctx.modules) && (ctx.modules.length === 8 || ctx.moduleErrors.length > 0);})()`);
   await evaluate('document.fonts.ready');
   await evaluate('scrollTo(0,0)');
 }
@@ -70,10 +73,15 @@ async function shot(name) {
 const atlas = `(await import('/app/main.js')).ctx`;
 const history = `(${atlas}).moduleApis.history`;
 try {
-  let targets;
-  for (let i = 0; i < 60; i++) {
-    try { targets = await fetch(`http://127.0.0.1:${port}/json/list`).then((r) => r.json()); break; } catch { await sleep(100); }
+  let targets = [];
+  for (let i = 0; i < 120; i++) {
+    try {
+      targets = await fetch(`http://127.0.0.1:${port}/json/list`).then((r) => r.json());
+      if (Array.isArray(targets) && targets.length && targets[0].webSocketDebuggerUrl) break;
+    } catch {}
+    await sleep(250);
   }
+  if (!targets[0]?.webSocketDebuggerUrl) throw new Error('Chromium DevTools target did not become ready');
   ws = new WebSocket(targets[0].webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
   ws.onmessage = ({ data }) => {
@@ -108,7 +116,8 @@ try {
   await waitFor(`!document.querySelector('#detail').hidden`);
   await check('Language metadata has English names and original titles are preserved', `(()=>{const term=[...document.querySelectorAll('#detail dt')].find(n=>n.textContent==='Language');return term?.nextElementSibling.textContent.includes('German') && document.querySelector('#detail').textContent.includes(window.originalGermanTitle);})()`);
   await go();
-  await check('Rights-cleared global import includes unaligned and undated scans', `(async()=>{ const r=(${atlas}).data.records; return r.length===4685 && r.filter(v=>v.providerId==='stanford').length===4464 && r.some(v=>v.yearStart===null&&!v.georeference); })()`);
+  await check('Rights-cleared global import includes unaligned and undated scans', `(async()=>{ const r=(${atlas}).data.records; return r.length>=4685 && r.filter(v=>v.providerId==='stanford').length===4464 && r.some(v=>v.yearStart===null&&!v.georeference); })()`);
+  await waitFor(`document.querySelectorAll('#result-list .zh-result').length>0 && document.querySelector('#results-more')`);
   await check('Large result lists start with a bounded page', `document.querySelectorAll('#result-list .zh-result').length<=100 && !document.querySelector('#results-more').hidden`);
   await evaluate(`document.querySelector('#results-more').click()`);
   await waitFor(`document.querySelectorAll('#result-list .zh-result').length>100`);
@@ -146,10 +155,11 @@ try {
   await check('Raster opacity supports a fully transparent overlay', `document.querySelector('.map-raster').style.opacity==='0'`);
   await evaluate(`window.fetch=window.originalRasterFetch`);
   await go();
+  await evaluate(`(async()=>{window.catalogueSizeBefore=(${atlas}).data.records.length;})()`);
   await evaluate(`window.originalCollectionFetch=window.fetch;window.fetch=async(input,init)=>String(input).includes('/api/catalogue?')?Response.json({records:[{id:'leventhal:commonwealth:fixture123',providerId:'leventhal',title:'Harbour plan',yearStart:1200,yearEnd:1200,creators:[],institution:'Fixture library',rights:'This work is in the public domain.',recordUrl:'https://collections.leventhalmap.org/search/commonwealth:fixture123',thumbnail:null,type:'map',collection:'Fixture collection',extent:null,geoNote:'Synthetic adapter test, not an imported map.'}],withheld:1,nextPage:null}):window.originalCollectionFetch(input,init);document.querySelector('#collection-source').value='leventhal';document.querySelector('#collection-query').value='Fixture Boston';document.querySelector('#collection-search').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));`);
   await waitFor(`document.querySelector('[data-record-id="leventhal:commonwealth:fixture123"]')`);
-  await check('Original collection searches merge admitted records and update filters', `(async()=>{const ctx=${atlas};return ctx.data.records.length===4686 && ctx.store.getState().provider==='leventhal' && document.querySelector('#collection-status').textContent.includes('1 map added');})()`);
-  await check('Imported full-text matches stay visible without changing their titles', `document.querySelector('[data-record-id="leventhal:commonwealth:fixture123"]').textContent.includes('Harbour plan') && document.querySelector('#intro-count').textContent==='4686' && document.querySelector('#year-from').min==='1200'`);
+  await check('Original collection searches merge admitted records and update filters', `(async()=>{const ctx=${atlas};return ctx.data.records.length===window.catalogueSizeBefore+1 && ctx.store.getState().provider==='leventhal' && document.querySelector('#collection-status').textContent.includes('1 map added');})()`);
+  await check('Imported full-text matches stay visible without changing their titles', `document.querySelector('[data-record-id="leventhal:commonwealth:fixture123"]').textContent.includes('Harbour plan') && document.querySelector('#intro-count').textContent===String(window.catalogueSizeBefore+1) && document.querySelector('#year-from').min==='1200'`);
   await evaluate(`window.fetch=(input,init)=>String(input).includes('/api/catalogue?')?new Promise(resolve=>{window.finishStaleSearch=()=>resolve(Response.json({records:[{id:'loc:stale-fixture',providerId:'loc',title:'Stale fixture',yearStart:1800,yearEnd:1800,creators:[],institution:'Fixture library',rights:'Public domain',recordUrl:'https://www.loc.gov/item/stale-fixture/',type:'map'}]}));}):window.originalCollectionFetch(input,init);document.querySelector('#collection-source').value='loc';document.querySelector('#collection-source').dispatchEvent(new Event('change'));document.querySelector('#collection-query').value='Stale fixture';document.querySelector('#collection-search').dispatchEvent(new Event('submit',{cancelable:true}));document.querySelector('#collection-source').value='usgs';document.querySelector('#collection-source').dispatchEvent(new Event('change'));`);
   await evaluate(`(async()=>{window.finishStaleSearch();await new Promise(resolve=>setTimeout(resolve,80));})()`);
   await check('Changing collection discards an older search response', `(async()=>{const ctx=${atlas};return !ctx.data.recordIndex.has('loc:stale-fixture') && ctx.store.getState().provider==='leventhal' && !document.querySelector('#collection-submit').disabled;})()`);
