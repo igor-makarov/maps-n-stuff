@@ -236,4 +236,17 @@ test('global atlas branding stays independent of the design reference', async ()
   const headers = await read('public/_headers');
   assert.match(headers, /img-src[^;]+https:\/\/tile\.openstreetmap\.org/);
   assert.match(headers, /img-src[^;]+https:\/\/tile\.loc\.gov/);
+  // Doria's provider originals and thumbnails are plain <img> URLs, so CSP must
+  // admit that exact host or every Doria preview is blocked in the browser.
+  assert.match(headers, /img-src[^;]+https:\/\/www\.doria\.fi/);
+});
+
+test('provider originals are linked when the collection has no IIIF service', () => {
+  const detail = modules['detail.js'];
+  // Doria publishes JPEG/PDF bitstreams instead of IIIF. The detail view must
+  // expose those real links rather than claiming no image exists.
+  assert.match(detail, /record\?\.imageUrl/);
+  assert.match(detail, /record\?\.documents/);
+  assert.match(detail, /Open original scan/);
+  assert.match(detail, /Open original PDF/);
 });

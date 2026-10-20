@@ -176,6 +176,11 @@
             "record": 200
           }
         ]
+      },
+      "metadataReuse": {
+        "status": "unresolved-pending",
+        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found.",
+        "claim": "No metadata licence is claimed. Catalogue facts are retained with attribution, the original record link and URN; this gap is pending, not cleared."
       }
     },
     {

@@ -153,6 +153,9 @@ export function rightsBasis(attributes) {
     // word only when it names the public domain directly.
     if (!(CC0.test(combined) || NOC_US.test(rights) || PUBLIC_DOMAIN.test(rights))) return null;
   }
+  // A restrictive item statement is not cancelled by an open label in a second
+  // field ("Under copyright. All rights reserved." + "CC0" is a conflict).
+  if (BLOCKING.test(rights) && !(NOC_US.test(rights) || PUBLIC_DOMAIN.test(rights))) return null;
   if (NO_KNOWN.test(rights) && NO_RESTRICTIONS.test(license) && /^no restrictions$/i.test(reuse)) return 'no-known-restrictions';
   if (NOC_US.test(rights)) return 'no-copyright-us';
   if (CC0.test(combined)) return 'cc0';

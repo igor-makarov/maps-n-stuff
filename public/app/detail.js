@@ -748,10 +748,43 @@ export function init(ctx) {
       el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
         record.imageService
           ? fullImageLink(record.imageService)
-          : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
+          : originalLinks(record).length
+            ? originalLinks(record)
+            : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
       ]),
       el('p', { class: 'zh-hint', text: 'Check rights and citation guidance with the holding collection. The information here comes from its metadata.' }),
     ]);
+  }
+
+  /**
+   * The provider's own original scan/document links. Doria and similar
+   * repositories publish a JPEG or PDF rather than a IIIF image service; the
+   * catalogue keeps those URLs and must expose them instead of claiming no
+   * image exists. Only https links are rendered; nothing is synthesised.
+   */
+  function originalLinks(record) {
+    const imageUrls = [...new Set([record?.imageUrl, ...(record?.images ?? [])].filter((url) => typeof url === 'string' && /^https:\/\//.test(url)))];
+    const documentUrls = [...new Set((record?.documents ?? []).filter((url) => typeof url === 'string' && /^https:\/\//.test(url)))];
+    return [
+      ...imageUrls.map((href, i) =>
+        el('a', {
+          class: 'zh-button zh-button--ghost zh-button--small',
+          href,
+          target: '_blank',
+          rel: 'noopener',
+          text: i === 0 ? 'Open original scan ↗' : `Open original scan ${i + 1} ↗`,
+        }),
+      ),
+      ...documentUrls.map((href) =>
+        el('a', {
+          class: 'zh-button zh-button--ghost zh-button--small',
+          href,
+          target: '_blank',
+          rel: 'noopener',
+          text: /\.pdf(?:$|[?#])/i.test(href) ? 'Open original PDF ↗' : 'Open original document ↗',
+        }),
+      ),
+    ];
   }
 
   /** The full-resolution IIIF image link, named the same way everywhere. */
@@ -780,7 +813,9 @@ export function init(ctx) {
       ...[
         service
           ? fullImageLink(service)
-          : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
+          : originalLinks(record).length
+            ? originalLinks(record)
+            : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
         manifest?.seeAlso
           ? el('a', {
               class: 'zh-button zh-button--ghost zh-button--small',
