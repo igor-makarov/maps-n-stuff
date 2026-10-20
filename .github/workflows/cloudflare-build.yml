@@ -1,0 +1,66 @@
+name: Trigger Cloudflare build
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+  # Verify the hook on setup; removed after the first successful invocation.
+  push:
+    branches: [main]
+    paths: [.github/workflows/cloudflare-build.yml]
+
+permissions: {}
+
+concurrency:
+  group: cloudflare-build-hook
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Request a Cloudflare build
+        env:
+          CF_WEBHOOK: ${{ secrets.CF_WEBHOOK }}
+        shell: python
+        run: |
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          def fail(message):
+              print(f"::error::{message}", file=sys.stderr)
+              sys.exit(1)
+
+          hook = os.environ.get("CF_WEBHOOK", "").strip()
+          if not hook:
+              fail("Add the CF_WEBHOOK repository Actions secret containing the Cloudflare deploy-hook URL.")
+          url = urllib.parse.urlsplit(hook)
+          if (url.scheme != "https" or url.netloc != "api.cloudflare.com"
+                  or url.query or url.fragment
+                  or not re.fullmatch(r"/client/v4/workers/builds/deploy_hooks/[0-9a-fA-F-]{36}", url.path)):
+              fail("CF_WEBHOOK must contain a Cloudflare Workers deploy-hook URL.")
+
+          request = urllib.request.Request(hook, data=b"", method="POST")
+          try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                  body = response.read(65537)
+                  if len(body) > 65536:
+                      fail("Cloudflare returned an unexpectedly large response.")
+          except urllib.error.HTTPError as error:
+              fail(f"Cloudflare rejected the build request (HTTP {error.code}).")
+          except (urllib.error.URLError, TimeoutError, OSError):
+              fail("Could not reach the Cloudflare build hook.")
+
+          try:
+              result = json.loads(body)
+          except (ValueError, UnicodeError):
+              fail("Cloudflare returned an invalid JSON response.")
+          if not isinstance(result, dict) or result.get("success") is not True:
+              fail("Cloudflare did not accept the build request.")
+          print("Cloudflare accepted the build request. Cloudflare handles the build and deployment.")
