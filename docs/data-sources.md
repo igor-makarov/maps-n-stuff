@@ -1,12 +1,15 @@
 # Data sources — registry, rights and verification evidence
 
-## Current global atlas (2026-10-19)
+## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **4,685
-records** from four institutions, including **4,464 Stanford public-domain maps**
-and **117 native georeferenced rasters**. Two further providers are registered
-for explicit live searches; that registration does not claim imported records.
+[global integration notes](global-integration.md). The bundle contains **17,840
+records** from seven providers: 4,464 Stanford public-domain maps, 1,437 e-rara
+maps, 27 swisstopo overlays, 8 Library of Congress records, 10,242 Leventhal /
+Boston Public Library maps and **1,662 Doria / National Library of Finland
+maps**. It retains **117 native georeferenced rasters**, five historical/aerial
+layers and 54 historical-border snapshots. USGS remains a registered live-search
+provider without bundled records; that registration does not claim coverage.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -400,9 +403,10 @@ Note: the `zoomlevel` attribute of some search results is a uint32 bitfield
 
 ## 3. Local fixture provider
 
-The committed registry contains only the two real providers above. Tests that need
-synthetic records build them in memory (`tests/records.test.mjs`), so no fixture
-metadata can appear in the public data or the UI.
+The committed registry contains only the real providers documented in this file.
+Tests that need synthetic records build them in memory (`tests/records.test.mjs`
+and the provider-specific regressions), so no fixture metadata can appear in the
+public data or the UI.
 
 ## 4. historical-basemaps — historical borders (the History view)
 
@@ -526,17 +530,15 @@ inventory is `q=&per_page=100&page=N&f%5Bgenre_basic_ssim%5D%5B%5D=Maps`
 (15,233 records in 153 pages on 2026-10-20). The importer is
 `scripts/harvest-leventhal.mjs` (cached pages, resumable, no dependencies).
 
-Imported scope: every Boston Public Library record in the complete **Boston and
-New England Maps**, **American Revolutionary War-Era Maps**, **Maritime Charts
-and Atlases** and **Urban Maps** collections whose catalogue entry carries an
-affirmative rights determination — 4,781 records, publication years 1478–2021.
-Partner-held items in the same discovery feed (British Library, Library of
-Congress, Clements, Phillips Academy, …) are not imported: they are other
-institutions' collections.
+Imported scope: every Boston Public Library record in the complete cartographic
+discovery feed whose catalogue entry carries an affirmative rights determination —
+**10,242 records**, publication years 1478–2022. Partner-held items in the same
+feed (British Library, Library of Congress, Clements, Phillips Academy, …) are not
+imported: they are other institutions' collections.
 
 Rights are read per record, not from public access. The bundled records have
 `rights_ss` *No known copyright restrictions.* plus `license_ss` *No known
-restrictions on use.* and `reuse_allowed_ssi` *no restrictions* (4,770), or an
+restrictions on use.* and `reuse_allowed_ssi` *no restrictions* (10,231), or an
 explicit CC BY licence (11). The verbatim statements stay on every record.
 `Rights status not evaluated.`, `Contact host institution`, all-rights-reserved,
 CC BY-NC/NC-SA/NC-ND, permission-required and copyright-undetermined records are
@@ -554,7 +556,57 @@ sample verified on 2026-10-20 returned 30/30 HTTP 200 thumbnails and 30/30
 `info.json` responses; the full sample is recorded under the provider's
 `verification` field in `public/data/sources.json`.
 
-The remaining 5,461 eligible BPL records are deliberately not in this first
-increment: `records.json` is 14.76 MiB and must stay below Cloudflare's 25 MiB
-static-asset limit. They need catalogue sharding (or a larger-budget refresh)
-before import; they are not counted as coverage today.
+The Leventhal records are published in their own shard,
+`/data/records/leventhal.json` (about 13.3 MiB), registered in
+`records.json.shards` and merged by the browser loader and the Worker. The core
+document stays below Cloudflare's per-asset limit. The earlier four-collection
+increment (4,781 records) is preserved in the same feed; the shard widens it
+without replacing ids.
+
+
+## Doria — National Library of Finland (imported 2026-10-20)
+
+Doria is the National Library of Finland's institutional repository. The
+documented OAI-PMH set `com_10024_109232` (“Kartat” / Maps) is the discovery
+feed: **1,663 records** at retrieval, of which **1,662** pass the gates and are
+published in `/data/records/doria.json` (`records.json.shards`). Publication
+years span 1477–2012; 7 records are honestly undated. The set includes the
+Nordenskiöld Map Collection (717 imported) and Maps and Atlases of Finland
+(703); the remaining 242 have only the parent Maps collection label.
+
+| Field | Value |
+| --- | --- |
+| Discovery | `https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232` (OAI-PMH 2.0) |
+| Metadata formats combined | `oai_dc` (title, creators, type, language, publisher, identifiers, rights), `mods` (`dateIssued`, per-item access condition) and `ore` (thumbnail and original bitstreams) |
+| Record page | `https://www.doria.fi/handle/10024/<id>` |
+| URN | the item's `URN:NBN:fi-…`, retained when stated |
+| Thumbnail | the ORE `THUMBNAIL` bitstream, e.g. `https://www.doria.fi/bitstream/10024/31270/2/Nord-ost_Land.jpg.jpg` |
+| Original | the ORE `ORIGINAL` bitstreams; 1,270 records have a JPEG original, 392 have a PDF (or other document) original and keep the verified JPEG thumbnail as their preview |
+| Institution | National Library of Finland (Kansalliskirjasto) |
+| Collection | official English set label from OAI `ListSets`: The Nordenskiöld Map Collection / Maps and Atlases of Finland / Kartat (Maps) |
+| Rights | per item: PDM 1.0 (1,269), CC0 (365), or an explicit “Public domain” statement without a licence URL (28, retained with a `rightsNote`). Restrictive or conflicting statements are withheld. |
+| Attribution | National Library of Finland / Doria |
+
+The importer is `scripts/harvest-doria.mjs` (cached 17-page feeds, resumable,
+dependency-free, rate-limited). It never infers a date, creator or extent: the
+seven undated sheets keep `yearStart`/`yearEnd` absent, and every record carries
+`geoNote` saying that Doria publishes no map extent. Titles, creators, publisher,
+language and URN are copied verbatim; the official English collection label is
+kept but the archival titles are not translated.
+
+Rights evidence is the item's own Doria/MODS statement. A plain “Public domain”
+item is distinguishable by `rightsBasis: "public-domain-statement"` and
+`rightsNote`; it is not relabelled PDM/CC0. Doria's public terms page
+(`https://www.doria.fi/page/terms`) was empty at retrieval, so no separate
+metadata licence URL is claimed: catalogue facts are reused with attribution and
+every record links to its Doria page. This is a metadata-reuse gap, recorded in
+`records.json.selection["doria:maps"].metadataReuse`, not a claim of a metadata
+licence.
+
+Live verification (2026-10-20): a deterministic 30-record sample returned **30/30
+JPEG thumbnails**, **30/30 original bitstreams** (JPEG or PDF) and **30/30 record
+pages**; the sample and examples are stored under
+`records.json.selection["doria:maps"].verification` and the provider's
+`verification` field in `public/data/sources.json`. Stable examples:
+`doria:84494` (“[Mundus]”, 1477, Nordenskiöld, CC0) and `doria:31270`
+(“Karta öfver slädfärden under 1872-73 års polarexpedition.”, 1885, PDM).

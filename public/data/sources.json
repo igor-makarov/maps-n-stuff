@@ -351,8 +351,104 @@
           }
         ]
       }
+    },
+    {
+      "id": "doria",
+      "name": "Doria — National Library of Finland map collections",
+      "operator": "National Library of Finland (Kansalliskirjasto)",
+      "homepage": "https://www.doria.fi/",
+      "home": "https://www.doria.fi/",
+      "institutions": [
+        "National Library of Finland (Kansalliskirjasto)"
+      ],
+      "rights": "Per-item rights: Public Domain Mark, CC0, or an explicit “Public domain” statement. The verbatim Doria/MODS statements are retained on every record; restrictive or conflicting statements are withheld.",
+      "attribution": "National Library of Finland / Doria",
+      "retrieved": "2026-10-20",
+      "terms": "https://www.doria.fi/page/terms",
+      "api": {
+        "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232",
+        "sets": "https://www.doria.fi/oai/request?verb=ListSets",
+        "formats": [
+          "oai_dc",
+          "mods",
+          "ore"
+        ],
+        "record": "https://www.doria.fi/handle/10024/{id}",
+        "bitstream": "https://www.doria.fi/bitstream/10024/{id}/{sequence}/{name}",
+        "documentation": "https://www.doria.fi/"
+      },
+      "apiHosts": [
+        "www.doria.fi"
+      ],
+      "method": "Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232, combining oai_dc discovery, MODS date/rights and ORE bitstreams; rights-gated and published as a catalogue shard.",
+      "collections": [
+        {
+          "id": "kartat",
+          "name": "Kartat / Maps (National Library of Finland)",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232"
+        },
+        {
+          "id": "nordenskiold",
+          "name": "The Nordenskiöld Map Collection",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216"
+        },
+        {
+          "id": "suomen-karttoja",
+          "name": "Maps and Atlases of Finland",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_78800"
+        }
+      ],
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 30,
+        "thumbnailOk": 30,
+        "originalOk": 30,
+        "recordOk": 30,
+        "examples": [
+          {
+            "id": "doria:84494",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:99099",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:87762",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:90184",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:87739",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          }
+        ]
+      }
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T10:14:48.790Z"
+  "generatedAt": "2026-10-20T10:38:05.709Z"
 }

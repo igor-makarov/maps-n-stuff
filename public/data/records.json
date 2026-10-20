@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-20T10:14:48.790Z",
+  "generatedAt": "2026-10-20T10:38:05.709Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
-  "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader.",
+  "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232, combining oai_dc discovery, MODS date/rights and ORE bitstreams; rights-gated and published as a catalogue shard.",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
@@ -302,6 +302,95 @@
         }
       ],
       "rule": "Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.",
+      "retrieved": "2026-10-20"
+    },
+    "doria:maps": {
+      "source": "Doria — National Library of Finland (Kansalliskirjasto)",
+      "endpoint": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232",
+      "sets": [
+        {
+          "id": "com_10024_109232",
+          "name": "Kartat / Maps",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232"
+        },
+        {
+          "id": "com_10024_97216",
+          "name": "The Nordenskiöld Map Collection",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216"
+        },
+        {
+          "id": "com_10024_78800",
+          "name": "Maps and Atlases of Finland",
+          "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_78800"
+        }
+      ],
+      "metadataPrefixes": [
+        "oai_dc",
+        "mods",
+        "ore"
+      ],
+      "considered": 1663,
+      "kept": 1662,
+      "shard": "/data/records/doria.json",
+      "rightsBasis": {
+        "pdm": 1269,
+        "public-domain-statement": 28,
+        "cc0": 365
+      },
+      "withheld": {
+        "not typed as a map": 1
+      },
+      "rule": "Every item in Doria’s documented OAI-PMH Maps set (com_10024_109232) is a candidate. It is imported only when oai_dc type includes map, the Doria/MODS statements carry an explicit Public Domain Mark or CC0 licence URL or an explicit “Public domain” statement, no separate restrictive statement appears in either record, and ORE publishes a thumbnail plus an original bitstream. Titles, creators, publisher, language, URN and the Doria handle are retained verbatim; no date, extent, creator or rights statement is inferred.",
+      "metadataReuse": "Doria’s catalogue facts are reused with attribution and a link to every original record. The site’s public terms page (https://www.doria.fi/page/terms) was empty at retrieval, so no separate metadata licence URL is claimed; the image rights are the per-item PDM/CC0/public-domain statements recorded on each catalogue entry.",
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 30,
+        "thumbnailOk": 30,
+        "originalOk": 30,
+        "recordOk": 30,
+        "examples": [
+          {
+            "id": "doria:84494",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:99099",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:87762",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:90184",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          },
+          {
+            "id": "doria:87739",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg;charset=UTF-8",
+            "image": 206,
+            "imageType": "image/jpeg;charset=UTF-8",
+            "record": 200
+          }
+        ]
+      },
       "retrieved": "2026-10-20"
     }
   },
@@ -253320,6 +253409,7 @@
     }
   ],
   "shards": [
+    "/data/records/doria.json",
     "/data/records/leventhal.json"
   ]
 }

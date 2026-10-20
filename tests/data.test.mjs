@@ -46,6 +46,7 @@ const REGISTRY_HOSTS = new Set([
   'map.geo.admin.ch',
   'www.swisstopo.admin.ch',
   'www.zb.uzh.ch',
+  'www.doria.fi',
 ]);
 
 /** Discovery-only aggregators: allowed in links in prose, never as a data source. */
