@@ -56,7 +56,7 @@ dead image service withheld). Withheld sample records: `doria:84494`,
 
 **Verification on the merged tree:** `node scripts/validate.mjs` → 31,692
 records (7,536 core + 5 shards), 9 provider entries (6 bundled), 122 overlays,
-54 history snapshots. `npm run check` → build/asset validation, **287/287
+54 history snapshots. `npm run check` → build/asset validation, **289/289
 tests**, Worker dry-run. The USGS GeoPDF-only path has adapter tests and live
 55/55 PDF range evidence (observed 12:50 UTC). Browser harness `scripts/browser-global-check.mjs` against local
 `wrangler dev` → **50/50** checks at desktop, 390 px and 320 px, including
@@ -85,9 +85,6 @@ check, not a Cloudflare deployment proof.
   GeoTIFF, 55 GeoPDF-only); depth is limited by shard size/client startup, not
   by a claim that the rest is unusable. The 55 GeoPDF-only products from offsets
   0–23999 are no longer withheld.
-- **USGS**: only 23,945 of the 186,061 advertised products are bundled; depth is
-  limited by shard size/client startup, not by a claim that the rest is
-  unusable. GeoPDF-only products are not yet revisited.
 
 ## Addendum by member 0 — metadata-reuse evidence after the withholding (observed 2026-10-20T12:26Z)
 
@@ -116,6 +113,33 @@ confirms that the three withheld scopes stay withheld.
   partial 23,945-record import of 186,061 advertised products at the time of this
   addendum; the later bounded repair added 55 GeoPDF-only originals (24,000
   total), recorded above.
+
+## Independent verification by member 2 (runner clock 2026-10-20 12:44 UTC)
+
+Measured on the merged tree after the concurrent USGS GeoPDF repairs were
+reconciled (member 1's data path plus member 2's upstream-error and cursor
+guards); this does not replace member 1's live 55/55 PDF evidence above.
+
+- `npm run check` → **289/289** unit tests on the reconciled tree; validation
+  reports **31,692 records** (7,536 core + five shards), 9 provider entries
+  (6 bundled), 122 overlays, 54 history snapshots, and the Worker dry-run
+  packages. No withheld-provider record appears in the core or any shard.
+- `scripts/browser-global-check.mjs` against local `wrangler dev` → **50/50**
+  at desktop, 390 px and 320 px, including history and the native raster
+  renderer. External hosts are mocked/blocked in that harness.
+- e-rara lane on this tree: 3,045/3,045 records carry `PDM 1.0`, a IIIF
+  manifest and a thumbnail; 2,271 state an extent; deterministic 10/10 live
+  sample returned manifest 200 `application/json` and thumbnail 200
+  `image/jpeg`.
+- USGS evidence gap retained honestly: an original GeoPDF returns 206
+  `application/pdf` with `%PDF-` magic; the same record's ScienceBase item page
+  timed out on one probe. That page is still a metadata-source URL, not a
+  verified live response.
+- **Upstream integrity repair:** TNM can answer HTTP 200 with
+  `{"errorMessage":"Search timed out..."}`. The harvester now rejects that
+  document in `fetchPage`, retries it, and refuses a cached error document, so
+  it can no longer be recorded as a successful empty page. The resume cursor is
+  also monotonic when an earlier slice is replayed. Regression tests added.
 
 ## Member 0 addendum — LoC live-search repair (observed 2026-10-20T12:52Z)
 

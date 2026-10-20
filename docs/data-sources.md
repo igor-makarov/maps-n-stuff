@@ -493,7 +493,10 @@ node scripts/harvest-usgs.mjs --start-offset 18000 --pages 6 --shard usgs-3
 preserved and only the new slice is appended to the named one.
 
 Each record keeps the product title, publication date (never the depicted
-period), USGS footprint and the delivered original GeoTIFF or GeoPDF URL. Date
+period), USGS footprint and the delivered original GeoTIFF or GeoPDF URL. A TNM
+HTTP-200 `{"errorMessage": ...}` document (observed as a search timeout) is
+retried and never cached as an empty page; replaying an earlier slice never
+moves the recorded resume cursor backwards. Date
 evidence: every bundled title ends in a single edition year and that year equals
 the API `publicationDate` for all 24,000 records (`titleEditionYearMismatches: 0` in the
 selection), so the field is not a hidden digital-upload date; no depicted or

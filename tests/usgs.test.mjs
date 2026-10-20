@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { usgsProductRecord, usgsExtent, usgsYear } from '../scripts/harvest-usgs.mjs';
+import { usgsProductRecord, usgsExtent, usgsYear, validProductsPage } from '../scripts/harvest-usgs.mjs';
 import { rasterUrl } from '../src/worker/raster.js';
 import { usgsRecord } from '../src/worker/catalogue.js';
 
@@ -76,6 +76,17 @@ test('a GeoPDF-only product is retained as a scan without an invented raster', (
   assert.equal(record.downloads[0].url, product().urls.GeoPDF);
   assert.match(record.geoNote, /GeoPDF/);
   assert.match(record.geoNote, /no pixel-to-ground transform/i);
+});
+
+test('an upstream error document is never accepted as a products page', () => {
+  assert.equal(
+    validProductsPage({ errorMessage: 'Search timed out - please refine your query to return fewer results' }),
+    false,
+    'TNM returns this as HTTP 200; it must be retried, not cached as an empty page',
+  );
+  assert.equal(validProductsPage({ total: 186061, items: [] }), true);
+  assert.equal(validProductsPage({ total: 186061 }), false);
+  assert.equal(validProductsPage(null), false);
 });
 
 test('the USGS gate never invents identity, dates or a download', () => {

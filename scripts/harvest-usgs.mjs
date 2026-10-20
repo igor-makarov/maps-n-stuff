@@ -219,7 +219,10 @@ async function fetchPage(offset) {
       const body = await response.text();
       if (!body.trimStart().startsWith('{'))
         throw new Error(`non-JSON response from ${url.href}`);
-      return JSON.parse(body);
+      const page = JSON.parse(body);
+      if (!validProductsPage(page))
+        throw new Error(`error document instead of a products page from ${url.href}`);
+      return page;
     } catch (error) {
       last = error;
       if (attempt < 4) await sleep(1200 * attempt);
@@ -228,11 +231,23 @@ async function fetchPage(offset) {
   throw last;
 }
 
+export function validProductsPage(page) {
+  return Boolean(
+    page &&
+      !page.errorMessage &&
+      Array.isArray(page.items) &&
+      Number.isFinite(Number(page.total)),
+  );
+}
+
 async function cachedPage(offset) {
   const file = resolve(CACHE, 'products', `${PAGE_SIZE}-${offset}.json`);
   if (!REFRESH) {
     try {
-      return JSON.parse(await readFile(file, 'utf8'));
+      const cached = JSON.parse(await readFile(file, 'utf8'));
+      // A cached error document ({errorMessage: "Search timed out"}) is not a
+      // page of maps: refetch it instead of silently treating it as empty.
+      if (validProductsPage(cached)) return cached;
     } catch {}
   }
   const body = await fetchPage(offset);
@@ -532,6 +547,8 @@ async function main() {
   if (!recordsDoc.method?.includes('USGS Historical Topographic Map Collection records are imported'))
     recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in ${shard}.`;
   recordsDoc.selection ??= {};
+  const previousNextOffset =
+    Number(recordsDoc.selection['usgs:htmc']?.resumable?.nextOffset) || 0;
   recordsDoc.selection['usgs:htmc'] = {
     scope: 'USGS Historical Topographic Map Collection (HTMC)',
     upstreamTotal,
@@ -562,9 +579,9 @@ async function main() {
     rule:
       'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps and carries a ScienceBase item URL plus a delivered original download. A delivered GeoTIFF is retained as the provider-supplied native raster; a product that delivers only a GeoPDF keeps that original GeoPDF and is explicitly not labelled as a GeoTIFF or COG. Undated products and products without a preview stay eligible; products with neither original download are withheld. The bbox is the product footprint, not an image transform.',
     resumable: {
-      nextOffset: START_OFFSET + PAGES * PAGE_SIZE,
+      nextOffset: Math.max(previousNextOffset, START_OFFSET + PAGES * PAGE_SIZE),
       pageSize: PAGE_SIZE,
-      note: 'Re-run with --start-offset <nextOffset> to continue the feed. Existing ids are preserved and merged, never replaced by a smaller page.',
+      note: 'Re-run with --start-offset <nextOffset> to continue the feed. Existing ids are preserved and merged, never replaced by a smaller page; re-running an earlier slice never moves the recorded cursor backwards.',
     },
     verification,
   };
