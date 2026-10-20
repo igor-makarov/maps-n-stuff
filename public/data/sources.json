@@ -91,6 +91,30 @@
         "iiifPresentation": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
         "iiifImage": "https://www.e-rara.ch/i3f/v21/{imageId}/full/{size}/0/default.jpg",
         "docs": "https://www.e-rara.ch/"
+      },
+      "depthHarvest": {
+        "set": "landkarten",
+        "endpoint": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten",
+        "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+        "pagesRead": 30,
+        "oaiRecords": 300,
+        "mapRecords": 300,
+        "eligibleNew": 234,
+        "alreadyPresent": 66,
+        "manifestAttempts": 180,
+        "added": 180,
+        "withheldUnknownOrRestrictedRights": 0,
+        "manifestErrors": 0,
+        "rule": "Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.",
+        "retrieved": "2026-10-20",
+        "licence": "PDM 1.0 per item (https://creativecommons.org/publicdomain/mark/1.0/); e-rara terms https://www.e-rara.ch/terms",
+        "attribution": "e-rara.ch and the stated holding library",
+        "verificationExample": {
+          "id": "e-rara:6484242",
+          "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20668",
+          "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484242/manifest",
+          "thumbnail": "https://www.e-rara.ch/i3f/v21/6484245/full/304/0/default.jpg"
+        }
       }
     },
     {
@@ -288,5 +312,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T09:13:41.733Z"
+  "generatedAt": "2026-10-20T09:23:01.975Z"
 }
