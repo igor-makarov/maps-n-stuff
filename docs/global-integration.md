@@ -5,10 +5,10 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 38,463 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+The bundle contains 38,514 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
 Library, 972 Digital Commonwealth partner-held, 17,947 USGS Historical
 Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
-2,994 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records.
+3,045 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records.
 Stanford and Doria contribute worldwide holdings; USGS adds public-domain
 coverage of the United States and its territories. Dates, thumbnails, extents and
 alignment are optional. Image reuse rights are not.

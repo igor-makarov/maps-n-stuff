@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T11:41:07.826Z",
+  "generatedAt": "2026-10-20T11:46:34.493Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
   "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, Digital Commonwealth partners, Doria and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation (shard /data/records/leventhal.json). Rights-cleared partner-held Digital Commonwealth records are imported separately (shard /data/records/digitalcommonwealth.json). Library of Congress records are imported through its documented ?fo=json item API with per-item rights evidence (shard /data/records/loc.json). Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232 is harvested through oai_dc discovery, MODS date/rights and ORE bitstreams (shard /data/records/doria.json). USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in /data/records/usgs.json. Library of Congress Geography and Map Division records are imported from documented item JSON with per-item rights evidence; they are bundled in /data/records/loc.json.The documented e-rara OAI set landkarten (completeListSize 2,335) was traversed with resumption tokens from cursor 0 through 2330; 2,224 explicitly PDM map records are bundled, with the per-run evidence in selection[\"e-rara:landkarten-depth\"]. SLUB Dresden OAI-PMH set maps in METS: per-object MODS/DFG-viewer Public Domain Mark gate, original JPEG/PDF bitstreams and a resumable shard.The documented e-rara OAI set cartesgeneve (completeListSize 588) was traversed completely; 584 explicitly PDM map records are bundled and recorded in selection[\"e-rara:cartesgeneve-depth\"].",
@@ -1363,6 +1363,62 @@
           "nextCursor": 588,
           "endReached": true,
           "completeListSize": 588,
+          "retrieved": "2026-10-20"
+        }
+      ],
+      "rule": "Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.",
+      "retrieved": "2026-10-20"
+    },
+    "e-rara:museecarto-depth": {
+      "set": "museecarto",
+      "endpoint": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
+      "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+      "pagesRead": 5,
+      "oaiRecords": 44,
+      "mapRecords": 43,
+      "eligibleNew": 43,
+      "alreadyPresent": 0,
+      "manifestAttempts": 43,
+      "added": 43,
+      "addedThisRun": 43,
+      "addedTotal": 2859,
+      "withheldUnknownOrRestrictedRights": 0,
+      "manifestErrors": 0,
+      "startCursor": 10,
+      "nextCursor": 54,
+      "endReached": true,
+      "completeListSize": 54,
+      "runs": [
+        {
+          "pagesRead": 1,
+          "oaiRecords": 10,
+          "mapRecords": 10,
+          "eligibleNew": 8,
+          "alreadyPresent": 2,
+          "manifestAttempts": 8,
+          "added": 8,
+          "withheldUnknownOrRestrictedRights": 0,
+          "manifestErrors": 0,
+          "startCursor": 0,
+          "nextCursor": 10,
+          "endReached": false,
+          "completeListSize": 54,
+          "retrieved": "2026-10-20"
+        },
+        {
+          "pagesRead": 5,
+          "oaiRecords": 44,
+          "mapRecords": 43,
+          "eligibleNew": 43,
+          "alreadyPresent": 0,
+          "manifestAttempts": 43,
+          "added": 43,
+          "withheldUnknownOrRestrictedRights": 0,
+          "manifestErrors": 0,
+          "startCursor": 10,
+          "nextCursor": 54,
+          "endReached": true,
+          "completeListSize": 54,
           "retrieved": "2026-10-20"
         }
       ],
@@ -308276,6 +308332,1488 @@
       "imprint": "[Anvers] : [Christophe Plantin], 1589",
       "languages": [
         "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:25915291",
+      "title": "Géographie du Moyen Age: [Mappemonde d'Istakri]",
+      "yearStart": 1852,
+      "yearEnd": 1852,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Iṣṭaẖrī, Ibrāhīm ibn Muḥammad al-"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-90377",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/25915292/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/25915291/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A25915291",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/25915292",
+      "shelfmark": "BGE Musée cartogr. 1/38",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/25915291",
+      "imprint": "1852",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:25915295",
+      "title": "Mappaemundi: Sog. Noachidenkarte im Isidor-Cod. 236 der Stiftsbibliothek in St. Gallen",
+      "yearStart": 1895,
+      "yearEnd": 1895,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-90378",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/25915296/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/25915295/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A25915295",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/25915296",
+      "shelfmark": "BGE Musée cartogr. 1/37",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/25915295",
+      "imprint": "1895",
+      "languages": [
+        "German"
+      ]
+    },
+    {
+      "id": "e-rara:25915299",
+      "title": "Universale novo",
+      "yearStart": 1889,
+      "yearEnd": 1889,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-90379",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/25915300/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/25915299/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A25915299",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/25915300",
+      "shelfmark": "BGE Musée cartogr. 1/132",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/25915299",
+      "imprint": "1889",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26039570",
+      "title": "Carte égyptienne de mines d'or",
+      "yearStart": 1902,
+      "yearEnd": 1902,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91164",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26039571/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26039570/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26039570",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26039571",
+      "shelfmark": "BGE Musée cartogr. 2/2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26039570",
+      "imprint": "1902",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26092884",
+      "title": "[Le Caire et les environs]",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Perron, Charles"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91416",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092885/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092884/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092884",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092885",
+      "shelfmark": "BGE Musée cartogr. 2/51",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092884",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca. 1900]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26092888",
+      "title": "Concentration supposée des habitants de la terre",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Perron, Charles"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91417",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092889/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092888/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092888",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092889",
+      "shelfmark": "BGE 1 Kc Seine 71/1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092888",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca. 1900]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26092893",
+      "title": "Charta navigatoria auctoris incerti seculi XV. in Bibliotheca Upsaliensi conservata",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91418",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092894/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092893/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092893",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092894",
+      "shelfmark": "BGE Musée cartogr. 3/3",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092893",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1900]",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26092898",
+      "title": "Distanzen-Karte der Schweiz in Marschstunden",
+      "yearStart": 1904,
+      "yearEnd": 1904,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Ringier, A"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91419",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092899/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092898/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092898",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092899",
+      "shelfmark": "BGE 3 H 9/2 BGE Musée cartogr. 5/48",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092898",
+      "imprint": "Berne : Schmid & Franke ; H. & A. Kümmerly & Frey, [ca. 1904]",
+      "languages": [
+        "German",
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26092904",
+      "title": "Carte viticole en relief de l'Hérault",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91420",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092905/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092904/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092904",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092905",
+      "shelfmark": "BGE 1 Kc Hérault 52/1 BGE Musée cartogr. 2/52",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092904",
+      "imprint": "Paris : Cabrisy et Blanc, [ca. 1900]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26092909",
+      "title": "Carta particolare dello stretto di Magellano e di Maire",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Dudley, Robert"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91421",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092910/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092909/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092909",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092910",
+      "shelfmark": "BGE Musée cartogr. 3/9",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092909",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1900]",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26092915",
+      "title": "Honter's globe, 1542",
+      "yearStart": 1869,
+      "yearEnd": 1869,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Honterus, Johannes"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91422",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092916/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092915/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092915",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092916",
+      "shelfmark": "BGE Musée cartogr. 1/128",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092915",
+      "imprint": "New York : Photolith by the N.Y. lithg., Engg. and printg Co., 1969",
+      "languages": [
+        "English"
+      ]
+    },
+    {
+      "id": "e-rara:26092920",
+      "title": "Diego Homen 1569",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Homen, Diego"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91423",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092921/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092920/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092920",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092921",
+      "shelfmark": "BGE Musée cartogr. 3/5",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092920",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1900]",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26092925",
+      "title": "Georgio Calapoda 1552",
+      "yearStart": 1900,
+      "yearEnd": 1900,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91424",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092926/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092925/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092925",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092926",
+      "shelfmark": "BGE Musée cartogr. 3/4",
+      "canvasCount": 2,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092925",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1900]",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26092931",
+      "title": "[La Suisse vue de l'espace, à 480 kilomètres de hauteur, par 41° de latitude Nord et 6° de longitude Est de Paris, soit un point situé à 480 kilomètres au dessus du détroit de Bonifacio]",
+      "yearStart": 1903,
+      "yearEnd": 1903,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Perron, Charles"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91425",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26092932/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092931/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26092931",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26092932",
+      "shelfmark": "BGE 2 H 5/3 w",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26092931",
+      "imprint": "[Genève] : [Comptoir minéralogique et géologique], [1903]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26094786",
+      "title": "Carte de l'Amérique",
+      "yearStart": 1661,
+      "yearEnd": 1661,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91428",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094787/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094786/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094786",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094787",
+      "shelfmark": "BGE Musée cartogr. 1/159/1",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094786",
+      "imprint": "[Paris] : [Melchior Tavernier], 1661",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26094790",
+      "title": "Eigentlicher Abrisz wie von Ihr. Hochf. Durchl. Leopoldt Wilhelm Ertzhertzogen zu Österreich der Röm. Kaÿ. Mt. Generalissmo. uber dero armaden Generalissimo etc. des H. Röm. Reichs Stadt Augspurg entsetztet worden",
+      "yearStart": 1646,
+      "yearEnd": 1646,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Reich, Carl Friedrich"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91429",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094791/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094790/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094790",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094791",
+      "shelfmark": "BGE Musée cartogr. 2/27",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094790",
+      "imprint": "[Augsburg] : [éditeur non identifié], [1646?]",
+      "languages": [
+        "German"
+      ]
+    },
+    {
+      "id": "e-rara:26094795",
+      "title": "Magdeburg",
+      "yearStart": 1631,
+      "yearEnd": 1631,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91430",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094796/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094795/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094795",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094796",
+      "shelfmark": "BGE Musée cartogr. 4/6",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094795",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [1631?]",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26094800",
+      "title": "Novissima et accuratissima Canalis inter Angliae et Galliae tabula",
+      "yearStart": 1670,
+      "yearEnd": 1670,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Danckerts, Theodore"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91431",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094802/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094800/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094800",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094802",
+      "shelfmark": "BGE Musée cartogr. 3/8",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094800",
+      "imprint": "Amstelodami : [éditeur non identifié], [ca 1670?]",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26094805",
+      "title": "Orbis terrarum typus",
+      "yearStart": 1686,
+      "yearEnd": 1686,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91432",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094806/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094805/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094805",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094806",
+      "shelfmark": "BGE Musée cartogr. 1/160",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094805",
+      "imprint": "[Lieu non identifié] : [imprimeur non identifié], [1686?]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26094810",
+      "title": "Carte nouvelle de l'Europe, Asie et Afrique",
+      "yearStart": 1661,
+      "yearEnd": 1661,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91433",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094811/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094810/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094810",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094811",
+      "shelfmark": "BGE Musée cartogr. 1/159/2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094810",
+      "imprint": "[Paris] : [Melchior Tavernier], 1661",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26094814",
+      "title": "La Suisse",
+      "yearStart": 1686,
+      "yearEnd": 1686,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91434",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26094815/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26094814/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26094814",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26094815",
+      "shelfmark": "Musée cartogr.5/17",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26094814",
+      "imprint": "Paris : Chez l'Autheur, 1686",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117835",
+      "title": "[Mappemonde de Sanudo]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Sanutus, Marinus"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91509",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117836/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117835/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117835",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117836",
+      "shelfmark": "BGE Musée cartogr. 1/72",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117835",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117839",
+      "title": "Carte militaire du Moyen-Age représentant le théâtre de la guerre à l'époque des premières conquêtes de la République de Venise en terre ferme",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91510",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117840/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117839/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117839",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117840",
+      "shelfmark": "BGE Musée cartogr. 2/15",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117839",
+      "imprint": "1800",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117843",
+      "title": "Carte von Hawkins Maiden, oder Jungfern-Land",
+      "yearStart": 1785,
+      "yearEnd": 1785,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91511",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117844/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117843/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117843",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117844",
+      "shelfmark": "BGE Musée cartogr. 3/10",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117843",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1785]",
+      "languages": [
+        "English"
+      ]
+    },
+    {
+      "id": "e-rara:26117847",
+      "title": "[Mappemonde de Saint-Denis]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91512",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117848/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117847/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117847",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117848",
+      "shelfmark": "BGE Musée cartogr. 1/78",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117847",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117851",
+      "title": "Rivière Tamise et baye Mercure à la Nle Zélande",
+      "yearStart": 1785,
+      "yearEnd": 1785,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Sysang, Johanna Dorothea"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91513",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117852/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117851/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117851",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117852",
+      "shelfmark": "BGE Musée cartogr. 3/12",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117851",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca 1785]",
+      "languages": [
+        "French",
+        "German"
+      ]
+    },
+    {
+      "id": "e-rara:26117855",
+      "title": "Carte generale des treize cantons suisses, et des differents etats de leur dependance",
+      "yearStart": 1705,
+      "yearEnd": 1705,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Chatelain, Zacharias"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91514",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117856/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117855/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117855",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117856",
+      "shelfmark": "BGE 3 D 00/6 BGE Musée cartogr. 5/16",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117855",
+      "imprint": "[Amsterdam] : [éditeur non identifié], [entre 1705 et 1739]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117859",
+      "title": "[Mappemonde de la Cassetina all'Agemina]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Jomard, Edme-François"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91515",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117860/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117859/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117859",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117860",
+      "shelfmark": "BGE Musée cartogr. 1/147 bis",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117859",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117863",
+      "title": "Tabula moderne Hispanie",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Rizzo, Paolo"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91516",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117864/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117863/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117863",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117864",
+      "shelfmark": "BGE Musée cartogr. 2/24",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117863",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117867",
+      "title": "Carte ancienne de la Suisse",
+      "yearStart": 1705,
+      "yearEnd": 1705,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Chatelain, Zacharias"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91517",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117868/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117867/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117867",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117868",
+      "shelfmark": "BGE 2 D 00/7",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117867",
+      "imprint": "[Amsterdam] : [éditeur non identifié], [entre 1705 et 1739]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117871",
+      "title": "Carte de l'Ancien et du Nouveau Monde suivant une projection nouvelle",
+      "yearStart": 1787,
+      "yearEnd": 1787,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91518",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117872/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117871/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117871",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117872",
+      "shelfmark": "BGE Musée cartogr. 1/167",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117871",
+      "imprint": "1787",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117875",
+      "title": "Carte réduite de l'océan-oriental ou mers des Indes",
+      "yearStart": 1740,
+      "yearEnd": 1740,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91519",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117876/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117875/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117875",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117876",
+      "shelfmark": "BGE Musée cartogr. 3/11",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117875",
+      "imprint": "[Paris] : [éditeur non identifié], 1740",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117881",
+      "title": "Encyclopédie méthodique ou par ordre de matières: Atlas encyclopédique, contenant la géographie ancienne, et quelques cartes sur la géographie du Moyen Age, la géographie moderne et les cartes relatives à la géographie physique, Mappemonde sur le plan d'un méridien",
+      "yearStart": 1787,
+      "yearEnd": 1787,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91520",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117882/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117881/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117881",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117882",
+      "shelfmark": "BGE Musée cartogr. 1/168bis",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117881",
+      "imprint": "1787",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117885",
+      "title": "Carte de la Suisse",
+      "yearStart": 1790,
+      "yearEnd": 1790,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Coxe, William"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91521",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117886/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117885/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117885",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117886",
+      "shelfmark": "BGE 2 D 01/29 w BGE Musée cartogr. 5/25",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117885",
+      "imprint": "[Lieu de publication non identifié] : [éditeur non identifié], [ca. 1790]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117889",
+      "title": "Nova Helvetiae tabula geographica",
+      "yearStart": 1713,
+      "yearEnd": 1713,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Scheuchzer, Johann Jacob"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91522",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117890/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117889/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117889",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117890",
+      "shelfmark": "BGE 3 D 01/ 17 w BGE Musée cartogr. 5/19",
+      "canvasCount": 4,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117889",
+      "imprint": "[Zurich] : [chez l'auteur], [1712-1713]",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26117896",
+      "title": "Plan of the peninsula and part of the Isthmus of Gibraltar",
+      "yearStart": 1758,
+      "yearEnd": 1758,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91523",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117897/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117896/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117896",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117897",
+      "shelfmark": "BGE Musée cartogr. 2/31bis",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117896",
+      "imprint": "[London?] : [éditeur non identifié], 1758",
+      "languages": [
+        "English"
+      ]
+    },
+    {
+      "id": "e-rara:26117900",
+      "title": "Carte pour l'histoire ancienne de l'Helvétie",
+      "yearStart": 1749,
+      "yearEnd": 1749,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91524",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117901/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117900/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117900",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117901",
+      "shelfmark": "BGE 3 D 01/22 BGE Musée cartogr. 5/22",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117900",
+      "imprint": "A Lausanne : chés Bousquet, 1749",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117904",
+      "title": "[Mappemonde de Turin]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91525",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117905/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117904/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117904",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117905",
+      "shelfmark": "BGE Musée cartogr. 1/57",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117904",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117908",
+      "title": "Le plan de la ville de Strasbourg com[m]e elle a esté en 1680",
+      "yearStart": 1727,
+      "yearEnd": 1727,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91526",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117909/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117908/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117908",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117909",
+      "shelfmark": "BGE 1 K 8 Strasbourg/1 BGE Musée cartogr. 2/28",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117908",
+      "imprint": "[Strasbourg] : [J.R. Dulssecker], [1727]",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117912",
+      "title": "Carte de la république des Suisses, leurs sujets et alliées [sic]",
+      "yearStart": 1777,
+      "yearEnd": 1777,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Hauman, J.-E."
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91527",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117913/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117912/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117912",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117913",
+      "shelfmark": "BGE 2 D 01/23 BGE Musée cartogr. 5/26",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117912",
+      "imprint": "Paris : Mondhare, 1777",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117916",
+      "title": "[Mappemonde d'Higden]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Jomard, Edme-François"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91528",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117917/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117916/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117916",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117917",
+      "shelfmark": "BGE Musée cartogr. 1/86",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117916",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117920",
+      "title": "Prodromus tentaminis typometrici maioris Rempublicam Basileensem",
+      "yearStart": 1776,
+      "yearEnd": 1776,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Haas, Wilhelm"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91529",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117921/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117920/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117920",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117921",
+      "shelfmark": "BGE 1 Fc 01/1 BGE Musée cartogr. 2/35",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117920",
+      "imprint": "Basel : G. Haas, 1776",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26117924",
+      "title": "L' Espagne",
+      "yearStart": 1701,
+      "yearEnd": 1701,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Simonneau, Charles-Louis"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91530",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117925/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117924/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117924",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117925",
+      "shelfmark": "BGE Musée cartogr. 2/30",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117924",
+      "imprint": "A Paris : Chez l'auteur sur le Quai de l'Horloge à la cour de Diamas, 1701",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117928",
+      "title": "Carte dans laquelle on voit la route que le Centurion a tenu dans le voïage autour du monde",
+      "yearStart": 1750,
+      "yearEnd": 1750,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91531",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117929/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117928/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117928",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117929",
+      "shelfmark": "BGE Musée cartogr. 1/156",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117928",
+      "imprint": "1750",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117932",
+      "title": "[Carte du Valais]",
+      "yearStart": 1709,
+      "yearEnd": 1709,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91532",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117933/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117932/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117932",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117933",
+      "shelfmark": "BGE 2 Fs 00/2 BGE Musée cartogr. 2/29",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117932",
+      "imprint": "Lyon : [éditeur non identifié], 1709",
+      "languages": [
+        "French",
+        "German"
+      ]
+    },
+    {
+      "id": "e-rara:26117936",
+      "title": "[Mappemonde d'Higden]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Jomard, Edme-François"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91533",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117937/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117936/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117936",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117937",
+      "shelfmark": "BGE Musée cartogr. 1/84",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117936",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117940",
+      "title": "[Mappemonde de Reims]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91534",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117941/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117940/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117940",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117941",
+      "shelfmark": "BGE Musée cartogr. 1/93",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117940",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117950",
+      "title": "Carte de la Nouvelle Zélande visitée en 1769 et 1770 par le lieutenant J. Cook commandant de l'Endeavour, vaisseau de sa Majesté",
+      "yearStart": 1785,
+      "yearEnd": 1785,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91536",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117951/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117950/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117950",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117951",
+      "shelfmark": "BGE Musée cartogr. 2/34",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117950",
+      "imprint": "1785",
+      "languages": [
+        "French"
+      ]
+    },
+    {
+      "id": "e-rara:26117954",
+      "title": "Delineatio topographica altissimae atque adeo verae scaturiginis Danubii fl",
+      "yearStart": 1720,
+      "yearEnd": 1720,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "Marsili, Luigi Ferdinando"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91537",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117955/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117954/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117954",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117955",
+      "shelfmark": "BGE Musée cartogr. 2/44",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117954",
+      "imprint": "[La Haye] : [éditeur non identifié], [ca. 1720]",
+      "languages": [
+        "Latin"
+      ]
+    },
+    {
+      "id": "e-rara:26117958",
+      "title": "[Mappemonde de Leipzig]",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91538",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117959/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117958/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117958",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117959",
+      "shelfmark": "BGE Musée cartogr. 1/43",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117958",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
+      ]
+    },
+    {
+      "id": "e-rara:26117962",
+      "title": "Carte marine du XIIIe siècle",
+      "yearStart": 1800,
+      "yearEnd": 1800,
+      "depictedYearStart": null,
+      "depictedYearEnd": null,
+      "creators": [
+        "[s.n.]"
+      ],
+      "providerId": "e-rara",
+      "institution": "Bibliothèque de Genève",
+      "rights": "PDM 1.0",
+      "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91539",
+      "thumbnail": "https://www.e-rara.ch/i3f/v21/26117963/full/304/0/default.jpg",
+      "iiifManifest": "https://www.e-rara.ch/i3f/v20/26117962/manifest",
+      "type": "map",
+      "collection": "e-rara — historical maps",
+      "metadataSource": "https://www.e-rara.ch/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai%3Awww.e-rara.ch%3A26117962",
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.",
+      "imageService": "https://www.e-rara.ch/i3f/v20/26117963",
+      "shelfmark": "BGE Musée cartogr. 3/2",
+      "canvasCount": 1,
+      "viewerUrl": "https://www.e-rara.ch/gep_r/content/zoom/26117962",
+      "imprint": "1800",
+      "languages": [
+        "Italian"
       ]
     }
   ],
