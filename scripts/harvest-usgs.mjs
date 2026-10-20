@@ -124,8 +124,11 @@ const S3_HOSTS = ['prd-tnm.s3.amazonaws.com'];
 
 /**
  * One TNM product → catalogue record. Returns null for products that are not
- * USGS HTMC maps or do not deliver the original GeoTIFF we claim. No missing
- * metadata is filled in: an undated sheet stays undated.
+ * USGS HTMC maps or deliver neither original download. A product with a
+ * GeoTIFF is exposed as a provider-supplied native raster; a product that only
+ * publishes a GeoPDF is retained as a scan with the original GeoPDF download
+ * and no invented `cog` georeference. No missing metadata is filled in: an
+ * undated sheet stays undated.
  */
 export function usgsProductRecord(item) {
   const sourceId = clean(item?.sourceId ?? item?.id);
@@ -133,8 +136,8 @@ export function usgsProductRecord(item) {
   const title = clean(item?.title);
   if (!title) return null;
   const geotiff = httpsUrl(item?.urls?.GeoTIFF, S3_HOSTS, GEOTIFF_PATH);
-  if (!geotiff) return null;
   const geospatialPdf = httpsUrl(item?.urls?.GeoPDF, S3_HOSTS, GEOPDF_PATH);
+  if (!geotiff && !geospatialPdf) return null;
   const preview = httpsUrl(item?.previewGraphicURL, S3_HOSTS, PREVIEW_PATH);
   const metaUrl = httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov']);
   if (!metaUrl) return null;
@@ -167,20 +170,25 @@ export function usgsProductRecord(item) {
           lon: (extent.west + extent.east) / 2,
         }
       : null,
-    geoNote:
-      'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.',
-    georeference: {
-      kind: 'cog',
-      url: geotiff,
-      source: metaUrl,
-      status: 'provider-supplied',
-      format: 'GeoTIFF',
-    },
+    geoNote: geotiff
+      ? 'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.'
+      : 'Catalogue extent is the USGS product footprint. This product delivers the original GeoPDF, not a GeoTIFF; no pixel-to-ground transform is inferred from the bbox.',
+    ...(geotiff
+      ? {
+          georeference: {
+            kind: 'cog',
+            url: geotiff,
+            source: metaUrl,
+            status: 'provider-supplied',
+            format: 'GeoTIFF',
+          },
+        }
+      : {}),
     downloads: [
-      { label: 'GeoTIFF', url: geotiff },
+      ...(geotiff ? [{ label: 'GeoTIFF', url: geotiff }] : []),
       ...(geospatialPdf ? [{ label: 'GeoPDF', url: geospatialPdf }] : []),
     ],
-    format: clean(item?.format) || null,
+    format: geotiff ? clean(item?.format) || null : 'GeoPDF',
     sourceModified: clean(item?.lastUpdated) || null,
   };
   if (scale) record.scale = scale;
@@ -261,12 +269,20 @@ async function ranged(url, accept = 'image/tiff') {
       bytes.length >= 4 &&
       ((bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
         (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a));
+    const pdfMagic =
+      bytes.length >= 5 &&
+      bytes[0] === 0x25 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x44 &&
+      bytes[3] === 0x46 &&
+      bytes[4] === 0x2d;
     return {
       status: response.status,
       type: response.headers.get('content-type'),
       bytes: bytes.length,
       range: response.headers.get('content-range'),
       tiff: magic,
+      pdf: pdfMagic,
     };
   } catch (error) {
     return { status: 0, error: String(error.message) };
@@ -282,13 +298,31 @@ function sampleOf(records, limit) {
   return sample;
 }
 
-export async function verify(records, limit = 8) {
-  const sample = sampleOf(records, limit);
+export async function verify(records, rasterLimit = 8, pdfLimit = 4) {
+  // Sample the native rasters and the GeoPDF-only originals separately so the
+  // published evidence keeps covering both paths after a repair run that adds
+  // only GeoPDF-only products.
+  const rasterRecords = records.filter((record) => record.georeference?.url);
+  const pdfRecords = records.filter(
+    (record) =>
+      !record.georeference?.url &&
+      record.downloads?.some((download) => download.label === 'GeoPDF'),
+  );
+  const sample = [
+    ...sampleOf(rasterRecords, rasterLimit),
+    ...sampleOf(pdfRecords, pdfLimit),
+  ];
   const results = await pool(sample, 3, async (record) => {
     const preview = record.thumbnail
       ? await ranged(record.thumbnail, 'image/jpeg')
       : { status: null };
-    const raster = await ranged(record.georeference.url);
+    const raster = record.georeference?.url
+      ? await ranged(record.georeference.url)
+      : { status: null };
+    const pdfUrl = record.downloads?.find((download) => download.label === 'GeoPDF')?.url;
+    const pdf = !record.georeference?.url && pdfUrl
+      ? await ranged(pdfUrl, 'application/pdf')
+      : { status: null };
     let readable = null;
     if (raster.status === 206 && raster.tiff) {
       try {
@@ -336,6 +370,11 @@ export async function verify(records, limit = 8) {
       rasterBytes: raster.bytes,
       rasterRange: raster.range,
       tiffMagic: raster.tiff,
+      pdfStatus: pdf.status,
+      pdfType: pdf.type,
+      pdfBytes: pdf.bytes,
+      pdfRange: pdf.range,
+      pdfMagic: pdf.pdf,
       readable,
     };
   });
@@ -349,6 +388,9 @@ export async function verify(records, limit = 8) {
     rasterChecked: results.filter((r) => r.rasterStatus != null).length,
     rasterReadable: results.filter((r) => r.readable && !r.readable.error && r.readable.images > 0).length,
     rasterCrsOk: results.filter((r) => r.readable?.crsOk).length,
+    pdfRangeOk: results.filter((r) => r.pdfStatus === 206 && r.pdfMagic).length,
+    pdfChecked: results.filter((r) => r.pdfStatus != null).length,
+    pdfMagic: results.filter((r) => r.pdfMagic === true).length,
     examples: results.map((r) => ({
       ...r,
       readable: r.readable
@@ -405,8 +447,9 @@ async function main() {
       seen.add(sourceId);
       const record = usgsProductRecord(item);
       if (!record) {
-        const reason = !item?.urls?.GeoTIFF
-          ? 'no GeoTIFF download delivered'
+        const reason = !httpsUrl(item?.urls?.GeoTIFF, S3_HOSTS, GEOTIFF_PATH) &&
+          !httpsUrl(item?.urls?.GeoPDF, S3_HOSTS, GEOPDF_PATH)
+          ? 'no GeoTIFF or GeoPDF download delivered'
           : !httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov'])
             ? 'no ScienceBase item URL'
             : 'identity gate (title/source id)';
@@ -448,7 +491,12 @@ async function main() {
     }
   }
   const preserved = existing.size;
+  const added = [];
   for (const record of records) {
+    // A replay of an already imported range must not duplicate records into
+    // the target shard or replace a previously preserved record.
+    if (existing.has(record.id)) continue;
+    added.push(record);
     existing.set(record.id, record);
     targetExisting.set(record.id, record);
   }
@@ -472,7 +520,7 @@ async function main() {
     );
     return Number.isFinite(titleYear) && titleYear !== record.yearStart;
   }).length;
-  const verification = await verify(records);
+  const verification = await verify(mergedRecords);
   console.log('Verification:', JSON.stringify(verification).slice(0, 600));
 
   const recordsDoc = JSON.parse(await readFile(resolve(OUT, 'records.json'), 'utf8'));
@@ -493,6 +541,9 @@ async function main() {
     delivered,
     considered: seen.size,
     kept: records.length,
+    added: added.length,
+    geopdfOnlyKept: records.filter((record) => !record.georeference).length,
+    geopdfOnlyAdded: added.filter((record) => !record.georeference).length,
     preserved,
     totalAfterMerge: mergedRecords.length,
     shard,
@@ -509,7 +560,7 @@ async function main() {
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',
     rule:
-      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps, carries a ScienceBase item URL and a delivered original GeoTIFF download. Undated products and products without a preview stay eligible; products without a GeoTIFF are withheld. The bbox is the product footprint, not an image transform.',
+      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps and carries a ScienceBase item URL plus a delivered original download. A delivered GeoTIFF is retained as the provider-supplied native raster; a product that delivers only a GeoPDF keeps that original GeoPDF and is explicitly not labelled as a GeoTIFF or COG. Undated products and products without a preview stay eligible; products with neither original download are withheld. The bbox is the product footprint, not an image transform.',
     resumable: {
       nextOffset: START_OFFSET + PAGES * PAGE_SIZE,
       pageSize: PAGE_SIZE,
@@ -536,7 +587,7 @@ async function main() {
     },
     apiHosts: ['tnmaccess.nationalmap.gov', 'prd-tnm.s3.amazonaws.com', 'www.sciencebase.gov'],
     method:
-      'Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, GeoPDF/GeoTIFF downloads and the USGS public-domain policy. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.',
+      'Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, delivered GeoPDF/GeoTIFF downloads and the USGS public-domain policy. Products with only a GeoPDF are retained as scans without a raster georeference. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.',
     collections: [
       {
         id: 'htmc',
@@ -554,7 +605,7 @@ async function main() {
     retrieved: RETRIEVED,
     providerId: 'usgs',
     method:
-      'USGS TNM Access API, Historical Topographic Maps dataset; original GeoTIFF retained as provider-supplied native raster.',
+      'USGS TNM Access API, Historical Topographic Maps dataset; original GeoTIFF retained as provider-supplied native raster, and GeoPDF-only products retained with their original GeoPDF download and no invented raster georeference.',
     selection: recordsDoc.selection['usgs:htmc'],
     records: shardRecords,
   };

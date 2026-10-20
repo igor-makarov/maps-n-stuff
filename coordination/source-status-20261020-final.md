@@ -1,14 +1,15 @@
-# Final source status — 2026-10-20 12:15 UTC
+# Final source status — 2026-10-20 12:51 UTC
 
 **Measured from the merged `main` catalogue at the runner clock (`date -u` =
-2026-10-20 12:15 UTC), not from registry claims. Total: 31,637 records from six
+2026-10-20 12:51 UTC), not from registry claims. Total: 31,692 records from six
 bundled providers**, a 7,536-record core plus five shards. Provider entries in
 `public/data/sources.json`: 9, of which 6 are bundled and 3 are withheld
-research scopes.
+research scopes. This is the final tree after the bounded USGS GeoPDF repair;
+the earlier 31,637 tree is history, not the current count.
 
 | Bundled provider | Records | Rights basis retained per record | Live verification |
 | --- | ---: | --- | --- |
-| USGS Historical Topographic Maps (HTMC) | 23,945 | U.S. Public Domain (USGS-produced), USGS credit | 24/24 preview + GeoTIFF range reads over 3 slices; 5 sampled TIFFs parsed with GeoKeys/affine; app renderer exercised |
+| USGS Historical Topographic Maps (HTMC) | 24,000 | U.S. Public Domain (USGS-produced), USGS credit | 23,945 GeoTIFF + 55 GeoPDF-only; 24/24 preview and GeoTIFF range reads over 3 slices, 5 sampled TIFFs parsed with GeoKeys/affine; 4/4 sampled GeoPDF ranges and 55/55 full GeoPDF range reads `%PDF-` 200/206; app renderer exercised |
 | Stanford (pinned CC0 catalogue) | 4,464 | Stanford/collection statements; 117 native COGs | baseline; 117 native overlays |
 | e-rara (OAI `landkarten`, `cartesgeneve`, `museecarto` + seed) | 3,045 | explicit `PDM 1.0` (all) | manifests/thumbnails sampled 5–10 per slice, 200 JSON/JPEG; live 5/5 this iteration |
 | SLUB Dresden OAI `maps` | 105 | explicit PDM 1.0 only; 56 rights-reserved/CNE withheld | 24/24 originals + record pages; no thumbnail due to Anubis browser gate |
@@ -26,16 +27,20 @@ carry `bundled:false`. Images and **metadata** rights are separate decisions.
 | Digital Commonwealth partner holdings (7 named institutions) | 972 | 823 no-known-restrictions, 136 CC0, 13 NoC-US | same shared service/terms as the BPL scope; no per-institution metadata grant |
 
 **Georeferencing:** 24,062 shipped records carry provider-supplied GeoTIFF/COG
-raster links (117 Stanford + 23,945 USGS). No alignment was invented for scans.
-USGS product bounding boxes are documented footprints, not image transforms; the
-GeoTIFF is the transform source. 30,352 shipped records state an extent, 31,628
-have a preview image link (8 LoC records keep only the record/viewer because
-their advertised derivative was dead) and 30,358 can be drawn from a stated
-extent or point. The 117 Stanford COGs + five regional layers remain the fixed
-overlay index; USGS is opened from its record-level georeferencing.
+raster links (117 Stanford + 23,945 USGS). The 55 USGS GeoPDF-only products are
+retained as scans with their original `GeoPDF` download, `format: "GeoPDF"`, no
+`georeference` object and an explicit note that no pixel transform was inferred
+from the footprint. No alignment was invented for scans. USGS product bounding
+boxes are documented footprints, not image transforms; the GeoTIFF is the
+transform source. 30,407 shipped records state an extent, 31,578 have a preview
+image link (8 LoC records keep only the record/viewer because their advertised
+derivative was dead) and 30,413 can be drawn from a stated extent or point. The
+117 Stanford COGs + five regional layers remain the fixed overlay index; USGS is
+opened from its record-level georeferencing.
 
 **Newly usable original collections this run (kept):** e-rara depth (2,859
-additional PDM maps), USGS HTMC (23,945), SLUB Dresden (105), LoC Civil War Maps
+additional PDM maps), USGS HTMC (24,000, including 55 GeoPDF-only originals
+recovered by the bounded repair), SLUB Dresden (105), LoC Civil War Maps
 (43 additional records over the 8 baseline). e-rara `landkarten`,
 `cartesgeneve` and `museecarto` are complete for their documented OAI sets.
 Doria, Leventhal/BPL and Digital Commonwealth partner holdings were harvested and
@@ -49,10 +54,11 @@ image-verified, but are withheld as above rather than claimed as coverage.
 dead image service withheld). Withheld sample records: `doria:84494`,
 `leventhal:commonwealth:3f462s124`, `digitalcommonwealth:commonwealth:z890vr23m`.
 
-**Verification on the merged tree:** `node scripts/validate.mjs` → 31,637
+**Verification on the merged tree:** `node scripts/validate.mjs` → 31,692
 records (7,536 core + 5 shards), 9 provider entries (6 bundled), 122 overlays,
-54 history snapshots. `npm test` → **286/286 pass**. `npm run build` → asset
-validation. Browser harness `scripts/browser-global-check.mjs` against local
+54 history snapshots. `npm run check` → build/asset validation, **287/287
+tests**, Worker dry-run. The USGS GeoPDF-only path has adapter tests and live
+55/55 PDF range evidence (observed 12:50 UTC). Browser harness `scripts/browser-global-check.mjs` against local
 `wrangler dev` → **50/50** checks at desktop, 390 px and 320 px, including
 history and the native raster renderer. The harness mocks/blocks external hosts;
 the live samples above are separate. `wrangler deploy --dry-run` is a packaging
@@ -75,6 +81,10 @@ check, not a Cloudflare deployment proof.
   redistribution permission remain unresolved.
 - **SLUB Kartenforum / Deutsche Fotothek**: no per-record licence in the public
   index; research-only.
+- **USGS**: 24,000 of the 186,061 advertised products are bundled (23,945
+  GeoTIFF, 55 GeoPDF-only); depth is limited by shard size/client startup, not
+  by a claim that the rest is unusable. The 55 GeoPDF-only products from offsets
+  0–23999 are no longer withheld.
 - **USGS**: only 23,945 of the 186,061 advertised products are bundled; depth is
   limited by shard size/client startup, not by a claim that the rest is
   unusable. GeoPDF-only products are not yet revisited.
@@ -102,6 +112,7 @@ confirms that the three withheld scopes stay withheld.
   evidence. Its 105 records and rights counts are unchanged.
 - **SLUB's Kartenforum/Deutsche Fotothek scope remains research-only** (no
   per-record rights in the public index). LoC's 8 dead image services stay
-  withheld; its item endpoint remains intermittent at the edge. USGS is still a
-  partial 23,945-record import of 186,061 advertised products, and GeoPDF-only
-  products are not revisited in this iteration.
+  withheld; its item endpoint remains intermittent at the edge. USGS was a
+  partial 23,945-record import of 186,061 advertised products at the time of this
+  addendum; the later bounded repair added 55 GeoPDF-only originals (24,000
+  total), recorded above.
