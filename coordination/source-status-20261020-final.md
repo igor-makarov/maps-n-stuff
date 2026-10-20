@@ -116,3 +116,24 @@ confirms that the three withheld scopes stay withheld.
   partial 23,945-record import of 186,061 advertised products at the time of this
   addendum; the later bounded repair added 55 GeoPDF-only originals (24,000
   total), recorded above.
+
+## Member 0 addendum — LoC live-search repair (observed 2026-10-20T12:52Z)
+
+The indexed catalogue is unchanged at **31,692 records**. The on-demand LoC
+adapter, which previously returned 200 with `records: []` for every query, now
+resolves the search summaries' item references. LoC's JSON search returns
+`http://lccn.loc.gov/<id>` and plain-http `http://www.loc.gov/item/<id>/`
+identities; the Worker now canonicalises both to
+`https://www.loc.gov/item/<id>/` and fetches the item detail. It accepts the
+Geography and Map Division's affirmative "free to use and reuse" statement only
+for division items and only when no restrictive Rights Advisory or access
+advisory is present; generic restrictions still win.
+
+Live check (12:52 UTC): `https://www.loc.gov/maps/?fo=json&q=civil war&c=12`
+→ item details for the 12 summaries → **9 admitted** with real ids/dates/
+rights, 3 collection/landing-page results correctly withheld. Examples:
+`loc:2009581124` (1914), `loc:99447218` (1912), `loc:2009581125` (1910).
+`npm test` → 287/287 after the new loc normalization/rights regressions.
+This is a live-search completeness fix for an already-cleared provider; it
+does not restore the withheld Leventhal/Doria/Commonwealth metadata scopes and
+does not change any bundled record or count.

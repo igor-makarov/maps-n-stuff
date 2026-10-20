@@ -164,3 +164,53 @@ test("federated catalogue bounds requests and withholds unclear rights", async (
     globalThis.caches = originalCaches;
   }
 });
+
+test("LoC live records resolve lccn item ids and the division free-use statement", () => {
+  const division =
+    "The content of the Library of Congress Geography and Map Division digitized collections is free to use and reuse unless a Rights Advisory statement is present that indicates otherwise. Credit Line: Library of Congress, Geography and Map Division.";
+  const record = locRecord({
+    id: "http://lccn.loc.gov/99447025",
+    title: "Western border states",
+    date: "1861",
+    partof: [{ title: "civil war maps" }, { title: "geography and map division" }],
+    rights: [division],
+    image_url: [
+      "https://tile.loc.gov/image-services/iiif/service:gmd:g3882m:g3882m:g99447025/full/pct:25/0/default.jpg",
+    ],
+  });
+  assert.ok(record, "an lccn.loc.gov item reference is resolvable");
+  assert.equal(record.id, "loc:99447025");
+  assert.equal(record.recordUrl, "https://www.loc.gov/item/99447025/");
+  assert.match(record.rights, /free to use and reuse/);
+  const httpItem = locRecord({
+    id: "http://www.loc.gov/item/2009581124/",
+    title: "Campaigns of the American Civil War",
+    date: "1914",
+    partof: [{ title: "civil war maps" }, { title: "geography and map division" }],
+    rights: [division],
+  });
+  assert.ok(httpItem, "search summaries use plain-http www.loc.gov item URLs");
+  assert.equal(httpItem.id, "loc:2009581124");
+  assert.equal(httpItem.recordUrl, "https://www.loc.gov/item/2009581124/");
+  assert.equal(
+    locRecord({
+      id: "http://lccn.loc.gov/99447025",
+      title: "Restricted",
+      partof: [{ title: "geography and map division" }],
+      rights: [division],
+      rights_advisory: "In copyright. Permission required.",
+    }),
+    null,
+    "a restrictive Rights Advisory still wins",
+  );
+  assert.equal(
+    locRecord({
+      id: "http://lccn.loc.gov/99447025",
+      title: "No division provenance",
+      partof: [{ title: "catalog" }],
+      rights: [division],
+    }),
+    null,
+    "the division statement is not a general LoC licence",
+  );
+});

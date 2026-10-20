@@ -102,21 +102,59 @@ function recordBase({
     liveCatalogue: true,
   };
 }
+const LOC_DIVISION = /geography and map division/i;
+const LOC_FREE_USE = /free to use and reuse/i;
+const LOC_PUBLIC_DOMAIN =
+  /\b(?:is|are|in the|in) (?:the )?public domain\b|publicdomain\/(?:mark|zero)\/1\.0|noc-us/i;
+const LOC_RESTRICTED =
+  /all rights reserved|permission (?:is )?required|rights status not evaluated|copyright undetermined|may be restricted|under copyright|protected by copyright|non[ -]?commercial|contact (?:the )?host/i;
+
+/** Canonical item URL and id from a LoC item or lccn.loc.gov reference. */
+export function locItemId(value) {
+  const raw = text(value);
+  const item = raw.match(
+    /^https?:\/\/(?:www\.)?loc\.gov\/item\/([A-Za-z0-9._-]{1,80})\/?$/,
+  );
+  if (item) return { url: `https://www.loc.gov/item/${item[1]}/`, id: item[1] };
+  const lccn = raw.match(/^https?:\/\/lccn\.loc\.gov\/([A-Za-z0-9._-]{1,80})\/?$/);
+  if (lccn) return { url: `https://www.loc.gov/item/${lccn[1]}/`, id: lccn[1] };
+  return null;
+}
+
+/**
+ * LoC's Geography and Map Division statement ("free to use and reuse unless a
+ * Rights Advisory statement is present that indicates otherwise") is affirmative
+ * only for division items and only when no advisory contradicts it. Generic
+ * public-domain/CC statements remain handled by openImageRights above.
+ */
+export function locDivisionRights(data, detail = {}) {
+  const partOf = (detail.partof ?? data.partof ?? [])
+    .map((value) => text(value?.title ?? value))
+    .join(" ");
+  if (!LOC_DIVISION.test(partOf)) return null;
+  const rights = text(detail.rights ?? data.rights ?? detail.rights_information ?? data.rights_information);
+  if (!rights) return null;
+  const advisory = text(detail.rights_advisory ?? data.rights_advisory);
+  if (advisory && !LOC_PUBLIC_DOMAIN.test(advisory)) return null;
+  if (LOC_RESTRICTED.test(rights) && !LOC_PUBLIC_DOMAIN.test(rights)) return null;
+  if (!LOC_FREE_USE.test(rights) && !LOC_PUBLIC_DOMAIN.test(rights)) return null;
+  return rights;
+}
+
 export function locRecord(data) {
   const d = data.item ?? data;
-  const recordUrl = https(data.url ?? data.id ?? d.id, [
-    "www.loc.gov",
-    "loc.gov",
-  ]);
-  const id = recordUrl?.match(/\/item\/([^/]+)\//)?.[1];
-  const rights = openImageRights([
-    data.rights_advisory,
-    d.rights_advisory,
-    data.rights,
-    d.rights,
-    d.rights_information,
-  ]);
+  const identity = locItemId(data.url ?? data.id ?? d.id);
+  const id = identity?.id;
+  const rights =
+    openImageRights([
+      data.rights_advisory,
+      d.rights_advisory,
+      data.rights,
+      d.rights,
+      d.rights_information,
+    ]) ?? locDivisionRights(data, d);
   if (!id || !rights) return null;
+  const recordUrl = `https://www.loc.gov/item/${id}/`;
   const image =
     (data.image_url ?? d.image_url ?? []).find((value) =>
       https(value, ["tile.loc.gov", "www.loc.gov"]),
@@ -311,11 +349,10 @@ export async function catalogueResponse(request, ctx) {
           documents.slice(i, i + 3).map(async (document) => {
             const ready = locRecord(document);
             if (ready) return ready;
-            const item = https(document.id ?? document.url, ["www.loc.gov"]);
-            if (!item || !/^\/item\/[^/]+\/$/.test(new URL(item).pathname))
-              return null;
+            const identity = locItemId(document.id ?? document.url);
+            if (!identity) return null;
             try {
-              const url = new URL(item);
+              const url = new URL(identity.url);
               url.searchParams.set("fo", "json");
               return locRecord(await get(url.href));
             } catch {
