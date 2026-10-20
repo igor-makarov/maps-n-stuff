@@ -111,8 +111,9 @@ test('SLUB recordFrom retains original fields, preview and original scan', () =>
   assert.equal(record.rightsBasis, 'pdm');
   assert.equal(record.rightsUrl, 'https://creativecommons.org/publicdomain/mark/1.0/');
   assert.match(record.recordUrl, /^https:\/\/digital\.slub-dresden\.de\/id285992066$/);
-  assert.match(record.thumbnail, /\.thumbnail\.jpg$/);
+  assert.equal(record.thumbnail, undefined, 'no thumbnail ships while SLUB blocks browser subresource loads');
   assert.match(record.imageUrl, /\.original\.jpg$/);
+  assert.match(record.imageNote, /Anubis/);
   assert.equal(record.yearStart, 1730);
   assert.equal(record.yearEnd, 1730);
   assert.equal(record.physicalExtent, '[149] Bl.');

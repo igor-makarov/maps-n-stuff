@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T11:35:30.407Z",
+  "generatedAt": "2026-10-20T11:40:47.571Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
   "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, Digital Commonwealth partners, Doria and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation (shard /data/records/leventhal.json). Rights-cleared partner-held Digital Commonwealth records are imported separately (shard /data/records/digitalcommonwealth.json). Library of Congress records are imported through its documented ?fo=json item API with per-item rights evidence (shard /data/records/loc.json). Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232 is harvested through oai_dc discovery, MODS date/rights and ORE bitstreams (shard /data/records/doria.json). USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in /data/records/usgs.json. Library of Congress Geography and Map Division records are imported from documented item JSON with per-item rights evidence; they are bundled in /data/records/loc.json.The documented e-rara OAI set landkarten (completeListSize 2,335) was traversed with resumption tokens from cursor 0 through 2330; 2,224 explicitly PDM map records are bundled, with the per-run evidence in selection[\"e-rara:landkarten-depth\"]. SLUB Dresden OAI-PMH set maps in METS: per-object MODS/DFG-viewer Public Domain Mark gate, original JPEG/PDF bitstreams and a resumable shard.",
@@ -1311,13 +1311,60 @@
         "rights: no affirmative Public Domain Mark / PDM licence: copyrightStatus: undefined": 48,
         "rights: no affirmative Public Domain Mark / PDM licence: dv:license: http://rightsstatements.org/vocab/CNE/1.0/": 8
       },
-      "rule": "Every record in the documented SLUB OAI-PMH set maps is a candidate. It is admitted only when the item’s own METS states the Public Domain Mark 1.0 (MODS use-and-reproduction href/text, or dv:license=pdm with slubarchiv:copyrightStatus=publicdomain) and carries no separate restrictive statement. The first THUMBS/DEFAULT/ORIGINAL bitstreams become the preview/original links; no IIIF service, extent, place or alignment is invented.",
+      "rule": "Every record in the documented SLUB OAI-PMH set maps is a candidate. It is admitted only when the item’s own METS states the Public Domain Mark 1.0 (MODS use-and-reproduction href/text, or dv:license=pdm with slubarchiv:copyrightStatus=publicdomain) and carries no separate restrictive statement. The first ORIGINAL bitstream and PDF become original-access links; no IIIF service, extent, place or alignment is invented, and no thumbnail is shipped while SLUB’s Anubis check blocks browser subresource loads.",
       "policy": {
         "url": "https://nutzungshinweis.slub-dresden.de/",
         "statement": "SLUB’s digital-collections terms state that digitised objects whose copyright has expired are made available under the Public Domain Mark 1.0 and require the source citation (SLUB Dresden, PURL/URN, licence). Per-object statements are retained on every entry. SLUB does not publish a separate metadata licence; metadata is reused with attribution and a link to each original record."
       },
       "verification": {
-        "sample": 0
+        "retrieved": "2026-10-20",
+        "sample": 6,
+        "originalOk": 6,
+        "recordOk": 6,
+        "browserDirectImageOk": 0,
+        "browserNote": "A Chrome user-agent request receives SLUB’s Anubis bot check, not image bytes, so the direct bitstream URLs are not used as <img> previews. The count above is a server-side availability check with the harvest user-agent; browser access to the record page is the supported route.",
+        "examples": [
+          {
+            "id": "slub:516428292",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 500,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322515858",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322512859",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322481821",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322504449",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          }
+        ]
       },
       "retrieved": "2026-10-20"
     }

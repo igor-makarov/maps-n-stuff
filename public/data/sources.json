@@ -576,7 +576,54 @@
         }
       ],
       "verification": {
-        "sample": 0
+        "retrieved": "2026-10-20",
+        "sample": 6,
+        "originalOk": 6,
+        "recordOk": 6,
+        "browserDirectImageOk": 0,
+        "browserNote": "A Chrome user-agent request receives SLUB’s Anubis bot check, not image bytes, so the direct bitstream URLs are not used as <img> previews. The count above is a server-side availability check with the harvest user-agent; browser access to the record page is the supported route.",
+        "examples": [
+          {
+            "id": "slub:516428292",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 500,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322515858",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322512859",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322481821",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          },
+          {
+            "id": "slub:322504449",
+            "image": 206,
+            "imageType": "image/jpeg",
+            "browserImage": 200,
+            "browserImageType": "text/html; charset=utf-8",
+            "record": 200
+          }
+        ]
       }
     },
     {
@@ -774,5 +821,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:35:30.407Z"
+  "generatedAt": "2026-10-20T11:40:47.571Z"
 }

@@ -746,14 +746,22 @@ export function init(ctx) {
       // The harvested record already names the image service, so the full-size
       // link is there on first paint; only the METS/OAI link needs the manifest.
       el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
-        record.imageService
-          ? fullImageLink(record.imageService)
-          : originalLinks(record).length
-            ? originalLinks(record)
-            : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
+        ...imageReuseLinks(record),
       ]),
       el('p', { class: 'zh-hint', text: 'Check rights and citation guidance with the holding collection. The information here comes from its metadata.' }),
     ]);
+  }
+
+  /**
+   * The image half of the reuse links as a flat array. A ternary that returns
+   * an array inside another array used to stringify to comma-separated URLs
+   * instead of rendering anchors, so the caller always spreads this.
+   */
+  function imageReuseLinks(record) {
+    if (record?.imageService) return [fullImageLink(record.imageService)];
+    const originals = originalLinks(record);
+    if (originals.length) return originals;
+    return [el('span', { class: 'zh-hint', text: record?.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' })];
   }
 
   /**
@@ -815,11 +823,7 @@ export function init(ctx) {
     // request used to print "null" between the citation buttons.
     container.replaceChildren(
       ...[
-        service
-          ? fullImageLink(service)
-          : originalLinks(record).length
-            ? originalLinks(record)
-            : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
+        ...(service ? [fullImageLink(service)] : imageReuseLinks(record)),
         manifest?.seeAlso
           ? el('a', {
               class: 'zh-button zh-button--ghost zh-button--small',
