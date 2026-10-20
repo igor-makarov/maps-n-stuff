@@ -216,23 +216,6 @@
       }
     },
     {
-      "id": "loc",
-      "name": "Library of Congress",
-      "operator": "Library of Congress, United States",
-      "homepage": "https://www.loc.gov/maps/",
-      "rights": "See each original catalogue record for its Rights Advisory. Geography and Map Division material is generally free to use and reuse unless otherwise stated.",
-      "attribution": "Library of Congress, Geography and Map Division",
-      "retrieved": "2026-10-19",
-      "api": {
-        "catalogue": "https://www.loc.gov/item/{id}/?fo=json",
-        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
-        "image": "https://tile.loc.gov/image-services/iiif/",
-        "documentation": "https://www.loc.gov/apis/"
-      },
-      "method": "Curated primary Library of Congress catalogue records. Titles, publication years, creators and digital identifiers were checked against the original catalogue's indexed metadata. Image URLs follow the Library's documented IIIF API. Place anchors are explicitly approximate orientation points; no map boundaries or depicted dates are inferred. Live image endpoint verification must be run from a network that can reach loc.gov.",
-      "liveSearch": "https://www.loc.gov/maps/?fo=json"
-    },
-    {
       "id": "stanford",
       "name": "Stanford University Libraries",
       "operator": "Stanford University Libraries",
@@ -365,6 +348,105 @@
       }
     },
     {
+      "id": "loc",
+      "name": "Library of Congress — Geography and Map Division",
+      "operator": "Library of Congress, Geography and Map Division",
+      "homepage": "https://www.loc.gov/maps/",
+      "home": "https://www.loc.gov/maps/",
+      "institutions": [
+        "Library of Congress"
+      ],
+      "rights": "Each record retains the Library of Congress rights statement read from its item record. Admitted items carry the division's \"free to use and reuse\" statement, the Sanborn Maps Collection public-domain statement, or an explicit public-domain statement, and have no restricting Rights Advisory. Credit: Library of Congress, Geography and Map Division.",
+      "attribution": "Library of Congress, Geography and Map Division",
+      "retrieved": "2026-10-20",
+      "rightsUrl": "https://www.loc.gov/legal/",
+      "api": {
+        "catalogue": "https://www.loc.gov/collections/{collection}/?fo=json",
+        "item": "https://www.loc.gov/item/{id}/?fo=json",
+        "manifest": "https://www.loc.gov/item/{id}/manifest.json",
+        "image": "https://tile.loc.gov/image-services/iiif/{service}",
+        "documentation": "https://www.loc.gov/apis/"
+      },
+      "apiHosts": [
+        "www.loc.gov",
+        "tile.loc.gov"
+      ],
+      "method": "Documented LoC JSON search (100 per page) over the Civil War Maps scope, with the item JSON rights statement and Rights Advisory checked for every admitted record. No date, geography or record-count cap; the collection cursor is recorded so the next run continues from the last scanned page.",
+      "collections": [
+        {
+          "id": "civil-war-maps",
+          "name": "Civil War Maps",
+          "discovery": "https://www.loc.gov/collections/civil-war-maps/",
+          "about": "https://www.loc.gov/collections/civil-war-maps/about-this-collection/"
+        }
+      ],
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 12,
+        "imageInfoOk": 12,
+        "imageInfoChecked": 12,
+        "thumbnailOk": 12,
+        "manifestOk": 0,
+        "manifestChecked": 12,
+        "examples": [
+          {
+            "id": "loc:map45000245",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2008626958",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2006458033",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2008622052",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:2008626929",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          },
+          {
+            "id": "loc:86675206",
+            "info": 206,
+            "infoType": "application/json",
+            "thumbnail": 206,
+            "thumbnailType": "image/jpeg",
+            "manifest": 403,
+            "manifestType": "text/html; charset=UTF-8"
+          }
+        ]
+      }
+    },
+    {
       "id": "doria",
       "name": "Doria — National Library of Finland map collections",
       "operator": "National Library of Finland (Kansalliskirjasto)",
@@ -462,5 +544,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T10:45:31.400Z"
+  "generatedAt": "2026-10-20T10:48:36.785Z"
 }

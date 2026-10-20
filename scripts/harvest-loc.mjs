@@ -27,6 +27,7 @@
  *   node scripts/harvest-loc.mjs --scope civil-war-maps --pages 5
  *   node scripts/harvest-loc.mjs --scope general-maps --pages 4 --max-items 300
  *   node scripts/harvest-loc.mjs --refresh --no-write
+   node scripts/harvest-loc.mjs --cached-only --no-write   # offline merge test
  */
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
@@ -49,6 +50,7 @@ const CONCURRENCY = Math.max(1, Math.min(12, Number(value('concurrency', '5')) |
 const PAGES = Math.max(1, Number(value('pages', '100')) || 100);
 const START_PAGE = Math.max(1, Number(value('start-page', '1')) || 1);
 const MAX_ITEMS = Math.max(1, Number(value('max-items', '100000')) || 100000);
+const CACHED_ONLY = has('cached-only');
 const UA =
   'maps-n-stuff/0.2 (+https://github.com/igor-makarov/maps-n-stuff; historical map catalogue)';
 export const RETRIEVED = '2026-10-20';
@@ -323,10 +325,14 @@ export async function verify(records, limit = 12) {
   const sample = [];
   const step = Math.max(1, Math.floor(records.length / limit));
   for (let i = 0; i < records.length && sample.length < limit; i += step) sample.push(records[i]);
-  const results = await pool(sample, 4, async (record) => {
-    const info = await head(`${record.imageService}/info.json`, 'application/json');
+  const results = await pool(sample, 2, async (record) => {
     const thumb = await head(record.thumbnail, 'image/jpeg');
-    const manifest = await head(record.iiifManifest, 'application/json');
+    const info = record.imageService
+      ? await head(`${record.imageService}/info.json`, 'application/json')
+      : { status: null, type: null };
+    const manifest = record.iiifManifest
+      ? await head(record.iiifManifest, 'application/json')
+      : { status: null, type: null };
     return {
       id: record.id,
       info: info.status,
@@ -337,12 +343,16 @@ export async function verify(records, limit = 12) {
       manifestType: manifest.type,
     };
   });
+  // A ranged GET answers 206, which is an available resource, not a failure.
+  const ok = (status) => status === 200 || status === 206;
   return {
     retrieved: RETRIEVED,
     sample: results.length,
-    imageInfoOk: results.filter((r) => r.info === 200 && /json/.test(r.infoType ?? '')).length,
-    thumbnailOk: results.filter((r) => r.thumbnail === 200 && /image\//.test(r.thumbnailType ?? '')).length,
-    manifestOk: results.filter((r) => r.manifest === 200 && /json/.test(r.manifestType ?? '')).length,
+    imageInfoOk: results.filter((r) => ok(r.info) && /json/.test(r.infoType ?? '')).length,
+    imageInfoChecked: results.filter((r) => r.info != null).length,
+    thumbnailOk: results.filter((r) => ok(r.thumbnail) && /image\//.test(r.thumbnailType ?? '')).length,
+    manifestOk: results.filter((r) => ok(r.manifest) && /json/.test(r.manifestType ?? '')).length,
+    manifestChecked: results.filter((r) => r.manifest != null).length,
     examples: results.slice(0, 6),
   };
 }
@@ -390,17 +400,27 @@ async function main() {
   const failed = [];
   await pool(queue, CONCURRENCY, async ({ id }) => {
     let body;
-    try {
-      body = await cachedJson(itemCache(id), `https://www.loc.gov/item/${id}/?fo=json&at=item`, {
-        attempts: 3,
-        timeout: 25000,
-      });
-    } catch (error) {
-      failed.push({ id, error: String(error.message) });
-      return;
+    const cache = itemCache(id);
+    if (CACHED_ONLY) {
+      try {
+        body = JSON.parse(await readFile(cache, 'utf8'));
+      } catch {
+        withheld['not fetched yet (cached-only run)'] = (withheld['not fetched yet (cached-only run)'] || 0) + 1;
+        return;
+      }
+    } else {
+      try {
+        body = await cachedJson(cache, `https://www.loc.gov/item/${id}/?fo=json&at=item`, {
+          attempts: 3,
+          timeout: 25000,
+        });
+      } catch (error) {
+        failed.push({ id, error: String(error.message) });
+        return;
+      }
     }
     const item = body.item ?? body;
-    const record = locItemRecord(item);
+    const record = locItemRecord(body);
     if (!record) {
       const reason = locRejection(item);
       withheld[reason] = (withheld[reason] || 0) + 1;
@@ -446,6 +466,11 @@ async function main() {
   const selection = {
     scope: scopeName,
     upstreamTotal: total,
+    // The LoC API reported a smaller total than the page it delivered when the
+    // format facet was combined with c/at. Keep the reported value as evidence
+    // and record the explicit page budget that was actually used.
+    reportedPaginationTotal: total,
+    explicitPageBudget: lastPage,
     pagesScanned: `${START_PAGE}-${lastPage}`,
     considered: queue.length,
     kept: records.length,
