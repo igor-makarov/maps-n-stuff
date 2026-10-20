@@ -65,5 +65,15 @@
     "error": "Actions run ended before final publication (failure); recovered from latest committed checkpoint.",
     "recovery": "diagnostics/recovery/39417551585-1.json",
     "transcript": "unavailable"
+  },
+  {
+    "id": "1-8",
+    "outcome": "timeout",
+    "runId": "39421380532",
+    "journalId": "1-8",
+    "minEntryId": 7,
+    "maxEntryId": 487,
+    "error": "\"\"",
+    "transcript": "complete"
   }
 ]
