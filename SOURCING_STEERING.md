@@ -1,5 +1,132 @@
 # Sourcing steering — 20 October 2026
 
+## Codex review: 16:07 Jerusalem / 13:07 UTC
+
+This is the latest direction, under the user's **19:00 Jerusalem / 16:00 UTC**
+extension. Wrap-up is at **18:00 local / 15:00 UTC**, not the superseded times
+in older reviews. Read current main before another substantial source and at
+each iteration. Coordinate and choose source ownership yourselves.
+
+### Actual integrated state
+
+Reviewed `91defa17` and the current control/iteration records and Actions jobs.
+The shipped catalogue is **31,692 distinct records from six bundled providers**:
+USGS 24,000; Stanford 4,464; e-rara 3,045; SLUB 105; LoC 51; swisstopo 27.
+Net gain over launch is **27,007** records: USGS +24,000, e-rara +2,859,
+SLUB +105 and LoC +43. USGS and SLUB are two additional bundled institutional
+providers. The nine registry entries include three withheld scopes, not nine
+working/cleared integrations.
+
+The 12,876 Doria/BPL/Commonwealth records remain withheld from shipped assets;
+do not restore them without the primary metadata permission or substantiated
+basis required by `coordination/metadata-rights-decision-20261020.md`.
+The earlier 44,513 peak was not a rights-cleared coverage count.
+
+- **55 real GeoPDF-only USGS maps are now admitted**, with original PDFs and
+  no invented raster alignment (`74f07942`, `601dcb2f`, `04f5d9fb`). Keep the
+  actual count of 23,945 USGS raster links + 55 PDF-only records. With Stanford,
+  there are 24,062 provider-supplied raster links; only representative originals
+  were range-read/projected, not every file. Current USGS shard sizes by record
+  count are **12,002 / 6,000 / 5,998**; do not report them as 12,000/6,000/6,000.
+- The harvester now rejects/corrects cached TNM HTTP-200 error documents and
+  keeps its resume cursor monotonic. These fixes preserve the 24,000 prefix;
+  the upstream 186,061 total remains neither imported coverage nor new sources.
+- **LoC live search now works end to end** (`6877f59e`, `7c889a90`): a documented
+  query returned nine real admitted records through `/api/catalogue`, after
+  normalising lccn/plain-http item identities and checking division-specific
+  rights/advisories. This is live-search completeness, not nine new bundled
+  records. Item/manifest edge challenges and some dead image services remain.
+- All 4,685 baseline ids remain. The eight baseline LoC records have dead
+  thumbnail/image-service links removed and an honest `imageNote`; titles,
+  dates, rights and original records were preserved. Do not claim every field
+  of every baseline record is unchanged. Keep these eight maps eligible.
+- The served catalogue is now about **55.2 MB uncompressed**, with five shards
+  still loaded at startup. Per-file limits pass, but do not blindly multiply
+  startup cost with another bulk import. SLUB remains original-link access
+  with the recorded browser challenge, not a verified inline-image collection.
+
+Codex independently ran `npm run check`: **290/290 tests**, build validation and
+Worker dry-run pass. The current browser harness passes **50/50** at desktop,
+390px and 320px. It mocks/blocks institutional hosts, so the separate recorded
+live item/image/Worker probes remain the original-service evidence. Cloudflare
+deployment is separate; leave its new cron/hook workflow alone.
+
+### A concrete high-yield independent source to investigate
+
+Codex verified an **official NYPL public-domain data release** with an explicit
+metadata grant, rather than another source with unresolved metadata terms:
+
+- Repository: <https://github.com/NYPL-publicdomain/data-and-utilities>
+- Pinned current master: `cb1332fcdc58b7a06917d013de63a4b915629530`.
+- Its README **Attribution and License** says: “NYPL's bibliographic metadata
+  records and code provided via this repository are distributed under a Creative
+  Commons CC0 1.0 Universal Public Domain Dedication”. `LICENSE` is CC0 1.0.
+- Image rights are **separate**. The README describes the 2016 public-domain
+  release as “no known U.S. copyright restrictions”, explicitly invites reuse
+  and says the release's items are free to use without restriction. Preserve
+  the U.S. qualification and verify current original item/image evidence and
+  any conflicting advisory; never apply the metadata CC0 to image pixels.
+- This is an **archived snapshot of metadata from 2015-12-30**, not a fresh
+  census or item publication date. Do not label those records published in
+  2015/2016 or claim the release's 187,000 mixed-media items are all maps.
+- Four pinned `items/pd_items_{1,2,3,4}.ndjson` files contain the release
+  (roughly 86/99/104/82 MB). Stream/filter the NDJSON; do not clone all history
+  or fetch CSV duplicates. The documented `resourceType` includes `cartographic`;
+  inspect actual genres/collection evidence so unrelated photographs/uniforms
+  do not become maps. Preserve original titles, date ranges and UUIDs.
+- `collections/pd_collections.ndjson` is about 1.7 MB. Item JSON documents
+  `captures`, `numberOfCaptures`, original collection/item links and source dates.
+  Use actual fields/URLs; verify any HTTPS migration from the old HTTP image
+  links. Do not fabricate a IIIF service or treat capture count as map count.
+  Reuse the public release without a new API-token/account dependency.
+
+This is **research only until imported and verified**, with no NYPL maps counted
+yet. Let one lane evaluate this pinned release while the others choose
+complementary work: a bounded catalogue/index/loading improvement, another
+documented original institution (ONB/Oxford/Cambridge/Norway from the notes),
+or a substantiated primary rights route for a withheld scope. Agree owners
+yourselves. Avoid three duplicate NYPL downloads. Publish a tested real slice
+with a reproducible cursor/evidence, then widen eligible holdings; no permanent
+showcase cap. Unknown extent/date/alignment/preview must not exclude an otherwise
+eligible original scan. Verify metadata rights, current image access, credits,
+pagination/deduplication and the actual site path before advertising coverage.
+
+### Remaining concrete integrity gaps
+
+1. **The live USGS adapter still turns upstream error JSON into success.**
+   Codex reproduced `catalogueResponse` with a known TNM-style
+   `{"errorMessage":"Search timed out"}` response: it returns HTTP 200,
+   `records:[]`, `total:null` and caches that as success. The harvester is fixed,
+   but this live path is not. Validate the products-page schema/error field,
+   report an unavailable collection and avoid caching a failure as empty
+   coverage. Give this a meaningful adapter regression and verify a real
+   `/api/catalogue?source=usgs&...` result from the runner, not just TNM directly.
+   LoC item-detail failures should likewise be distinguished from a genuine
+   rights withholding; do not silently describe a total upstream outage as
+   “no rights-cleared maps”. Keep bounded polite calls and the strict gates.
+2. **Withheld website assets are still bulk files in a public repository.**
+   GitHub reports this repository `visibility:public`; full Doria/BPL/Commonwealth
+   JSON lives under `research/withheld/`. Removing it from Cloudflare's assets
+   correctly withholds it from the site but does not stop public repository
+   redistribution. Do not claim otherwise. Pending a substantiated reuse basis,
+   keep unapproved bulk payloads in private/local research cache and retain only
+   minimal ids, primary evidence links and measured counts in the public tip.
+   Use an ordinary commit; never force-rewrite history. Existing history remains
+   historical exposure and is not erased by deleting a current file. Preserve
+   the evidence and reproduction paths needed for a later cleared import.
+3. **Do not advertise Leventhal's live parser as verified/cleared.** Its separate
+   `rightsstatement_ss`/Blacklight-envelope gaps are recorded, and its metadata
+   scope remains withheld. Resolve the applicable live-use policy separately
+   before widening access; neither the old fixture nor the registry proves a
+   working integration. Keep the restored LoC gate, original links and credits.
+
+The newest completed sessions show real inference/token use, with yielded or
+normal 30-minute timeouts and **no exhausted-quota diagnostic observed**. Actions
+jobs match the three live owners; all native deadlines remain 16:00 UTC and all
+approved settings are unchanged. The eight retired members remain stopped and
+unowned. Do not interrupt/restart healthy members to read this; a real
+`GoUsageLimitError` still requires a durable stop of that affected member.
+
 ## User-authorized extension: 15:27 Jerusalem / 12:27 UTC
 
 **The user explicitly extended this existing run until 19:00 Asia/Jerusalem
