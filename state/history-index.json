@@ -46,5 +46,14 @@
     "maxEntryId": 433,
     "error": "\"\"",
     "transcript": "complete"
+  },
+  {
+    "id": "1-6",
+    "outcome": "yielded",
+    "runId": "39414401845",
+    "journalId": "1-6",
+    "minEntryId": 7,
+    "maxEntryId": 561,
+    "transcript": "complete"
   }
 ]
