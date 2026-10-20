@@ -402,6 +402,70 @@
             "iiifManifest": "https://www.e-rara.ch/i3f/v20/25996036/manifest",
             "thumbnail": "https://www.e-rara.ch/i3f/v21/25996037/full/304/0/default.jpg"
           }
+        },
+        "museecarto": {
+          "set": "museecarto",
+          "endpoint": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=museecarto",
+          "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
+          "pagesRead": 5,
+          "oaiRecords": 44,
+          "mapRecords": 43,
+          "eligibleNew": 43,
+          "alreadyPresent": 0,
+          "manifestAttempts": 43,
+          "added": 43,
+          "addedThisRun": 43,
+          "addedTotal": 2859,
+          "withheldUnknownOrRestrictedRights": 0,
+          "manifestErrors": 0,
+          "startCursor": 10,
+          "nextCursor": 54,
+          "endReached": true,
+          "completeListSize": 54,
+          "runs": [
+            {
+              "pagesRead": 1,
+              "oaiRecords": 10,
+              "mapRecords": 10,
+              "eligibleNew": 8,
+              "alreadyPresent": 2,
+              "manifestAttempts": 8,
+              "added": 8,
+              "withheldUnknownOrRestrictedRights": 0,
+              "manifestErrors": 0,
+              "startCursor": 0,
+              "nextCursor": 10,
+              "endReached": false,
+              "completeListSize": 54,
+              "retrieved": "2026-10-20"
+            },
+            {
+              "pagesRead": 5,
+              "oaiRecords": 44,
+              "mapRecords": 43,
+              "eligibleNew": 43,
+              "alreadyPresent": 0,
+              "manifestAttempts": 43,
+              "added": 43,
+              "withheldUnknownOrRestrictedRights": 0,
+              "manifestErrors": 0,
+              "startCursor": 10,
+              "nextCursor": 54,
+              "endReached": true,
+              "completeListSize": 54,
+              "retrieved": "2026-10-20"
+            }
+          ],
+          "rule": "Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.",
+          "retrieved": "2026-10-20",
+          "licence": "PDM 1.0 per item (https://creativecommons.org/publicdomain/mark/1.0/); e-rara terms https://www.e-rara.ch/terms",
+          "attribution": "e-rara.ch and the stated holding library",
+          "verificationExample": {
+            "id": "e-rara:26092904",
+            "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-91420",
+            "iiifManifest": "https://www.e-rara.ch/i3f/v20/26092904/manifest",
+            "thumbnail": "https://www.e-rara.ch/i3f/v21/26092905/full/304/0/default.jpg"
+          }
         }
       }
     },
