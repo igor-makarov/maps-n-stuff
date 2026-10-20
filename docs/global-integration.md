@@ -5,8 +5,8 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 31,774 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
-Library, 972 Digital Commonwealth partner-held, 11,947 USGS Historical
+The bundle contains 37,774 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+Library, 972 Digital Commonwealth partner-held, 17,947 USGS Historical
 Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
 2,410 e-rara, 27 swisstopo and 50 Library of Congress records. Stanford and
 Doria contribute worldwide holdings; USGS adds public-domain coverage of the
@@ -16,7 +16,8 @@ optional. Image reuse rights are not.
 The bundled providers are published either in the core document or in one of the
 registered shards (`/data/records/leventhal.json`,
 `/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
-`/data/records/doria.json`, `/data/records/usgs.json`). The browser loader and
+`/data/records/doria.json`, `/data/records/usgs.json`,
+`/data/records/usgs-2.json`). The browser loader and
 the Worker merge them; a failed shard is reported without discarding the rest of
 the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
 feed; the full feed remains available through live search.
@@ -37,7 +38,7 @@ to copy the entire OldMapsOnline index.
 ## Image alignment
 
 117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
-and every one of the 11,947 bundled USGS HTMC records carries its original tiled
+and every one of the 17,947 bundled USGS HTMC records carries its original tiled
 GeoTIFF (main image plus internal overviews). The raster viewer uses their
 GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
 raster resolution. It inverse-projects the current Web Mercator viewport into
@@ -70,7 +71,7 @@ georeferencing job or guaranteed alignment accuracy is claimed.
 **Search more original collections** queries institutional JSON APIs, rather
 than scraping the aggregator. It offers Library of Congress, Leventhal Map &
 Education Center and USGS Historical Topographic Maps. Each request is bounded
-to 12 results with pagination and caching; USGS also has a bundled 11,947-record
+to 12 results with pagination and caching; USGS also has a bundled 17,947-record
 partial slice, but live search still covers the whole feed. The first two require item-level
 compatible rights evidence; unknown, noncommercial and conflicting statements
 are withheld. USGS requests are confined to its public-domain historical-map

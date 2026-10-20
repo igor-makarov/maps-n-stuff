@@ -655,18 +655,18 @@
         "rasterCrsOk": 8,
         "examples": [
           {
-            "id": "usgs:5d29542fe4b038fabe1d11a7",
+            "id": "usgs:5a8a3baae4b00f54eb3e5542",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/3402074",
+            "rasterRange": "bytes 0-65535/4319085",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4975,
-              "height": 6004,
+              "width": 6546,
+              "height": 8067,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -674,18 +674,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4d31e4b00f54eb40384f",
+            "id": "usgs:5a8a49c9e4b00f54eb3fdee0",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8056473",
+            "rasterRange": "bytes 0-65535/10068228",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 5000,
-              "height": 6050,
+              "width": 6763,
+              "height": 8233,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -693,18 +693,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4b7ae4b00f54eb40089a",
+            "id": "usgs:5a8a3f52e4b00f54eb3eb603",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/3697575",
+            "rasterRange": "bytes 0-65535/13949431",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4963,
-              "height": 6100,
+              "width": 6592,
+              "height": 8038,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -712,18 +712,18 @@
             }
           },
           {
-            "id": "usgs:5a8a3963e4b00f54eb3e1d0b",
+            "id": "usgs:5a8a4b7fe4b00f54eb400950",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8358912",
+            "rasterRange": "bytes 0-65535/8494199",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 6608,
-              "height": 8088,
+              "width": 6908,
+              "height": 8058,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -735,5 +735,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:29:57.475Z"
+  "generatedAt": "2026-10-20T11:36:45.792Z"
 }
