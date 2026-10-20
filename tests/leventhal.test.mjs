@@ -7,7 +7,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rightsBasis, recordOf } from '../scripts/harvest-leventhal.mjs';
+import { enrichCcBy, rightsBasis, recordOf, rightsEvidence } from '../scripts/harvest-leventhal.mjs';
 
 const base = {
   id: 'commonwealth:abc123',
@@ -74,4 +74,74 @@ test('partner-held items and non-map documents are not imported', () => {
   const outside = structuredClone(base);
   outside.attributes.collection_name_ssim = ['Unrelated collection'];
   assert.equal(recordOf(outside), null);
+});
+
+test('rights evidence keeps the catalogue statements and never invents a licence URI', () => {
+  const evidence = rightsEvidence(base.attributes, 'commonwealth:abc123');
+  assert.equal(evidence.rightsStatement, 'No known copyright restrictions.');
+  assert.equal(evidence.licenseStatement, 'No known restrictions on use.');
+  assert.equal(evidence.rightsUrl, undefined, 'no licence URI is stated, so none may be fabricated');
+  assert.equal(evidence.rightsPolicyUrl, 'https://www.digitalcommonwealth.org/copyright');
+  assert.equal(evidence.metadataSource, 'https://collections.leventhalmap.org/search/commonwealth:abc123.json');
+  const record = recordOf(structuredClone(base));
+  assert.equal(record.rightsPolicyUrl, 'https://www.digitalcommonwealth.org/copyright');
+  assert.equal(record.creditLine, 'Norman B. Leventhal Map & Education Center at the Boston Public Library');
+});
+
+test('an item-level CC BY licence URI is retained verbatim', () => {
+  const attributes = {
+    ...base.attributes,
+    rights_ss: '(c) Example Holder',
+    license_ss: 'This work is licensed for use under a Creative Commons Attribution License (CC BY).',
+    license_uri_ss: 'https://creativecommons.org/licenses/by/4.0/',
+  };
+  const record = recordOf({ ...structuredClone(base), attributes });
+  assert.equal(record.rightsBasis, 'cc-by');
+  assert.equal(record.rightsUrl, 'https://creativecommons.org/licenses/by/4.0/');
+  assert.equal(record.licenseStatement, 'This work is licensed for use under a Creative Commons Attribution License (CC BY).');
+  assert.equal(record.rights, '(c) Example Holder This work is licensed for use under a Creative Commons Attribution License (CC BY).');
+});
+
+test('CC BY manifest enrichment adds the stated credit and version without touching other bases', async () => {
+  const cc = recordOf({
+    ...structuredClone(base),
+    attributes: {
+      ...base.attributes,
+      license_ss: 'This work is licensed for use under a Creative Commons Attribution License (CC BY).',
+    },
+  });
+  const plainRecord = recordOf(structuredClone(base));
+  const fetched = [];
+  const enriched = await enrichCcBy([cc, plainRecord], async (url) => {
+    fetched.push(url);
+    return {
+      license: 'http://creativecommons.org/licenses/by/4.0/',
+      attribution: 'Reproduction from Example, imagery courtesy of the Leventhal Map & Education Center.',
+    };
+  });
+  assert.deepEqual(fetched, [cc.iiifManifest], 'only the CC BY item is fetched');
+  assert.deepEqual(enriched, [cc.id]);
+  assert.equal(cc.rightsUrl, 'https://creativecommons.org/licenses/by/4.0/');
+  assert.equal(cc.licenseVersion, '4.0');
+  assert.match(cc.attribution, /Reproduction from Example/);
+  assert.equal(cc.rightsEvidenceSource, cc.iiifManifest);
+  assert.equal(plainRecord.attribution, undefined);
+});
+
+test('a failed CC BY manifest leaves the catalogue evidence intact and records the gap', async () => {
+  const cc = recordOf({
+    ...structuredClone(base),
+    attributes: {
+      ...base.attributes,
+      license_ss: 'This work is licensed for use under a Creative Commons Attribution License (CC BY).',
+      license_uri_ss: 'https://creativecommons.org/licenses/by/4.0/',
+    },
+  });
+  const enriched = await enrichCcBy([cc], async () => {
+    throw new Error('503 upstream');
+  });
+  assert.deepEqual(enriched, []);
+  assert.equal(cc.rightsUrl, 'https://creativecommons.org/licenses/by/4.0/', 'the search-feed URI is retained');
+  assert.equal(cc.licenseVersion, undefined, 'an unknown version stays unknown');
+  assert.match(cc.rightsEvidenceNote, /503 upstream/);
 });

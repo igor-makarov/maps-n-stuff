@@ -156,3 +156,13 @@ test('the “Karten zum Stichwort …” offer counts the folded search honestly
     assert.equal(suggestion.query, query, `${query}: the offer applies what was typed`);
   }
 });
+
+test('a digraph query also reaches a record that already spells the name without the umlaut', () => {
+  const record = { id: 'fixture:zurichgow', title: 'Zurichgow et Basiliensis provincia', creators: [], institution: 'Fixture' };
+  assert.equal(matchesQuery(record, 'Zürich'), true);
+  assert.equal(matchesQuery(record, 'Zuerich'), true);
+  assert.equal(matchesQuery(record, 'Zurich'), true);
+  const umlaut = { id: 'fixture:zurich', title: 'Plan der Statt Zürich', creators: [], institution: 'Fixture' };
+  assert.equal(matchesQuery(umlaut, 'Zuerich'), true);
+  assert.equal(matchesQuery(umlaut, 'Zurich'), true);
+});
