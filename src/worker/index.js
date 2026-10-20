@@ -1,6 +1,7 @@
 import { rasterResponse } from './raster.js';
 import { georeferenceResponse } from './georeference.js';
 import { catalogueResponse } from './catalogue.js';
+import { loadCatalogue } from './data.js';
 import { ALLOWLIST, USER_AGENT, VERSION, isAllowed } from './allowlist.js';
 import { NOMINATIM_ATTRIBUTION, NOMINATIM_SOURCE, nominatimUrl, searchPayload } from './geocode.js';
 
@@ -168,10 +169,29 @@ export default {
             return await catalogueResponse(request, ctx);
           case '/api/fetch':
             return await fetchUpstream(request, ctx);
-          case '/api/records':
+          case '/api/records': {
+            const cacheKey = new Request(`${url.origin}/api/records`, { method: 'GET' });
+            const hit = await caches.default.match(cacheKey);
+            if (hit) return hit;
+            const { core, records, shardErrors } = await loadCatalogue(env, request);
+            if (shardErrors.length) {
+              return json({ error: 'catalogue_shard_unavailable', detail: shardErrors }, { status: 502 });
+            }
+            const out = json(
+              { ...core, records },
+              {
+                headers: {
+                  'cache-control': 'public, max-age=300',
+                  'access-control-allow-origin': '*',
+                },
+              },
+            );
+            ctx.waitUntil(caches.default.put(cacheKey, out.clone()));
+            return out;
+          }
           case '/api/layers':
           case '/api/sources': {
-            const path = { '/api/records': '/data/records.json', '/api/layers': '/data/overlays.json', '/api/sources': '/data/sources.json' }[
+            const path = { '/api/layers': '/data/overlays.json', '/api/sources': '/data/sources.json' }[
               url.pathname
             ];
             const res = await asset(env, path, request);

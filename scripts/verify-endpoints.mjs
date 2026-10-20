@@ -23,6 +23,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BASE_LAYERS, tileUrl } from '../public/app/map.js';
+import { readCatalogue } from './catalogue.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const UA = 'maps-n-stuff/0.2 (+https://github.com/igor-makarov/maps-n-stuff; endpoint verification)';
@@ -44,10 +45,10 @@ const PAUSE = 120;
 const RETRIES = Math.max(0, Math.min(5, Number(argValue('retries', '2'))));
 
 const readJson = async (rel) => JSON.parse(await readFile(path.join(ROOT, rel), 'utf8'));
-const recordsDoc = await readJson('public/data/records.json');
+const catalogue = await readCatalogue(path.join(ROOT, 'public/data'));
 const overlaysDoc = await readJson('public/data/overlays.json');
 
-const records = LIMIT ? recordsDoc.records.slice(0, LIMIT) : recordsDoc.records;
+const records = LIMIT ? catalogue.records.slice(0, LIMIT) : catalogue.records;
 
 /** Every URL the UI can send a visitor to, deduplicated, with its owners. */
 const targets = new Map();

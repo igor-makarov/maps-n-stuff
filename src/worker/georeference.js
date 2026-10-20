@@ -1,6 +1,7 @@
 import { parseAnnotation } from "@allmaps/annotation";
 import { USER_AGENT } from "./allowlist.js";
 import { isAllowed } from "./allowlist.js";
+import { loadCatalogue } from "./data.js";
 import { parseManifest } from "../../public/app/iiif.js";
 
 export function resourceMatches(record, resource) {
@@ -115,11 +116,8 @@ export async function georeferenceResponse(request, env, ctx) {
   const cacheKey = new Request(request.url);
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
-  const sourceUrl = new URL("/data/records.json", request.url);
-  const document = await (
-    await env.ASSETS.fetch(new Request(sourceUrl))
-  ).json();
-  let record = document.records.find((value) => value.id === id);
+  const { records } = await loadCatalogue(env, request);
+  let record = records.find((value) => value.id === id);
   if (!record) {
     const cachedRecord = await caches.default.match(
       new Request(

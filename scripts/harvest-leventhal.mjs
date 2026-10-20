@@ -25,6 +25,7 @@
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { shardPath, shardUrl } from './catalogue.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
@@ -333,14 +334,20 @@ async function main() {
   const sourcesPath = resolve(OUT, 'sources.json');
   const recordsDoc = JSON.parse(await readFile(recordsPath, 'utf8'));
   const sourcesDoc = JSON.parse(await readFile(sourcesPath, 'utf8'));
-  recordsDoc.records = [...recordsDoc.records.filter((record) => record.providerId !== 'leventhal'), ...records];
+  const shard = shardUrl('leventhal');
+  // Leventhal is a bulk provider: its records live in their own static asset so
+  // the core document stays well below Cloudflare's 25 MiB limit. The core keeps
+  // the shard URL, the selection evidence and the provider registry entry.
+  recordsDoc.shards = [...new Set([...(recordsDoc.shards ?? []), shard])].sort();
+  recordsDoc.records = recordsDoc.records.filter((record) => record.providerId !== 'leventhal');
   recordsDoc.generatedAt = new Date().toISOString();
   recordsDoc.retrieved = RETRIEVED;
-  recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation.`;
+  recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in ${shard} and merged by the catalogue loader.`;
   recordsDoc.selection ??= {};
   recordsDoc.selection['leventhal:bpl'] = {
     considered: documents.length,
     kept: records.length,
+    shard,
     rightsBasis: basis,
     withheld: rejected,
     rule:
@@ -377,13 +384,29 @@ async function main() {
   };
   sourcesDoc.providers = [...sourcesDoc.providers.filter((source) => source.id !== 'leventhal'), provider];
   sourcesDoc.generatedAt = recordsDoc.generatedAt;
-  const bytes = Buffer.byteLength(JSON.stringify(recordsDoc));
-  console.log(`Catalogue would be ${recordsDoc.records.length} records, ${(bytes / 1024 / 1024).toFixed(2)} MiB`);
-  if (bytes > 24 * 1024 * 1024) throw new Error('Catalogue exceeds 24 MiB; shard before writing.');
+  const shardDoc = {
+    generatedAt: recordsDoc.generatedAt,
+    retrieved: RETRIEVED,
+    providerId: 'leventhal',
+    method: recordsDoc.selection['leventhal:bpl'].rule,
+    selection: recordsDoc.selection['leventhal:bpl'],
+    records,
+  };
+  const coreBytes = Buffer.byteLength(JSON.stringify(recordsDoc));
+  const shardBytes = Buffer.byteLength(JSON.stringify(shardDoc));
+  console.log(
+    `Catalogue would be ${recordsDoc.records.length} core + ${records.length} leventhal records; ` +
+      `core ${(coreBytes / 1024 / 1024).toFixed(2)} MiB, shard ${(shardBytes / 1024 / 1024).toFixed(2)} MiB`,
+  );
+  if (coreBytes > 24 * 1024 * 1024 || shardBytes > 24 * 1024 * 1024) {
+    throw new Error('A catalogue asset exceeds 24 MiB; split it before writing.');
+  }
   if (WRITE) {
+    await mkdir(dirname(shardPath(OUT, shard)), { recursive: true });
+    await writeFile(shardPath(OUT, shard), JSON.stringify(shardDoc) + '\n');
     await writeFile(recordsPath, JSON.stringify(recordsDoc) + '\n');
     await writeFile(sourcesPath, JSON.stringify(sourcesDoc, null, 2) + '\n');
-    console.log('Wrote', OUT);
+    console.log('Wrote', OUT, 'and', shard);
   }
 }
 

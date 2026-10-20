@@ -36,15 +36,64 @@ export function validateRecord(record, index = -1) {
   return problems;
 }
 
-/** Fetch + validate. Never throws: returns { records, errors, ok }. */
+/** A shard URL is same-origin data only; never let the seed redirect the loader elsewhere. */
+export function isShardUrl(value) {
+  return typeof value === 'string' && /^\/data\/records\/[a-z0-9][a-z0-9-]*\.json$/.test(value);
+}
+
+/**
+ * Fetch + validate. Never throws for a shard outage: the core and every shard
+ * that answered are still returned, and the failure is reported in `errors` so
+ * the UI can stay usable while saying that part of the catalogue is missing.
+ * A failed *core* fetch still throws (that is the documented outage state).
+ */
 export async function loadRecords(fetchImpl = globalThis.fetch) {
   if (typeof fetchImpl !== 'function') return { records: [], errors: ['no fetch implementation'], ok: false };
   const res = await fetchImpl(RECORDS_URL, { headers: { accept: 'application/json' } });
   if (!res.ok) throw new Error(`${res.status} ${RECORDS_URL}`);
   const data = await res.json();
-  const records = Array.isArray(data.records) ? data.records : [];
-  const errors = records.flatMap((record, i) => validateRecord(record, i));
-  return { records, errors, generatedAt: data.generatedAt ?? null, method: data.method ?? null, ok: errors.length === 0 };
+  const errors = [];
+  const shardUrls = (Array.isArray(data.shards) ? data.shards : []).filter((url) => {
+    if (isShardUrl(url)) return true;
+    errors.push(`ignored invalid shard URL: ${url}`);
+    return false;
+  });
+  const shardResults = await Promise.allSettled(
+    shardUrls.map(async (url) => {
+      const response = await fetchImpl(url, { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error(`${response.status} ${url}`);
+      const shard = await response.json();
+      if (!Array.isArray(shard.records)) throw new Error(`${url}: shard has no records array`);
+      return shard.records;
+    }),
+  );
+  const records = [];
+  const seen = new Set();
+  const add = (record) => {
+    if (!record || typeof record !== 'object' || typeof record.id !== 'string' || seen.has(record.id)) return;
+    seen.add(record.id);
+    records.push(record);
+  };
+  for (const record of Array.isArray(data.records) ? data.records : []) add(record);
+  const loadedShards = [];
+  shardResults.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      loadedShards.push(shardUrls[index]);
+      for (const record of result.value) add(record);
+    } else {
+      errors.push(`shard unavailable: ${shardUrls[index]} (${result.reason?.message || result.reason})`);
+    }
+  });
+  errors.push(...records.flatMap((record, i) => validateRecord(record, i)));
+  return {
+    records,
+    errors,
+    generatedAt: data.generatedAt ?? null,
+    method: data.method ?? null,
+    shards: shardUrls,
+    loadedShards,
+    ok: errors.length === 0,
+  };
 }
 
 export async function loadSources(fetchImpl = globalThis.fetch) {

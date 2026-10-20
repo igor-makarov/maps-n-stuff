@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readCatalogue } from '../scripts/catalogue.mjs';
 import {
   bboxIntersects,
   facets,
@@ -85,7 +86,11 @@ test('the keyword search also covers the collection, imprint and shelfmark', () 
 
 test('the committed seed answers the words its own facets use', async () => {
   const raw = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
-  const { records } = await loadRecords(async () => ({ ok: true, json: async () => raw }));
+  const docs = new Map([['/data/records.json', raw]]);
+  for (const url of raw.shards ?? []) {
+    docs.set(url, JSON.parse(await readFile(new URL(`../public${url}`, import.meta.url), 'utf8')));
+  }
+  const { records } = await loadRecords(async (url) => ({ ok: docs.has(url), json: async () => docs.get(url) }));
   const byWord = (word) => records.filter((r) => matchesQuery(r, word));
   // Every collection name in the seed is findable through the keyword box, and a
   // collection search cannot return more records than the collection has rows
@@ -187,10 +192,10 @@ test('facets and yearBounds describe the corpus', () => {
 });
 
 test('overlay records match the advertised comparison layers', async () => {
-  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  const records = (await readCatalogue()).records;
   const { overlays } = JSON.parse(await readFile(new URL('../public/data/overlays.json', import.meta.url), 'utf8'));
   const byId = new Map(overlays.map((layer) => [layer.id, layer]));
-  const overlayRecords = records.records.filter((record) => record.type === 'overlay');
+  const overlayRecords = records.filter((record) => record.type === 'overlay');
   assert.ok(overlayRecords.length >= 10, `expected overlay records, found ${overlayRecords.length}`);
   for (const record of overlayRecords) {
     const layer = byId.get(record.overlay.layerId);
@@ -208,20 +213,42 @@ test('overlay records match the advertised comparison layers', async () => {
 });
 
 test('skipped harvest entries are documented, never silent', async () => {
-  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+  const records = (await readCatalogue()).core;
   assert.ok(Array.isArray(records.skipped));
   for (const entry of records.skipped) {
     assert.ok(entry.id && typeof entry.reason === 'string' && entry.reason.length > 20, `skipped entry needs id + reason: ${JSON.stringify(entry)}`);
   }
 });
 
-test('loadRecords reads the shipped seed file and validates it', async () => {
+test('loadRecords reads the shipped core and shard files and validates them', async () => {
   const raw = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
-  const fetchStub = async () => ({ ok: true, json: async () => raw });
+  const docs = new Map([['/data/records.json', raw]]);
+  for (const url of raw.shards ?? []) {
+    docs.set(url, JSON.parse(await readFile(new URL(`../public${url}`, import.meta.url), 'utf8')));
+  }
+  const fetchStub = async (url) => ({ ok: docs.has(url), json: async () => docs.get(url) });
   const result = await loadRecords(fetchStub);
   assert.equal(result.ok, true, result.errors.join('; '));
-  assert.equal(result.records.length, raw.records.length);
+  assert.equal(result.records.length, (await readCatalogue()).records.length);
+  assert.equal(result.loadedShards.length, raw.shards?.length ?? 0);
   assert.ok(result.generatedAt);
+});
+
+test('a failing shard keeps the rest of the catalogue and reports the gap', async () => {
+  const raw = {
+    generatedAt: '2026-10-20T00:00:00.000Z',
+    method: 'test fixture describing the shard contract',
+    shards: ['/data/records/fixture.json'],
+    records: [fixture[0]],
+  };
+  const fetchStub = async (url) =>
+    url === '/data/records/fixture.json'
+      ? { ok: false, status: 503, json: async () => ({}) }
+      : { ok: true, json: async () => raw };
+  const result = await loadRecords(fetchStub);
+  assert.equal(result.ok, false);
+  assert.equal(result.records.length, 1);
+  assert.ok(result.errors.some((error) => error.includes('shard unavailable')), result.errors.join('; '));
 });
 
 /**
@@ -283,8 +310,8 @@ test('parseBbox reads the hemisphere of every stated corner', async () => {
 });
 
 test('every committed extent is a finite, correctly ordered WGS84 box', async () => {
-  const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
-  for (const record of records.records) {
+  const records = (await readCatalogue()).records;
+  for (const record of records) {
     if (!record.extent) continue;
     const { west, east, south, north } = record.extent;
     assert.ok([west, east, south, north].every(Number.isFinite), `${record.id}: non-finite extent`);

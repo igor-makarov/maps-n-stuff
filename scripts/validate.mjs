@@ -15,6 +15,7 @@ import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import path from 'node:path';
+import { readCatalogue, shardPath } from './catalogue.mjs';
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -105,7 +106,7 @@ async function checkHtmlAssets() {
 }
 
 async function checkModules() {
-  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'public/app/history.js', 'public/app/georeference.js', 'public/app/collections.js', 'src/browser/cog.js', 'src/worker/catalogue.js', 'src/worker/georeference.js', 'src/worker/raster.js', 'src/worker/index.js'];
+  const modules = ['public/app/main.js', 'public/app/store.js', 'public/app/dom.js', 'public/app/records.js', 'public/app/map.js', 'public/app/search.js', 'public/app/results.js', 'public/app/detail.js', 'public/app/compare.js', 'public/app/history.js', 'public/app/georeference.js', 'public/app/collections.js', 'src/browser/cog.js', 'src/worker/catalogue.js', 'src/worker/data.js', 'src/worker/georeference.js', 'src/worker/raster.js', 'src/worker/index.js'];
   for (const file of modules) {
     try {
       await run(process.execPath, ['--check', abs(file)]);
@@ -138,16 +139,20 @@ async function checkModules() {
 }
 
 async function checkData() {
-  const records = JSON.parse(await readFile(abs('public/data/records.json'), 'utf8'));
-  const sources = JSON.parse(await readFile(abs('public/data/sources.json'), 'utf8'));
-  const overlays = JSON.parse(await readFile(abs('public/data/overlays.json'), 'utf8'));
-  if (!Array.isArray(records.records) || records.records.length === 0) fail('records.json: no records');
+  const dataDir = abs('public/data');
+  const records = await readCatalogue(dataDir);
+  await Promise.all(
+    records.core.shards?.map((url) => access(shardPath(dataDir, url)).catch(() => fail(`records.json: shard ${url} does not exist`))) ?? [],
+  );
+  const sources = JSON.parse(await readFile(path.join(dataDir, 'sources.json'), 'utf8'));
+  const overlays = JSON.parse(await readFile(path.join(dataDir, 'overlays.json'), 'utf8'));
+  if (!Array.isArray(records.core.records) || records.core.records.length === 0) fail('records.json: no records');
   if (!Array.isArray(sources.providers) || sources.providers.length === 0) fail('sources.json: no providers');
   if (!Array.isArray(overlays.overlays) || overlays.overlays.length === 0) fail('overlays.json: no overlays');
   const ids = new Set();
   let depicted = 0;
   const providerIds = new Set(sources.providers.map((p) => p.id));
-  for (const record of records.records ?? []) {
+  for (const record of records.records) {
     for (const field of ['id', 'title', 'providerId', 'institution', 'rights', 'recordUrl']) {
       if (record[field] === undefined || record[field] === null || record[field] === '') fail(`records.json: ${record.id ?? '?'} missing ${field}`);
     }
@@ -180,7 +185,7 @@ async function checkData() {
     }
   }
   notes.push(
-    `data: ${records.records.length} records, ${sources.providers.length} providers, ${overlays.overlays.length} overlays, ${depicted} with a documented depicted period (generated ${records.generatedAt ?? '?'})`,
+    `data: ${records.records.length} records (${records.core.records.length} core + ${records.shards.length} shards), ${sources.providers.length} providers, ${overlays.overlays.length} overlays, ${depicted} with a documented depicted period (generated ${records.core.generatedAt ?? '?'})`,
   );
 }
 

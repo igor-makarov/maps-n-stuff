@@ -7,12 +7,12 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 
 import { STATE_DEFAULTS, readStateFromUrl, stateToQuery } from '../public/app/store.js';
 import { facets, filterRecords } from '../public/app/records.js';
+import { readCatalogue } from '../scripts/catalogue.mjs';
 
-const records = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8')).records;
+const records = (await readCatalogue()).records;
 
 test('collection defaults to "all" and is not repeated in the URL', () => {
   assert.equal(STATE_DEFAULTS.collection, '');

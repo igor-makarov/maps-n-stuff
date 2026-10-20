@@ -9,12 +9,11 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-
+import { readCatalogue } from '../scripts/catalogue.mjs';
 import { brushYears, countHistogramBins, histogramBinsFor } from '../public/app/results.js';
 import { filterRecords } from '../public/app/records.js';
 
-const seed = JSON.parse(await readFile(new URL('../public/data/records.json', import.meta.url), 'utf8'));
+const seed = await readCatalogue();
 const records = seed.records;
 
 test('bins cover every decade of the data range, including empty ones', () => {
