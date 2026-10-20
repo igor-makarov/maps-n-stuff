@@ -215,7 +215,16 @@ export function matchesQuery(record, query) {
     .split(/\s+/)
     .every((token) => {
       const digraph = foldPlain(foldDigraph(token));
-      return digraph.length > 0 && (haystack.digraph.includes(digraph) || haystack.plain.includes(foldPlain(token)));
+      // A digraph typed for an umlaut ("Zuerich") must also reach a record that
+      // spells the name without one ("Zurichgow"): restore the umlaut before the
+      // plain fold instead of forcing the visitor to know which spelling the
+      // catalogue used.
+      const restored = foldPlain(String(token).replace(/ue/g, 'ü').replace(/oe/g, 'ö').replace(/ae/g, 'ä'));
+      return digraph.length > 0 && (
+        haystack.digraph.includes(digraph)
+        || haystack.plain.includes(foldPlain(token))
+        || (restored.length > 0 && haystack.plain.includes(restored))
+      );
     });
 }
 

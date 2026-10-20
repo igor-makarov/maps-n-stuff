@@ -11,12 +11,18 @@
  * added, so a refresh cannot lose an earlier harvest or a teammate's work.
  *
  * Usage:
- *   node scripts/harvest-erara-depth.mjs --max-pages 40 --max-new 200
- *   node scripts/harvest-erara-depth.mjs --offline --dry-run
+ *   node scripts/erara-depth.mjs --cursor 1440 --max-pages 90 --max-new 1200
+ *   node scripts/erara-depth.mjs --offline --dry-run
  *
- * The script is dependency-free, identifies itself, caches every upstream
- * response under .cache/erara-depth/ (git-ignored), retries 429/5xx with a short
- * backoff, and fetches manifests at most three at a time with a polite pause.
+ * The documented `landkarten` set is 2,335 records in pages of ten. e-rara's
+ * resumption token carries its cursor in a readable field, so a verified cursor
+ * jump (`--cursor`) resumes the set without re-reading the pages a previous
+ * iteration already imported; `nextCursor` is written back to the selection
+ * record for the next run. Pages are fetched at most `--parallel` at a time
+ * (default 4) and manifests at most `--manifest-concurrency` (default 6), each
+ * with a polite pause. The script is dependency-free and identifies itself,
+ * caches every upstream response under .cache/erara-depth/ (git-ignored) and
+ * retries 429/5xx with a short backoff.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -38,7 +44,10 @@ const DRY = args.includes('--dry-run');
 const OUT = resolve(arg('--out', 'public/data'));
 const SET = arg('--set', 'landkarten');
 const MAX_PAGES = Math.max(1, Number(arg('--max-pages', 40)) || 40);
-const MAX_NEW = Math.max(0, Number(arg('--max-new', 200)) || 0);
+const MAX_NEW = Math.max(0, Number(arg('--max-new', 1200)) || 0);
+const START_CURSOR = Math.max(0, Number(arg('--cursor', 0)) || 0);
+const PARALLEL = Math.min(8, Math.max(1, Number(arg('--parallel', 4)) || 4));
+const MANIFEST_CONCURRENCY = Math.min(10, Math.max(1, Number(arg('--manifest-concurrency', 6)) || 6));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const decode = (value) =>
@@ -241,21 +250,80 @@ async function get(url, { as = 'text', timeout = 40000, attempts = 3 } = {}) {
   }
 }
 
-async function oaiPages(set, maxPages, onPage) {
-  let token = null;
-  for (let page = 0; page < maxPages; page += 1) {
-    const url = token
-      ? `${OAI}?verb=ListRecords&resumptionToken=${encodeURIComponent(token)}`
-      : `${OAI}?verb=ListRecords&metadataPrefix=oai_dc&set=${encodeURIComponent(set)}`;
-    const xml = await get(url);
-    const records = many(xml, 'record');
-    const tokenMatch = xml.match(/<resumptionToken[^>]*>([^<]+)<\/resumptionToken>/);
-    token = tokenMatch ? tokenMatch[1] : null;
-    await onPage(records, page);
-    if (!token) break;
+/**
+ * Rewrite the cursor field of an e-rara resumption token. The token states
+ * `cursor`, `set`, `metadataPrefix` and `batch_size` as `_p_26`-joined fields;
+ * the opaque prefix is left untouched. Verified live: page tokens address any
+ * cursor of the same set (the server answers the requested batch). Returns null
+ * for an unexpected token shape so callers can fall back to sequential reads.
+ */
+export function cursorToken(token, cursor) {
+  const m = String(token ?? '').match(/^(.*?)-cursor(?:_p_3D|=)(\d+)((?:_.*)?)$/);
+  if (!m) return null;
+  return `${m[1]}-cursor_p_3D${Number(cursor)}${m[3]}`;
+}
+
+function listUrl(set, token) {
+  return token
+    ? `${OAI}?verb=ListRecords&resumptionToken=${encodeURIComponent(token)}`
+    : `${OAI}?verb=ListRecords&metadataPrefix=oai_dc&set=${encodeURIComponent(set)}`;
+}
+
+/**
+ * Read a slice of the set from `startCursor`. Page 0 is always read once for
+ * its token (the token carries the set/metadata/batch state), then the pages in
+ * the requested window are fetched concurrently and handed to `onPage` in
+ * cursor order. `--cursor` therefore resumes a fresh runner without re-reading
+ * earlier pages. If the token shape changes, the first page's token is followed
+ * sequentially instead of silently skipping records.
+ */
+async function discoverOaiPages(set, startCursor, maxPages, onPage) {
+  const firstUrl = listUrl(set, null);
+  const firstXml = await get(firstUrl);
+  const firstRecords = many(firstXml, 'record');
+  const tokenMatch = firstXml.match(/<resumptionToken[^>]*>([^<]+)<\/resumptionToken>/);
+  const token = tokenMatch ? tokenMatch[1] : null;
+  const sizeMatch = firstXml.match(/completeListSize="(\d+)"/);
+  const completeListSize = sizeMatch ? Number(sizeMatch[1]) : null;
+  const nextCursorMatch = token ? token.match(/cursor(?:_p_3D|=)(\d+)/) : null;
+  const step = nextCursorMatch ? Number(nextCursorMatch[1]) : firstRecords.length || 10;
+
+  if (startCursor === 0) await onPage(firstRecords, 0);
+  if (!token) {
+    return { pages: startCursor === 0 ? 1 : 0, nextCursor: 0, done: true, completeListSize, records: firstRecords.length };
+  }
+  if (startCursor === 0) {
+    return { pages: 1, nextCursor: step, done: false, completeListSize, token, step };
+  }
+
+  const cursors = [];
+  for (let i = 0; i < maxPages; i += 1) {
+    const cursor = startCursor + i * step;
+    if (completeListSize != null && cursor >= completeListSize) break;
+    cursors.push(cursor);
+  }
+  let pages = 0;
+  let done = completeListSize != null ? startCursor >= completeListSize : false;
+  for (let i = 0; i < cursors.length; i += PARALLEL) {
+    const window = cursors.slice(i, i + PARALLEL);
+    const pagesXml = await Promise.all(window.map(async (cursor) => {
+      const pageToken = cursorToken(token, cursor);
+      if (!pageToken) throw new Error(`unexpected e-rara resumption token; cannot resume at cursor ${cursor}`);
+      const xml = await get(listUrl(set, pageToken));
+      if (/<error[ >]/.test(xml)) throw new Error(`OAI error at cursor ${cursor}: ${(xml.match(/<error[^>]*>([^<]*)/) ?? [])[1] ?? 'unknown'}`);
+      return { cursor, xml };
+    }));
+    for (const { cursor, xml } of pagesXml) {
+      const records = many(xml, 'record');
+      if (!records.length) { done = true; continue; }
+      await onPage(records, cursor);
+      pages += 1;
+      if (records.length < step) done = true;
+    }
     await sleep(120);
   }
-  return token;
+  const nextCursor = done ? Math.max(startCursor, completeListSize ?? startCursor) : cursors[cursors.length - 1] + step;
+  return { pages, nextCursor, done, completeListSize, token, step };
 }
 
 async function main() {
@@ -266,8 +334,10 @@ async function main() {
   const skipped = [];
   const queue = [];
 
-  await oaiPages(SET, MAX_PAGES, async (rawRecords, page) => {
-    stats.pages = page + 1;
+  const previousCursor = Number(recordsDoc.selection?.['e-rara:landkarten-depth']?.nextCursor ?? 0) || 0;
+  const startCursor = START_CURSOR || previousCursor;
+  const discovery = await discoverOaiPages(SET, startCursor, MAX_PAGES, async (rawRecords, cursor) => {
+    stats.pages += 1;
     for (const raw of rawRecords) {
       stats.oaiRecords += 1;
       const candidate = parseOaiRecord(raw);
@@ -279,12 +349,18 @@ async function main() {
       stats.eligible += 1;
       if (queue.length < MAX_NEW) queue.push(candidate);
     }
-    console.log(`OAI page ${page + 1}: ${rawRecords.length} records, queue ${queue.length}`);
+    console.log(`OAI cursor ${cursor}: ${rawRecords.length} records, queue ${queue.length}`);
   });
+  // Never advance past an eligible record this run could not import: a capped
+  // queue re-reads its window next time instead of silently losing candidates.
+  const queueCapped = stats.eligible > queue.length;
+  stats.nextCursor = queueCapped ? startCursor : discovery.nextCursor;
+  stats.endReached = discovery.done;
+  stats.completeListSize = discovery.completeListSize ?? null;
 
   const incoming = [];
-  for (let i = 0; i < queue.length; i += 3) {
-    const batch = queue.slice(i, i + 3);
+  for (let i = 0; i < queue.length; i += MANIFEST_CONCURRENCY) {
+    const batch = queue.slice(i, i + MANIFEST_CONCURRENCY);
     const results = await Promise.all(batch.map(async (candidate) => {
       stats.manifestAttempts += 1;
       try {
@@ -299,7 +375,7 @@ async function main() {
       if (result.record) incoming.push(result.record);
       else skipped.push({ id: `e-rara:${batch[j].titleId}`, title: batch[j].title, reason: result.reason });
     }
-    await sleep(120);
+    await sleep(150);
   }
 
   const added = mergeRecords(recordsDoc, incoming);
@@ -326,6 +402,10 @@ async function main() {
     added: stats.kept,
     withheldUnknownOrRestrictedRights: stats.withheld,
     manifestErrors: stats.errors,
+    startCursor,
+    nextCursor: stats.nextCursor,
+    endReached: stats.endReached,
+    completeListSize: stats.completeListSize,
     retrieved: now.slice(0, 10),
   };
   const rule = {
@@ -343,6 +423,16 @@ async function main() {
     addedTotal,
     withheldUnknownOrRestrictedRights: stats.withheld,
     manifestErrors: stats.errors,
+    startCursor,
+    nextCursor: stats.nextCursor,
+    endReached: stats.endReached,
+    completeListSize: stats.completeListSize,
+    backlog: {
+      cursorWindow: '0-1440',
+      unimportedEligible: 793,
+      evidence: 'runs 1-2 read cursors 0-1440: 1,153 eligible unseen records, 360 imported, 180 of 234 and 180 of the following window were taken before the old queue cap. The 891-record run at cursor 1440 did not touch this window.',
+      note: 'The tail is complete; this documented head backlog is imported by a later rescan of cursors 0-1440. It is not counted as coverage.',
+    },
     runs: [...priorRuns, thisRun],
     rule: 'Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.',
     retrieved: now.slice(0, 10),
