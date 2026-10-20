@@ -234,12 +234,21 @@ export async function enrichCcBy(records, fetchJson) {
   return enriched;
 }
 
-export function recordOf(document) {
+export function recordOf(document, { scope = 'bpl' } = {}) {
   const a = document.attributes ?? {};
   if (!Array.isArray(a.genre_basic_ssim) || !a.genre_basic_ssim.includes('Maps')) return null;
   if (!(a.type_of_resource_ssim ?? []).includes('Cartographic')) return null;
-  if (!(a.physical_location_ssim ?? []).includes('Boston Public Library')) return null;
-  if (!ALL_BPL && !(a.collection_name_ssim ?? []).some((name) => COLLECTIONS.includes(name))) return null;
+  const holders = (a.physical_location_ssim ?? []).map(plain).filter(Boolean);
+  if (scope === 'bpl') {
+    if (!(a.physical_location_ssim ?? []).includes('Boston Public Library')) return null;
+    if (!ALL_BPL && !(a.collection_name_ssim ?? []).some((name) => COLLECTIONS.includes(name))) return null;
+  } else {
+    // The consortium scope is the complement of the BPL scope: partner-held
+    // items only, with the contributing institution named in `institution`.
+    // A private collector is kept only if the record names a real institution.
+    if (!holders.length || holders.includes('Boston Public Library')) return null;
+    if (holders.every((holder) => /^private collection$/i.test(holder))) return null;
+  }
   const basis = rightsBasis(a);
   if (!basis) return null;
   const title = plain(a.title_info_primary_tsi);
@@ -253,20 +262,22 @@ export function recordOf(document) {
   const extent = extentOf(a);
   const point = pointOf(a);
   const imageService = `https://iiif.digitalcommonwealth.org/iiif/2/${imageId}`;
-  const collection = (a.collection_name_ssim ?? []).map(plain).filter(Boolean).join(' / ') || 'Norman B. Leventhal Map & Education Center Collection';
+  const providerId = scope === 'bpl' ? 'leventhal' : 'digitalcommonwealth';
+  const collection = (a.collection_name_ssim ?? []).map(plain).filter(Boolean).join(' / ') || (scope === 'bpl' ? 'Norman B. Leventhal Map & Education Center Collection' : 'Digital Commonwealth map collections');
   const creators = (a.name_tsim ?? []).map(plain).filter(Boolean);
   const evidence = rightsEvidence(a, String(id));
+  const institution = scope === 'bpl' ? 'Boston Public Library, Norman B. Leventhal Map & Education Center' : holders.join('; ');
   const record = {
-    id: `leventhal:${id}`,
+    id: `${providerId}:${id}`,
     title,
     creators,
-    providerId: 'leventhal',
-    institution: 'Boston Public Library, Norman B. Leventhal Map & Education Center',
+    providerId,
+    institution,
     rights: [plain(a.rights_ss), plain(a.license_ss)].filter(Boolean).join(' '),
     ...evidence,
     rightsBasis: basis,
     reuseAllowed: plain(a.reuse_allowed_ssi),
-    creditLine: 'Norman B. Leventhal Map & Education Center at the Boston Public Library',
+    creditLine: scope === 'bpl' ? 'Norman B. Leventhal Map & Education Center at the Boston Public Library' : holders.join('; '),
     recordUrl: `https://collections.leventhalmap.org/search/${id}`,
     viewerUrl: /^https:\/\//.test(String(a.identifier_uri_ss ?? '')) ? String(a.identifier_uri_ss) : null,
     thumbnail: `${imageService}/full/304,/0/default.jpg`,

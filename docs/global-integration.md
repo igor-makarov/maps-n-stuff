@@ -5,8 +5,9 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 16,178 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
-Library, 1,437 e-rara, 27 swisstopo and eight Library of Congress records.
+The bundle contains 17,178 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+Library, 972 Digital Commonwealth partner-held, 1,437 e-rara, 27 swisstopo and
+36 Library of Congress records.
 Stanford contributes worldwide holdings, including Africa, Asia, Europe and the
 Americas. There are 304 undated Stanford maps; dates, thumbnails, extents and
 alignment are optional. Image reuse rights are not.
