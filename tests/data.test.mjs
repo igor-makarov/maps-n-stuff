@@ -243,15 +243,41 @@ test('international catalogue refreshes preserve existing maps and never infer f
   }
 });
 
-test('every bundled Leventhal record carries its primary rights evidence without relabelling', () => {
-  const bpl = records.filter((record) => record.providerId === 'leventhal');
-  assert.equal(bpl.length, 10242, 'the complete admitted BPL scope stays bundled');
-  const ccBy = bpl.filter((record) => record.rightsBasis === 'cc-by');
+test('the metadata-reuse-unresolved scopes are withheld from the shipped catalogue', async () => {
+  const withheld = ['doria', 'leventhal', 'digitalcommonwealth'];
+  for (const providerId of withheld) {
+    assert.equal(
+      records.some((record) => record.providerId === providerId),
+      false,
+      `${providerId}: unresolved metadata-reuse scope must not be in the shipped catalogue`,
+    );
+    assert.equal(
+      recordsFile.shards.some((url) => url.endsWith(`/${providerId}.json`)),
+      false,
+      `${providerId}: shard must not be loaded`,
+    );
+    const provider = providerById.get(providerId);
+    assert.equal(provider.bundled, false, `${providerId}: registry marks the scope not bundled`);
+    assert.equal(provider.recordsBundled, 0);
+    assert.equal(provider.status, 'withheld-metadata-rights');
+    assert.equal(provider.metadataReuse.status, 'withheld');
+    assert.match(provider.metadataReuse.decision, /no primary metadata-reuse licence|not established/i);
+  }
+  // Full harvested records stay in research/ for a future cleared restoration.
+  const doria = await readJson('research/withheld/doria.json');
+  const bpl = await readJson('research/withheld/leventhal.json');
+  const partners = await readJson('research/withheld/digitalcommonwealth.json');
+  assert.equal(doria.records.length, 1662);
+  assert.equal(bpl.records.length, 10242);
+  assert.equal(partners.records.length, 972);
+  const ccBy = bpl.records.filter((record) => record.rightsBasis === 'cc-by');
   assert.equal(ccBy.length, 11);
-  for (const record of bpl) {
+  const sample = bpl.records.find((record) => record.id === 'leventhal:commonwealth:3f462s124');
+  assert.ok(sample);
+  assert.equal(sample.rightsPolicyUrl, 'https://www.digitalcommonwealth.org/copyright');
+  for (const record of bpl.records) {
     assert.equal(record.rightsStatement, record.rights.replace(record.licenseStatement ?? '', '').trim(), `${record.id}: the verbatim rights statement is preserved`);
     assert.ok(record.licenseStatement, `${record.id}: the licence statement is preserved`);
-    assert.equal(record.rightsPolicyUrl, 'https://www.digitalcommonwealth.org/copyright');
     assert.match(record.metadataSource, /^https:\/\/collections\.leventhalmap\.org\/search\/commonwealth:[a-z0-9]+\.json$/);
     if (record.rightsBasis !== 'cc-by') {
       assert.equal(record.rightsUrl, undefined, `${record.id}: a no-known-copyright record must not gain an invented licence URI`);
@@ -263,7 +289,4 @@ test('every bundled Leventhal record carries its primary rights evidence without
     assert.ok(record.attribution && record.attribution.length > 20, `${record.id}: the stated credit is retained`);
     assert.equal(record.rightsEvidenceSource, record.iiifManifest);
   }
-  const provider = providerById.get('leventhal');
-  assert.equal(provider.rightsPolicy.copyright, 'https://www.digitalcommonwealth.org/copyright');
-  assert.match(provider.rightsPolicy.metadataReuse, /does not publish a separate metadata licence/i);
 });

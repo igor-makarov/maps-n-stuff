@@ -93,7 +93,7 @@ test('GET /api/records serves the committed seed data with a cache header', asyn
   const body = await res.json();
   assert.ok(Array.isArray(body.records) && body.records.length > 0);
   assert.equal(body.records.length, committed.records.length, 'the route merges every committed shard');
-  assert.ok(body.records.some((record) => record.providerId === 'leventhal'), 'a shard provider is present');
+  assert.ok(body.records.some((record) => record.providerId === 'usgs'), 'a bundled shard provider is present');
   assert.ok(body.generatedAt);
 });
 

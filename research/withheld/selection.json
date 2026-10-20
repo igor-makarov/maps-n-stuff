@@ -1,0 +1,268 @@
+{
+ "decided": "2026-10-20",
+ "reason": "metadata-reuse licence not established",
+ "selection": {
+  "doria:maps": {
+   "source": "Doria — National Library of Finland (Kansalliskirjasto)",
+   "endpoint": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232",
+   "sets": [
+    {
+     "id": "com_10024_109232",
+     "name": "Kartat / Maps",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_109232"
+    },
+    {
+     "id": "com_10024_97216",
+     "name": "The Nordenskiöld Map Collection",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_97216"
+    },
+    {
+     "id": "com_10024_78800",
+     "name": "Maps and Atlases of Finland",
+     "discovery": "https://www.doria.fi/oai/request?verb=ListRecords&metadataPrefix=oai_dc&set=com_10024_78800"
+    }
+   ],
+   "metadataPrefixes": [
+    "oai_dc",
+    "mods",
+    "ore"
+   ],
+   "considered": 1663,
+   "kept": 1662,
+   "shard": "/data/records/doria.json",
+   "rightsBasis": {
+    "pdm": 1269,
+    "public-domain-statement": 28,
+    "cc0": 365
+   },
+   "withheld": {
+    "not typed as a map": 1
+   },
+   "rule": "Every item in Doria’s documented OAI-PMH Maps set (com_10024_109232) is a candidate. It is imported only when oai_dc type includes map, the Doria/MODS statements carry an explicit Public Domain Mark or CC0 licence URL or an explicit “Public domain” statement, no separate restrictive statement appears in either record, and ORE publishes a thumbnail plus an original bitstream. Titles, creators, publisher, language, URN and the Doria handle are retained verbatim; no date, extent, creator or rights statement is inferred.",
+   "metadataReuse": "Doria’s catalogue facts are reused with attribution and a link to every original record. The site’s public terms page (https://www.doria.fi/page/terms) was empty at retrieval, so no separate metadata licence URL is claimed; the image rights are the per-item PDM/CC0/public-domain statements recorded on each catalogue entry.",
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "originalOk": 30,
+    "recordOk": 30,
+    "examples": [
+     {
+      "id": "doria:84494",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:99099",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:87762",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:90184",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     },
+     {
+      "id": "doria:87739",
+      "thumbnail": 206,
+      "thumbnailType": "image/jpeg;charset=UTF-8",
+      "image": 206,
+      "imageType": "image/jpeg;charset=UTF-8",
+      "record": 200
+     }
+    ]
+   },
+   "retrieved": "2026-10-20"
+  },
+  "leventhal:bpl": {
+   "considered": 15233,
+   "kept": 10242,
+   "shard": "/data/records/leventhal.json",
+   "rightsBasis": {
+    "no-known-restrictions": 10231,
+    "cc-by": 11
+   },
+   "rightsEvidence": {
+    "withRightsUrl": 11,
+    "withPolicyUrl": 10242,
+    "ccByManifestEnriched": 11,
+    "ccByEvidenceFailed": 0
+   },
+   "withheld": {
+    "rights withheld: Copyright Ancient World Mapping Center, University of North Carolina at Chapel Hill": 8,
+    "partner-held (not Boston Public Library)": 4828,
+    "rights withheld: Copyright Ian L. McHarg Center for Urbanism and Ecology, University of Pennsylvania Stuart Weitzman School of Design": 1,
+    "rights withheld: Copyright (c) Carnegie Institution of Washington.": 70,
+    "rights withheld: Copyright (c) Harvard University Press.": 11,
+    "metadata gate (title, genre or IIIF identity)": 7,
+    "rights withheld: Under copyright.": 24,
+    "rights withheld: Rights status not evaluated.": 10,
+    "rights withheld: (c) Norman B. Leventhal Map & Education Center at the Boston Public Library": 7,
+    "rights withheld: Copyright (c) 1966 by Joseph R. Passonneau and Richard Saul Wurman": 1,
+    "rights withheld: Copyright (c) The Muriel G. and Norman B. Leventhal Family Foundation.": 9,
+    "rights withheld: Copyright © A.A. Knopf.": 1,
+    "rights withheld: No known copyright restrictions.": 3,
+    "rights withheld: Copyright © Simon and Schuster.": 1,
+    "rights withheld: Copyright University of Wisconsin Press.": 1,
+    "rights withheld: (c) Norman B. Leventhal Map & Education Center at the Boston Public Library.": 3,
+    "rights withheld: (c) Rajiv Raman": 1,
+    "rights withheld: (c) Crown Copyright 1975.": 1,
+    "rights withheld: Copyright Radioactive Waste Campaign.": 1,
+    "rights withheld: Copyright (c) 2008 by Institute for Infinitely Small Things": 1,
+    "rights withheld: Copyright © Time, inc.": 1,
+    "rights withheld: Copyright (c) ODT, Inc.": 1
+   },
+   "rule": "every Boston Public Library cartographic record in the Leventhal discovery feed with an affirmative reuse determination (No known copyright restrictions + No known restrictions on use + no restrictions, NoC-US, CC0, CC BY, or an explicit Public Domain statement). Partner-held items are excluded so one feed is not split into pretend institutions; rights not evaluated, contact-host, all-rights-reserved, non-commercial and permission-required records stay out.",
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "imageInfoOk": 30,
+    "examples": [
+     {
+      "id": "leventhal:commonwealth:3f462s124",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:cj82m003h",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:cj82kp493",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:wd3765045",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "leventhal:commonwealth:3f462v69p",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     }
+    ]
+   }
+  },
+  "digitalcommonwealth:partners": {
+   "considered": 15233,
+   "kept": 972,
+   "shard": "/data/records/digitalcommonwealth.json",
+   "rightsBasis": {
+    "cc0": 136,
+    "no-known-restrictions": 823,
+    "no-copyright-us": 13
+   },
+   "institutions": {
+    "Phillips Academy": 136,
+    "Lucius Beebe Memorial Library": 68,
+    "Filson Historical Society": 13,
+    "New-York Historical Society": 25,
+    "George Washington Presidential Library at Mount Vernon": 2,
+    "Massachusetts Archives": 727,
+    "National Archives and Records Administration": 1
+   },
+   "withheld": {
+    "BPL-held (owned by the Leventhal lane)": 10405,
+    "rights withheld: Newberry Library": 51,
+    "rights withheld: William L. Clements Library": 894,
+    "rights withheld: British Library": 360,
+    "rights withheld: Library of Congress Geography and Map Division": 615,
+    "rights withheld: American Antiquarian Society": 139,
+    "rights withheld: MacLean Collection Map Library": 383,
+    "rights withheld: New York Public Library": 122,
+    "rights withheld: George Washington Presidential Library at Mount Vernon": 278,
+    "rights withheld: Det Kongelige Bibliotek (Royal Danish Library)": 108,
+    "private collector without a named institution": 157,
+    "rights withheld: Phillips Academy": 105,
+    "rights withheld: Osher Map Library": 98,
+    "rights withheld: American Textile History Museum": 197,
+    "rights withheld: City of Worcester": 57,
+    "rights withheld: State Library of Massachusetts": 144,
+    "rights withheld: Massachusetts Historical Society": 17,
+    "rights withheld: Harvard Library": 24,
+    "rights withheld: Library and Archives Canada": 53,
+    "rights withheld: Boston Athenaeum": 16,
+    "rights withheld: Newport Historical Society": 14,
+    "rights withheld: Lawrence History Center": 5,
+    "rights withheld: Nevins Memorial Library": 1,
+    "rights withheld: New-York Historical Society": 1,
+    "rights withheld: Mapping Inequality": 17
+   },
+   "rule": "Every partner-held cartographic record in the digitalcommonwealth inventory whose catalogue entry carries an affirmative reuse determination (No known copyright restrictions + No known restrictions on use + no restrictions, NoC-US, CC0 or CC BY), with the contributing institution named verbatim. Boston Public Library records belong to the Leventhal lane; private collectors without a named institution, rights-not-evaluated, contact-host, all-rights-reserved, non-commercial and permission-required records stay out.",
+   "verification": {
+    "retrieved": "2026-10-20",
+    "sample": 30,
+    "thumbnailOk": 30,
+    "imageInfoOk": 30,
+    "examples": [
+     {
+      "id": "digitalcommonwealth:commonwealth:z890vr23m",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:8623mr352",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:h415x419s",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:2227ng74b",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     },
+     {
+      "id": "digitalcommonwealth:commonwealth:2227nj34s",
+      "thumbnail": 200,
+      "info": 200,
+      "thumbnailType": "image/jpeg",
+      "infoType": "application/json;charset=utf-8"
+     }
+    ]
+   }
+  }
+ }
+}
