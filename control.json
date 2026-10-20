@@ -28,7 +28,7 @@
     "iteration": 8,
     "claimedAt": "2026-10-20T12:21:29.332Z"
   },
-  "deadline": "2026-10-20T13:00:00Z",
+  "deadline": "2026-10-20T16:00:00Z",
   "seconds": 1800,
   "waitSeconds": 0,
   "nextRunAt": null,
