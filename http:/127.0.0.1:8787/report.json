@@ -1,0 +1,11 @@
+{
+  "checks": [
+    {
+      "name": "Browser run completed",
+      "ok": false,
+      "error": "Cannot navigate to invalid URL"
+    }
+  ],
+  "runtimeErrors": [],
+  "externalServices": "blocked; live endpoint checks are separate"
+}
