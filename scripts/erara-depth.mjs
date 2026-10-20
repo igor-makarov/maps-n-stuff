@@ -305,6 +305,29 @@ async function main() {
   const added = mergeRecords(recordsDoc, incoming);
   stats.kept = added.length;
   const now = new Date().toISOString();
+  const previousRule = recordsDoc.selection?.['e-rara:landkarten-depth'] ?? null;
+  const priorRuns = Array.isArray(previousRule?.runs)
+    ? previousRule.runs
+    : previousRule
+      ? [{ pagesRead: previousRule.pagesRead, added: previousRule.added ?? previousRule.addedThisRun ?? 0, retrieved: previousRule.retrieved ?? null }]
+      : [];
+  // Cumulative depth records are measurable: every one retains the OAI GetRecord
+  // metadata source this harvester writes. No previous run's counts are guessed.
+  const addedTotal = recordsDoc.records.filter(
+    (r) => r.providerId === 'e-rara' && /\/oai\?verb=GetRecord/.test(String(r.metadataSource ?? '')),
+  ).length;
+  const thisRun = {
+    pagesRead: stats.pages,
+    oaiRecords: stats.oaiRecords,
+    mapRecords: stats.maps,
+    eligibleNew: stats.eligible,
+    alreadyPresent: stats.alreadyPresent,
+    manifestAttempts: stats.manifestAttempts,
+    added: stats.kept,
+    withheldUnknownOrRestrictedRights: stats.withheld,
+    manifestErrors: stats.errors,
+    retrieved: now.slice(0, 10),
+  };
   const rule = {
     set: SET,
     endpoint: `${OAI}?verb=ListRecords&metadataPrefix=oai_dc&set=${SET}`,
@@ -316,8 +339,11 @@ async function main() {
     alreadyPresent: stats.alreadyPresent,
     manifestAttempts: stats.manifestAttempts,
     added: stats.kept,
+    addedThisRun: stats.kept,
+    addedTotal,
     withheldUnknownOrRestrictedRights: stats.withheld,
     manifestErrors: stats.errors,
+    runs: [...priorRuns, thisRun],
     rule: 'Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.',
     retrieved: now.slice(0, 10),
   };

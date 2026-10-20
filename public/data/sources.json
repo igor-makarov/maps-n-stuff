@@ -96,11 +96,11 @@
         "set": "landkarten",
         "endpoint": "https://www.e-rara.ch/oai?verb=ListRecords&metadataPrefix=oai_dc&set=landkarten",
         "manifest": "https://www.e-rara.ch/i3f/v20/{titleId}/manifest",
-        "pagesRead": 30,
-        "oaiRecords": 300,
-        "mapRecords": 300,
-        "eligibleNew": 234,
-        "alreadyPresent": 66,
+        "pagesRead": 144,
+        "oaiRecords": 1440,
+        "mapRecords": 1440,
+        "eligibleNew": 1153,
+        "alreadyPresent": 287,
         "manifestAttempts": 180,
         "added": 180,
         "withheldUnknownOrRestrictedRights": 0,
@@ -110,11 +110,33 @@
         "licence": "PDM 1.0 per item (https://creativecommons.org/publicdomain/mark/1.0/); e-rara terms https://www.e-rara.ch/terms",
         "attribution": "e-rara.ch and the stated holding library",
         "verificationExample": {
-          "id": "e-rara:6484242",
-          "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-20668",
-          "iiifManifest": "https://www.e-rara.ch/i3f/v20/6484242/manifest",
-          "thumbnail": "https://www.e-rara.ch/i3f/v21/6484245/full/304/0/default.jpg"
-        }
+          "id": "e-rara:8602386",
+          "recordUrl": "https://www.e-rara.ch/doi/10.3931/e-rara-26716",
+          "iiifManifest": "https://www.e-rara.ch/i3f/v20/8602386/manifest",
+          "thumbnail": "https://www.e-rara.ch/i3f/v21/8602388/full/304/0/default.jpg"
+        },
+        "addedThisRun": 180,
+        "addedTotal": 360,
+        "runs": [
+          {
+            "pagesRead": 30,
+            "added": 180,
+            "retrieved": "2026-10-20",
+            "note": "first slice (pages 1-30); see coordination/sources-20261020-2.md"
+          },
+          {
+            "pagesRead": 144,
+            "oaiRecords": 1440,
+            "mapRecords": 1440,
+            "eligibleNew": 1153,
+            "alreadyPresent": 287,
+            "manifestAttempts": 180,
+            "added": 180,
+            "withheldUnknownOrRestrictedRights": 0,
+            "manifestErrors": 0,
+            "retrieved": "2026-10-20"
+          }
+        ]
       }
     },
     {
@@ -312,5 +334,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T09:23:01.975Z"
+  "generatedAt": "2026-10-20T09:49:28.517Z"
 }
