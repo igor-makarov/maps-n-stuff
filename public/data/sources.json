@@ -243,7 +243,7 @@
         "ark.digitalcommonwealth.org",
         "iiif.digitalcommonwealth.org"
       ],
-      "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages), filtered to Boston Public Library holdings in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections, with per-record rights evidence; no decade, geography or record-count cap.",
+      "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over every Boston Public Library-held cartographic record, with per-record rights evidence; no decade, geography, collection or record-count cap.",
       "collections": [
         {
           "id": "boston-new-england",
@@ -273,35 +273,35 @@
         "imageInfoOk": 30,
         "examples": [
           {
-            "id": "leventhal:commonwealth:3x81cq09n",
+            "id": "leventhal:commonwealth:3f462s124",
             "thumbnail": 200,
             "info": 200,
             "thumbnailType": "image/jpeg",
             "infoType": "application/json;charset=utf-8"
           },
           {
-            "id": "leventhal:commonwealth:kk91fq194",
+            "id": "leventhal:commonwealth:cj82m003h",
             "thumbnail": 200,
             "info": 200,
             "thumbnailType": "image/jpeg",
             "infoType": "application/json;charset=utf-8"
           },
           {
-            "id": "leventhal:commonwealth:q524n545g",
+            "id": "leventhal:commonwealth:cj82kp493",
             "thumbnail": 200,
             "info": 200,
             "thumbnailType": "image/jpeg",
             "infoType": "application/json;charset=utf-8"
           },
           {
-            "id": "leventhal:commonwealth:wd376804s",
+            "id": "leventhal:commonwealth:wd3765045",
             "thumbnail": 200,
             "info": 200,
             "thumbnailType": "image/jpeg",
             "infoType": "application/json;charset=utf-8"
           },
           {
-            "id": "leventhal:commonwealth:6t053p42q",
+            "id": "leventhal:commonwealth:3f462v69p",
             "thumbnail": 200,
             "info": 200,
             "thumbnailType": "image/jpeg",
@@ -312,5 +312,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T09:34:31.781Z"
+  "generatedAt": "2026-10-20T09:37:28.511Z"
 }

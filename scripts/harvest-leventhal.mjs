@@ -19,6 +19,7 @@
  *
  * Usage:
  *   node scripts/harvest-leventhal.mjs                 # cached, writes public/data
+ *   node scripts/harvest-leventhal.mjs --all-bpl       # every BPL-held eligible record
  *   node scripts/harvest-leventhal.mjs --refresh       # re-fetch all pages
  *   node scripts/harvest-leventhal.mjs --no-write      # report only
  */
@@ -373,7 +374,9 @@ async function main() {
     },
     apiHosts: ['collections.leventhalmap.org', 'ark.digitalcommonwealth.org', 'iiif.digitalcommonwealth.org'],
     method:
-      'Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages), filtered to Boston Public Library holdings in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections, with per-record rights evidence; no decade, geography or record-count cap.',
+      (ALL_BPL
+        ? 'Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages) over every Boston Public Library-held cartographic record, with per-record rights evidence; no decade, geography, collection or record-count cap.'
+        : 'Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages), filtered to Boston Public Library holdings in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections, with per-record rights evidence; no decade, geography or record-count cap.'),
     collections: [
       { id: 'boston-new-england', name: 'Boston and New England Maps', discovery: 'https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Boston+and+New+England+Maps' },
       { id: 'revolutionary-war', name: 'American Revolutionary War-Era Maps', discovery: 'https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=American+Revolutionary+War-Era+Maps' },
