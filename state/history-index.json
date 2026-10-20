@@ -55,5 +55,14 @@
     "minEntryId": 7,
     "maxEntryId": 561,
     "transcript": "complete"
+  },
+  {
+    "id": "1-7",
+    "outcome": "yielded",
+    "runId": "39417248403",
+    "journalId": "1-7",
+    "minEntryId": 7,
+    "maxEntryId": 399,
+    "transcript": "complete"
   }
 ]
