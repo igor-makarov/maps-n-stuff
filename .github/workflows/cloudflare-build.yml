@@ -4,10 +4,6 @@ on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
-  # Verify the hook on setup; removed after the first successful invocation.
-  push:
-    branches: [main]
-    paths: [.github/workflows/cloudflare-build.yml]
 
 permissions: {}
 
