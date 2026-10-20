@@ -5,17 +5,18 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 17,868 records: 4,464 Stanford, 1,437 e-rara, 27 swisstopo,
-36 Library of Congress (verified partial civil-war-maps slice), 10,242 Leventhal
-/ Boston Public Library and 1,662 Doria / National Library of Finland maps.
-Stanford contributes worldwide holdings, including Africa, Asia, Europe and the Americas; Doria adds the
-Nordenskiöld and Finnish national map collections. There are 304 undated
+The bundle contains 18,840 records: 4,464 Stanford, 1,437 e-rara, 27 swisstopo,
+36 Library of Congress (verified partial civil-war-maps slice), 10,242 Leventhal /
+Boston Public Library, 972 rights-cleared partner-held Digital Commonwealth maps
+and 1,662 Doria / National Library of Finland maps. Stanford contributes
+worldwide holdings, including Africa, Asia, Europe and the Americas; Doria adds
+the Nordenskiöld and Finnish national map collections. There are 304 undated
 Stanford maps; dates, thumbnails, extents and alignment are optional. Image reuse rights are not.
 
 The bundled providers are published either in the core document or in one of the
-registered shards (`/data/records/leventhal.json`, `/data/records/loc.json`,
-`/data/records/doria.json`).
-The browser loader and the Worker merge them; a failed shard is reported without
+registered shards (`/data/records/leventhal.json`,
+`/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
+`/data/records/doria.json`). The browser loader and the Worker merge them; a failed shard is reported without
 discarding the rest of the catalogue. USGS remains a live-search adapter only and
 has no bundled records in this count.
 The importer reads all 27,783 metadata files at Stanford's institutional

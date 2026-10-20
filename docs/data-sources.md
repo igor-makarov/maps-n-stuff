@@ -3,14 +3,16 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **17,868
-records** from seven providers: 4,464 Stanford public-domain maps, 1,437 e-rara
+[global integration notes](global-integration.md). The bundle contains **18,840
+records** from eight providers: 4,464 Stanford public-domain maps, 1,437 e-rara
 maps, 27 swisstopo overlays, 36 Library of Congress records, 10,242 Leventhal /
-Boston Public Library maps and **1,662 Doria / National Library of Finland
-maps**. The Library of Congress slice is a verified partial import
-(civil-war-maps scope), not the whole institution. It retains **117 native
-georeferenced rasters**, five historical/aerial layers and 54 historical-border snapshots. USGS remains a registered live-search
-provider without bundled records; that registration does not claim coverage.
+Boston Public Library maps, 972 rights-cleared partner-held Digital Commonwealth
+maps and **1,662 Doria / National Library of Finland maps**. The Library of
+Congress slice is a verified partial import (civil-war-maps scope), not the whole
+institution. It retains **117 native georeferenced rasters**, five
+historical/aerial layers and 54 historical-border snapshots. USGS remains a
+registered live-search provider without bundled records; that registration does
+not claim coverage.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -531,7 +533,6 @@ inventory is `q=&per_page=100&page=N&f%5Bgenre_basic_ssim%5D%5B%5D=Maps`
 (15,233 records in 153 pages on 2026-10-20). The importer is
 `scripts/harvest-leventhal.mjs` (cached pages, resumable, no dependencies).
 
-
 Imported scope: every Boston Public Library record in the complete **Boston and
 New England Maps**, **American Revolutionary War-Era Maps**, **Maritime Charts
 and Atlases** and **Urban Maps** collections whose catalogue entry carries an
@@ -571,7 +572,6 @@ sample verified on 2026-10-20 returned 30/30 HTTP 200 thumbnails and 30/30
 `info.json` responses; the full sample is recorded under the provider's
 `verification` field in `public/data/sources.json`.
 
-
 The metadata endpoints are documented at
 `https://www.digitalcommonwealth.org/api`. The JSON search and item views are
 publicly readable, but Digital Commonwealth publishes no separate metadata
@@ -587,3 +587,32 @@ partner-held records in the same discovery feed remain excluded, and 163
 BPL-held records are withheld by the rights/metadata gate; none is counted as
 coverage. The shard is 16.73 MiB and the core is 9.57 MiB, both below
 Cloudflare's per-asset limit; the loader merges shards at runtime.
+
+## Digital Commonwealth partner collections (imported 2026-10-20)
+
+Digital Commonwealth is the Massachusetts statewide digital-library service
+operated by the Boston Public Library; its documented JSON/IIIF API is the same
+one used by the Leventhal lane. This separate lane imports the **partner-held**
+cartographic records that are outside BPL's own scope and names the contributing
+institution on every record: **972 maps** from seven institutions — Massachusetts
+Archives (727), Phillips Academy (136), Lucius Beebe Memorial Library (68),
+New-York Historical Society (25), Filson Historical Society (13), George
+Washington Presidential Library at Mount Vernon (2) and the National Archives and
+Records Administration (1). Publication years span 1540–2000. The shard is
+`public/data/records/digitalcommonwealth.json` (1.53 MiB).
+
+Rights are read per record from the contributing institution's catalogue entry
+with the Leventhal rights gate: 823 no-known-copyright + no-restrictions-on-use,
+136 CC0 (Phillips Academy) and 13 NoC-US. Non-commercial CC licences,
+rights-not-evaluated, contact-host, permission-required and all-rights-reserved
+records are excluded; 157 records held by a private collector with no named
+institution are also excluded rather than presented as an institution. Every
+record keeps its verbatim rights/licence statement, policy URL, per-item
+metadata URL and credit line. A deterministic 30-record sample (2026-10-20)
+returned **30/30** thumbnail and **30/30** IIIF `info.json` HTTP 200 responses.
+Example: `digitalcommonwealth:commonwealth:2227nq92q` (Massachusetts Archives).
+
+The 4,828 partner-held records are *not* all imported: only the 972 with an
+affirmative rights determination are; the rest remain visible research scope and
+are not counted as coverage. This is one consortium provider with real holding
+institutions, not an inflation of the provider count by splitting a feed.
