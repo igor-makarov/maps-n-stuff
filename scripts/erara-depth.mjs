@@ -176,6 +176,10 @@ export function recordFromManifest(manifest, candidate, { collection = 'e-rara â
       lon: Number(((rounded.west + rounded.east) / 2).toFixed(5)),
     };
   }
+  if (!record.extent) {
+    record.geoNote =
+      'The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.';
+  }
   if (imageService) record.imageService = imageService;
   if (shelfmark) record.shelfmark = shelfmark;
   if (canvases.length) record.canvasCount = canvases.length;

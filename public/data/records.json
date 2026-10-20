@@ -378254,7 +378254,8 @@
       "imprint": "Zürich : E. Wagner, [189-]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:6484259",
@@ -378932,7 +378933,8 @@
       "imprint": "Zürich : Orell Füssli, [18--]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:6497188",
@@ -379228,7 +379230,8 @@
       "languages": [
         "German",
         "French"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:6507673",
@@ -379294,7 +379297,8 @@
       "imprint": "[Luzern] : [Meyer], [1828]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:6507695",
@@ -380195,7 +380199,8 @@
       "imprint": "Zürich : Orell, Füssli & Cp., [1822]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:6692682",
@@ -381187,7 +381192,8 @@
       "imprint": "[Winterthur] : [Wurster, Randegger], [1887]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:7136981",
@@ -384678,7 +384684,8 @@
       "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1890]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:8602279",
@@ -384706,7 +384713,8 @@
       "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1891]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:8602284",
@@ -384734,7 +384742,8 @@
       "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [1890]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:8602289",
@@ -384914,7 +384923,8 @@
       "imprint": "[Zürich] : [Verlag nicht ermittelbar], [1776]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:8602330",
@@ -384942,7 +384952,8 @@
       "imprint": "[Zürich] : [Verlag nicht ermittelbar], [1776]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     },
     {
       "id": "e-rara:8602335",
@@ -384970,7 +384981,8 @@
       "imprint": "[Erscheinungsort nicht ermittelbar] : [Verlag nicht ermittelbar], [zwischen 1800 und 1810?]",
       "languages": [
         "German"
-      ]
+      ],
+      "geoNote": "The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred."
     }
   ]
 }
