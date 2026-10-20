@@ -141,24 +141,40 @@ function metaMap(manifest) {
  */
 export function recordFromManifest(manifest, candidate, { collection = 'e-rara â€” historical maps' } = {}) {
   const meta = metaMap(manifest);
-  const rights = String(candidate.rights || manifest.license || manifest.rights || '').trim();
+  const oaiRights = String(candidate.rights ?? '').trim();
+  const manifestRights = String(manifest.license || manifest.rights || '').trim();
+  // Both statements must pass the gate: selecting the first non-empty one would
+  // hide a restrictive statement from the other source. Two different open
+  // statements (PDM vs CC0) are compatible; one open plus one unknown is not.
+  if (oaiRights && !eligibleRights(oaiRights)) return { record: null, reason: `OAI image rights are not explicit public domain: "${oaiRights}"` };
+  if (manifestRights && !eligibleRights(manifestRights)) return { record: null, reason: `manifest image rights are not explicit public domain: "${manifestRights}"` };
+  const rights = oaiRights || manifestRights;
   if (!eligibleRights(rights)) return { record: null, reason: 'image rights are not an explicit PDM/CC0/public-domain statement' };
   const title = String(manifest.label || candidate.title || meta.Titel || '').trim();
   if (!title) return { record: null, reason: 'no title stated by the manifest' };
   const id = String(candidate.titleId || '');
   if (!/^\d+$/.test(id)) return { record: null, reason: 'no e-rara title id in the OAI record' };
-  const thumb = manifest.thumbnail?.['@id'];
-  if (!/^https:\/\/www\.e-rara\.ch\/i3f\//.test(String(thumb ?? ''))) return { record: null, reason: 'no e-rara IIIF thumbnail in the manifest' };
   const institutionField = String(meta['Besitzende Institution'] ?? '').trim();
   const institution = institutionField.replace(/\s*,.*$/, '').trim();
   const shelfmark = institutionField.includes(',') ? institutionField.slice(institutionField.indexOf(',') + 1).trim() : '';
   const corpus = (candidate.setSpecs ?? []).find((s) => CORPUS_INSTITUTION[s]) ?? null;
   const attributed = institution || (corpus ? CORPUS_INSTITUTION[corpus] : '');
   if (!attributed) return { record: null, reason: 'no holding library stated by the manifest or the OAI corpus' };
+  // A stable institutional item URL is always available from the corpus and
+  // title id; a DOI is only used when the OAI record actually states one. Never
+  // synthesise a DOI from a title id â€” they are different identifiers.
+  let recordUrl = candidate.doi || null;
+  if (!recordUrl && corpus) recordUrl = `https://www.e-rara.ch/${corpus}/content/titleinfo/${id}`;
+  if (!/^https:\/\//.test(String(recordUrl ?? ''))) return { record: null, reason: 'no stable institutional record URL stated' };
   const year = candidate.year ?? parseYear(meta.Impressum);
   const bbox = parseBbox(meta.Kartendaten);
   const canvases = manifest.sequences?.[0]?.canvases ?? manifest.items ?? [];
   const imageService = canvases[0]?.images?.[0]?.resource?.service?.['@id'] ?? null;
+  // A missing thumbnail is not a reason to drop an eligible scan: derive the
+  // IIIF thumbnail from the item's own image service when the manifest omits it.
+  const thumb = manifest.thumbnail?.['@id']
+    || (imageService ? `${String(imageService).replace(/\/$/, '')}/full/304/0/default.jpg` : null);
+  if (!/^https:\/\/www\.e-rara\.ch\/i3f\//.test(String(thumb ?? ''))) return { record: null, reason: 'no e-rara IIIF preview or image service in the manifest' };
   const record = {
     id: `e-rara:${id}`,
     title,
@@ -170,7 +186,7 @@ export function recordFromManifest(manifest, candidate, { collection = 'e-rara â
     providerId: 'e-rara',
     institution: attributed,
     rights,
-    recordUrl: candidate.doi || `https://www.e-rara.ch/doi/10.3931/e-rara-${id}`,
+    recordUrl,
     thumbnail: thumb,
     iiifManifest: `https://www.e-rara.ch/i3f/v20/${id}/manifest`,
     type: 'map',
@@ -189,6 +205,7 @@ export function recordFromManifest(manifest, candidate, { collection = 'e-rara â
     record.geoNote =
       'The e-rara manifest does not state a map extent for this sheet; no place anchor or boundary is inferred.';
   }
+  if (manifestRights && manifestRights !== rights) record.manifestRights = manifestRights;
   if (imageService) record.imageService = imageService;
   if (shelfmark) record.shelfmark = shelfmark;
   if (canvases.length) record.canvasCount = canvases.length;

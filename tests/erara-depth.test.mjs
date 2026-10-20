@@ -85,3 +85,31 @@ test('rewrites the cursor of an e-rara resumption token without touching its opa
   assert.match(moved, /cursor_p_3D1440_p_26set_p_3Dlandkarten/);
   assert.equal(cursorToken('opaque-without-cursor', 10), null);
 });
+
+test('does not hide a restrictive statement behind an open one', () => {
+  const candidate = parseOaiRecord(oai);
+  const restricted = recordFromManifest({ ...manifest, license: 'All rights reserved' }, candidate);
+  assert.equal(restricted.record, null);
+  assert.match(restricted.reason, /manifest image rights/);
+  const openBoth = recordFromManifest({ ...manifest, license: 'https://creativecommons.org/publicdomain/zero/1.0/' }, candidate);
+  assert.equal(openBoth.record.rights, 'PDM 1.0');
+  assert.match(openBoth.record.manifestRights, /zero\/1\.0/);
+});
+
+test('never synthesises a DOI from a title id', () => {
+  const noDoi = { ...parseOaiRecord(oai), doi: null };
+  const { record } = recordFromManifest(manifest, noDoi);
+  assert.equal(record.recordUrl, 'https://www.e-rara.ch/zut/content/titleinfo/6484199');
+  assert.doesNotMatch(record.recordUrl, /doi\.org/);
+});
+
+test('derives an IIIF thumbnail from the image service when the manifest omits one', () => {
+  const { record } = recordFromManifest({ ...manifest, thumbnail: undefined }, parseOaiRecord(oai));
+  assert.equal(record.thumbnail, 'https://www.e-rara.ch/i3f/v20/6484201/full/304/0/default.jpg');
+  const noImage = recordFromManifest(
+    { ...manifest, thumbnail: undefined, sequences: [] },
+    parseOaiRecord(oai),
+  );
+  assert.equal(noImage.record, null);
+  assert.match(noImage.reason, /preview or image service/);
+});
