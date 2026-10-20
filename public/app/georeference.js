@@ -101,11 +101,40 @@ export function init(ctx) {
     const show = event.target.closest("[data-show-raster]");
     if (show) {
       const record = ctx.data.recordIndex.get(show.dataset.showRaster);
-      const layer = ctx.data.overlays.find(
+      let layer = ctx.data.overlays.find(
         (value) => value.recordId === record?.id,
       );
+      // A bundled native raster need not be pre-listed in overlays.json:
+      // build the layer from the record's own provider-supplied georeference.
+      if (
+        !layer &&
+        record?.georeference?.kind === "cog" &&
+        record.georeference.url
+      ) {
+        layer = {
+          id: `cog-${record.id.replace(/[^a-z0-9-]+/gi, "-")}`,
+          kind: "cog",
+          providerId: record.providerId,
+          title: record.title,
+          recordId: record.id,
+          url: record.georeference.url,
+          extent: record.extent ?? null,
+          attribution: record.institution,
+          license: record.rights,
+          historical: true,
+          timeValues: [],
+          ...(record.depictedYearStart
+            ? { mapYear: record.depictedYearStart }
+            : {}),
+        };
+        ctx.data.overlays.push(layer);
+      }
       if (layer) {
         ctx.store.update({ overlay: layer.id, otime: "" });
+        // The map and this module listen to the bus, not to the URL store;
+        // without this event the “Overlay this georeferenced map” button
+        // changed the URL but left the canvas hidden until a page reload.
+        ctx.bus.emit("overlay:changed", { layer, time: "current" });
         fit(layer);
       }
       return;

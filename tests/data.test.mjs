@@ -40,6 +40,8 @@ const REGISTRY_HOSTS = new Set([
   'collections.leventhalmap.org',
   'ark.digitalcommonwealth.org',
   'iiif.digitalcommonwealth.org',
+  'www.sciencebase.gov',
+  'prd-tnm.s3.amazonaws.com',
   'api3.geo.admin.ch',
   'wmts.geo.admin.ch',
   'data.geo.admin.ch',

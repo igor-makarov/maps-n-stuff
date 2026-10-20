@@ -155,6 +155,12 @@ try {
   await check('Raster opacity supports a fully transparent overlay', `document.querySelector('.map-raster').style.opacity==='0'`);
   await evaluate(`window.fetch=window.originalRasterFetch`);
   await go();
+  await check('A bundled USGS record keeps its original GeoTIFF georeference', `(async()=>{ const ctx=${atlas}; const r=ctx.data.records.find(v=>v.providerId==='usgs'&&v.georeference?.kind==='cog'); return !!r && r.georeference.url.includes('prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/GeoTIFF/') && r.georeference.status==='provider-supplied' && r.downloads?.some(d=>d.label==='GeoTIFF'); })()`);
+  await evaluate(`(async()=>{ const ctx=${atlas}; const r=ctx.data.records.find(v=>v.providerId==='usgs'&&v.georeference?.kind==='cog'); ctx.store.update({selected:r.id}); })()`);
+  await waitFor(`!document.querySelector('#detail').hidden && document.querySelector('#detail [data-show-raster]')`);
+  await evaluate(`document.querySelector('#detail [data-show-raster]').click()`);
+  await check('USGS GeoTIFF opens from the record without a fabricated overlay entry', `(async()=>{ const ctx=${atlas}; const s=ctx.store.getState(); const layer=ctx.data.overlays.find(v=>v.id===s.overlay); return !!layer && layer.kind==='cog' && layer.recordId.startsWith('usgs:') && layer.url.includes('prd-tnm.s3.amazonaws.com') && document.querySelector('.map-raster').hidden===false; })()`);
+  await go();
   await evaluate(`(async()=>{window.catalogueSizeBefore=(${atlas}).data.records.length;})()`);
   await evaluate(`window.originalCollectionFetch=window.fetch;window.fetch=async(input,init)=>String(input).includes('/api/catalogue?')?Response.json({records:[{id:'leventhal:commonwealth:fixture123',providerId:'leventhal',title:'Harbour plan',yearStart:1200,yearEnd:1200,creators:[],institution:'Fixture library',rights:'This work is in the public domain.',recordUrl:'https://collections.leventhalmap.org/search/commonwealth:fixture123',thumbnail:null,type:'map',collection:'Fixture collection',extent:null,geoNote:'Synthetic adapter test, not an imported map.'}],withheld:1,nextPage:null}):window.originalCollectionFetch(input,init);document.querySelector('#collection-source').value='leventhal';document.querySelector('#collection-query').value='Fixture Boston';document.querySelector('#collection-search').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));`);
   await waitFor(`document.querySelector('[data-record-id="leventhal:commonwealth:fixture123"]')`);

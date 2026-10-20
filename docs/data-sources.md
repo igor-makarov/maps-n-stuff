@@ -3,16 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **19,826
-records** from eight providers: 4,464 Stanford public-domain maps, 2,410 e-rara
-maps, 27 swisstopo overlays, 49 Library of Congress records, 10,242 Leventhal /
-Boston Public Library maps, 972 rights-cleared partner-held Digital Commonwealth
-maps and **1,662 Doria / National Library of Finland maps**. The Library of
-Congress slice is a verified partial import (civil-war-maps scope), not the whole
-institution. It retains **117 native georeferenced rasters**, five
-historical/aerial layers and 54 historical-border snapshots. USGS remains a
-registered live-search provider without bundled records; that registration does
-not claim coverage.
+[global integration notes](global-integration.md). The bundle contains **25,776
+records** from eight providers: 4,464 Stanford public-domain maps, 10,242 Boston
+Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
+5,950 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
+Library of Finland maps, 2,410 e-rara maps, 27 swisstopo and 49 Library of
+Congress records. The Library of Congress and USGS slices are verified partial
+imports, not the whole institutions; both record their resumable cursors. There
+are **117 native Stanford COGs plus 5,950 USGS GeoTIFF records**; the USGS
+raster sample (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
+renderer) is representative, not a claim that every one of the 5,950 was
+individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -448,6 +449,72 @@ Honesty rules the view enforces (all covered by `tests/history-borders.test.mjs`
 
 Refresh: `npm run harvest:history` (network) or `npm run harvest:history:offline`
 (cache). `scripts/validate.mjs` is the build gate over the bundle.
+
+## 5. USGS Historical Topographic Map Collection (imported 2026-10-20)
+
+| Field | Value |
+| --- | --- |
+| Provider record | <https://www.usgs.gov/programs/national-geospatial-program/historical-topographic-maps-preserving-past> |
+| Catalogue item | the API's `metaUrl`, e.g. <https://www.sciencebase.gov/catalog/item/5a8a27e9e4b00f54eb3c4854> |
+| Discovery API | `https://tnmaccess.nationalmap.gov/api/v1/products?datasets=Historical%20Topographic%20Maps&max=1000&offset=<n>&outputFormat=JSON` (documented at <https://tnmaccess.nationalmap.gov/api/v1/docs>) |
+| Identifiers | API `sourceId` (stable ScienceBase id) → `usgs:<sourceId>` |
+| Original raster | `urls.GeoTIFF` on `prd-tnm.s3.amazonaws.com`, e.g. `.../HistoricalTopo/GeoTIFF/TN/TN_Morristown_153457_1883_125000_geo.tif`; tiled GeoTIFF with 8 internal images (main + overviews) in the sampled products |
+| Original PDF | `urls.GeoPDF`; retained as a download, not used for the overlay |
+| Thumbnail | `previewGraphicURL` (`_tn.jpg` on the same host) |
+| Rights | USGS: “USGS-authored or produced data and information are considered to be in the U.S. Public Domain.” <https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits> (retrieved 2026-10-20; the FAQ URL returns 403 to non-browser clients, the copyrights page is the primary policy used) |
+| Attribution | “U.S. Geological Survey” |
+| Publication dates | 1883–1994 in the bundled slice, 52 state/territory codes, scales 1:10,000, 1:12,000, 1:100,000 and 1:125,000 |
+
+The TNM API returns about **186,061** HTMC products. The bundle imports a
+reproducible prefix of 5,950 products (six 1,000-product pages; 50 products had
+no delivered GeoTIFF and were withheld) so the merged catalogue still loads in
+the browser. `records.json.selection["usgs:htmc"].resumable.nextOffset` records
+where the next run continues:
+
+```
+node scripts/harvest-usgs.mjs --pages 6
+node scripts/harvest-usgs.mjs --start-offset 6000 --pages 6
+```
+
+Each record keeps the product title, publication date (never the depicted
+period), USGS footprint and the original GeoTIFF URL. Date evidence: every
+bundled title ends in a single edition year and that year equals the API
+`publicationDate` for all 5,950 records (`titleEditionYearMismatches: 0` in the
+selection), so the field is not a hidden digital-upload date; no depicted or
+survey date is inferred. The GeoTIFF is labelled
+`georeference.kind = "cog"` with `status = "provider-supplied"` because the
+product carries its own tiled pixel georeferencing; the catalogue bounding box
+is **not** used as an image transform. The Worker's `/api/raster` now accepts
+only the public HTMC staging prefix in addition to Stanford COGs, still
+requiring a bounded byte range and rejecting redirects. This exposed and fixed
+three pre-existing defects in the native-raster path: Workerd rejects
+`redirect: "error"` (now `manual` plus an explicit 3xx rejection); the
+“Overlay this georeferenced map” button updated the URL but never emitted
+`overlay:changed` until reload; and USGS user-defined projections
+(`ProjectedCSTypeGeoKey = 32767`) failed CRS conversion because the converter
+saw both a placeholder projected code and the geographic datum. The CRS fix
+keeps the geographic datum and drops only the 32767 placeholder. Regression
+tests cover all three.
+
+Live verification on 2026-10-20: 8/8 sampled previews returned 206
+`image/jpeg`, 8/8 GeoTIFF range reads returned 206 `image/tiff` with TIFF magic
+and a truthful `Content-Range`, and 8/8 were parsed by `geotiff.js` with 8
+images and GeoKeys (`GTModelTypeGeoKey = 1`, user-defined projected CRS 32767
+with geographic CRS 4267 in the sample). All eight passed the browser
+renderer's own `rasterProjection()` conversion, not just TIFF-tag parsing; a
+real end-to-end browser render of the Morristown sheet through
+`/api/raster` reached “Provider-supplied georeferencing”. A representative
+example:
+`usgs:5a8a27e9e4b00f54eb3c4854` — “USGS 1:125000-scale Quadrangle for
+Morristown, TN 1883”. Live `/api/catalogue?source=usgs` search was also verified
+through the local Worker (2453 products for a Tennessee/North Carolina bbox,
+12/12 records admitted with thumbnails and GeoTIFF georeferences). The upstream
+TNM query is slow (about 17–29 s for a cold bbox query); the Worker timeout is
+30 s, results are edge-cached for 10 minutes, and the bundled catalogue remains
+usable when the upstream is unavailable.
+
+The 186,061 total is not claimed as bundled coverage. The remaining products
+stay reachable through the live USGS search and through the recorded cursor.
 
 ## Fetching policy (politeness, caching, failure behaviour)
 

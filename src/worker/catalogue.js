@@ -213,8 +213,17 @@ export function usgsRecord(item) {
       label: "Original map files",
       url: item.downloadURL,
     });
+  const geotiff = https(item.urls?.GeoTIFF, ["prd-tnm.s3.amazonaws.com"]);
+  if (geotiff)
+    record.georeference = {
+      kind: "cog",
+      url: geotiff,
+      source,
+      status: "provider-supplied",
+      format: "GeoTIFF",
+    };
   record.geoNote =
-    "The USGS Historical Topographic Map Collection supplies georeferenced products. The catalogue footprint is not used as an image transform; download the original product to inspect its georeferencing.";
+    "Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.";
   return record;
 }
 export const LIVE_PROVIDERS = [
@@ -253,7 +262,7 @@ export const LIVE_PROVIDERS = [
 async function get(url) {
   const response = await fetch(url, {
     headers: { accept: "application/json", "user-agent": USER_AGENT },
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(30000),
   });
   if (!response.ok)
     throw new Error(`Collection returned HTTP ${response.status}`);

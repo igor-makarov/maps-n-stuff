@@ -6,7 +6,6 @@ export function rasterUrl(value) {
     const url = new URL(value);
     if (
       url.protocol !== "https:" ||
-      url.hostname !== "stacks.stanford.edu" ||
       url.port ||
       url.username ||
       url.password ||
@@ -14,11 +13,27 @@ export function rasterUrl(value) {
       url.hash
     )
       return null;
-    return /^\/file\/druid:[a-z]{2}\d{3}[a-z]{2}\d{4}\/[^/]{1,200}_cog\.tif$/i.test(
-      url.pathname,
+    if (
+      url.hostname === "stacks.stanford.edu" &&
+      /^\/file\/druid:[a-z]{2}\d{3}[a-z]{2}\d{4}\/[^/]{1,200}_cog\.tif$/i.test(
+        url.pathname,
+      )
     )
-      ? url
-      : null;
+      return url;
+    // USGS Historical Topographic Map Collection GeoTIFFs: only the public
+    // HTMC staging prefix, with no traversal and a .tif suffix. The same
+    // bounded range contract applies; nothing here is a general file proxy.
+    const usgs = decodeURIComponent(url.pathname);
+    if (
+      url.hostname === "prd-tnm.s3.amazonaws.com" &&
+      /^\/StagedProducts\/Maps\/HistoricalTopo\/GeoTIFF\/[^/]+(?:\/[^/]+)*\.tif$/i.test(
+        usgs,
+      ) &&
+      !usgs.includes("..") &&
+      !usgs.includes("//")
+    )
+      return url;
+    return null;
   } catch {
     return null;
   }
@@ -51,15 +66,33 @@ export async function rasterResponse(request, ctx) {
   const hit =
     request.method === "HEAD" ? null : await caches.default.match(key);
   if (hit) return new Response(hit.body, { status: 206, headers: hit.headers });
-  const upstream = await fetch(target.href, {
-    method: request.method === "HEAD" ? "HEAD" : "GET",
-    redirect: "error",
-    headers: {
-      "user-agent": USER_AGENT,
-      ...(range ? { range: `bytes=${range.start}-${range.end}` } : {}),
-    },
-    signal: AbortSignal.timeout(15000),
-  });
+  let upstream;
+  try {
+    upstream = await fetch(target.href, {
+      method: request.method === "HEAD" ? "HEAD" : "GET",
+      // The Workers fetch implementation does not implement `error`; `manual`
+      // plus an explicit 3xx rejection preserves the "never follow a redirect"
+      // rule for this narrow file proxy.
+      redirect: "manual",
+      headers: {
+        "user-agent": USER_AGENT,
+        ...(range ? { range: `bytes=${range.start}-${range.end}` } : {}),
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    return Response.json(
+      { error: "raster_source_unavailable" },
+      { status: 502 },
+    );
+  }
+  if (upstream.status >= 300 && upstream.status < 400) {
+    await upstream.body?.cancel();
+    return Response.json(
+      { error: "raster_redirect_not_allowed" },
+      { status: 502 },
+    );
+  }
   if (request.method !== "HEAD" && upstream.status !== 206) {
     await upstream.body?.cancel();
     return Response.json(

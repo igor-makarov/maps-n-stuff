@@ -5,20 +5,21 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 19,826 records: 4,464 Stanford, 2,410 e-rara, 27 swisstopo,
-49 Library of Congress (verified partial civil-war-maps slice), 10,242 Leventhal /
-Boston Public Library, 972 rights-cleared partner-held Digital Commonwealth maps
-and 1,662 Doria / National Library of Finland maps. Stanford contributes
-worldwide holdings, including Africa, Asia, Europe and the Americas; Doria adds
-the Nordenskiöld and Finnish national map collections. There are 304 undated
-Stanford maps; dates, thumbnails, extents and alignment are optional. Image reuse rights are not.
+The bundle contains 25,776 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+Library, 972 Digital Commonwealth partner-held, 5,950 USGS Historical
+Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
+2,410 e-rara, 27 swisstopo and 49 Library of Congress records. Stanford and
+Doria contribute worldwide holdings; USGS adds public-domain coverage of the
+United States and its territories. Dates, thumbnails, extents and alignment are
+optional. Image reuse rights are not.
 
 The bundled providers are published either in the core document or in one of the
 registered shards (`/data/records/leventhal.json`,
 `/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
-`/data/records/doria.json`). The browser loader and the Worker merge them; a failed shard is reported without
-discarding the rest of the catalogue. USGS remains a live-search adapter only and
-has no bundled records in this count.
+`/data/records/doria.json`, `/data/records/usgs.json`). The browser loader and
+the Worker merge them; a failed shard is reported without discarding the rest of
+the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
+feed; the full feed remains available through live search.
 The importer reads all 27,783 metadata files at Stanford's institutional
 OpenGeoMetadata revision `ff804e306fb2f79ac837c5045c7e0d9acb1d979b`.
 The repository metadata licence is CC0. An item additionally needs public
@@ -35,18 +36,26 @@ to copy the entire OldMapsOnline index.
 
 ## Image alignment
 
-117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files.
-The raster viewer uses their GeoKeys, source coordinate reference system,
-tiepoints or affine matrix, and raster resolution. It inverse-projects the
-current Web Mercator viewport into source pixels, reads a bounded raster window
-and paints it as an opacity-controlled overlay. Native overviews, pixel-centre
-conventions and rotated affine transforms are handled. Unsupported/incomplete
-CRSs report an error and leave the original scan/download available.
+117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
+and every one of the 5,950 bundled USGS HTMC records carries its original tiled
+GeoTIFF (main image plus internal overviews). The raster viewer uses their
+GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
+raster resolution. It inverse-projects the current Web Mercator viewport into
+source pixels, reads a bounded raster window and paints it as an
+opacity-controlled overlay. Native overviews, pixel-centre conventions and
+rotated affine transforms are handled. Unsupported/incomplete CRSs report an
+error and leave the original scan/download available.
 
 The Worker supplies bounded byte ranges from Stanford's original `_cog.tif`
-URLs. It checks both upstream range headers and actual byte counts; it does not
-download a huge full-resolution file when a source ignores Range requests.
-Catalogue boxes are search footprints, never image transforms.
+URLs and from the public USGS HTMC `GeoTIFF/` staging prefix. It checks both
+upstream range headers and actual byte counts; it does not download a huge
+full-resolution file when a source ignores Range requests. Catalogue boxes are
+search footprints, never image transforms. A USGS record is opened from its
+detail panel (“Overlay this georeferenced map”); no generated overlay list
+entry or invented control point is involved. The USGS GeoTIFFs commonly carry
+`ProjectedCSTypeGeoKey = 32767` (user-defined) plus explicit `Proj*` parameters
+and a geographic CRS; the renderer keeps the geographic datum and drops only the
+placeholder projected code, so the sampled sheets project correctly.
 
 Other IIIF scans offer **Find reusable alignment** and **Georeference in Allmaps**.
 Allmaps lookup verifies source-image identity, dimensions, mask, at least three
@@ -61,7 +70,8 @@ georeferencing job or guaranteed alignment accuracy is claimed.
 **Search more original collections** queries institutional JSON APIs, rather
 than scraping the aggregator. It offers Library of Congress, Leventhal Map &
 Education Center and USGS Historical Topographic Maps. Each request is bounded
-to 12 results with pagination and caching. The first two require item-level
+to 12 results with pagination and caching; USGS also has a bundled 5,950-record
+partial slice, but live search still covers the whole feed. The first two require item-level
 compatible rights evidence; unknown, noncommercial and conflicting statements
 are withheld. USGS requests are confined to its public-domain historical-map
 dataset. USGS searches the current map area; its results are displayed without
@@ -74,11 +84,16 @@ the same source results have been loaded. A short-lived edge cache enables
 alignment lookup for those fetched records. Service failure reports an English
 notice and preserves the bundled catalogue.
 
-Direct collection, image and Allmaps endpoints are blocked by this development
-environment's network policy. Live API shapes and image availability therefore
-still need verification from the deployed environment. Offline adapter fixtures
-test admission and failure handling; synthetic raster tests verify the actual
-renderer without pretending to verify Stanford's live imagery.
+Live checks from this GitHub runner reached the Library of Congress item JSON
+and IIIF image service, the USGS TNM API/S3 GeoTIFFs and Digital Commonwealth.
+Gallica (HTTP 403 Cloudflare challenge), NLS (HTTP 405 human-verification
+challenge), Princeton's unresolved rights gate and NDL (HTTP 429 rate limit)
+remain blocked/research-only and are not counted as coverage. LoC item JSON
+intermittently answers the Cloudflare challenge (HTTP 429); that is recorded as
+a resumable cursor, not retried in a tight loop. The browser harness blocks
+external hosts deliberately, so its 48/48 checks verify our UI and synthetic
+raster renderer, not the origin services; the live source probes above are
+separate evidence.
 
 ## Global reference layers, English and identity
 

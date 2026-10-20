@@ -83,6 +83,29 @@ test("projected GeoTIFF coordinates agree with the global Web Mercator viewport"
   near(center[1], 30);
   assert.throws(() => rasterProjection({}), /reference system/);
 });
+test("a user-defined USGS projection keeps its geographic datum", () => {
+  // Real GeoKeys from a USGS HTMC 1:125,000 sheet (TN_Morristown_153457_1883).
+  // ProjectedCSTypeGeoKey=32767 is a placeholder; the Proj* parameters define
+  // the polyconic projection and GeographicTypeGeoKey=4267 supplies NAD27.
+  const project = rasterProjection({
+    GTModelTypeGeoKey: 1,
+    GTRasterTypeGeoKey: 1,
+    GeographicTypeGeoKey: 4267,
+    ProjectedCSTypeGeoKey: 32767,
+    ProjectionGeoKey: 32767,
+    ProjCoordTransGeoKey: 22,
+    ProjLinearUnitsGeoKey: 9001,
+    ProjNatOriginLongGeoKey: -83.25,
+    ProjNatOriginLatGeoKey: 36,
+    ProjFalseEastingGeoKey: 0,
+    ProjFalseNorthingGeoKey: 0,
+    ProjScaleAtNatOriginGeoKey: 1,
+  });
+  const p = project(-83.25, 36.25);
+  assert.ok(p.every(Number.isFinite));
+  assert.ok(Math.abs(p[0]) < 1, `central meridian should map to x≈0, got ${p[0]}`);
+  assert.ok(p[1] > 27000 && p[1] < 29000, `expected ≈27.7 km northing, got ${p[1]}`);
+});
 const record = {
   id: "stanford:ab123cd4567",
   providerId: "stanford",

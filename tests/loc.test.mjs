@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   locItemRecord,
   locRejection,
+  locResumeState,
   locRightsBasis,
   locThumbnail,
   locYearRange,
@@ -123,4 +124,67 @@ test('the IIIF thumbnail parser keeps the JPEG service and drops sizing fragment
     },
   );
   assert.deepEqual(locThumbnail([]), { thumbnail: null, imageService: null });
+});
+
+
+test('the LoC cursor advances only after every candidate was fetched', () => {
+  const documents = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const queue = documents;
+  const complete = locResumeState({
+    documents,
+    queue,
+    fetchedIds: new Set(['a', 'b', 'c']),
+    startPage: 2,
+    lastPage: 5,
+    challenged: null,
+    failed: [],
+  });
+  assert.equal(complete.complete, true);
+  assert.equal(complete.nextPage, 6);
+  assert.equal(complete.unattemptedCount, 0);
+
+  const challenged = locResumeState({
+    documents,
+    queue,
+    fetchedIds: new Set(['a']),
+    startPage: 2,
+    lastPage: 5,
+    challenged: 'HTTP 429',
+    failed: [{ id: 'b', error: 'HTTP 429' }],
+  });
+  assert.equal(challenged.complete, false);
+  assert.equal(challenged.nextPage, 2, 'a challenge must replay, never skip to page 6');
+  assert.equal(challenged.unattemptedCount, 2);
+  assert.deepEqual(challenged.pendingItems, ['b', 'c']);
+});
+
+test('a --max-items truncation and an unattempted candidate both block the cursor', () => {
+  const documents = [{ id: 'a' }, { id: 'b' }];
+  const truncated = locResumeState({
+    documents,
+    queue: [{ id: 'a' }],
+    fetchedIds: new Set(['a']),
+    startPage: 1,
+    lastPage: 3,
+    challenged: null,
+    failed: [],
+  });
+  assert.equal(truncated.complete, false);
+  assert.equal(truncated.nextPage, 1);
+  assert.equal(truncated.truncatedByMaxItems, true);
+  assert.deepEqual(truncated.pendingItems, ['b']);
+
+  // A successfully fetched but explicitly withheld item is processed, so it
+  // does not keep the cursor on the same page.
+  const withheld = locResumeState({
+    documents,
+    queue: documents,
+    fetchedIds: new Set(['a', 'b']),
+    startPage: 1,
+    lastPage: 3,
+    challenged: null,
+    failed: [],
+  });
+  assert.equal(withheld.complete, true);
+  assert.equal(withheld.nextPage, 4);
 });
