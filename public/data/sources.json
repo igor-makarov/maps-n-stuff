@@ -437,79 +437,6 @@
       }
     },
     {
-      "id": "stanford",
-      "name": "Stanford University Libraries",
-      "operator": "Stanford University Libraries",
-      "homepage": "https://earthworks.stanford.edu/",
-      "attribution": "Stanford University Libraries / original collection",
-      "rights": "Metadata CC0 1.0. Only public map records with an explicit Public Domain Mark or CC0 image statement are included; original per-item rights are retained.",
-      "terms": "https://github.com/OpenGeoMetadata/edu.stanford.purl/blob/ff804e306fb2f79ac837c5045c7e0d9acb1d979b/LICENSE",
-      "api": {
-        "metadata": "https://github.com/OpenGeoMetadata/edu.stanford.purl",
-        "manifest": "https://purl.stanford.edu/{druid}/iiif3/manifest",
-        "images": "https://stacks.stanford.edu/image/iiif/",
-        "raster": "https://stacks.stanford.edu/file/druid:{druid}/{file}"
-      },
-      "sourceRevision": "ff804e306fb2f79ac837c5045c7e0d9acb1d979b",
-      "retrieved": "2026-10-19"
-    },
-    {
-      "id": "swisstopo",
-      "name": "swisstopo",
-      "operator": "Bundesamt für Landestopografie swisstopo",
-      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
-      "home": "https://www.swisstopo.admin.ch/",
-      "collections": [
-        {
-          "id": "zeitreise",
-          "name": "Historical topographic maps",
-          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
-        },
-        {
-          "id": "siegfriedkarte",
-          "name": "Siegfried map series, 1870–1949",
-          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
-        },
-        {
-          "id": "dufourkarte",
-          "name": "Dufour map, first edition",
-          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
-        },
-        {
-          "id": "swissimage-zeitreise",
-          "name": "Historical aerial imagery — Switzerland",
-          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
-        },
-        {
-          "id": "swissimage-1946",
-          "name": "SWISSIMAGE HIST 1946",
-          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
-          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
-        }
-      ],
-      "endpoints": {
-        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
-      },
-      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
-      "attribution": "© swisstopo",
-      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
-      "retrievalDate": "2026-10-19",
-      "apiHosts": [
-        "wmts.geo.admin.ch",
-        "map.geo.admin.ch"
-      ],
-      "api": {
-        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
-        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
-        "mapViewer": "https://map.geo.admin.ch/?lang=en&layers={layerId}&time={Time}"
-      }
-    },
-    {
       "id": "loc",
       "name": "Library of Congress — Geography and Map Division",
       "operator": "Library of Congress, Geography and Map Division",
@@ -606,6 +533,118 @@
             "manifestType": "text/html; charset=UTF-8"
           }
         ]
+      }
+    },
+    {
+      "id": "slub",
+      "name": "SLUB Dresden — Karten und Ansichten",
+      "operator": "Sächsische Landesbibliothek - Staats- und Universitätsbibliothek Dresden (SLUB)",
+      "homepage": "https://digital.slub-dresden.de/",
+      "home": "https://digital.slub-dresden.de/",
+      "institutions": [
+        "SLUB Dresden"
+      ],
+      "rights": "Per-object Public Domain Mark 1.0 (MODS use-and-reproduction and DFG-viewer dv:license), corroborated by slubarchiv:copyrightStatus=publicdomain. Restrictive or unstated records are withheld; the verbatim statements stay on each record.",
+      "attribution": "SLUB Dresden, digital.slub-dresden.de",
+      "terms": "https://nutzungshinweis.slub-dresden.de/",
+      "retrieved": "2026-10-20",
+      "api": {
+        "discovery": "https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps",
+        "sets": "https://digital.slub-dresden.de/oai/?verb=ListSets",
+        "formats": [
+          "mets"
+        ],
+        "record": "https://digital.slub-dresden.de/id{id}",
+        "oaiRecord": "https://digital.slub-dresden.de/oai/?verb=GetRecord&metadataPrefix=mets&identifier={oaiId}",
+        "documentation": "https://digital.slub-dresden.de/"
+      },
+      "apiHosts": [
+        "digital.slub-dresden.de",
+        "nutzungshinweis.slub-dresden.de"
+      ],
+      "method": "SLUB Dresden OAI-PMH set maps in METS: per-object MODS/DFG-viewer Public Domain Mark gate, original JPEG/PDF bitstreams and a resumable shard.",
+      "collections": [
+        {
+          "id": "maps",
+          "name": "Karten und Ansichten",
+          "discovery": "https://digital.slub-dresden.de/oai/?verb=ListRecords&metadataPrefix=mets&set=maps"
+        }
+      ],
+      "verification": {
+        "sample": 0
+      }
+    },
+    {
+      "id": "stanford",
+      "name": "Stanford University Libraries",
+      "operator": "Stanford University Libraries",
+      "homepage": "https://earthworks.stanford.edu/",
+      "attribution": "Stanford University Libraries / original collection",
+      "rights": "Metadata CC0 1.0. Only public map records with an explicit Public Domain Mark or CC0 image statement are included; original per-item rights are retained.",
+      "terms": "https://github.com/OpenGeoMetadata/edu.stanford.purl/blob/ff804e306fb2f79ac837c5045c7e0d9acb1d979b/LICENSE",
+      "api": {
+        "metadata": "https://github.com/OpenGeoMetadata/edu.stanford.purl",
+        "manifest": "https://purl.stanford.edu/{druid}/iiif3/manifest",
+        "images": "https://stacks.stanford.edu/image/iiif/",
+        "raster": "https://stacks.stanford.edu/file/druid:{druid}/{file}"
+      },
+      "sourceRevision": "ff804e306fb2f79ac837c5045c7e0d9acb1d979b",
+      "retrieved": "2026-10-19"
+    },
+    {
+      "id": "swisstopo",
+      "name": "swisstopo",
+      "operator": "Bundesamt für Landestopografie swisstopo",
+      "homepage": "https://www.swisstopo.admin.ch/en/geoservices-with-swisstopo-geodata",
+      "home": "https://www.swisstopo.admin.ch/",
+      "collections": [
+        {
+          "id": "zeitreise",
+          "name": "Historical topographic maps",
+          "record": "https://www.swisstopo.admin.ch/de/historische-kartenwerke",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.zeitreihen"
+        },
+        {
+          "id": "siegfriedkarte",
+          "name": "Siegfried map series, 1870–1949",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-siegfriedkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-siegfried"
+        },
+        {
+          "id": "dufourkarte",
+          "name": "Dufour map, first edition",
+          "record": "https://www.swisstopo.admin.ch/de/digitale-dufourkarte",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.hiks-dufour"
+        },
+        {
+          "id": "swissimage-zeitreise",
+          "name": "Historical aerial imagery — Switzerland",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product"
+        },
+        {
+          "id": "swissimage-1946",
+          "name": "SWISSIMAGE HIST 1946",
+          "record": "https://www.swisstopo.admin.ch/de/orthobilder-swissimage-hist-1946",
+          "discovery": "https://map.geo.admin.ch/?lang=de&layers=ch.swisstopo.swissimage-product_1946"
+        }
+      ],
+      "endpoints": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "tileTemplate": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}"
+      },
+      "rights": "Open Government Data; source reference «©swisstopo» mandatory.",
+      "attribution": "© swisstopo",
+      "terms": "https://www.swisstopo.admin.ch/en/terms-of-use-free-geodata-and-geoservices",
+      "retrievalDate": "2026-10-19",
+      "apiHosts": [
+        "wmts.geo.admin.ch",
+        "map.geo.admin.ch"
+      ],
+      "api": {
+        "wmtsCapabilities": "https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml",
+        "wmtsTile": "https://wmts.geo.admin.ch/1.0.0/{layerId}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{ext}",
+        "mapViewer": "https://map.geo.admin.ch/?lang=en&layers={layerId}&time={Time}"
       }
     },
     {
@@ -730,5 +769,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:18:41.565Z"
+  "generatedAt": "2026-10-20T11:33:47.542Z"
 }

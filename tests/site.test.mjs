@@ -37,6 +37,15 @@ const worker = `${workerEntry}\n${await read('src/worker/allowlist.js')}`;
 const wrangler = await read('wrangler.jsonc');
 const pkg = JSON.parse(await read('package.json'));
 
+test('detail reuse links consume direct original scans and documents', () => {
+  // Doria and SLUB publish direct JPEG/PDF originals, not IIIF services. The
+  // reuse section used to say "no image service" for those records.
+  assert.match(modules['detail.js'], /record\.imageUrl/);
+  assert.match(modules['detail.js'], /record\?\.documents/);
+  assert.match(modules['detail.js'], /Open original scan/);
+  assert.match(modules['detail.js'], /Original PDF/);
+});
+
 test('index.html is a semantic app shell (landmarks, language, skip link)', () => {
   assert.match(html, /<!doctype html>/i);
   assert.match(html, /<html[^>]+lang="en"/, 'the global UI declares English');
@@ -236,4 +245,9 @@ test('global atlas branding stays independent of the design reference', async ()
   const headers = await read('public/_headers');
   assert.match(headers, /img-src[^;]+https:\/\/tile\.openstreetmap\.org/);
   assert.match(headers, /img-src[^;]+https:\/\/tile\.loc\.gov/);
+  // A published provider's plain <img> thumbnails must not be blocked by our own
+  // CSP. The Doria import shipped 1,662 thumbnail URLs while this origin was
+  // missing; pin every direct-image provider that the catalogue actually uses.
+  assert.match(headers, /img-src[^;]+https:\/\/www\.doria\.fi/);
+  assert.match(headers, /img-src[^;]+https:\/\/digital\.slub-dresden\.de/);
 });

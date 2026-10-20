@@ -748,10 +748,37 @@ export function init(ctx) {
       el('div', { class: 'app-detail__actions', id: 'reuse-links' }, [
         record.imageService
           ? fullImageLink(record.imageService)
-          : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
+          : record.imageUrl
+            ? directImageLink(record.imageUrl)
+            : el('span', { class: 'zh-hint', text: record.iiifManifest ? 'Loading source links …' : 'No image service available. Open the original record to view this map.' }),
+        ...documentLinks(record),
       ]),
       el('p', { class: 'zh-hint', text: 'Check rights and citation guidance with the holding collection. The information here comes from its metadata.' }),
     ]);
+  }
+
+  /** A direct original scan published by the holding institution (no IIIF). */
+  function directImageLink(url) {
+    return el('a', {
+      class: 'zh-button zh-button--ghost zh-button--small',
+      href: url,
+      target: '_blank',
+      rel: 'noopener',
+      text: 'Open original scan ↗',
+    });
+  }
+
+  /** The original PDF/document links a provider actually supplies. */
+  function documentLinks(record) {
+    return (record?.documents ?? []).slice(0, 2).map((url, index) =>
+      el('a', {
+        class: 'zh-button zh-button--ghost zh-button--small',
+        href: url,
+        target: '_blank',
+        rel: 'noopener',
+        text: record.documents.length > 1 ? `Original PDF ${index + 1} ↗` : 'Original PDF ↗',
+      }),
+    );
   }
 
   /** The full-resolution IIIF image link, named the same way everywhere. */
@@ -780,7 +807,10 @@ export function init(ctx) {
       ...[
         service
           ? fullImageLink(service)
-          : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
+          : record?.imageUrl
+            ? directImageLink(record.imageUrl)
+            : el('span', { class: 'zh-hint', text: 'The collection does not provide an image service for this sheet.' }),
+        ...documentLinks(record),
         manifest?.seeAlso
           ? el('a', {
               class: 'zh-button zh-button--ghost zh-button--small',
@@ -820,7 +850,8 @@ export function init(ctx) {
           ? `W ${record.extent.west.toFixed(2)}° / E ${record.extent.east.toFixed(2)}° / S ${record.extent.south.toFixed(2)}° / N ${record.extent.north.toFixed(2)}°`
           : 'not stated',
       ],
-      ['Digitized pages', record.canvasCount ? `${record.canvasCount} pages` : 'not stated'],
+      ['Digitized pages', record.canvasCount || record.pageCount ? `${record.canvasCount ?? record.pageCount} pages` : 'not stated'],
+      ['Physical description', record.physicalExtent || 'not stated'],
       ['Source', `${record.providerId} · ${record.id}`],
     ];
     return el('section', {}, [

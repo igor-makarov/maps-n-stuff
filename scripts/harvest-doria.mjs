@@ -178,8 +178,9 @@ export function rightsGate(statements) {
   // An explicit restrictive statement that is not part of an open licence's
   // legal text makes the item ineligible, even if another line names CC0/PDM.
   for (const statement of rights) {
+    // A restrictive phrase on the same line as an open-licence URI is a genuine
+    // conflict, not a licence grant: reject instead of selecting the open part.
     if (!RESTRICTIVE.test(statement)) continue;
-    if (PDM.test(statement) || CC0.test(statement)) continue;
     return { basis: null, reason: `conflicting restrictive statement: ${statement}` };
   }
   if (open.some((s) => PDM.test(s))) {
