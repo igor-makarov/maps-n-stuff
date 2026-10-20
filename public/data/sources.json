@@ -176,6 +176,11 @@
             "record": 200
           }
         ]
+      },
+      "metadataReuse": {
+        "status": "unresolved-pending",
+        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found.",
+        "claim": "No metadata licence is claimed. Catalogue facts are retained with attribution, the original record link and URN; this gap is pending, not cleared."
       }
     },
     {
@@ -471,15 +476,15 @@
       ],
       "verification": {
         "retrieved": "2026-10-20",
-        "sample": 12,
-        "imageInfoOk": 12,
-        "imageInfoChecked": 12,
-        "thumbnailOk": 12,
+        "sample": 10,
+        "imageInfoOk": 10,
+        "imageInfoChecked": 10,
+        "thumbnailOk": 10,
         "manifestOk": 0,
-        "manifestChecked": 12,
+        "manifestChecked": 10,
         "examples": [
           {
-            "id": "loc:2014589394",
+            "id": "loc:map45000245",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -488,7 +493,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:99447042",
+            "id": "loc:2007627199",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -497,7 +502,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:99447043",
+            "id": "loc:map46000376",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -506,7 +511,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:99447045",
+            "id": "loc:2008626958",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -515,7 +520,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:99447061",
+            "id": "loc:99447025",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -524,7 +529,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:99447063",
+            "id": "loc:2006458033",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -689,18 +694,18 @@
         "rasterCrsOk": 8,
         "examples": [
           {
-            "id": "usgs:5a8a27e9e4b00f54eb3c4854",
+            "id": "usgs:5d29542fe4b038fabe1d11a7",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6169437",
+            "rasterRange": "bytes 0-65535/3402074",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 5063,
-              "height": 6033,
+              "width": 4975,
+              "height": 6004,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -708,18 +713,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4bede4b00f54eb4015fc",
+            "id": "usgs:5a8a4d31e4b00f54eb40384f",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6613339",
+            "rasterRange": "bytes 0-65535/8056473",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 5088,
-              "height": 6213,
+              "width": 5000,
+              "height": 6050,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -727,18 +732,18 @@
             }
           },
           {
-            "id": "usgs:5a8a4d2ee4b00f54eb4037da",
+            "id": "usgs:5a8a4b7ae4b00f54eb40089a",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8141880",
+            "rasterRange": "bytes 0-65535/3697575",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4929,
-              "height": 5946,
+              "width": 4963,
+              "height": 6100,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -746,18 +751,18 @@
             }
           },
           {
-            "id": "usgs:5a8a5327e4b00f54eb40f039",
+            "id": "usgs:5a8a3963e4b00f54eb3e1d0b",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/7987504",
+            "rasterRange": "bytes 0-65535/8358912",
             "tiffMagic": true,
             "readable": {
               "images": 8,
-              "width": 4913,
-              "height": 6213,
+              "width": 6608,
+              "height": 8088,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -769,5 +774,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T11:33:47.542Z"
+  "generatedAt": "2026-10-20T11:35:30.407Z"
 }

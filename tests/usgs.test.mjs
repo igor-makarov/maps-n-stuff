@@ -117,6 +117,11 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
   assert.ok(selection.upstreamTotal >= 186000);
   assert.ok(selection.resumable.nextOffset >= 6000);
   assert.equal(selection.dateEvidence.titleEditionYearMismatches, 0);
+  assert.equal(
+    selection.dateEvidence.mergedRecordsChecked,
+    shard.records.length,
+    'the date evidence covers the whole merged shard, not only the last slice',
+  );
   assert.ok(selection.verification.previewOk >= 8);
   assert.ok(selection.verification.rasterRangeOk >= 8);
   assert.ok(selection.verification.rasterReadable >= 8);

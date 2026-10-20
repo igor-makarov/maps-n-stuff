@@ -178,9 +178,11 @@ export function rightsGate(statements) {
   // An explicit restrictive statement that is not part of an open licence's
   // legal text makes the item ineligible, even if another line names CC0/PDM.
   for (const statement of rights) {
-    // A restrictive phrase on the same line as an open-licence URI is a genuine
-    // conflict, not a licence grant: reject instead of selecting the open part.
     if (!RESTRICTIVE.test(statement)) continue;
+    // A restriction is never cancelled by an open URI elsewhere on the same
+    // line. The only tolerated overlap is the open licence's own legal text,
+    // which the RESTRICTIVE expression already excludes (e.g. CC0's "under
+    // copyright law"). Genuine conflicts are withheld.
     return { basis: null, reason: `conflicting restrictive statement: ${statement}` };
   }
   if (open.some((s) => PDM.test(s))) {
@@ -221,11 +223,14 @@ export function recordFrom(item, { sets = new Map(), retrieved = RETRIEVED } = {
   if (!gate.basis) return { record: null, reason: gate.reason };
   const title = (dc?.titles ?? [])[0] || (mods?.titles ?? [])[0] || '';
   if (!title) return { record: null, reason: 'no title stated by Doria' };
-  if (!ore?.thumbnail) return { record: null, reason: 'no thumbnail bitstream' };
-  const bitstreams = ore.bitstreams ?? [];
+  const bitstreams = ore?.bitstreams ?? [];
   const images = bitstreams.filter((b) => b.kind === 'ORIGINAL' && /^https:\/\//.test(b.url) && /^image\//i.test(b.mime ?? ''));
   const documents = bitstreams.filter((b) => b.kind === 'ORIGINAL' && /^https:\/\//.test(b.url) && !/^image\//i.test(b.mime ?? ''));
   if (!images.length && !documents.length) return { record: null, reason: 'no original bitstream' };
+  // A preview is optional: a rights-cleared scan without a Doria thumbnail stays
+  // eligible. A real original image is a truthful preview; a PDF-only item keeps
+  // no thumbnail and is still admitted with its document link.
+  const thumbnail = ore?.thumbnail ?? (images.find((b) => /^image\/jpe?g$/i.test(b.mime ?? '')) ?? images[0])?.url ?? undefined;
   const accessioned = new Set([...(mods?.dateAccessioned ?? []), ...(mods?.dateAvailable ?? [])].map((d) => String(d).trim()));
   const issuedText = (mods?.dateIssued ?? [])[0] ?? null;
   let years = publicationYears(issuedText);
@@ -251,7 +256,7 @@ export function recordFrom(item, { sets = new Map(), retrieved = RETRIEVED } = {
         ? 'The Doria item record states “Public domain”; it does not publish a PDM/CC0 licence URL. The item page and URN are retained as evidence.'
         : undefined,
     recordUrl: `https://www.doria.fi/handle/10024/${id}`,
-    thumbnail: ore.thumbnail,
+    thumbnail,
     imageUrl: (images.find((b) => /^image\/jpe?g$/i.test(b.mime ?? '')) ?? images[0])?.url ?? undefined,
     images: images.map((b) => b.url),
     documents: documents.map((b) => b.url),
@@ -273,7 +278,7 @@ export function recordFrom(item, { sets = new Map(), retrieved = RETRIEVED } = {
     if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) delete record[key];
   }
   if (!Array.isArray(record.creators)) record.creators = [];
-  if (!record.thumbnail || !/^https:\/\//.test(record.thumbnail)) return { record: null, reason: 'insecure thumbnail' };
+  if (record.thumbnail && !/^https:\/\//.test(record.thumbnail)) return { record: null, reason: 'insecure thumbnail' };
   return { record };
 }
 

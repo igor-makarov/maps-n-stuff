@@ -37,15 +37,6 @@ const worker = `${workerEntry}\n${await read('src/worker/allowlist.js')}`;
 const wrangler = await read('wrangler.jsonc');
 const pkg = JSON.parse(await read('package.json'));
 
-test('detail reuse links consume direct original scans and documents', () => {
-  // Doria and SLUB publish direct JPEG/PDF originals, not IIIF services. The
-  // reuse section used to say "no image service" for those records.
-  assert.match(modules['detail.js'], /record\.imageUrl/);
-  assert.match(modules['detail.js'], /record\?\.documents/);
-  assert.match(modules['detail.js'], /Open original scan/);
-  assert.match(modules['detail.js'], /Original PDF/);
-});
-
 test('index.html is a semantic app shell (landmarks, language, skip link)', () => {
   assert.match(html, /<!doctype html>/i);
   assert.match(html, /<html[^>]+lang="en"/, 'the global UI declares English');
@@ -245,9 +236,20 @@ test('global atlas branding stays independent of the design reference', async ()
   const headers = await read('public/_headers');
   assert.match(headers, /img-src[^;]+https:\/\/tile\.openstreetmap\.org/);
   assert.match(headers, /img-src[^;]+https:\/\/tile\.loc\.gov/);
-  // A published provider's plain <img> thumbnails must not be blocked by our own
-  // CSP. The Doria import shipped 1,662 thumbnail URLs while this origin was
-  // missing; pin every direct-image provider that the catalogue actually uses.
+  // Doria's provider originals and thumbnails are plain <img> URLs, so CSP must
+  // admit that exact host or every Doria preview is blocked in the browser.
   assert.match(headers, /img-src[^;]+https:\/\/www\.doria\.fi/);
+  // SLUB publishes direct thumbnail/original JPEGs from its own digitisation
+  // server; the CSP must admit that exact host too.
   assert.match(headers, /img-src[^;]+https:\/\/digital\.slub-dresden\.de/);
+});
+
+test('provider originals are linked when the collection has no IIIF service', () => {
+  const detail = modules['detail.js'];
+  // Doria publishes JPEG/PDF bitstreams instead of IIIF. The detail view must
+  // expose those real links rather than claiming no image exists.
+  assert.match(detail, /record\?\.imageUrl/);
+  assert.match(detail, /record\?\.documents/);
+  assert.match(detail, /Open original scan/);
+  assert.match(detail, /Open original PDF/);
 });

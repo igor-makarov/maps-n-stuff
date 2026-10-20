@@ -439,6 +439,13 @@ async function main() {
     );
     return Number.isFinite(titleYear) && titleYear !== record.yearStart;
   }).length;
+  // The merged shard, not only this slice, is what the catalogue presents.
+  const mergedTitleYearMismatches = shardRecords.filter((record) => {
+    const titleYear = Number(
+      record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1] ?? NaN,
+    );
+    return Number.isFinite(titleYear) && titleYear !== record.yearStart;
+  }).length;
   const verification = await verify(records);
   console.log('Verification:', JSON.stringify(verification).slice(0, 600));
 
@@ -467,8 +474,10 @@ async function main() {
     scaleCounts,
     dateEvidence: {
       sourceField: 'publicationDate',
-      titleEditionYearMismatches: titleYearMismatches,
-      note: 'The API publicationDate is retained as the publication year. For every bundled product the title ends in a single edition year; this slice has no mismatch between that printed year and publicationDate. No depicted/survey date is inferred.',
+      titleEditionYearMismatches: mergedTitleYearMismatches,
+      titleEditionYearMismatchesInSlice: titleYearMismatches,
+      mergedRecordsChecked: shardRecords.length,
+      note: 'The API publicationDate is retained as the publication year. For every bundled product the title ends in a single edition year; this merged shard has no mismatch between that printed year and publicationDate (and neither did this slice on its own). No depicted/survey date is inferred.',
     },
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',

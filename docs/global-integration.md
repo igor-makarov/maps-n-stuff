@@ -5,10 +5,10 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 24,803 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
-Library, 972 Digital Commonwealth partner-held, 5,950 USGS Historical
+The bundle contains 31,774 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+Library, 972 Digital Commonwealth partner-held, 11,947 USGS Historical
 Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
-1,437 e-rara, 27 swisstopo and 49 Library of Congress records. Stanford and
+2,410 e-rara, 27 swisstopo and 50 Library of Congress records. Stanford and
 Doria contribute worldwide holdings; USGS adds public-domain coverage of the
 United States and its territories. Dates, thumbnails, extents and alignment are
 optional. Image reuse rights are not.
@@ -37,7 +37,7 @@ to copy the entire OldMapsOnline index.
 ## Image alignment
 
 117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
-and every one of the 5,950 bundled USGS HTMC records carries its original tiled
+and every one of the 11,947 bundled USGS HTMC records carries its original tiled
 GeoTIFF (main image plus internal overviews). The raster viewer uses their
 GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
 raster resolution. It inverse-projects the current Web Mercator viewport into
@@ -70,7 +70,7 @@ georeferencing job or guaranteed alignment accuracy is claimed.
 **Search more original collections** queries institutional JSON APIs, rather
 than scraping the aggregator. It offers Library of Congress, Leventhal Map &
 Education Center and USGS Historical Topographic Maps. Each request is bounded
-to 12 results with pagination and caching; USGS also has a bundled 5,950-record
+to 12 results with pagination and caching; USGS also has a bundled 11,947-record
 partial slice, but live search still covers the whole feed. The first two require item-level
 compatible rights evidence; unknown, noncommercial and conflicting statements
 are withheld. USGS requests are confined to its public-domain historical-map

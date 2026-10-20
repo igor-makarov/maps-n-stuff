@@ -47,6 +47,8 @@ test('rights-not-evaluated, contact-host and all-rights-reserved records are wit
     ['Copyright (c) Example.', 'All rights reserved.', 'all rights reserved'],
     ['No known copyright restrictions.', 'This work is licensed for use under a Creative Commons Attribution Non-Commercial License (CC BY-NC).', 'creative commons'],
     ['Under copyright.', 'No known restrictions on use.', 'no restrictions'],
+    // An open label in a second field cannot cancel an explicit restriction.
+    ['Under copyright. All rights reserved.', 'CC0', 'no restrictions'],
   ]) {
     const attributes = { ...base.attributes, rights_ss: rights, license_ss: license, reuse_allowed_ssi: reuse };
     assert.equal(rightsBasis(attributes), null, `${rights} / ${license} must be withheld`);
