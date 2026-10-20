@@ -40,8 +40,16 @@ The [global catalogue audit](docs/global-catalogue-audit.md) records integration
 
 ## Shurik
 
-The four Shurik members are **stopped** while the model quota is unavailable. Brief changes no longer resume them automatically. Their saved state and manual stop/resume workflows remain available; no automatic restart is scheduled for tomorrow. The original brief is [PROMPT.md](PROMPT.md).
+The authorized 20 October sourcing run uses **three** DeepSeek v4.1 Flash agents
+with max reasoning, 30-minute iteration budgets, zero waiting and automatic task
+checkpoints disabled. Its hard deadline is **16:00 Asia/Jerusalem (13:00 UTC)**.
+The agents coordinate themselves and commit validated source integrations to `main`.
+Read [the sourcing brief](SOURCING_PROMPT.md) and [current steering](SOURCING_STEERING.md).
 
-The model workflow is manual-only: neither pushes (including swarm renames) nor
-scheduled recovery can start agents. The stop workflow covers both current and
-legacy member names. Starting or resuming model work requires an explicit action.
+The model workflow remains manual-only. The separate sourcing launcher accepts
+only the exact reviewed request in `.github/shurik/sourcing-run.json`, once, before
+its deadline; it refuses changed requests, existing member controls and active
+retired loops. Routine source/configuration edits cannot restart a paused swarm.
+All eight retired agents remain stopped. Hard OpenCode usage-cap errors stop a
+member durably rather than creating an endless zero-wait retry loop. Manual brief
+updates preserve the saved hard deadline. Cloudflare still handles deployment.

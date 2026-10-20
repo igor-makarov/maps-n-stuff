@@ -1,3 +1,7 @@
+> Current sourcing run: follow [SOURCING_PROMPT.md](SOURCING_PROMPT.md) and the latest
+> [SOURCING_STEERING.md](SOURCING_STEERING.md). The older product brief below is
+> historical context; its four-agent count and completed UI/border work are superseded.
+
 # Build a global historical atlas in English
 
 **Priority correction from the user, 2026-10-19:** the current German, Zürich-first

@@ -1,5 +1,5 @@
 name: Update Shurik brief
-run-name: Update all four agents with the latest project brief
+run-name: Update the three sourcing agents with the latest project brief
 
 on:
   workflow_dispatch:
@@ -19,31 +19,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        member: [maps-n-stuff-0, maps-n-stuff-1, maps-n-stuff-2, maps-n-stuff-3]
+        member: [maps-n-stuff-sources-20261020-0, maps-n-stuff-sources-20261020-1, maps-n-stuff-sources-20261020-2]
     env:
       SHURIK_MEMBER: ${{ matrix.member }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+      - name: Preserve the existing hard deadline
+        id: settings
+        run: |
+          export SAVED_CONTROL=$(git show "origin/shurik-control/$SHURIK_MEMBER:control.json")
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          const { deadline } = JSON.parse(process.env.SAVED_CONTROL);
+          if (!deadline || Date.parse(deadline) <= Date.now()) throw new Error('The sourcing deadline has expired. No member will be resumed.');
+          appendFileSync(process.env.GITHUB_OUTPUT, `deadline=${deadline}\n`);
+          JS
       - name: Stop the member before updating its brief
         uses: igor-makarov/shurik@v2
         with:
           command: stop
           loop-id: ${{ matrix.member }}
-      - name: Migrate empty snapshot metadata from the retired patch
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/shurik/migrate-empty-snapshot.mjs
       - name: Copy the current main brief without changing product work
         run: |
           git fetch origin "refs/heads/$SHURIK_MEMBER:refs/remotes/origin/$SHURIK_MEMBER" refs/heads/main:refs/remotes/origin/main
           git switch --create "brief-update-$SHURIK_MEMBER" "origin/$SHURIK_MEMBER"
-          git restore --source=origin/main --worktree -- PROMPT.md
-          if ! git diff --quiet -- PROMPT.md; then
+          git restore --source=origin/main --worktree -- SOURCING_PROMPT.md SOURCING_STEERING.md
+          if ! git diff --quiet -- SOURCING_PROMPT.md SOURCING_STEERING.md; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add PROMPT.md
+            git add SOURCING_PROMPT.md SOURCING_STEERING.md
             git commit -m 'Update project brief from main'
             git push origin "HEAD:refs/heads/$SHURIK_MEMBER"
           fi
@@ -54,3 +60,4 @@ jobs:
           loop-id: ${{ matrix.member }}
           create-pr: 'false'
           checkpoint-seconds: '0'
+          deadline: ${{ steps.settings.outputs.deadline }}

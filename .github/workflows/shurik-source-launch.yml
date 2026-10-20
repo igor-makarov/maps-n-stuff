@@ -1,0 +1,47 @@
+name: Launch authorized sourcing swarm
+run-name: Launch three sourcing agents until 16:00 Israel time
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/shurik/sourcing-run.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: sourcing-launch-20261020
+  cancel-in-progress: false
+
+jobs:
+  launch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Validate the exact authorized request and retired loop states
+        id: request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_REQUEST_SHA256: fe33dfa80558717d3e750479ac1d7da610459011437b8c0726fb126dd6baa812
+        run: node .github/shurik/sourcing-launch.mjs
+      - name: Check model credential before launching
+        if: steps.request.outputs.launch == 'true'
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        run: |
+          if [ -z "$OPENCODE_API_KEY" ]; then
+            echo '::error::The repository OPENCODE_API_KEY secret is missing. No agents started.'
+            exit 1
+          fi
+      - name: Start exactly three sourcing agents
+        if: steps.request.outputs.launch == 'true'
+        uses: igor-makarov/shurik@v2
+        with:
+          inputs: ${{ steps.request.outputs.inputs }}
+          workflow: shurik.yml

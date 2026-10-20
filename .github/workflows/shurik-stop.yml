@@ -2,9 +2,6 @@ name: Stop Shurik swarm
 run-name: Stop current and legacy Shurik agents; keep model calls paused
 
 on:
-  push:
-    branches: [main]
-    paths: [.github/workflows/shurik-stop.yml]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        member: [maps-n-stuff-0, maps-n-stuff-1, maps-n-stuff-2, maps-n-stuff-3, zurich-maps-0, zurich-maps-1, zurich-maps-2, zurich-maps-3]
+        member: [maps-n-stuff-sources-20261020-0, maps-n-stuff-sources-20261020-1, maps-n-stuff-sources-20261020-2, maps-n-stuff-0, maps-n-stuff-1, maps-n-stuff-2, maps-n-stuff-3, zurich-maps-0, zurich-maps-1, zurich-maps-2, zurich-maps-3]
     concurrency:
       group: shurik-control-${{ matrix.member }}
       cancel-in-progress: false

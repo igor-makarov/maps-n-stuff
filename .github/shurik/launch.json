@@ -1,18 +1,19 @@
 {
   "command": "start",
-  "loop_id": "maps-n-stuff",
+  "loop_id": "maps-n-stuff-sources-20261020",
   "model": {
     "provider": "opencode-go",
     "name": "deepseek-v4.1-flash",
     "reasoning": "max"
   },
   "swarm": {
-    "agents": 4
+    "agents": 3
   },
   "create_pr": "false",
-  "prompt": "PROMPT.md",
+  "prompt": "SOURCING_PROMPT.md",
   "work-seconds": 1800,
   "wait-seconds": 0,
   "checkpoint-seconds": 0,
-  "checkpoint-paths": []
+  "checkpoint-paths": [],
+  "deadline": "2026-10-20T13:00:00Z"
 }

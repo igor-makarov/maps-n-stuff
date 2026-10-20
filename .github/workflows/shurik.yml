@@ -19,7 +19,7 @@ on:
         description: 'Required on manual start: {"provider":"opencode-go","name":"deepseek-v4.1-flash","reasoning":"max"}; blank resume retains settings'
         type: string
       swarm:
-        description: 'Manual start: {"agents":4}; leave blank on stop/resume'
+        description: 'Manual start: {"agents":3}; leave blank on stop/resume'
         type: string
       create_pr:
         description: Draft PR creation; keep false for direct delivery to main
@@ -117,6 +117,20 @@ jobs:
         with:
           command: iterate
           inputs: ${{ toJSON(inputs) }}
+      - name: Detect a hard model quota limit
+        id: quota
+        if: always()
+        env:
+          SHURIK_LOGS_PATH: ${{ steps.shurik.outputs.logs-path }}
+          SHURIK_GENERATION: ${{ inputs.generation }}
+          SHURIK_ITERATION: ${{ inputs.iteration }}
+        run: node .github/shurik/quota-check.mjs
+      - name: Durably stop instead of retrying exhausted model quota
+        if: always() && steps.quota.outputs.limited == 'true'
+        uses: igor-makarov/shurik@v2
+        with:
+          command: stop
+          loop-id: ${{ inputs.loop_id }}
       - name: Preserve emergency snapshot after publication failure
         if: failure() && steps.shurik.outputs.emergency-path != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
