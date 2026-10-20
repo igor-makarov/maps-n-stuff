@@ -202,7 +202,7 @@ test('the Worker is not an open proxy and holds no credentials', () => {
     // The worldwide gazetteer is the one non-Swiss upstream the app talks to;
     // it is admitted for `/search` only (see src/worker/allowlist.js).
     assert.ok(
-      /^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$|^nominatim\.openstreetmap\.org$|^www\.loc\.gov$|^tile\.loc\.gov$|^(purl|stacks)\.stanford\.edu$|^collections\.leventhalmap\.org$|^iiif\.digitalcommonwealth\.org$/.test(host),
+      /^(api3|wmts|data)\.geo\.admin\.ch$|^www\.e-rara\.ch$|^nominatim\.openstreetmap\.org$|^www\.loc\.gov$|^tile\.loc\.gov$|^(purl|stacks)\.stanford\.edu$|^collections\.leventhalmap\.org$|^iiif\.digitalcommonwealth\.org$|^ark\.digitalcommonwealth\.org$/.test(host),
       `unexpected proxy host ${host}`,
     );
   }

@@ -516,3 +516,45 @@ check should keep the request rate modest (`--concurrency 2`) rather than read a
 
 The script is deliberately *not* part of `npm run check`: the gate stays offline,
 hermetic and fast, and this check needs the network.
+
+## Leventhal Map & Education Center — Boston Public Library (imported 2026-10-20)
+
+The catalogues at `collections.leventhalmap.org` are a Blacklight application
+over the Digital Commonwealth repository. The documented JSON view is
+`https://collections.leventhalmap.org/search.json`; a complete cartographic
+inventory is `q=&per_page=100&page=N&f%5Bgenre_basic_ssim%5D%5B%5D=Maps`
+(15,233 records in 153 pages on 2026-10-20). The importer is
+`scripts/harvest-leventhal.mjs` (cached pages, resumable, no dependencies).
+
+Imported scope: every Boston Public Library record in the complete **Boston and
+New England Maps**, **American Revolutionary War-Era Maps**, **Maritime Charts
+and Atlases** and **Urban Maps** collections whose catalogue entry carries an
+affirmative rights determination — 4,781 records, publication years 1478–2021.
+Partner-held items in the same discovery feed (British Library, Library of
+Congress, Clements, Phillips Academy, …) are not imported: they are other
+institutions' collections.
+
+Rights are read per record, not from public access. The bundled records have
+`rights_ss` *No known copyright restrictions.* plus `license_ss` *No known
+restrictions on use.* and `reuse_allowed_ssi` *no restrictions* (4,770), or an
+explicit CC BY licence (11). The verbatim statements stay on every record.
+`Rights status not evaluated.`, `Contact host institution`, all-rights-reserved,
+CC BY-NC/NC-SA/NC-ND, permission-required and copyright-undetermined records are
+withheld and counted in `records.json.selection["leventhal:bpl"]`.
+
+Identifiers and endpoints: record page
+`https://collections.leventhalmap.org/search/commonwealth:<id>`, ARK
+`https://ark.digitalcommonwealth.org/ark:/50959/<id>`, IIIF manifest
+`https://ark.digitalcommonwealth.org/ark:/50959/<id>/manifest`, image service
+`https://iiif.digitalcommonwealth.org/iiif/2/commonwealth:<imageId>`, thumbnail
+`…/full/304,/0/default.jpg`. Attribution: *Norman B. Leventhal Map & Education
+Center, Boston Public Library*. Stable example: `leventhal:commonwealth:5712tb01h`
+(“Map of Washington ; map of Cincinnati”, 1880–1889). A deterministic 30-record
+sample verified on 2026-10-20 returned 30/30 HTTP 200 thumbnails and 30/30
+`info.json` responses; the full sample is recorded under the provider's
+`verification` field in `public/data/sources.json`.
+
+The remaining 5,461 eligible BPL records are deliberately not in this first
+increment: `records.json` is 14.76 MiB and must stay below Cloudflare's 25 MiB
+static-asset limit. They need catalogue sharding (or a larger-budget refresh)
+before import; they are not counted as coverage today.
