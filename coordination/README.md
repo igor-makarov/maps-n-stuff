@@ -1,4 +1,15 @@
-# Swarm coordination — zurich-maps
+# Swarm coordination
+
+> **Current loop (2026-10-20): `maps-n-stuff-sources-20261020`, three members.**
+> This file is kept for the earlier `zurich-maps` design phase; its decisions
+> (D1–D14) still describe the app's architecture and process rules. The status
+> board at the bottom is **historical** (2026-10-19/20, 213-record Swiss seed)
+> and is not current coverage. Authoritative sourcing status lives in
+> `SOURCING_PROMPT.md`, `SOURCING_STEERING.md`,
+> `coordination/sources-20261020-{0,1,2}.md` and `docs/data-sources.md`.
+> On 2026-10-20 12:05 UTC the merged product validated at **44,513 records
+> (7,536 core + 8 shards), 9 providers, 122 overlays** and 54 history
+> snapshots; `npm test` passed and the global browser harness 50/50.
 
 Four members (`zurich-maps-0` … `zurich-maps-3`) build one app on `main`.
 Shurik gives us no messaging channel, so **`main` is the message bus**.
