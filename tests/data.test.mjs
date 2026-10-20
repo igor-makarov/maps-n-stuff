@@ -237,3 +237,28 @@ test('international catalogue refreshes preserve existing maps and never infer f
     if (record.geo) assert.match(record.geoNote, /Approximate place anchor/);
   }
 });
+
+test('every bundled Leventhal record carries its primary rights evidence without relabelling', () => {
+  const bpl = records.filter((record) => record.providerId === 'leventhal');
+  assert.equal(bpl.length, 10242, 'the complete admitted BPL scope stays bundled');
+  const ccBy = bpl.filter((record) => record.rightsBasis === 'cc-by');
+  assert.equal(ccBy.length, 11);
+  for (const record of bpl) {
+    assert.equal(record.rightsStatement, record.rights.replace(record.licenseStatement ?? '', '').trim(), `${record.id}: the verbatim rights statement is preserved`);
+    assert.ok(record.licenseStatement, `${record.id}: the licence statement is preserved`);
+    assert.equal(record.rightsPolicyUrl, 'https://www.digitalcommonwealth.org/copyright');
+    assert.match(record.metadataSource, /^https:\/\/collections\.leventhalmap\.org\/search\/commonwealth:[a-z0-9]+\.json$/);
+    if (record.rightsBasis !== 'cc-by') {
+      assert.equal(record.rightsUrl, undefined, `${record.id}: a no-known-copyright record must not gain an invented licence URI`);
+    }
+  }
+  for (const record of ccBy) {
+    assert.equal(record.rightsUrl, 'https://creativecommons.org/licenses/by/4.0/', `${record.id}: the item's stated licence URI`);
+    assert.equal(record.licenseVersion, '4.0');
+    assert.ok(record.attribution && record.attribution.length > 20, `${record.id}: the stated credit is retained`);
+    assert.equal(record.rightsEvidenceSource, record.iiifManifest);
+  }
+  const provider = providerById.get('leventhal');
+  assert.equal(provider.rightsPolicy.copyright, 'https://www.digitalcommonwealth.org/copyright');
+  assert.match(provider.rightsPolicy.metadataReuse, /does not publish a separate metadata licence/i);
+});
