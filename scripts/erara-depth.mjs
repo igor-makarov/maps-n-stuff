@@ -3,7 +3,7 @@
  * e-rara depth harvest (member 2, sourcing swarm 2026-10-20).
  *
  * Completes the explicitly public-domain map subset of e-rara's documented
- * OAI-PMH map set `landkarten`. Discovery is the institution's OAI feed; the
+ * OAI-PMH map sets (`landkarten`, then `cartesgeneve`). Discovery is the institution's OAI feed; the
  * record itself is built from the item's IIIF Presentation 2 manifest (verbatim
  * title, imprint, holding library, shelfmark, stated Kartendaten bbox, thumbnail).
  *
@@ -43,6 +43,7 @@ const OFFLINE = args.includes('--offline');
 const DRY = args.includes('--dry-run');
 const OUT = resolve(arg('--out', 'public/data'));
 const SET = arg('--set', 'landkarten');
+const SELECTION_KEY = `e-rara:${SET}-depth`;
 const MAX_PAGES = Math.max(1, Number(arg('--max-pages', 40)) || 40);
 const MAX_NEW = Math.max(0, Number(arg('--max-new', 1200)) || 0);
 const START_CURSOR = Math.max(0, Number(arg('--cursor', 0)) || 0);
@@ -351,7 +352,7 @@ async function main() {
   const skipped = [];
   const queue = [];
 
-  const previousCursor = Number(recordsDoc.selection?.['e-rara:landkarten-depth']?.nextCursor ?? 0) || 0;
+  const previousCursor = Number(recordsDoc.selection?.[SELECTION_KEY]?.nextCursor ?? 0) || 0;
   const startCursor = START_CURSOR || previousCursor;
   const discovery = await discoverOaiPages(SET, startCursor, MAX_PAGES, async (rawRecords, cursor) => {
     stats.pages += 1;
@@ -398,7 +399,7 @@ async function main() {
   const added = mergeRecords(recordsDoc, incoming);
   stats.kept = added.length;
   const now = new Date().toISOString();
-  const previousRule = recordsDoc.selection?.['e-rara:landkarten-depth'] ?? null;
+  const previousRule = recordsDoc.selection?.[SELECTION_KEY] ?? null;
   const priorRuns = Array.isArray(previousRule?.runs)
     ? previousRule.runs
     : previousRule
@@ -444,22 +445,26 @@ async function main() {
     nextCursor: stats.nextCursor,
     endReached: stats.endReached,
     completeListSize: stats.completeListSize,
-    backlog: {
-      cursorWindow: '0-1440',
-      unimportedEligible: 793,
-      evidence: 'runs 1-2 read cursors 0-1440: 1,153 eligible unseen records, 360 imported, 180 of 234 and 180 of the following window were taken before the old queue cap. The 891-record run at cursor 1440 did not touch this window.',
-      note: 'The tail is complete; this documented head backlog is imported by a later rescan of cursors 0-1440. It is not counted as coverage.',
-    },
+    ...(SET === 'landkarten'
+      ? {
+          backlog: {
+            cursorWindow: '0-1440',
+            unimportedEligible: 0,
+            evidence: 'The 144-page rescan of cursors 10-1440 read 1,440 OAI records, found 973 unseen eligible maps and imported all 973; cursor 0 was read by the first depth run. completeListSize is 2,335.',
+            note: 'No unimported eligible record is known in the documented landkarten set.',
+          },
+        }
+      : {}),
     runs: [...priorRuns, thisRun],
     rule: 'Map records in the documented OAI set whose dc:rights is an explicit PDM 1.0 / CC0 / compatible public-domain statement; record built from the item IIIF manifest; existing ids preserved; no bbox, date or georeferencing requirement.',
     retrieved: now.slice(0, 10),
   };
-  recordsDoc.selection = { ...(recordsDoc.selection ?? {}), 'e-rara:landkarten-depth': rule };
+  recordsDoc.selection = { ...(recordsDoc.selection ?? {}), [SELECTION_KEY]: rule };
   recordsDoc.generatedAt = now;
   if (skipped.length) recordsDoc.skipped = [...(recordsDoc.skipped ?? []), ...skipped.slice(0, 200)];
   const source = sourcesDoc.providers.find((p) => p.id === 'e-rara');
   if (source) {
-    source.depthHarvest = {
+    const evidence = {
       ...rule,
       licence: 'PDM 1.0 per item (https://creativecommons.org/publicdomain/mark/1.0/); e-rara terms https://www.e-rara.ch/terms',
       attribution: 'e-rara.ch and the stated holding library',
@@ -467,6 +472,8 @@ async function main() {
         ? { id: added[0].id, recordUrl: added[0].recordUrl, iiifManifest: added[0].iiifManifest, thumbnail: added[0].thumbnail }
         : null,
     };
+    if (SET === 'landkarten') source.depthHarvest = evidence;
+    source.depthHarvests = { ...(source.depthHarvests ?? {}), [SET]: evidence };
   }
   sourcesDoc.generatedAt = now;
 
