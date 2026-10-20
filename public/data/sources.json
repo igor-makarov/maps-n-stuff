@@ -208,18 +208,6 @@
       "retrieved": "2026-10-19"
     },
     {
-      "id": "leventhal",
-      "name": "Leventhal Map & Education Center",
-      "homepage": "https://collections.leventhalmap.org/",
-      "attribution": "Leventhal Map & Education Center at the Boston Public Library / original holding collection",
-      "rights": "Item-level public-domain or compatible licence required. Partner collections are checked separately.",
-      "api": {
-        "catalogue": "https://collections.leventhalmap.org/search.json"
-      },
-      "mode": "live-search",
-      "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
-    },
-    {
       "id": "usgs",
       "name": "USGS Historical Topographic Maps",
       "homepage": "https://ngmdb.usgs.gov/topoview/",
@@ -231,8 +219,98 @@
       },
       "mode": "live-search",
       "method": "Fetched on explicit user search. This registry entry does not claim any bundled records or completed live verification."
+    },
+    {
+      "id": "leventhal",
+      "name": "Leventhal Map & Education Center — Boston Public Library",
+      "operator": "Boston Public Library, Norman B. Leventhal Map & Education Center",
+      "homepage": "https://collections.leventhalmap.org/",
+      "home": "https://collections.leventhalmap.org/",
+      "institutions": [
+        "Boston Public Library"
+      ],
+      "rights": "The verbatim rights and licence statement is retained on every record. Bundled records carry an affirmative no-known-copyright-restrictions / no-restrictions-on-use determination, NoC-US, CC0 or CC BY. Items without such a determination are not imported.",
+      "attribution": "Norman B. Leventhal Map & Education Center, Boston Public Library",
+      "retrieved": "2026-10-20",
+      "api": {
+        "catalogue": "https://collections.leventhalmap.org/search.json",
+        "manifest": "https://ark.digitalcommonwealth.org/ark:/50959/{id}/manifest",
+        "image": "https://iiif.digitalcommonwealth.org/iiif/2/{imageId}/full/304,/0/default.jpg",
+        "documentation": "https://www.digitalcommonwealth.org/"
+      },
+      "apiHosts": [
+        "collections.leventhalmap.org",
+        "ark.digitalcommonwealth.org",
+        "iiif.digitalcommonwealth.org"
+      ],
+      "method": "Documented Blacklight JSON search (genre Maps, per_page 100, 153 pages), filtered to Boston Public Library holdings in the complete Boston and New England, American Revolutionary War-Era, Maritime Charts and Atlases, and Urban Maps collections, with per-record rights evidence; no decade, geography or record-count cap.",
+      "collections": [
+        {
+          "id": "boston-new-england",
+          "name": "Boston and New England Maps",
+          "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Boston+and+New+England+Maps"
+        },
+        {
+          "id": "revolutionary-war",
+          "name": "American Revolutionary War-Era Maps",
+          "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=American+Revolutionary+War-Era+Maps"
+        },
+        {
+          "id": "maritime",
+          "name": "Maritime Charts and Atlases",
+          "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Maritime+Charts+and+Atlases"
+        },
+        {
+          "id": "urban",
+          "name": "Urban Maps",
+          "discovery": "https://collections.leventhalmap.org/search?q=&f%5Bcollection_name_ssim%5D%5B%5D=Urban+Maps"
+        }
+      ],
+      "verification": {
+        "retrieved": "2026-10-20",
+        "sample": 30,
+        "thumbnailOk": 30,
+        "imageInfoOk": 30,
+        "examples": [
+          {
+            "id": "leventhal:commonwealth:3x81cq09n",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "leventhal:commonwealth:kk91fq194",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "leventhal:commonwealth:q524n545g",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "leventhal:commonwealth:wd376804s",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          },
+          {
+            "id": "leventhal:commonwealth:6t053p42q",
+            "thumbnail": 200,
+            "info": 200,
+            "thumbnailType": "image/jpeg",
+            "infoType": "application/json;charset=utf-8"
+          }
+        ]
+      }
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T09:21:30.101Z"
+  "generatedAt": "2026-10-20T09:22:37.263Z"
 }
