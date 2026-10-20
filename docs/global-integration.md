@@ -44,10 +44,8 @@ to copy the entire OldMapsOnline index.
 ## Image alignment
 
 117 Stanford records expose provider-supplied Cloud Optimized GeoTIFF files,
-and 23,945 of the 24,000 bundled USGS HTMC records carry their original tiled
-GeoTIFF (main image plus internal overviews). The other 55 are GeoPDF-only
-products: they keep the original PDF download and make no COG/georeference or
-pixel-transform claim. The raster viewer uses their
+and every one of the 23,945 bundled USGS GeoTIFF records carries its original tiled
+GeoTIFF (main image plus internal overviews). The raster viewer uses their
 GeoKeys, source coordinate reference system, tiepoints or affine matrix, and
 raster resolution. It inverse-projects the current Web Mercator viewport into
 source pixels, reads a bounded raster window and paints it as an

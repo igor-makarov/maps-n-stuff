@@ -19,6 +19,11 @@ verbatim rights statements, licence URIs, original record URLs and retrieval
 dates. The provider entries moved here in `sources-withheld.json` keep the
 endpoints actually used and the evidence URLs.
 
+The primary-policy quotes gathered in the 12:10–12:16 UTC re-check, the reasons
+they are not a redistribution licence, and the restoration criteria are in
+`coordination/metadata-rights-decision-20261020.md`. They confirm the decision
+below; they do not clear any scope.
+
 ## Minimal ids and primary evidence links
 
 - Doria: `doria:84494` — <https://www.doria.fi/handle/10024/84494> — image

@@ -36,7 +36,7 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is cited to the catalogue and each contributing institution, and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination."
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content to be used in other applications and data services. Digital Commonwealth/BPL do not publish a separate metadata licence, so none is claimed; the API sentence documents machine access, not a redistribution licence. This scope is withheld from the shipped catalogue pending an applicable primary metadata-reuse permission or another substantiated basis; image rights remain separate and unchanged. See metadataReuse and coordination/metadata-rights-decision-20261020.md."
       },
       "verification": {
         "retrieved": "2026-10-20",
@@ -88,7 +88,8 @@
         "status": "withheld",
         "decided": "2026-10-20",
         "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
-        "evidence": "No separate metadata licence was found."
+        "evidence": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content 'to be used in other applications and data services' (retrieved 2026-10-20). https://www.digitalcommonwealth.org/copyright places no restrictions on public-domain material but does not grant a metadata licence and leaves each item's own terms as the gate. The API sentence documents machine access, not a redistribution licence; no separate metadata licence was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
@@ -190,7 +191,8 @@
         "status": "withheld",
         "decided": "2026-10-20",
         "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
-        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static page body is empty at retrieval (2026-10-20); https://www.doria.fi/page/about is an unfilled template. No repository-wide metadata licence or bulk-redistribution grant was found."
+        "evidence": "The public OAI-PMH endpoint is reachable and documented by Doria (ListSets/ListRecords). Each admitted item's MODS record states a CC0 1.0 / Public Domain use-and-reproduction condition (e.g. https://www.doria.fi/oai/request?verb=GetRecord&metadataPrefix=mods&identifier=oai:www.doria.fi:10024/84494, HTTP 200, retrieved 2026-10-20). The terms page https://www.doria.fi/page/terms answers HTTP 200 but its static body contains only the unfilled template placeholders StaticPageBodyHead / StaticPageBodyPara; https://www.doria.fi/page/about is an unfilled template. The per-item condition is an item/image right, not a repository-wide metadata licence; no such licence or bulk-redistribution grant was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       },
       "bundled": false,
       "recordsBundled": 0,
@@ -509,7 +511,7 @@
       "rightsPolicy": {
         "copyright": "https://www.digitalcommonwealth.org/copyright",
         "apiDocumentation": "https://www.digitalcommonwealth.org/api",
-        "metadataReuse": "The documented JSON search and item endpoints are publicly readable; Digital Commonwealth does not publish a separate metadata licence. Metadata is therefore cited to the catalogue and per-item rights statements are retained verbatim rather than relabelled. Images are reused only where the item itself carries an affirmative determination.",
+        "metadataReuse": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content to be used in other applications and data services. Digital Commonwealth/BPL do not publish a separate metadata licence, so none is claimed; the API sentence documents machine access, not a redistribution licence. This scope is withheld from the shipped catalogue pending an applicable primary metadata-reuse permission or another substantiated basis; image rights remain separate and unchanged. See metadataReuse and coordination/metadata-rights-decision-20261020.md.",
         "imageRightsBasis": {
           "no-known-restrictions": "rights_ss \"No known copyright restrictions.\" + license_ss \"No known restrictions on use.\" + reuse_allowed_ssi \"no restrictions\" as stated by the holding institution; retained verbatim, not labelled public domain or CC0.",
           "cc-by": "license_ss explicitly names a Creative Commons Attribution licence; the versioned licence URI (license_uri_ss or the IIIF manifest license) and the stated credit are retained.",
@@ -590,7 +592,8 @@
         "status": "withheld",
         "decided": "2026-10-20",
         "decision": "Bundled records withheld from the shipped reusable catalogue because no primary metadata-reuse licence or other substantiated redistribution basis was established for this scope. Image rights are separate and unchanged; full records are retained under research/withheld/ with their original evidence.",
-        "evidence": "No separate metadata licence was found."
+        "evidence": "The documented JSON search, OAI-PMH feed and item endpoints are publicly readable, and https://www.digitalcommonwealth.org/api states that the API allows metadata and image content 'to be used in other applications and data services' (retrieved 2026-10-20). https://www.digitalcommonwealth.org/copyright places no restrictions on public-domain material but does not grant a metadata licence and leaves each item's own terms as the gate. The API sentence documents machine access, not a redistribution licence; no separate metadata licence was found. Withheld under the 12:00 UTC steering; re-check the primary evidence before any restoration.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
@@ -630,6 +633,25 @@
       ],
       "verification": {
         "sample": 0
+      },
+      "metadataReuse": {
+        "status": "basis-recorded",
+        "decided": "2026-10-20T12:16Z",
+        "basis": "Every admitted SLUB object carries an explicit Public Domain Mark 1.0 MODS/DFG-viewer statement corroborated by slubarchiv:copyrightStatus=publicdomain, and SLUB's policy permits copying, modification, distribution and performance of PDM objects, including commercially, with the required source citation. The redistributed fields are the factual description published with that object. SLUB publishes no separate metadata licence; none is asserted.",
+        "primaryEvidence": [
+          {
+            "url": "https://nutzungshinweis.slub-dresden.de/",
+            "retrieved": "2026-10-20",
+            "quote": "Die Lizenz-, Rechte- oder Nutzungshinweise der SLUB werden für jede Kollektion und sukzessive für jedes Objekt angegeben."
+          },
+          {
+            "url": "https://nutzungshinweis.slub-dresden.de/",
+            "retrieved": "2026-10-20",
+            "quote": "Diese digitalen Objekte werden daher in der Regel unter der Public Domain Mark 1.0 zugänglich gemacht. Sie dürfen diese Werke kopieren, verändern, verbreiten und aufführen, sogar zu kommerziellen Zwecken, ohne irgendwie um Erlaubnis bitten zu müssen."
+          }
+        ],
+        "limits": "Only PDM-admitted objects; the rights-reserved and Copyright-Not-Evaluated objects remain withheld. The PDM statement is not stretched to those objects. Attribution and the PURL/URN stay on every record.",
+        "decisionNote": "coordination/metadata-rights-decision-20261020.md"
       }
     },
     {
@@ -834,7 +856,7 @@
         "prd-tnm.s3.amazonaws.com",
         "www.sciencebase.gov"
       ],
-      "method": "Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, GeoPDF/GeoTIFF downloads and the USGS public-domain policy. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.",
+      "method": "Documented TNM Access API products query (datasets=Historical Topographic Maps, max=1000, offset cursor). Each record keeps the ScienceBase item URL, publication date, product footprint, delivered GeoPDF/GeoTIFF downloads and the USGS public-domain policy. Products with only a GeoPDF are retained as scans without a raster georeference. The bundled slice is a reproducible prefix with a recorded next offset; the complete feed remains available through live search.",
       "collections": [
         {
           "id": "htmc",
@@ -844,19 +866,19 @@
       ],
       "verification": {
         "retrieved": "2026-10-20",
-        "sample": 8,
-        "previewOk": 8,
-        "previewChecked": 8,
-        "rasterRangeOk": 7,
-        "rasterChecked": 7,
-        "rasterReadable": 7,
-        "rasterCrsOk": 7,
-        "geopdfChecked": 1,
-        "geopdfOk": 1,
+        "sample": 12,
+        "previewOk": 12,
+        "previewChecked": 12,
+        "rasterRangeOk": 8,
+        "rasterChecked": 8,
+        "rasterReadable": 8,
+        "rasterCrsOk": 8,
+        "pdfRangeOk": 4,
+        "pdfChecked": 4,
+        "pdfMagic": 4,
         "examples": [
           {
             "id": "usgs:5a8a27e9e4b00f54eb3c4854",
-            "hasGeoreference": true,
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
@@ -865,7 +887,6 @@
             "rasterRange": "bytes 0-65535/6169437",
             "tiffMagic": true,
             "pdfStatus": null,
-            "pdfMagic": false,
             "readable": {
               "images": 8,
               "width": 5063,
@@ -877,21 +898,19 @@
             }
           },
           {
-            "id": "usgs:5a8a4a23e4b00f54eb3fe68e",
-            "hasGeoreference": true,
+            "id": "usgs:5a8a53dee4b00f54eb41083b",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/6963341",
+            "rasterRange": "bytes 0-65535/8288597",
             "tiffMagic": true,
             "pdfStatus": null,
-            "pdfMagic": false,
             "readable": {
               "images": 8,
-              "width": 4833,
-              "height": 5929,
+              "width": 4967,
+              "height": 6558,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -899,43 +918,39 @@
             }
           },
           {
-            "id": "usgs:5a8a53dee4b00f54eb410852",
-            "hasGeoreference": true,
+            "id": "usgs:65af2c28d34ef34c3506d976",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/8529648",
+            "rasterRange": "bytes 0-65535/13796482",
             "tiffMagic": true,
             "pdfStatus": null,
-            "pdfMagic": false,
             "readable": {
-              "images": 8,
-              "width": 4963,
-              "height": 6517,
+              "images": 9,
+              "width": 9194,
+              "height": 9494,
               "modelType": 1,
               "projectedCrs": 32767,
-              "geographicCrs": 4267,
+              "geographicCrs": 32767,
               "crsOk": true
             }
           },
           {
-            "id": "usgs:5a8a5022e4b00f54eb409227",
-            "hasGeoreference": true,
+            "id": "usgs:5a8a3f2fe4b00f54eb3eb396",
             "previewStatus": 206,
             "previewType": "image/jpeg",
             "rasterStatus": 206,
             "rasterType": "image/tiff",
             "rasterBytes": 65536,
-            "rasterRange": "bytes 0-65535/5362244",
+            "rasterRange": "bytes 0-65535/13732574",
             "tiffMagic": true,
             "pdfStatus": null,
-            "pdfMagic": false,
             "readable": {
               "images": 8,
-              "width": 4746,
-              "height": 6363,
+              "width": 6633,
+              "height": 8096,
               "modelType": 1,
               "projectedCrs": 32767,
               "geographicCrs": 4267,
@@ -947,5 +962,5 @@
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T12:34:39.507Z"
+  "generatedAt": "2026-10-20T12:29:44.825Z"
 }

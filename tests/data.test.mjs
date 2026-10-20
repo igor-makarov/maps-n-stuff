@@ -290,3 +290,27 @@ test('the metadata-reuse-unresolved scopes are withheld from the shipped catalog
     assert.equal(record.rightsEvidenceSource, record.iiifManifest);
   }
 });
+
+test('the 2026-10-20 metadata-reuse decision is evidenced for shipped and withheld scopes', () => {
+  const decisionNote = 'coordination/metadata-rights-decision-20261020.md';
+  const withheld = ['doria', 'leventhal', 'digitalcommonwealth'];
+  for (const id of withheld) {
+    const provider = providerById.get(id);
+    assert.equal(provider.bundled, false, `${id}: withheld scope is not bundled`);
+    assert.equal(provider.metadataReuse?.status, 'withheld', `${id}: the scope stays withheld`);
+    assert.equal(provider.metadataReuse.decisionNote, decisionNote, `${id}: the evidence note is linked`);
+    assert.match(provider.metadataReuse.evidence, /https:\/\//, `${id}: a primary URL is retained`);
+    assert.match(provider.metadataReuse.evidence, /not (?:a repository-wide metadata licence|a redistribution licence)/i, `${id}: the limit is explicit`);
+  }
+  const slub = providerById.get('slub').metadataReuse;
+  assert.equal(slub?.status, 'basis-recorded', 'SLUB keeps the PDM basis the merged decision accepted');
+  assert.equal(slub.decisionNote, decisionNote, 'SLUB links the evidence note');
+  assert.ok(slub.primaryEvidence?.length >= 2, 'SLUB primary evidence is retained');
+  for (const evidence of slub.primaryEvidence) {
+    assert.match(evidence.url, /^https:\/\//, 'SLUB primary evidence URL');
+    assert.ok(evidence.quote?.length > 20, 'SLUB primary evidence quote');
+  }
+  assert.ok(slub.limits?.length > 40, 'SLUB limits are explicit');
+  const shipped = JSON.stringify(sourcesFile);
+  assert.ok(!shipped.includes('unresolved-pending'), 'no provider metadata status stays unresolved');
+});

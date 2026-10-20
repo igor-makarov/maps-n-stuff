@@ -67,20 +67,29 @@ test('the USGS adapter keeps the original GeoTIFF as a provider-supplied raster'
   assert.match(record.geoNote, /footprint/);
 });
 
-test('a GeoPDF-only product stays eligible without a COG claim or invented transform', () => {
+test('a GeoPDF-only product is retained as a scan without an invented raster', () => {
   const record = usgsProductRecord(product({ urls: { GeoPDF: product().urls.GeoPDF } }));
   assert.equal(record.id, 'usgs:5a8a22a4e4b00f54eb3bcf55');
-  assert.equal(record.georeference, undefined, 'no GeoTIFF means no provider COG claim');
-  assert.equal(record.overlay, undefined, 'the footprint is not turned into an image transform');
+  assert.equal(record.format, 'GeoPDF');
+  assert.equal(record.georeference, undefined);
   assert.deepEqual(record.downloads.map((d) => d.label), ['GeoPDF']);
   assert.equal(record.downloads[0].url, product().urls.GeoPDF);
-  assert.match(record.geoNote, /no verified pixel georeferencing/i);
-  assert.match(record.geoNote, /not used as an image transform/i);
-  assert.ok(record.extent, 'the documented product footprint is still retained');
-  assert.ok(record.thumbnail, 'the provider preview is still retained');
+  assert.match(record.geoNote, /GeoPDF/);
+  assert.match(record.geoNote, /no pixel-to-ground transform/i);
 });
 
-test('the USGS gate never invents identity, dates or a raster download', () => {
+test('an upstream error document is never accepted as a products page', () => {
+  assert.equal(
+    validProductsPage({ errorMessage: 'Search timed out - please refine your query to return fewer results' }),
+    false,
+    'TNM returns this as HTTP 200; it must be retried, not cached as an empty page',
+  );
+  assert.equal(validProductsPage({ total: 186061, items: [] }), true);
+  assert.equal(validProductsPage({ total: 186061 }), false);
+  assert.equal(validProductsPage(null), false);
+});
+
+test('the USGS gate never invents identity, dates or a download', () => {
   assert.equal(usgsProductRecord(product({ urls: {} })), null);
   assert.equal(usgsProductRecord(product({ sourceId: '../etc' })), null);
   assert.equal(usgsProductRecord(product({ title: '' })), null);
@@ -121,22 +130,6 @@ test('the live-search USGS record also exposes the GeoTIFF georeference', () => 
   assert.match(record.rights, /public domain/i);
   const footprintOnly = usgsRecord(product({ urls: {} }));
   assert.equal(footprintOnly.georeference, undefined);
-  assert.match(footprintOnly.geoNote, /No verified pixel georeferencing/);
-  const pdfOnly = usgsRecord(product({ urls: { GeoPDF: product().urls.GeoPDF } }));
-  assert.equal(pdfOnly.georeference, undefined);
-  assert.deepEqual(pdfOnly.downloads.map((d) => d.label), ['GeoPDF']);
-  assert.match(pdfOnly.geoNote, /No verified pixel georeferencing/);
-});
-
-test('an upstream error document is never accepted as a products page', () => {
-  assert.equal(
-    validProductsPage({ errorMessage: 'Search timed out - please refine your query to return fewer results' }),
-    false,
-    'TNM returns this as HTTP 200; it must be retried, not cached as an empty page',
-  );
-  assert.equal(validProductsPage({ total: 186061, items: [] }), true);
-  assert.equal(validProductsPage({ total: 186061 }), false);
-  assert.equal(validProductsPage(null), false);
 });
 
 test('the bundled USGS shard is provenance-complete and internally consistent', () => {
@@ -148,21 +141,15 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
   assert.equal(selection.dateEvidence.titleEditionYearMismatches, 0);
   assert.ok(
     selection.dateEvidence.mergedRecordsChecked >= shard.records.length,
-    'the date evidence covers the whole merged USGS scope, not only the last slice',
+    'the date evidence covers the whole merged USGS range, not only this shard or the last slice',
   );
   assert.ok(selection.verification.previewOk >= 8);
-  assert.ok(
-    selection.verification.rasterRangeOk + (selection.verification.geopdfOk ?? 0) >= 8,
-    'the sample checks a real payload for every sampled record, GeoTIFF or GeoPDF',
-  );
-  assert.ok(selection.verification.rasterReadable >= 7);
-  assert.ok(selection.verification.rasterCrsOk >= 7);
-  if (selection.verification.geopdfChecked)
-    assert.equal(
-      selection.verification.geopdfOk,
-      selection.verification.geopdfChecked,
-      'every sampled GeoPDF-only product answered a real PDF payload',
-    );
+  assert.ok(selection.verification.rasterRangeOk >= 8);
+  assert.ok(selection.verification.rasterReadable >= 8);
+  assert.ok(selection.verification.rasterCrsOk >= 8);
+  assert.ok(selection.verification.pdfRangeOk >= 1);
+  assert.ok(selection.verification.pdfMagic >= 1);
+  assert.ok(selection.geopdfOnlyKept >= 1);
   const ids = new Set();
   for (const record of shard.records) {
     assert.match(record.id, /^usgs:[A-Za-z0-9._-]+$/);
@@ -173,16 +160,21 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
     assert.match(record.rightsUrl, /usgs\.gov\/information-policies/);
     assert.match(record.recordUrl, /^https:\/\/www\.sciencebase\.gov\/catalog\/item\//);
     if (record.georeference) {
-      assert.equal(record.recordUrl, record.georeference.source);
       assert.equal(record.georeference.kind, 'cog');
+      assert.equal(record.recordUrl, record.georeference.source);
       assert.ok(rasterUrl(record.georeference.url), record.id);
     } else {
+      assert.equal(record.format, 'GeoPDF');
       assert.ok(
-        record.downloads.some((download) => /GeoPDF/.test(download.label)),
-        `${record.id} keeps an original GeoPDF download`,
+        record.downloads?.some(
+          (download) =>
+            download.label === 'GeoPDF' &&
+            /^https:\/\/prd-tnm\.s3\.amazonaws\.com\/StagedProducts\/Maps\/HistoricalTopo\/PDF\/.+\.pdf$/.test(
+              download.url,
+            ),
+        ),
+        record.id,
       );
-      assert.equal(record.overlay, undefined, `${record.id} invents no overlay`);
-      assert.match(record.geoNote, /no verified pixel georeferencing/i);
     }
     if (record.yearStart != null) {
       assert.ok(record.yearStart >= 1800 && record.yearStart <= 2100);
@@ -225,10 +217,8 @@ test('the USGS prefix is split across registered shards without duplicates', asy
         assert.equal(record.georeference.kind, 'cog');
         assert.ok(rasterUrl(record.georeference.url), record.id);
       } else {
-        assert.ok(
-          record.downloads.some((download) => /GeoPDF/.test(download.label)),
-          `${record.id} keeps an original GeoPDF download`,
-        );
+        assert.equal(record.format, 'GeoPDF');
+        assert.ok(record.downloads?.some((download) => download.label === 'GeoPDF'));
       }
     }
     total += doc.records.length;

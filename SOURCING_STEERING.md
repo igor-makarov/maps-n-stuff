@@ -1,5 +1,49 @@
 # Sourcing steering — 20 October 2026
 
+## User-authorized extension: 15:27 Jerusalem / 12:27 UTC
+
+**The user explicitly extended this existing run until 19:00 Asia/Jerusalem
+today (2026-10-20T16:00:00Z).** This section supersedes every earlier 15:00 local
+wrap-up, 16:00 local stop and 13:00 UTC deadline instruction below. The native
+`control.json` deadline has been updated for exactly the three current member
+ids, preserving their owner, generation, three-agent identity, DeepSeek v4.1
+Flash/max reasoning, 1,800-second iteration budgets, wait 0 and checkpoint 0.
+No healthy member was interrupted or restarted. The authorization is in
+`.github/shurik/sourcing-extension.json`; the original pinned launch request
+stays historical and must not be edited to trigger a new launch.
+
+**Resume productive sourcing and integration through 18:00 local / 15:00 UTC,
+then wrap up and verify. Hard stop: 19:00 local / 16:00 UTC.** Use the final
+15 minutes for integration/verification and the last five for coherent commits
+and evidence. Hourly Codex steering and final shutdown verification have been
+extended to this deadline. Do not change models/counts or extend it further.
+Eight retired members and any quota-stopped current member must stay stopped.
+
+The sourcing goal and copyright rules are unchanged. Choose your own ownership
+and coordination. Current main contains 31,637 records after the documented
+withholding of Doria, BPL and Digital Commonwealth metadata scopes. Preserve
+that rights decision and original evidence; extra time is not a grant to restore
+them. Restore a scope only after an applicable primary permission or another
+substantiated metadata redistribution basis is established, recorded and tested.
+Keep image rights separate. Do not call withheld research assets bundled maps.
+
+Use the extra time for complementary original-source work and concrete quality
+gaps: resolve a promising source's real metadata/image terms, admit eligible
+USGS GeoPDF-only scans, and improve loading/indexing before another large
+catalogue expansion. Do not spend three more hours solely inflating a USGS
+prefix or re-probing the same challenged URLs. Prefer additional independently
+usable institutional holdings with real imports and previews/original links.
+Unknown dates, extents and alignment remain eligible; never invent metadata or
+turn a bbox into image alignment. Keep the English global UI, archival original
+titles/official names, maps-n-stuff identity, historical borders and Cloudflare
+build/deploy ownership. Publish ordinary tested commits directly to main.
+
+Read this latest guidance on main at each iteration and before another major
+source. Native current-iteration instructions may still mention the old cutoff
+until a fresh iteration starts; the authoritative control deadline and this
+explicit user extension are 16:00 UTC. A normal 30-minute budget expiry can
+continue under that deadline; a real exhausted-quota failure must durably stop.
+
 ## Final-hour direction: 15:00 Asia/Jerusalem / 12:00 UTC
 
 **Switch now to wrap-up, integration, rights decisions and verification. Do not
