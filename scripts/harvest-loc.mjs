@@ -258,14 +258,24 @@ async function fetchJson(url, { attempts = 4, timeout = 25000 } = {}) {
       if (res.ok) {
         const body = await res.text();
         if (body.trimStart().startsWith('{')) return JSON.parse(body);
+        if (/Just a moment|Enable JavaScript and cookies/i.test(body)) {
+          throw new Error(`blocked by the LoC edge challenge: ${url}`);
+        }
         last = new Error(`non-JSON response from ${url}`);
       } else {
+        const body = await res.text().catch(() => '');
+        if (res.status === 429 || /Just a moment|Enable JavaScript and cookies/i.test(body)) {
+          throw new Error(
+            `blocked by the LoC edge challenge (HTTP ${res.status}); stop and retry later: ${url}`,
+          );
+        }
         last = new Error(`HTTP ${res.status} from ${url}`);
-        if (res.status !== 429 && res.status < 500) break;
-        // LoC rate-limits bursts: wait longer than the ordinary retry delay.
-        if (res.status === 429) await sleep(5000 * attempt);
+        if (res.status < 500) break;
       }
     } catch (error) {
+      // A Cloudflare "Just a moment" page is not a transient timeout: stop the
+      // run instead of hammering the collection and extending the block.
+      if (/blocked by the LoC edge challenge/i.test(String(error.message))) throw error;
       last = error;
     }
     await sleep(800 * attempt);
@@ -398,7 +408,9 @@ async function main() {
   const withheld = {};
   const records = [];
   const failed = [];
+  let challenged = null;
   await pool(queue, CONCURRENCY, async ({ id }) => {
+    if (challenged) return;
     let body;
     const cache = itemCache(id);
     if (CACHED_ONLY) {
@@ -415,6 +427,7 @@ async function main() {
           timeout: 25000,
         });
       } catch (error) {
+        if (/edge challenge/i.test(String(error.message))) challenged = String(error.message);
         failed.push({ id, error: String(error.message) });
         return;
       }
@@ -435,6 +448,7 @@ async function main() {
   console.log('Rights bases:', records.reduce((acc, r) => ((acc[r.rightsBasis] = (acc[r.rightsBasis] || 0) + 1), acc), {}));
   console.log('Top withholding reasons:', Object.entries(withheld).sort((a, b) => b[1] - a[1]).slice(0, 6));
   if (failed.length) console.log('Fetch failures:', failed.slice(0, 5));
+  if (challenged) console.log(`STOPPED by the LoC edge challenge; ${queue.length - records.length - Object.values(withheld).reduce((a, b) => a + b, 0)} item requests were skipped. ${challenged}`);
 
   const recordsPath = resolve(OUT, 'records.json');
   const sourcesPath = resolve(OUT, 'sources.json');
@@ -479,6 +493,7 @@ async function main() {
     rightsBasis: records.reduce((acc, r) => ((acc[r.rightsBasis] = (acc[r.rightsBasis] || 0) + 1), acc), {}),
     withheld,
     fetchFailures: failed.length,
+    edgeChallenge: challenged ?? false,
     rule: `Library of Congress ${SCOPE.label}: ${SCOPE.rule}. Admitted only when the item's partof names the Geography and Map Division, the item's own rights statement affirmatively permits free reuse or names the public domain, and no Rights Advisory states a restriction. Public access or age alone is not evidence.`,
     resumable: {
       scope: scopeName,
