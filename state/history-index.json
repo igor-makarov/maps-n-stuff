@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "1-1",
+    "outcome": "yielded",
+    "runId": "39397571058",
+    "journalId": "1-1",
+    "minEntryId": 7,
+    "maxEntryId": 537,
+    "transcript": "complete"
+  }
+]
