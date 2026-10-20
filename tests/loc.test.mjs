@@ -217,14 +217,14 @@ test('the bundled shard omits the eight dead general-map image services', async 
     assert.ok(record.rights.length > 0);
   }
   const verification = shard.selection.verification;
-  assert.equal(verification.checked, 50);
-  assert.equal(verification.imageInfoOk, 42);
+  assert.equal(verification.checked, 51);
+  assert.equal(verification.imageInfoOk, 43);
   assert.equal(verification.withheldDeadImageServices, 8);
   assert.deepEqual(verification.deadImageServiceIds, dead);
   // The 42 kept services are the ones that answered; do not let a future
   // rebuild silently restore a whole-item service without the collection class.
   const kept = shard.records.filter((record) => record.imageService);
-  assert.equal(kept.length, 42);
+  assert.equal(kept.length, 43);
   for (const record of kept) {
     assert.match(record.imageService, /^https:\/\/tile\.loc\.gov\/image-services\/iiif\/service:gmd:/);
     assert.match(record.imageService, /:gmd(?:\d+m?|3m):/);

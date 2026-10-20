@@ -3,14 +3,21 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **44,512
-records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
-Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
-23,945 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 3,045 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
-and 50 Library of Congress records. The Library of Congress and USGS slices are
-verified partial imports, not the whole institutions; both record their resumable
-cursors. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
+[global integration notes](global-integration.md). The bundle contains **31,637
+records** from six bundled providers: 23,945 USGS Historical Topographic Map
+Collection sheets, 4,464 Stanford public-domain maps, 3,045 e-rara maps, 105
+SLUB Dresden maps, 51 Library of Congress records and 27 swisstopo entries. The
+Library of Congress and USGS slices are verified partial imports, not the whole
+institutions; both record their resumable cursors.
+
+Three further scopes were harvested with per-item **image** rights evidence but
+are **withheld** from the shipped catalogue because no primary metadata-reuse
+licence or other substantiated redistribution basis was established for their
+catalogue records: Doria / National Library of Finland (1,662), Leventhal /
+Boston Public Library (10,242) and the Digital Commonwealth partner-held scope
+(972). Their full records, provider endpoints and policy evidence are retained
+under `research/withheld/` (not served) and are not counted above. Image rights
+for those scopes are unchanged and are not a grant for this metadata reuse. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
 the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
 browser renderer on each of the three slices) are representative, not a claim
 that every one of the 23,945 was individually opened.

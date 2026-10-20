@@ -5,18 +5,22 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 44,512 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
-Library, 972 Digital Commonwealth partner-held, 23,945 USGS Historical
-Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
-3,045 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records.
-Stanford and Doria contribute worldwide holdings; USGS adds public-domain
-coverage of the United States and its territories. Dates, thumbnails, extents and
-alignment are optional. Image reuse rights are not.
+The bundle contains 31,637 maps: 23,945 USGS Historical Topographic Map
+Collection sheets, 4,464 Stanford, 3,045 e-rara, 105 SLUB Dresden, 51 Library of
+Congress and 27 swisstopo records. Stanford and e-rara contribute worldwide
+holdings; USGS adds public-domain coverage of the United States and its
+territories. Dates, thumbnails, extents and alignment are optional. Image reuse
+rights are not.
+
+Doria / National Library of Finland (1,662), Leventhal / Boston Public Library
+(10,242) and the Digital Commonwealth partner-held scope (972) are **withheld**
+from the shipped catalogue: their per-item image rights are documented, but no
+primary metadata-reuse licence or other substantiated redistribution basis was
+established for the catalogue records. The full records and evidence are kept in
+`research/withheld/`, outside the served assets, and are not counted above.
 
 The bundled providers are published either in the core document or in one of the
-registered shards (`/data/records/leventhal.json`,
-`/data/records/digitalcommonwealth.json`, `/data/records/loc.json`,
-`/data/records/doria.json`, `/data/records/slub.json`,
+registered shards (`/data/records/loc.json`, `/data/records/slub.json`,
 `/data/records/usgs.json`, `/data/records/usgs-2.json`,
 `/data/records/usgs-3.json`). The browser loader and
 the Worker merge them; a failed shard is reported without discarding the rest of
