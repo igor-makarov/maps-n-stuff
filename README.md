@@ -21,14 +21,20 @@ npm run dev
 
 Cloudflare’s connected repository integration handles build and deployment from `main`:
 
+**Deployments are paused at the owner's request.** `DEPLOYMENT_PAUSED` makes
+`npm run build` stop intentionally before building, so new connected Cloudflare
+builds cannot reach deployment. The Cloudflare hook workflow has no cron and its
+job is disabled. Resume both only after an explicit request; removing the pause
+file re-enables builds, and restoring the workflow re-enables hook triggers.
+
 - Build command: `npm run build`
 - Deploy command: `npx wrangler deploy`
 - Root directory: repository root
 
-The [Cloudflare build workflow](.github/workflows/cloudflare-build.yml) calls the
-repository Actions secret `CF_WEBHOOK` every 30 minutes (at minutes 00 and 30 UTC).
-It can also be run manually from Actions. GitHub only triggers the hook;
-Cloudflare performs the build and deployment.
+The [Cloudflare build workflow](.github/workflows/cloudflare-build.yml) retains
+the `CF_WEBHOOK` secret reference, but its 30-minute schedule and manual trigger
+job are paused. GitHub only triggers the hook; Cloudflare performs builds and
+deployments when enabled.
 
 The package, Wrangler Worker and new Shurik member names are `maps-n-stuff`, matching the repository. The Cloudflare connected Worker must also be named `maps-n-stuff`; an existing `zurich-maps` project needs that dashboard migration and any custom-domain reassignment. Changing this repository does not rename an account-side Worker. No Cloudflare credentials belong in Shurik or this repository.
 
@@ -44,6 +50,11 @@ See [the source registry](public/data/sources.json), [data-source documentation]
 The [global catalogue audit](docs/global-catalogue-audit.md) records integration routes, rights restrictions and real georeferencing requirements for all 50 entries in OldMapsOnline's public partner directory. Its [research registry](data/catalogue-source-audit.json) is separate from the deployed source list; prospective providers have not been imported or cleared wholesale.
 
 ## Shurik
+
+**The sourcing run and hourly steering are stopped at the owner's request.**
+The previous deadline extension below is historical authorization, not a request
+to restart. All three current member controls are stopped; retired loops stay
+stopped. Do not resume without a new explicit instruction.
 
 The authorized 20 October sourcing run uses **three** DeepSeek v4.1 Flash agents
 with max reasoning, 30-minute iteration budgets, zero waiting and automatic task

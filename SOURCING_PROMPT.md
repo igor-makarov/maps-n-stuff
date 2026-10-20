@@ -1,5 +1,9 @@
 # Expand the global historical-map catalogue
 
+**USER STOPPED THIS RUN on 20 October 2026. Do not continue sourcing, restart
+members or resume from the old deadline authorization. Deployments are paused.
+Everything below is historical task context until the user explicitly resumes.**
+
 The user's current objective is to solve sourcing and accumulate as many real,
 usable map sources and historical maps as possible before today's deadline.
 This brief supersedes older four-agent, German or Zurich-first instructions.

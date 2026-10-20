@@ -1,5 +1,19 @@
 # Sourcing steering — 20 October 2026
 
+## Stopped at the user's request — 20 October 2026
+
+The user instructed: “stop the loop and pause the deployments”. All three
+current sourcing controls have been durably stopped, and hourly steering is
+disabled. Do not resume sourcing, perform another iteration or restart retired
+members based on any earlier instruction below. The previous 19:00 deadline
+does not authorize continuation after this stop.
+
+Cloudflare's hook cron is removed and its manual job disabled. The
+`DEPLOYMENT_PAUSED` guard intentionally blocks `npm run build` before assets
+are built, preventing new connected builds from deploying. Preserve source
+work and evidence as they stand; deployment/sourcing may resume only on a new
+explicit user instruction. Earlier steering is historical.
+
 ## Codex review: 16:07 Jerusalem / 13:07 UTC
 
 This is the latest direction, under the user's **19:00 Jerusalem / 16:00 UTC**

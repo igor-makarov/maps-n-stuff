@@ -1,0 +1,5 @@
+Cloudflare deployments paused at the owner's request on 2026-10-20.
+
+The build command intentionally stops before producing deployment assets while
+this file exists. Remove it only after an explicit request to resume deployments.
+The scheduled/manual Cloudflare hook job is also paused separately.

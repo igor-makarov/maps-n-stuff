@@ -1,8 +1,6 @@
 name: Trigger Cloudflare build
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions: {}
@@ -13,6 +11,9 @@ concurrency:
 
 jobs:
   trigger:
+    # Paused at the owner's request. Restore the schedule and this job only
+    # after an explicit request to resume deployments.
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
