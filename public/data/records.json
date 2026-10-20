@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-20T10:38:05.709Z",
+  "generatedAt": "2026-10-20T10:45:31.321Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
-  "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232, combining oai_dc discovery, MODS date/rights and ORE bitstreams; rights-gated and published as a catalogue shard.",
+  "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation; they are bundled in /data/records/leventhal.json and merged by the catalogue loader. Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232 is harvested through oai_dc discovery, MODS date/rights and ORE bitstreams; records are rights-gated and published as /data/records/doria.json.",
   "selection": {
     "e-rara:zuz": {
       "considered": 41,
@@ -176,6 +176,12 @@
       "rightsBasis": {
         "no-known-restrictions": 10231,
         "cc-by": 11
+      },
+      "rightsEvidence": {
+        "withRightsUrl": 11,
+        "withPolicyUrl": 10242,
+        "ccByManifestEnriched": 11,
+        "ccByEvidenceFailed": 0
       },
       "withheld": {
         "rights withheld: Copyright Ancient World Mapping Center, University of North Carolina at Chapel Hill": 8,
