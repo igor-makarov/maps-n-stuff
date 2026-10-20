@@ -10,10 +10,13 @@
  * Every admitted record is a USGS-produced historical quadrangle. The API
  * supplies its own ScienceBase item URL, publication date, footprint and the
  * original GeoPDF *and* GeoTIFF downloads. The GeoTIFF is a tiled raster with
- * internal overviews; the catalogue records it as a provider-supplied native
- * raster so the existing GeoTIFF renderer can show it without inventing any
- * pixel-to-ground control points. The bounding box is the product footprint,
- * never a substitute for the raster's own georeferencing.
+ * internal overviews; where it exists the catalogue records it as a
+ * provider-supplied native raster so the existing GeoTIFF renderer can show it
+ * without inventing any pixel-to-ground control points. Some products deliver
+ * only a GeoPDF: those are admitted as unaligned scans (Georeferencing is
+ * preferred, not required), without a `kind: cog` claim or a bbox transform.
+ * The bounding box is always the product footprint, never a substitute for the
+ * raster's own georeferencing.
  *
  * Rights: USGS states "USGS-authored or produced data and information are
  * considered to be in the U.S. Public Domain." Each record carries that
@@ -124,8 +127,10 @@ const S3_HOSTS = ['prd-tnm.s3.amazonaws.com'];
 
 /**
  * One TNM product → catalogue record. Returns null for products that are not
- * USGS HTMC maps or do not deliver the original GeoTIFF we claim. No missing
- * metadata is filled in: an undated sheet stays undated.
+ * USGS HTMC maps or deliver neither original GeoTIFF nor original GeoPDF. A
+ * GeoPDF-only product stays eligible and is labelled as an unaligned scan: no
+ * `kind: cog`, no invented transform. No missing metadata is filled in: an
+ * undated sheet stays undated.
  */
 export function usgsProductRecord(item) {
   const sourceId = clean(item?.sourceId ?? item?.id);
@@ -133,8 +138,8 @@ export function usgsProductRecord(item) {
   const title = clean(item?.title);
   if (!title) return null;
   const geotiff = httpsUrl(item?.urls?.GeoTIFF, S3_HOSTS, GEOTIFF_PATH);
-  if (!geotiff) return null;
   const geospatialPdf = httpsUrl(item?.urls?.GeoPDF, S3_HOSTS, GEOPDF_PATH);
+  if (!geotiff && !geospatialPdf) return null;
   const preview = httpsUrl(item?.previewGraphicURL, S3_HOSTS, PREVIEW_PATH);
   const metaUrl = httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov']);
   if (!metaUrl) return null;
@@ -167,17 +172,22 @@ export function usgsProductRecord(item) {
           lon: (extent.west + extent.east) / 2,
         }
       : null,
-    geoNote:
-      'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.',
-    georeference: {
-      kind: 'cog',
-      url: geotiff,
-      source: metaUrl,
-      status: 'provider-supplied',
-      format: 'GeoTIFF',
-    },
+    geoNote: geotiff
+      ? 'Catalogue extent is the USGS product footprint. The GeoTIFF carries its own pixel georeferencing; no transform is inferred from the bbox.'
+      : 'Catalogue extent is the USGS product footprint. Only an original GeoPDF was delivered, so this record is an unaligned scan; no pixel-to-ground transform is bundled.',
+    ...(geotiff
+      ? {
+          georeference: {
+            kind: 'cog',
+            url: geotiff,
+            source: metaUrl,
+            status: 'provider-supplied',
+            format: 'GeoTIFF',
+          },
+        }
+      : {}),
     downloads: [
-      { label: 'GeoTIFF', url: geotiff },
+      ...(geotiff ? [{ label: 'GeoTIFF', url: geotiff }] : []),
       ...(geospatialPdf ? [{ label: 'GeoPDF', url: geospatialPdf }] : []),
     ],
     format: clean(item?.format) || null,
@@ -261,12 +271,16 @@ async function ranged(url, accept = 'image/tiff') {
       bytes.length >= 4 &&
       ((bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
         (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a));
+    const pdf =
+      bytes.length >= 4 &&
+      bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
     return {
       status: response.status,
       type: response.headers.get('content-type'),
       bytes: bytes.length,
       range: response.headers.get('content-range'),
       tiff: magic,
+      pdf,
     };
   } catch (error) {
     return { status: 0, error: String(error.message) };
@@ -284,11 +298,22 @@ function sampleOf(records, limit) {
 
 export async function verify(records, limit = 8) {
   const sample = sampleOf(records, limit);
+  // Make sure the evidence covers a GeoPDF-only scan when the slice has one,
+  // rather than accidentally sampling only GeoTIFF products.
+  if (sample.length && !sample.some((record) => !record.georeference)) {
+    const firstScan = records.find((record) => !record.georeference);
+    if (firstScan) sample[sample.length - 1] = firstScan;
+  }
   const results = await pool(sample, 3, async (record) => {
     const preview = record.thumbnail
       ? await ranged(record.thumbnail, 'image/jpeg')
       : { status: null };
-    const raster = await ranged(record.georeference.url);
+    const raster = record.georeference
+      ? await ranged(record.georeference.url)
+      : { status: null };
+    const scan = !record.georeference
+      ? await ranged(record.downloads.find((d) => d.label === 'GeoPDF')?.url, 'application/pdf')
+      : { status: null };
     let readable = null;
     if (raster.status === 206 && raster.tiff) {
       try {
@@ -336,6 +361,11 @@ export async function verify(records, limit = 8) {
       rasterBytes: raster.bytes,
       rasterRange: raster.range,
       tiffMagic: raster.tiff,
+      scanStatus: scan.status,
+      scanType: scan.type,
+      scanBytes: scan.bytes,
+      scanRange: scan.range,
+      pdfMagic: scan.pdf,
       readable,
     };
   });
@@ -349,6 +379,8 @@ export async function verify(records, limit = 8) {
     rasterChecked: results.filter((r) => r.rasterStatus != null).length,
     rasterReadable: results.filter((r) => r.readable && !r.readable.error && r.readable.images > 0).length,
     rasterCrsOk: results.filter((r) => r.readable?.crsOk).length,
+    pdfRangeOk: results.filter((r) => r.scanStatus === 206 && r.pdfMagic).length,
+    pdfChecked: results.filter((r) => r.scanStatus != null).length,
     examples: results.map((r) => ({
       ...r,
       readable: r.readable
@@ -405,11 +437,11 @@ async function main() {
       seen.add(sourceId);
       const record = usgsProductRecord(item);
       if (!record) {
-        const reason = !item?.urls?.GeoTIFF
-          ? 'no GeoTIFF download delivered'
+        const reason = !item?.urls?.GeoTIFF && !item?.urls?.GeoPDF
+          ? 'no GeoTIFF or GeoPDF download delivered'
           : !httpsUrl(item?.metaUrl, ['www.sciencebase.gov', 'www.usgs.gov'])
             ? 'no ScienceBase item URL'
-            : 'identity gate (title/source id)';
+            : 'identity gate (title/source id or unusable download URL)';
         withheld[reason] = (withheld[reason] || 0) + 1;
         continue;
       }
@@ -448,9 +480,15 @@ async function main() {
     }
   }
   const preserved = existing.size;
+  const previouslyKnown = new Set(existing.keys());
   for (const record of records) {
     existing.set(record.id, record);
-    targetExisting.set(record.id, record);
+    // Replaying an already-imported prefix must add only products that were
+    // previously withheld. Records already owned by another shard stay there;
+    // they are never copied into the target shard (which would double the
+    // asset and break the 24 MiB split).
+    if (!previouslyKnown.has(record.id) || targetExisting.has(record.id))
+      targetExisting.set(record.id, record);
   }
   const shardRecords = [...targetExisting.values()].sort(
     (a, b) => (a.yearStart ?? 9999) - (b.yearStart ?? 9999) || a.id.localeCompare(b.id),
@@ -482,7 +520,7 @@ async function main() {
   recordsDoc.generatedAt = new Date().toISOString();
   recordsDoc.retrieved = RETRIEVED;
   if (!recordsDoc.method?.includes('USGS Historical Topographic Map Collection records are imported'))
-    recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download; they are bundled in ${shard}.`;
+    recordsDoc.method = `${recordsDoc.method ? recordsDoc.method + ' ' : ''}USGS Historical Topographic Map Collection records are imported from the documented TNM Access API with the original GeoTIFF download where delivered, or the original GeoPDF scan when no GeoTIFF exists; they are bundled in ${shard}.`;
   recordsDoc.selection ??= {};
   recordsDoc.selection['usgs:htmc'] = {
     scope: 'USGS Historical Topographic Map Collection (HTMC)',
@@ -509,7 +547,7 @@ async function main() {
     rightsBasis:
       'USGS official statement "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (copyrights-and-credits page), applicable to USGS-produced HTMC products; each record carries the policy URL and USGS attribution.',
     rule:
-      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps, carries a ScienceBase item URL and a delivered original GeoTIFF download. Undated products and products without a preview stay eligible; products without a GeoTIFF are withheld. The bbox is the product footprint, not an image transform.',
+      'Every admitted product is returned by the TNM Access API under datasets=Historical Topographic Maps, carries a ScienceBase item URL and a delivered original GeoTIFF or GeoPDF download. Undated products and products without a preview stay eligible. A GeoTIFF product carries a provider-supplied native raster; a GeoPDF-only product is an unaligned scan with no kind:cog claim and no invented transform. The bbox is the product footprint, not an image transform.',
     resumable: {
       nextOffset: START_OFFSET + PAGES * PAGE_SIZE,
       pageSize: PAGE_SIZE,

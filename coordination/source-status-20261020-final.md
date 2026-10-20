@@ -105,3 +105,38 @@ confirms that the three withheld scopes stay withheld.
   withheld; its item endpoint remains intermittent at the edge. USGS is still a
   partial 23,945-record import of 186,061 advertised products, and GeoPDF-only
   products are not revisited in this iteration.
+
+## Addendum by member 0 — USGS GeoPDF-only repair (observed 2026-10-20T12:41Z)
+
+Observed runner time: **12:41 UTC** (`date -u`). This addendum supersedes the
+USGS row and the USGS bullet above only where they say 23,945 records and
+"GeoPDF-only products are not yet revisited". It does not rewrite another
+member's measurements; the earlier text remains historical evidence.
+
+- The shipped catalogue is now **31,692 records** (7,536 core + 5 shards).
+  USGS is **24,000**: the same first 24,000 TNM products (offsets 0–23999),
+  with **55 previously withheld GeoPDF-only products now admitted**. The
+  other 23,945 keep their provider-supplied GeoTIFF and `kind: cog`; the 55
+  have no `georeference` object, no `kind: cog` and no synthesized transform.
+  They retain the supplied original GeoPDF, preview, extent and public-domain
+  policy. Example: `usgs:67dcc82dd34eae450ac1c650` (Magazine Mountain, AR
+  1887). This is a bounded repair of the existing prefix, not a new harvest;
+  `records.json.selection["usgs:htmc"].withheld` is now empty and the
+  resumable cursor remains 24000. Shard `usgs.json` is 19.29 MiB / 12,002
+  records; `usgs-2.json` 6,000 and `usgs-3.json` 5,998.
+- The replay merge was repaired so an already-imported prefix adds only the
+  previously withheld products to the target shard instead of copying all
+  24,000 records into it (which had raised the 24 MiB asset guard). Existing
+  records in other shards are preserved in place.
+- Live range verification on the repaired slice: 8/8 previews 206
+  `image/jpeg`; seven sampled GeoTIFFs 206 `image/tiff` with TIFF magic,
+  parsed and projected by the browser renderer; the sampled GeoPDF-only record
+  206 with `%PDF` magic. `node scripts/validate.mjs` → 31,692 records,
+  9 providers (6 bundled), 122 overlays, 54 history snapshots. `npm test` →
+  **287/287 pass** (the new regression covers GeoPDF-only admission, no
+  invented raster, and a mixed GeoTIFF/GeoPDF shard).
+- Georeferencing count is unchanged at 24,062 provider-supplied rasters
+  (117 Stanford + 23,945 USGS); the 55 new records are explicitly unaligned.
+- Still open: the remaining USGS feed beyond offset 24000 is not bundled;
+  metadata-reuse withholding for Doria/BPL/Commonwealth is unchanged; LoC,
+  Gallica/NLS, NDL and MDZ access gaps are unchanged.

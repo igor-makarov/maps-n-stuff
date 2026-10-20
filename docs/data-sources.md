@@ -3,10 +3,11 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **31,637
-records** from six bundled providers: 23,945 USGS Historical Topographic Map
-Collection sheets, 4,464 Stanford public-domain maps, 3,045 e-rara maps, 105
-SLUB Dresden maps, 51 Library of Congress records and 27 swisstopo entries. The
+[global integration notes](global-integration.md). The bundle contains **31,692
+records** from six bundled providers: 24,000 USGS Historical Topographic Map
+Collection sheets (23,945 GeoTIFF and 55 GeoPDF-only scans), 4,464 Stanford
+public-domain maps, 3,045 e-rara maps, 105 SLUB Dresden maps, 51 Library of
+Congress records and 27 swisstopo entries. The
 Library of Congress and USGS slices are verified partial imports, not the whole
 institutions; both record their resumable cursors.
 
@@ -18,9 +19,10 @@ Boston Public Library (10,242) and the Digital Commonwealth partner-held scope
 (972). Their full records, provider endpoints and policy evidence are retained
 under `research/withheld/` (not served) and are not counted above. Image rights
 for those scopes are unchanged and are not a grant for this metadata reuse. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
-the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
-browser renderer on each of the three slices) are representative, not a claim
-that every one of the 23,945 was individually opened.
+the USGS raster samples (7/7 sampled live range reads, 7/7 parsed and 7/7
+projected by the browser renderer on the final slice; earlier slices sampled
+8/8) are representative, not a claim that every one of the 23,945 was
+individually opened. The 55 GeoPDF-only products are deliberately unaligned.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -473,11 +475,12 @@ Refresh: `npm run harvest:history` (network) or `npm run harvest:history:offline
 | Publication dates | 1883–1994 in the bundled slice, 53 state/territory/foreign codes (adds GU; `IT` is retained verbatim from the upstream state field), scales 1:10,000, 1:12,000, 1:20,000, 1:21,120, 1:24,000, 1:100,000, 1:125,000 and 1:192,000 |
 
 The TNM API returns about **186,061** HTMC products. The bundle imports a
-reproducible prefix of 23,945 products (twenty-four 1,000-product pages; 55
-products had no delivered GeoTIFF and were withheld). The prefix is split into
-three registered shards (`usgs.json` 19.22 MiB / 11,947 records, `usgs-2.json`
-9.71 MiB / 6,000 and `usgs-3.json` 9.74 MiB / 5,998) so no static asset
-approaches the 25 MiB limit.
+reproducible prefix of the first 24,000 products (twenty-four 1,000-product
+pages): 23,945 deliver an original GeoTIFF and 55 deliver only an original
+GeoPDF. A repaired gate admits those 55 as unaligned scans instead of
+withholding them. The prefix is split into three registered shards (`usgs.json`
+19.29 MiB / 12,002 records, `usgs-2.json` 9.71 MiB / 6,000 and `usgs-3.json`
+9.74 MiB / 5,998) so no static asset approaches the 25 MiB limit.
 `records.json.selection["usgs:htmc"].resumable.nextOffset` records where the
 next run continues (24000):
 
@@ -492,14 +495,19 @@ node scripts/harvest-usgs.mjs --start-offset 18000 --pages 6 --shard usgs-3
 preserved and only the new slice is appended to the named one.
 
 Each record keeps the product title, publication date (never the depicted
-period), USGS footprint and the original GeoTIFF URL. Date evidence: every
-bundled title ends in a single edition year and that year equals the API
-`publicationDate` for all 23,945 records (`titleEditionYearMismatches: 0` in the
+period), USGS footprint and the original GeoTIFF or GeoPDF URL. Date evidence:
+every bundled title ends in a single edition year and that year equals the API
+`publicationDate` for all 24,000 records (`titleEditionYearMismatches: 0` in the
 selection), so the field is not a hidden digital-upload date; no depicted or
-survey date is inferred. The GeoTIFF is labelled
+survey date is inferred. A GeoTIFF product is labelled
 `georeference.kind = "cog"` with `status = "provider-supplied"` because the
 product carries its own tiled pixel georeferencing; the catalogue bounding box
-is **not** used as an image transform. The Worker's `/api/raster` now accepts
+is **not** used as an image transform. A GeoPDF-only product has **no**
+`georeference` object, no `kind: cog` and no synthesized transform: it keeps the
+supplied GeoPDF download, preview and footprint, and its `geoNote` says it is an
+unaligned scan. The 55 examples include
+`usgs:67dcc82dd34eae450ac1c650` (“USGS 1:125000-scale Quadrangle for Magazine
+Mountain, AR 1887”). The Worker's `/api/raster` now accepts
 only the public HTMC staging prefix in addition to Stanford COGs, still
 requiring a bounded byte range and rejecting redirects. This exposed and fixed
 three pre-existing defects in the native-raster path: Workerd rejects
@@ -511,12 +519,14 @@ saw both a placeholder projected code and the geographic datum. The CRS fix
 keeps the geographic datum and drops only the 32767 placeholder. Regression
 tests cover all three.
 
-Live verification on 2026-10-20: 8/8 sampled previews returned 206
-`image/jpeg`, 8/8 GeoTIFF range reads returned 206 `image/tiff` with TIFF magic
-and a truthful `Content-Range`, and 8/8 were parsed by `geotiff.js` with 8
-images and GeoKeys (`GTModelTypeGeoKey = 1`, user-defined projected CRS 32767
-with geographic CRS 4267 in the sample). All eight passed the browser
-renderer's own `rasterProjection()` conversion, not just TIFF-tag parsing; a
+Live verification on 2026-10-20 after the GeoPDF repair: 8/8 sampled previews
+returned 206 `image/jpeg`; the seven sampled GeoTIFFs returned 206
+`image/tiff` with TIFF magic and a truthful `Content-Range`, and all seven were
+parsed by `geotiff.js` with 8 images and GeoKeys (`GTModelTypeGeoKey = 1`,
+user-defined projected CRS 32767 with geographic CRS 4267 in the sample). All
+seven passed the browser renderer's own `rasterProjection()` conversion, not
+just TIFF-tag parsing. The sampled GeoPDF-only record returned 206 with a `%PDF`
+magic through the same range path. A
 real end-to-end browser render of the Morristown sheet through
 `/api/raster` reached “Provider-supplied georeferencing”. A representative
 example:

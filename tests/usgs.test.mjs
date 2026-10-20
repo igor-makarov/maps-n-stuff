@@ -68,7 +68,12 @@ test('the USGS adapter keeps the original GeoTIFF as a provider-supplied raster'
 });
 
 test('the USGS gate never invents identity, dates or a raster download', () => {
-  assert.equal(usgsProductRecord(product({ urls: { GeoPDF: product().urls.GeoPDF } })), null);
+  const pdfOnly = usgsProductRecord(product({ urls: { GeoPDF: product().urls.GeoPDF } }));
+  assert.ok(pdfOnly, 'a product with only an original GeoPDF remains eligible');
+  assert.equal(pdfOnly.georeference, undefined, 'no kind:cog claim without a GeoTIFF');
+  assert.deepEqual(pdfOnly.downloads.map((d) => d.label), ['GeoPDF']);
+  assert.match(pdfOnly.geoNote, /unaligned scan/);
+  assert.equal(usgsProductRecord(product({ urls: {} })), null);
   assert.equal(usgsProductRecord(product({ sourceId: '../etc' })), null);
   assert.equal(usgsProductRecord(product({ title: '' })), null);
   assert.equal(
@@ -117,15 +122,21 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
   assert.ok(selection.upstreamTotal >= 186000);
   assert.ok(selection.resumable.nextOffset >= 6000);
   assert.equal(selection.dateEvidence.titleEditionYearMismatches, 0);
-  assert.equal(
-    selection.dateEvidence.mergedRecordsChecked,
-    shard.records.length,
-    'the date evidence covers the whole merged shard, not only the last slice',
+  assert.ok(
+    selection.dateEvidence.mergedRecordsChecked >= shard.records.length,
+    'the date evidence covers every record in this shard and the merged tree',
   );
+  assert.equal(selection.dateEvidence.mergedRecordsChecked, 24000);
   assert.ok(selection.verification.previewOk >= 8);
-  assert.ok(selection.verification.rasterRangeOk >= 8);
-  assert.ok(selection.verification.rasterReadable >= 8);
-  assert.ok(selection.verification.rasterCrsOk >= 8);
+  assert.equal(
+    selection.verification.rasterRangeOk + selection.verification.pdfRangeOk,
+    selection.verification.sample,
+    'every sampled product delivered readable original bytes, GeoTIFF or GeoPDF',
+  );
+  assert.ok(selection.verification.rasterRangeOk >= 7);
+  assert.ok(selection.verification.pdfRangeOk >= 1);
+  assert.ok(selection.verification.rasterReadable >= 7);
+  assert.ok(selection.verification.rasterCrsOk >= 7);
   const ids = new Set();
   for (const record of shard.records) {
     assert.match(record.id, /^usgs:[A-Za-z0-9._-]+$/);
@@ -134,10 +145,18 @@ test('the bundled USGS shard is provenance-complete and internally consistent', 
     assert.equal(record.providerId, 'usgs');
     assert.equal(record.rightsUrl, selection.rightsBasis.includes('copyrights-and-credits') ? record.rightsUrl : null);
     assert.match(record.rightsUrl, /usgs\.gov\/information-policies/);
-    assert.equal(record.recordUrl, record.georeference.source);
     assert.match(record.recordUrl, /^https:\/\/www\.sciencebase\.gov\/catalog\/item\//);
-    assert.equal(record.georeference.kind, 'cog');
-    assert.ok(rasterUrl(record.georeference.url), record.id);
+    if (record.georeference) {
+      assert.equal(record.recordUrl, record.georeference.source);
+      assert.equal(record.georeference.kind, 'cog');
+      assert.ok(rasterUrl(record.georeference.url), record.id);
+    } else {
+      assert.ok(
+        record.downloads.some((download) => download.label === 'GeoPDF'),
+        `${record.id} has neither a GeoTIFF georeference nor a GeoPDF`,
+      );
+      assert.match(record.geoNote, /unaligned scan/);
+    }
     if (record.yearStart != null) {
       assert.ok(record.yearStart >= 1800 && record.yearStart <= 2100);
       const printed = record.title.match(/\b(1[5-9]\d{2}|20\d{2})\s*$/)?.[1];
@@ -175,12 +194,27 @@ test('the USGS prefix is split across registered shards without duplicates', asy
       assert.ok(!ids.has(record.id), `duplicate ${record.id} in ${url}`);
       ids.add(record.id);
       assert.equal(record.providerId, 'usgs');
-      assert.equal(record.georeference.kind, 'cog');
-      assert.ok(rasterUrl(record.georeference.url), record.id);
+      if (record.georeference) {
+        assert.equal(record.georeference.kind, 'cog');
+        assert.ok(rasterUrl(record.georeference.url), record.id);
+      } else {
+        assert.ok(
+          record.downloads.some((download) => download.label === 'GeoPDF'),
+          `${record.id} has no original scan`,
+        );
+      }
     }
     total += doc.records.length;
   }
   assert.equal(core.selection['usgs:htmc'].totalAfterMerge, total);
   assert.equal(core.selection['usgs:htmc'].resumable.nextOffset, 24000);
   assert.equal(core.selection['usgs:htmc'].dateEvidence.mergedRecordsChecked, total);
+  let tiffCount = 0;
+  for (const url of urls) {
+    const doc = JSON.parse(
+      await readFile(path.join(root, 'public', url.replace(/^\//, '')), 'utf8'),
+    );
+    tiffCount += doc.records.filter((record) => record.georeference).length;
+  }
+  assert.ok(tiffCount > 0 && tiffCount < total, 'the shard mixes native rasters and unaligned GeoPDF scans');
 });
