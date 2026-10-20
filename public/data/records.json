@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T10:52:01.058Z",
+  "generatedAt": "2026-10-20T10:54:26.986Z",
   "retrieved": "2026-10-20",
   "generator": "scripts/fetch-records.mjs",
   "method": "Primary institutional metadata: e-rara, swisstopo, Library of Congress, Digital Commonwealth partners, Doria and the complete explicitly public-domain map subset of Stanford’s pinned CC0 catalogue. No geographic, decade or count quota is applied to Stanford. Leventhal/Boston Public Library cartographic records are imported through the documented Digital Commonwealth search JSON API with per-record rights confirmation (shard /data/records/leventhal.json). Rights-cleared partner-held Digital Commonwealth records are imported separately (shard /data/records/digitalcommonwealth.json). Library of Congress records are imported through its documented ?fo=json item API with per-item rights evidence (shard /data/records/loc.json). Doria (National Library of Finland) OAI-PMH Maps set com_10024_109232 is harvested through oai_dc discovery, MODS date/rights and ORE bitstreams (shard /data/records/doria.json).",
@@ -404,24 +404,22 @@
       "scope": "civil-war-maps",
       "upstreamTotal": 24,
       "reportedPaginationTotal": 24,
-      "explicitPageBudget": 1,
-      "pagesScanned": "1-1",
-      "considered": 100,
-      "kept": 28,
+      "explicitPageBudget": 5,
+      "pagesScanned": "2-5",
+      "considered": 399,
+      "kept": 13,
       "preserved": 36,
       "shard": "/data/records/loc.json",
       "rightsBasis": {
-        "division-free-to-use-and-reuse": 28
+        "division-free-to-use-and-reuse": 13
       },
-      "withheld": {
-        "not fetched yet (cached-only run)": 69,
-        "restricted rights statement": 3
-      },
-      "fetchFailures": 0,
+      "withheld": {},
+      "fetchFailures": 1,
+      "edgeChallenge": "blocked by the LoC edge challenge (HTTP 429); stop and retry later: https://www.loc.gov/item/99447069/?fo=json&at=item",
       "rule": "Library of Congress Civil War Maps: every map-format item in the complete Civil War Maps collection. Admitted only when the item's partof names the Geography and Map Division, the item's own rights statement affirmatively permits free reuse or names the public domain, and no Rights Advisory states a restriction. Public access or age alone is not evidence.",
       "resumable": {
         "scope": "civil-war-maps",
-        "nextPage": 2,
+        "nextPage": 6,
         "pageCount": null,
         "note": "Re-running the harvester with --start-page continues the collection; cached item JSON is reused and identifiers already in the shard are preserved."
       },
@@ -435,7 +433,7 @@
         "manifestChecked": 12,
         "examples": [
           {
-            "id": "loc:map45000245",
+            "id": "loc:2014589394",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -444,7 +442,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:2008626958",
+            "id": "loc:99447042",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -453,7 +451,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:2006458033",
+            "id": "loc:99447043",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -462,7 +460,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:2008622052",
+            "id": "loc:99447045",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -471,7 +469,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:2008626929",
+            "id": "loc:99447061",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,
@@ -480,7 +478,7 @@
             "manifestType": "text/html; charset=UTF-8"
           },
           {
-            "id": "loc:86675206",
+            "id": "loc:99447063",
             "info": 206,
             "infoType": "application/json",
             "thumbnail": 206,

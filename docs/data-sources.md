@@ -3,9 +3,9 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **18,840
+[global integration notes](global-integration.md). The bundle contains **18,853
 records** from eight providers: 4,464 Stanford public-domain maps, 1,437 e-rara
-maps, 27 swisstopo overlays, 36 Library of Congress records, 10,242 Leventhal /
+maps, 27 swisstopo overlays, 49 Library of Congress records, 10,242 Leventhal /
 Boston Public Library maps, 972 rights-cleared partner-held Digital Commonwealth
 maps and **1,662 Doria / National Library of Finland maps**. The Library of
 Congress slice is a verified partial import (civil-war-maps scope), not the whole

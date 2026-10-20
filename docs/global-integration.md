@@ -5,8 +5,8 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 18,840 records: 4,464 Stanford, 1,437 e-rara, 27 swisstopo,
-36 Library of Congress (verified partial civil-war-maps slice), 10,242 Leventhal /
+The bundle contains 18,853 records: 4,464 Stanford, 1,437 e-rara, 27 swisstopo,
+49 Library of Congress (verified partial civil-war-maps slice), 10,242 Leventhal /
 Boston Public Library, 972 rights-cleared partner-held Digital Commonwealth maps
 and 1,662 Doria / National Library of Finland maps. Stanford contributes
 worldwide holdings, including Africa, Asia, Europe and the Americas; Doria adds
