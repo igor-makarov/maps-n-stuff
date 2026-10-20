@@ -5,13 +5,13 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 43,877 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
+The bundle contains 44,461 maps: 4,464 Stanford, 10,242 Leventhal/Boston Public
 Library, 972 Digital Commonwealth partner-held, 23,945 USGS Historical
 Topographic Map Collection sheets, 1,662 Doria / National Library of Finland,
-2,410 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records. Stanford and
-Doria contribute worldwide holdings; USGS adds public-domain coverage of the
-United States and its territories. Dates, thumbnails, extents and alignment are
-optional. Image reuse rights are not.
+2,994 e-rara, 27 swisstopo, 105 SLUB Dresden and 50 Library of Congress records.
+Stanford and Doria contribute worldwide holdings; USGS adds public-domain
+coverage of the United States and its territories. Dates, thumbnails, extents and
+alignment are optional. Image reuse rights are not.
 
 The bundled providers are published either in the core document or in one of the
 registered shards (`/data/records/leventhal.json`,
@@ -22,6 +22,7 @@ registered shards (`/data/records/leventhal.json`,
 the Worker merge them; a failed shard is reported without discarding the rest of
 the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
 feed; the full feed remains available through live search.
+
 The importer reads all 27,783 metadata files at Stanford's institutional
 OpenGeoMetadata revision `ff804e306fb2f79ac837c5045c7e0d9acb1d979b`.
 The repository metadata licence is CC0. An item additionally needs public

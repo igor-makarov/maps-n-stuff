@@ -3,18 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **43,877
+[global integration notes](global-integration.md). The bundle contains **44,461
 records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
 Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
 23,945 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 2,410 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
+Library of Finland maps, 2,994 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
 and 50 Library of Congress records. The Library of Congress and USGS slices are
 verified partial imports, not the whole institutions; both record their resumable
-cursors. There
-are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**; the USGS
-raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
-renderer on each of the three slices) are representative, not a claim that every
-one of the 23,945 was individually opened.
+cursors. There are **117 native Stanford COGs plus 23,945 USGS GeoTIFF records**;
+the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
+browser renderer on each of the three slices) are representative, not a claim
+that every one of the 23,945 was individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
@@ -539,9 +538,9 @@ into `/data/records/slub.json` and 56 are withheld with reasons.
 | Rights (item) | MODS `accessCondition type="use and reproduction"` → Public Domain Mark 1.0, corroborated by `dv:license=pdm` and `slubarchiv:copyrightStatus=publicdomain` |
 | Rights (policy) | SLUB “Nutzungsbestimmungen für die Digitalen Sammlungen”, <https://nutzungshinweis.slub-dresden.de/> (retrieved 2026-10-20): digitised objects whose copyright has expired are made available under PDM 1.0; the source citation (SLUB Dresden, PURL/URN, licence) is required |
 | Metadata reuse | The METS metadata is reused with the required attribution and a link to the original record. SLUB publishes no separate metadata licence, so none is asserted. |
-| Images | Per-item THUMBS/DEFAULT/ORIGINAL bitstreams from `digital.slub-dresden.de`; direct JPEG originals and per-page PDFs, no IIIF service is invented |
+| Images | Per-item ORIGINAL JPEG and PDF bitstreams from `digital.slub-dresden.de`; no IIIF service is invented. The bitstreams sit behind SLUB’s Anubis bot check for browser user agents, so no `<img>` thumbnail is shipped (it would render a challenge page); the original scan/PDF links and the record page are exposed instead. |
 | Withheld | 48 records state “Freier Zugang - Rechte vorbehalten 1.0” and 8 are `rightsstatements.org/vocab/CNE/1.0/` (Copyright Not Evaluated); none is labelled public domain |
-| Verification | 24/24 sampled thumbnails, 24/24 original JPEGs and 24/24 record pages returned HTTP 200/206 |
+| Verification | 24/24 sampled original JPEGs and 24/24 record pages returned HTTP 200/206 with the harvest user-agent. A Chrome user-agent receives SLUB’s Anubis challenge (`text/html`) for the same bitstream, recorded honestly in the selection’s `browserNote`; browser access is via the record page. |
 | Dates | 105/105 dated, publication span 1536–1909; no depicted date, extent or place is inferred |
 
 Example: `slub:285992066` — “Atlas selectus von allen Königreichen und Ländern

@@ -255,11 +255,10 @@ export function recordFrom(record, { retrieved = RETRIEVED } = {}) {
     attribution: `SLUB Dresden, ${url} (Public Domain Mark 1.0)`,
     recordUrl: url,
     viewerUrl: url,
-    thumbnail: thumbs[0] ?? previews[0],
     imageUrl: originals[0],
     imageCount: originals.length,
     pageCount: originals.length,
-    documents: documents.slice(0, 2),
+    documents: documents.slice(0, 1),
     type: 'map',
     publisher: publishers.join(' ; ') || undefined,
     place: places[0] || undefined,
@@ -272,14 +271,12 @@ export function recordFrom(record, { retrieved = RETRIEVED } = {}) {
     retrieved,
     geoNote:
       'SLUB publishes no map extent for this work; no place anchor, boundary or alignment is inferred. The original scan opens from the record page.',
+    imageNote:
+      'SLUB serves bitstreams from digital.slub-dresden.de behind an Anubis bot check for browser user agents: a first direct visit can show a challenge page before the scan/PDF. No thumbnail is shipped because an <img> subresource cannot pass that check; the record/viewer page and the original bitstream links are retained. Links were reachable server-side at retrieval.',
   };
   if (years) {
     record_.yearStart = years.start;
     record_.yearEnd = years.end;
-  }
-  if (originals.length > 1) {
-    record_.images = originals.slice(0, 8);
-    record_.imageNote = `The work has ${originals.length} digitised pages; the first eight original JPEG links are listed and the record page opens the complete viewer.`;
   }
   for (const key of Object.keys(record_)) {
     const v = record_[key];
@@ -288,7 +285,7 @@ export function recordFrom(record, { retrieved = RETRIEVED } = {}) {
   }
   if (!Array.isArray(record_.creators)) record_.creators = [];
   if (!/^https:\/\//.test(record_.recordUrl)) return { record: null, reason: 'insecure record URL' };
-  if (record_.thumbnail && !/^https:\/\//.test(record_.thumbnail)) return { record: null, reason: 'insecure thumbnail' };
+
   return { record: record_ };
 }
 
@@ -348,9 +345,10 @@ export async function readOai() {
   return { records, pages: page + 1, total };
 }
 
-async function head(url) {
+const CHROME_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+async function head(url, userAgent = UA) {
   try {
-    const res = await fetch(url, { headers: { accept: 'image/*,application/pdf', range: 'bytes=0-2047', 'user-agent': UA } });
+    const res = await fetch(url, { headers: { accept: 'image/*,application/pdf', range: 'bytes=0-2047', 'user-agent': userAgent } });
     await res.arrayBuffer();
     return { status: res.status, type: res.headers.get('content-type'), length: Number(res.headers.get('content-length') || 0) };
   } catch (error) {
@@ -365,31 +363,33 @@ async function verify(records) {
   for (let i = 0; i < records.length && sample.length < VERIFY_SAMPLE; i += step) sample.push(records[i]);
   const results = [];
   for (const record of sample) {
-    const [thumb, image, page] = await Promise.all([
-      record.thumbnail ? head(record.thumbnail) : { status: 0, type: null },
+    const [image, browserImage, page] = await Promise.all([
       head(record.imageUrl),
+      head(record.imageUrl, CHROME_UA),
       fetch(record.recordUrl, { headers: { 'user-agent': UA } })
         .then(async (res) => ({ status: res.status, type: res.headers.get('content-type') }))
         .catch((error) => ({ status: 0, error: String(error.message) })),
     ]);
     results.push({
       id: record.id,
-      thumbnail: thumb.status,
-      thumbnailType: thumb.type,
       image: image.status,
       imageType: image.type,
+      browserImage: browserImage.status,
+      browserImageType: browserImage.type,
       record: page.status,
     });
     await sleep(120);
   }
-  const okThumb = (r) => (r.thumbnail === 200 || r.thumbnail === 206) && /^image\//.test(r.thumbnailType ?? '');
   const okImage = (r) => (r.image === 200 || r.image === 206) && /^image\//.test(r.imageType ?? '');
+  const okBrowser = (r) => (r.browserImage === 200 || r.browserImage === 206) && /^image\//.test(r.browserImageType ?? '');
   return {
     retrieved: RETRIEVED,
     sample: results.length,
-    thumbnailOk: results.filter(okThumb).length,
     originalOk: results.filter(okImage).length,
     recordOk: results.filter((r) => r.record === 200).length,
+    browserDirectImageOk: results.filter(okBrowser).length,
+    browserNote:
+      'A Chrome user-agent request receives SLUB’s Anubis bot check, not image bytes, so the direct bitstream URLs are not used as <img> previews. The count above is a server-side availability check with the harvest user-agent; browser access to the record page is the supported route.',
     examples: results.slice(0, 5),
   };
 }
@@ -432,7 +432,7 @@ async function main() {
     rightsBasis: basis,
     withheld,
     rule:
-      'Every record in the documented SLUB OAI-PMH set maps is a candidate. It is admitted only when the item’s own METS states the Public Domain Mark 1.0 (MODS use-and-reproduction href/text, or dv:license=pdm with slubarchiv:copyrightStatus=publicdomain) and carries no separate restrictive statement. The first THUMBS/DEFAULT/ORIGINAL bitstreams become the preview/original links; no IIIF service, extent, place or alignment is invented.',
+      'Every record in the documented SLUB OAI-PMH set maps is a candidate. It is admitted only when the item’s own METS states the Public Domain Mark 1.0 (MODS use-and-reproduction href/text, or dv:license=pdm with slubarchiv:copyrightStatus=publicdomain) and carries no separate restrictive statement. The first ORIGINAL bitstream and PDF become original-access links; no IIIF service, extent, place or alignment is invented, and no thumbnail is shipped while SLUB’s Anubis check blocks browser subresource loads.',
     policy: {
       url: POLICY,
       statement:
