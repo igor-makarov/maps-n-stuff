@@ -145,6 +145,22 @@ test('sortRecords sorts by year and title', () => {
   assert.equal(sortRecords(fixture, 'title')[0].title.startsWith('Karte'), true);
 });
 
+test('undated maps follow dated maps in both publication-year sort orders', () => {
+  const maps = [{title:'Unknown date',yearStart:null,yearEnd:null},{title:'Old',yearStart:1500,yearEnd:1500},{title:'New',yearStart:1900,yearEnd:1900},{title:'End date only',yearStart:null,yearEnd:1800}];
+  assert.deepEqual(sortRecords(maps,'year-asc').map(r=>r.title),['Old','End date only','New','Unknown date']);
+  assert.deepEqual(sortRecords(maps,'year-desc').map(r=>r.title),['New','End date only','Old','Unknown date']);
+  assert.equal(maps[0].title,'Unknown date','sorting does not mutate the catalogue');
+});
+
+test('original collection matches survive metadata fields omitted by the local index', () => {
+  const record={title:'Harbour plan',creators:[],catalogueQueries:[]};
+  assert.equal(matchesQuery(record,'Boston waterfront'),false);
+  record.catalogueQueries.push('Boston waterfront');
+  assert.equal(matchesQuery(record,'BOSTON   waterfront'),true,'works even after the local title cache has been built');
+  assert.equal(matchesQuery(record,'Boston waterfront 1900'),false,'source matches only establish the query that was actually searched');
+  assert.equal(record.title,'Harbour plan','the original map title is preserved');
+});
+
 test('recordCenter prefers a documented point, then the bbox centre', () => {
   assert.deepEqual(recordCenter(fixture[0]), { lat: 47.37, lon: 8.54 });
   assert.deepEqual(recordCenter(fixture[1]).lat.toFixed(4), '46.8100');

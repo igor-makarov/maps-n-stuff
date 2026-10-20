@@ -5,9 +5,8 @@
  * Deliberately small and explicit instead of vendoring a whole map library:
  *   - base, worldwide: OpenStreetMap raster tiles (`tile.openstreetmap.org`) —
  *     the initial view is the whole world, not one canton
- *   - base, Swiss detail: the swisstopo WMTS layers (Landeskarte colour/grey,
- *     SWISSIMAGE) where they exist, for comparing Swiss sheets with their ground
- *   - comparison: any layer from /data/overlays.json (Zeitreise, Dufour, Siegfried, …)
+ *   - satellite: NASA's worldwide Blue Marble overview
+ *   - comparison: georeferenced imagery from the original map collections
  *   - markers: records with a documented point/bbox (public/app/records.js)
  *
  * Keyboard: the container is focusable; arrows pan, +/- zoom, Home = the world,

@@ -12,6 +12,17 @@ import { readFile } from 'node:fs/promises';
 import { PARAM, STATE_DEFAULTS, readStateFromUrl, sanitise, stateToQuery } from '../public/app/store.js';
 import { formatCompareViews, parseCompareViews } from '../public/app/iiif.js';
 
+test('institutional identifiers with nested namespaces survive comparison links', () => {
+  const id = 'leventhal:commonwealth:abcd123';
+  const region = '0,0,100,100';
+  const state = sanitise({ ...STATE_DEFAULTS, cmp: id, cvv: `${id}@${region}` });
+  const restored = readStateFromUrl(stateToQuery(state));
+  assert.equal(restored.cmp, id);
+  assert.equal(restored.cvv, `${id}@${region}`);
+  assert.equal(parseCompareViews(restored.cvv).get(id), region);
+  assert.equal(formatCompareViews(new Map([[id, region]])), `${id}@${region}`);
+});
+
 test('cmp keeps real record ids (provider:value) intact', () => {
   const ids = ['e-rara:6507640', 'swisstopo:zeitreise-18441231'];
   const state = sanitise({ ...STATE_DEFAULTS, cmp: ids.join(',') });

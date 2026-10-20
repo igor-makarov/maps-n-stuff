@@ -473,7 +473,7 @@ export function coupledView(box, bounds, extent) {
 /* ----------------------------------- cut-outs of several sheets at once */
 
 /** One record id as the data contract writes it (`<providerId>:<recordId>`). */
-const IDENTIFIER = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
+const IDENTIFIER = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._:-]{0,160}$/;
 /** One `x,y,w,h` region, the exact shape `formatViewParam` writes. */
 const REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
 /** The comparison lays out at most four panes, so at most four cut-outs. */

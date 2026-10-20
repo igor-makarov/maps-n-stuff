@@ -42,6 +42,16 @@ export function formatYearRange(start, end) {
   return formatYear(start ?? end);
 }
 
+const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+/** Display catalogue language codes in English without rewriting source metadata. */
+export function formatLanguage(value) {
+  const language = String(value ?? '').trim();
+  if (!language) return 'not stated';
+  if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(language)) return language;
+  try { return languageNames.of(language) ?? language; }
+  catch { return language; }
+}
+
 export function debounce(fn, wait = 250) {
   let timer;
   const wrapped = (...args) => {

@@ -10,6 +10,13 @@ import assert from 'node:assert/strict';
 
 import { PARAM, STATE_DEFAULTS, createBus, createStore, readStateFromUrl, sanitise, stateToQuery } from '../public/app/store.js';
 
+test('zero latitude remains the equator in state and shared map positions', () => {
+  const state = sanitise({ ...STATE_DEFAULTS, lat: 0 });
+  assert.equal(state.lat, 0);
+  assert.equal(readStateFromUrl(stateToQuery(state)).lat, 0);
+  assert.equal(sanitise({ ...STATE_DEFAULTS, lat: NaN }).lat, STATE_DEFAULTS.lat);
+});
+
 test('defaults describe the documented worldwide initial view', () => {
   // Corrected product scope (2026-10-19): the atlas opens on the world, not on
   // one canton. The old Swiss-first default was removed with the redirect.

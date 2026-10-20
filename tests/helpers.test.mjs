@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { formatYear, formatYearRange, escapeHtml, debounce, throttle } from '../public/app/dom.js';
+import { formatYear, formatYearRange, formatLanguage, escapeHtml, debounce, throttle } from '../public/app/dom.js';
 import { latToTileY, lonToTileX, tileUrl, tileXToLon, tileYToLat } from '../public/app/map.js';
 import { bboxIntersects, filterRecords, overlapsRange, recordsInBounds, sortRecords, yearBounds, recordCenter } from '../public/app/records.js';
 
@@ -17,6 +17,12 @@ test('formatYear is honest about missing or BCE dates', () => {
   assert.equal(formatYearRange(1846, 1846), '1846');
   assert.equal(formatYearRange(1846, 1860), '1846–1860');
   assert.equal(formatYearRange(null, 1860), '1860');
+});
+
+test('catalogue language codes display readable English names', () => {
+  for (const [code, name] of [['ger', 'German'], ['fre', 'French'], ['lat', 'Latin'], ['chi', 'Chinese'], ['ota', 'Ottoman Turkish'], ['English', 'English']]) assert.equal(formatLanguage(code), name);
+  assert.equal(formatLanguage(null), 'not stated');
+  assert.equal(formatLanguage('original source label'), 'original source label');
 });
 
 test('escapeHtml neutralises markup from upstream metadata', () => {

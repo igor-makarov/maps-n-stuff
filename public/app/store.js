@@ -88,7 +88,7 @@ export const PARAM = {
  * One record id as the data contract writes it (`<providerId>:<recordId>`).
  * Used for the pinned comparison list and for the panes' cut-outs.
  */
-const RECORD_ID = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
+const RECORD_ID = /^[a-z0-9][a-z0-9._-]{0,40}:[A-Za-z0-9][A-Za-z0-9._:-]{0,160}$/;
 /** One `x,y,w,h` region as the viewer writes it; the same shape as `vv`. */
 const VIEW_REGION = /^\d{1,6}(?:,\d{1,6}){3}$/;
 /** The comparison holds at most four panes, so at most four cut-outs are kept. */
@@ -210,7 +210,9 @@ export function normaliseLon(lon) {
 /** Keep numeric state inside sane bounds so a hand-written URL cannot break the UI. */
 export function sanitise(state) {
   const out = { ...state };
-  out.lat = Math.max(-85, Math.min(85, Number(out.lat) || STATE_DEFAULTS.lat));
+  const latitude = Number(out.lat);
+  out.lat = out.lat != null && out.lat !== '' && Number.isFinite(latitude)
+    ? Math.max(-85, Math.min(85, latitude)) : STATE_DEFAULTS.lat;
   out.lon = normaliseLon(Number(out.lon));
   out.zoom = Math.max(2, Math.min(18, Number(out.zoom) || STATE_DEFAULTS.zoom));
   const from = Number.isFinite(Number(out.from)) ? Number(out.from) : STATE_DEFAULTS.from;

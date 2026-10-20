@@ -10,7 +10,7 @@
  * in instead of showing an empty box.
  */
 
-import { copyText, el, formatYearRange, qs, setStatus, trapFocus } from './dom.js';
+import { copyText, el, formatLanguage, formatYearRange, qs, setStatus, trapFocus } from './dom.js';
 import { recordCenter } from './records.js';
 import { fetchUpstreamJson } from './upstream.js';
 import {
@@ -812,7 +812,7 @@ export function init(ctx) {
       ['Holding institution', record.institution],
       ['Shelfmark', record.shelfmark || 'not stated'],
       ['Publisher / imprint', [record.publisher, record.imprint].filter(Boolean).join(' – ') || 'not stated'],
-      ['Language', record.languages?.length ? record.languages.join(', ') : 'not stated'],
+      ['Language', record.languages?.length ? record.languages.map(formatLanguage).join(', ') : 'not stated'],
       ['Rights', record.rights],
       [
         'Map extent',

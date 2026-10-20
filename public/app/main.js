@@ -262,21 +262,21 @@ async function main() {
     finishLoading();
     const count = qs('#result-count');
     if (count) count.textContent = 'Catalogue unavailable';
-    const state = qs('#results-state') || qs('#map-fallback');
+    const state = qs('#app-notices');
     if (state) {
       state.hidden = false;
       state.className = 'zh-state zh-state--error';
       state.title = String(err?.message || err);
       state.replaceChildren(
         el('span', { class: 'zh-state__title', text: 'The map catalogue could not be loaded.' }),
-        el('span', { text: 'Reload the page to try again. You can also download the catalogue from /data/records.json.' }),
+        el('span', { text: 'Map navigation and historical borders remain available. Reload the page to retry the catalogue.' }),
       );
     }
     bus.emit('records:error', { error: err });
-    return; // still initialise modules so the map/search part is usable
   }
 
   renderIntro();
+  bus.on('records:loaded', renderIntro);
   wirePermalinkCopy();
   wireBackToTop();
   await initModules();

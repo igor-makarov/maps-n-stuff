@@ -125,17 +125,17 @@ export function init(ctx) {
       yearTo.min = String(years.min);
       yearTo.max = String(years.max);
     }
-    for (const chip of document.querySelectorAll('[data-range]')) {
-      chip.addEventListener('click', () => {
-        const value = chip.dataset.range;
-        if (value === 'all') ctx.store.update({ from: years.min, to: years.max });
-        else {
-          const [from, to] = value.split('-').map(Number);
-          ctx.store.update({ from, to });
-        }
-      });
-    }
   };
+  for (const chip of document.querySelectorAll('[data-range]')) {
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.range;
+      if (value === 'all') ctx.store.update({ from: years.min, to: years.max });
+      else {
+        const [from, to] = value.split('-').map(year => clampYear(year, years));
+        ctx.store.update({ from, to });
+      }
+    });
+  }
 
   // Counts live in the DOM so they can follow the current period without
   // rebuilding the inputs (rebuilding them would drop keyboard focus).
@@ -172,19 +172,20 @@ export function init(ctx) {
 
   function buildCollectionOptions() {
     if (!collectionEl) return;
+    const counts = facets(records).collections;
     const nodes = [el('option', { value: '', text: 'All collections' })];
     for (const name of collectionNames) {
       const option = el('option', {
         value: name,
-        text: `${name} (${facets(records).collections.get(name) ?? 0})`,
-        dataset: { count: String(facets(records).collections.get(name) ?? 0) },
+        text: `${name} (${counts.get(name) ?? 0})`,
+        dataset: { count: String(counts.get(name) ?? 0) },
       });
       collectionOptions.set(name, { option, unknown: false });
       nodes.push(option);
     }
     collectionEl.replaceChildren(...nodes);
-    collectionEl.addEventListener('change', () => ctx.store.update({ collection: collectionEl.value }));
   }
+  collectionEl?.addEventListener('change', () => ctx.store.update({ collection: collectionEl.value }));
   buildCollectionOptions();
 
   // A collection name from a hand-written URL may not be in the seed data: keep
@@ -584,12 +585,12 @@ export function init(ctx) {
   function updateCount(filtered) {
     const state = ctx.store.getState();
     const parts = [`${filtered.length} of ${records.length} records`, `${state.from}–${state.to}`];
-    if (state.provider) parts.push(state.provider);
+    if (state.provider) parts.push(ctx.data.sources.find(source => source.id === state.provider)?.name ?? state.provider);
     if (state.type) parts.push(TYPE_LABELS[state.type] ?? state.type);
     if (state.collection) parts.push(state.collection);
-    if (state.q) parts.push(`„${state.q}“`);
-    if (state.at) parts.push('Ausschnitt am Punkt');
-    if (state.viewport === '1') parts.push('im Map extent');
+    if (state.q) parts.push(`“${state.q}”`);
+    if (state.at) parts.push('At selected location');
+    if (state.viewport === '1') parts.push('In current map view');
     countEl.textContent = parts.join(' · ');
     if (liveEl) liveEl.textContent = `${filtered.length} results. ${filtered[0] ? `First result: ${filtered[0].title}.` : ''}`;
   }
@@ -710,14 +711,16 @@ export function init(ctx) {
   function clampYearsToData() {
     const state = ctx.store.getState();
     const patch = {};
-    if (state.from < years.min) patch.from = years.min;
-    if (state.to > years.max) patch.to = years.max;
+    const from = clampYear(state.from, years), to = clampYear(state.to, years);
+    if (state.from !== from) patch.from = from;
+    if (state.to !== to) patch.to = to;
     if (Object.keys(patch).length > 0) ctx.store.update(patch);
   }
 
   ctx.bus.on('records:loaded', () => {
     records = ctx.data.records;
     Object.assign(years, ctx.data.years);
+    setYearBounds();
     const nextFacets = facets(records);
     buildCheckboxes(providerWrap, nextFacets.providers, 'providers');
     buildCheckboxes(typeWrap, nextFacets.types, 'types');

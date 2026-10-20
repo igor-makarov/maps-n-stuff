@@ -12,6 +12,15 @@ export function init(ctx) {
     lastQuery = "",
     lastSource = "",
     request = 0;
+  let controller;
+  const cancelSearch = () => {
+    request++;
+    controller?.abort();
+    submit.disabled = false;
+    more.disabled = false;
+    more.hidden = true;
+    setStatus(status, '');
+  };
   const syncSource = () => {
     const area = source.value === "usgs";
     input.disabled = area;
@@ -19,8 +28,8 @@ export function init(ctx) {
     input.placeholder = area ? "USGS searches the area currently shown on the map" : "e.g. Cairo or Boston";
     submit.textContent = area ? "Search this map area" : "Search collection";
   };
-  source.addEventListener("change", () => { more.hidden = true; syncSource(); });
-  input.addEventListener("input", () => { more.hidden = true; });
+  source.addEventListener("change", () => { cancelSearch(); syncSource(); });
+  input.addEventListener("input", cancelSearch);
   syncSource();
   async function search(nextPage = 1) {
     const provider = source.value;
@@ -30,6 +39,8 @@ export function init(ctx) {
       return;
     }
     const ticket = ++request;
+    controller?.abort();
+    controller = new AbortController();
     submit.disabled = true;
     more.disabled = true;
     setStatus(status, "Searching the original collection…");
@@ -51,7 +62,7 @@ export function init(ctx) {
             ].join(","),
           );
       }
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: controller.signal });
       const data = await response.json();
       if (ticket !== request) return;
       if (!response.ok)
@@ -63,7 +74,10 @@ export function init(ctx) {
       );
       let added = 0;
       for (const record of valid) {
-        if (!ctx.data.recordIndex.has(record.id)) {
+        const existing = ctx.data.recordIndex.get(record.id);
+        const matched = existing ?? record;
+        if (provider !== 'usgs') matched.catalogueQueries = [...new Set([...(matched.catalogueQueries ?? []), q])];
+        if (!existing) {
           ctx.data.records.push(record);
           ctx.data.recordIndex.set(record.id, record);
           added++;

@@ -157,6 +157,10 @@ function foldedText(record) {
 export function matchesQuery(record, query) {
   const needle = String(query || '').trim();
   if (!needle) return true;
+  // Original collection searches can match fields absent from our compact
+  // record. Retain that exact query match without inventing a map title.
+  const catalogueQuery = foldPlain(needle).replace(/\s+/g, ' ');
+  if (record.catalogueQueries?.some(value => foldPlain(value).replace(/\s+/g, ' ') === catalogueQuery)) return true;
   const haystack = foldedText(record);
   return needle
     .split(/\s+/)
@@ -192,9 +196,13 @@ export function filterRecords(state, records) {
 
 export function sortRecords(records, sort = 'year-asc') {
   const copy = [...records];
-  if (sort === 'year-desc') copy.sort((a, b) => (b.yearStart ?? 0) - (a.yearStart ?? 0) || a.title.localeCompare(b.title, 'en'));
-  else if (sort === 'title') copy.sort((a, b) => a.title.localeCompare(b.title, 'en'));
-  else copy.sort((a, b) => (a.yearStart ?? 0) - (b.yearStart ?? 0) || a.title.localeCompare(b.title, 'en'));
+  if (sort === 'title') copy.sort((a, b) => a.title.localeCompare(b.title, 'en'));
+  else copy.sort((a, b) => {
+    const ay = a.yearStart ?? a.yearEnd, by = b.yearStart ?? b.yearEnd;
+    const aDated = Number.isFinite(ay), bDated = Number.isFinite(by);
+    if (aDated !== bDated) return aDated ? -1 : 1;
+    return (aDated ? (sort === 'year-desc' ? by - ay : ay - by) : 0) || a.title.localeCompare(b.title, 'en');
+  });
   return copy;
 }
 

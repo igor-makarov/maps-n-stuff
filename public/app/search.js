@@ -1,6 +1,6 @@
 /**
  * Worldwide place search (combobox) on top of the Worker-proxied Nominatim
- * gazetteer (OpenStreetMap), with the Swiss swisstopo service as the fallback.
+ * gazetteer (OpenStreetMap), with local catalogue matches when it is unavailable.
  * Falls back to a local title search when both are unreachable, and always says
  * which one answered.
  */
@@ -22,7 +22,7 @@ export const QUICK_PLACES = [
 ];
 
 /**
- * Record-title suggestions used when the swisstopo gazetteer cannot answer
+ * Record-title suggestions used when the worldwide gazetteer cannot answer
  * (Worker/upstream outage). Pure so it is unit-testable; the coordinates come
  * from `recordCenter`, which falls back to the documented extent — a missing
  * `geo` point must never produce a null map position.
@@ -187,7 +187,7 @@ export function init(ctx) {
             },
             [
               el('span', { text: item.label }),
-              el('span', { class: 'zh-suggestions__type', text: item.origin ? item.origin.replace(/^gg25$/, 'swisstopo') : source }),
+              el('span', { class: 'zh-suggestions__type', text: item.origin || source }),
             ],
           ),
         ]),
@@ -277,12 +277,7 @@ export function init(ctx) {
 
   const localFallback = (query) => fallbackSuggestions(ctx.data.records, query);
 
-  /**
-   * Netzwerkfehler tragen englische Entwicklertexte ("Failed to fetch"); die
-   * Statuszeile nennt nur, was der Besucher wissen muss. Maps-3 hat die gleiche
-   * Regel für den Bilddienst in `describeUpstreamError` (iiif.js) — hier bewusst
-   * lokal, damit `search.js` keine Abhängigkeit zum Viewer-Modul bekommt.
-   */
+  /** Turn network failures into a short, English status message. */
   function errorReason(err) {
     const message = String(err?.message ?? err ?? '');
     const http = message.match(/\bHTTP (\d{3})\b/);
@@ -311,7 +306,7 @@ export function init(ctx) {
         setStatus(status, statusText([], records, local));
         return;
       }
-      open(records ? [...items, records] : items, data.source ?? 'swisstopo');
+      open(records ? [...items, records] : items, data.source ?? 'OpenStreetMap');
       setStatus(status, statusText(items, records, []));
     } catch (err) {
       if (err?.name === 'AbortError') return;
