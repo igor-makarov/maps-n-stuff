@@ -158,7 +158,11 @@ test('the USGS prefix is split across registered shards without duplicates', asy
   const urls = (core.shards ?? []).filter((url) =>
     /^\/data\/records\/usgs(?:-\d+)?\.json$/.test(url),
   );
-  assert.deepEqual(urls, ['/data/records/usgs-2.json', '/data/records/usgs.json']);
+  assert.deepEqual(urls, [
+    '/data/records/usgs-2.json',
+    '/data/records/usgs-3.json',
+    '/data/records/usgs.json',
+  ]);
   const ids = new Set();
   let total = 0;
   for (const url of urls) {
@@ -177,6 +181,6 @@ test('the USGS prefix is split across registered shards without duplicates', asy
     total += doc.records.length;
   }
   assert.equal(core.selection['usgs:htmc'].totalAfterMerge, total);
-  assert.equal(core.selection['usgs:htmc'].resumable.nextOffset, 18000);
+  assert.equal(core.selection['usgs:htmc'].resumable.nextOffset, 24000);
   assert.equal(core.selection['usgs:htmc'].dateEvidence.mergedRecordsChecked, total);
 });
