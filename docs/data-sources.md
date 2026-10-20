@@ -3,18 +3,17 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **37,879
+[global integration notes](global-integration.md). The bundle contains **38,463
 records** from nine providers: 4,464 Stanford public-domain maps, 10,242 Boston
 Public Library (Leventhal) maps, 972 Digital Commonwealth partner-held maps,
 17,947 USGS Historical Topographic Map Collection sheets, 1,662 Doria / National
-Library of Finland maps, 2,410 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
+Library of Finland maps, 2,994 e-rara maps, 27 swisstopo, 105 SLUB Dresden maps
 and 50 Library of Congress records. The Library of Congress and USGS slices are
 verified partial imports, not the whole institutions; both record their resumable
-cursors. There
-are **117 native Stanford COGs plus 17,947 USGS GeoTIFF records**; the USGS
-raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the browser
-renderer on each of the three slices) are representative, not a claim that every
-one of the 17,947 was individually opened.
+cursors. There are **117 native Stanford COGs plus 17,947 USGS GeoTIFF records**;
+the USGS raster samples (8/8 live range reads, 8/8 parsed and 8/8 projected by the
+browser renderer on each of the three slices) are representative, not a claim
+that every one of the 17,947 was individually opened.
 
 The English UI uses global OSM/Nominatim and NASA Blue Marble satellite imagery.
 Swiss reference maps and the Swiss search fallback have been removed. Five
