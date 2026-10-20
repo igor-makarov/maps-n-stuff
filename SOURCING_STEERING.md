@@ -1,5 +1,155 @@
 # Sourcing steering — 20 October 2026
 
+## Final-hour direction: 15:00 Asia/Jerusalem / 12:00 UTC
+
+**Switch now to wrap-up, integration, rights decisions and verification. Do not
+start speculative sources or another long USGS harvest.** This is the current
+direction; earlier reviews below are historical. Read this on `origin/main` at
+each iteration and before more substantial source work. The hard stop is still
+**today 16:00 Jerusalem / 13:00 UTC**; no extensions, resumes, model/count or
+workflow changes are authorized. Choose your coordination and division of work.
+
+### What is actually published
+
+Reviewed main `2f5e11c2` and all eleven control branches. The catalogue has
+**44,513 distinct records**, **+25,660** since the last review and **+39,828**
+over launch. Counts: USGS **23,945**, Leventhal/BPL **10,242**, Stanford **4,464**,
+e-rara **3,045**, Doria **1,662**, Digital Commonwealth partners **972**, SLUB
+**105**, LoC **51**, swisstopo **27**. All 4,685 baseline records are present
+with their field values unchanged. There are no duplicate catalogue ids.
+
+This is nine bundled provider namespaces versus four at launch, but namespaces
+are not independent institutions or automatically cleared working sources.
+The Commonwealth partner shard uses the same service as BPL. Keep institutional
+holdings, adapter count, rights clearance and access status separate.
+
+- USGS is now a **real partial import**, not just live search: `650f485f` and
+  earlier increments publish offsets 0–23,999 into three shards, preserving
+  23,945 products. Every admitted record has an actual provider GeoTIFF URL.
+  Edition year agrees with the API date across the merged slice. Report the
+  186,061 API total only as upstream holdings, not our coverage.
+- USGS georeferencing has substantive live evidence: the original TIFF range
+  returned 206 with TIFF magic through our Worker; five sampled original TIFFs
+  have tiled 512px blocks, internal overviews and projection/affine data whose
+  footprint corners fall within the source grid. These support the new native
+  raster path. They do **not** mean all 23,945 files were individually decoded
+  or visually aligned. Distinguish provider-supplied raster links, sampled
+  GeoKeys/range checks and actual rendered verification. The fixed overlay
+  index remains 117 Stanford COGs plus five historical/aerial layers; USGS is
+  selected through record-level georeferencing. All 54 border snapshots remain.
+- e-rara imported the measured **973** head backlog (not the old erroneous 793),
+  plus 584 `cartesgeneve` and 51 `museecarto` additions. The three documented
+  sets are traversed, with per-set evidence and both OAI/manifest rights gates.
+  These deepen the existing provider, not three new independent sources.
+- SLUB's documented `maps` set is traversed: 161 considered, 105 PDM works
+  admitted, 56 withheld. The far larger Kartenforum index is not integrated.
+  Original JPEG/PDF links work with the harvest client, but Chrome receives
+  Anubis challenge HTML; record this as **link-out/challenged image access**,
+  not a working in-app image preview. Some records are multi-page works, not
+  105 individually counted georeferenced sheets.
+- LoC remains a small partial import: 51 total, **43 new** over launch.
+  `b6736755` replays the repaired cursor and adds one actual new record. Pending
+  item ids are now preserved rather than silently skipping challenged pages.
+  Item JSON remains intermittent; sampled image-service bytes work while the
+  manifest challenge remains a distinct gap.
+- Doria CSP and actual original scan/PDF links are repaired; conflicting-rights
+  reproductions in Doria and the BPL gate now reject the problematic cases.
+  Doria metadata rights are explicitly still pending: see the decision below.
+- Gallica/NLS access challenges, NDL rate limiting, Princeton's unresolved
+  rights and unsupported MDZ discovery remain blockers/research, not imports.
+  Do not repeat the recorded failed endpoint guesses or inflate the 50-entry
+  research audit into an integrated-source claim.
+
+All catalogue assets are below 25 MiB; the largest is `usgs.json` at 20,158,402
+bytes, BPL is 17,545,679 and core is 14,221,137. However, **all eight shards still
+load at startup**, around 76 MB of uncompressed catalogue JSON in total. Do not
+inflate startup further during wrap-up. Verify responsiveness with the merged
+data, bounded results, phone layouts and a failed-shard case. Per-file sharding
+does not itself solve initial transfer/memory costs.
+
+Codex independently verified this merged main with `npm run check`:
+**285/285 tests**, build/asset validation and Worker dry-run pass. The global
+browser harness passes **50/50** at desktop, 390px and 320px, including the new
+USGS controls. Its external services are mocked/blocked; the separate live
+origin/Worker/GeoTIFF probes in member 0's notes are the live-access evidence.
+Neither check claims Cloudflare deployment success.
+
+### Required decisions and small quality fixes
+
+1. **Close the metadata-rights decision now; do not defer it to “a later
+   decision”.** `doria.metadataReuse.status` is `unresolved-pending`; BPL and
+   Commonwealth say no separate metadata licence was found, and SLUB's policy
+   note only asserts attribution. Find the applicable primary metadata reuse
+   permission or a substantiated basis for bulk extraction/redistribution,
+   separately from the image's rights statement. Preserve a primary URL, scope
+   and evidence; an empty terms page, readable OAI/API or attribution alone is
+   not such a basis. Do not invent a grant. If a new scope cannot be cleared
+   during this run, **withhold it from the shipped reusable catalogue/assets in
+   an ordinary commit**, retaining minimal ids and primary evidence links in
+   research notes. Do not simply relabel the entire unapproved bulk metadata
+   file “pending” and leave it publicly served. Preserve the launch baseline
+   and teammates' cleared records. A standalone licence is not necessarily the
+   only possible lawful basis, but that basis must be established and recorded,
+   not assumed. Keep partner policies and NoC-US territorial limits explicit.
+2. **USGS: admit eligible GeoPDF-only scans too.** The current harvester requires
+   a GeoTIFF and withholds products without it, even when an original GeoPDF
+   may be available. Georeferencing is preferred, not mandatory. Revisit those
+   withheld cached products; retain a genuinely supplied original GeoPDF/scan
+   if the same source/rights checks pass, without assigning `kind:cog` or an
+   invented transform. Missing preview/date/extent must stay eligible. This is
+   a bounded repair to existing work, not a new large harvest.
+3. **Keep access and georeferencing claims honest.** Do not call every USGS URL
+   an individually verified COG, or SLUB's challenge body an image. Keep actual
+   content-type/magic/range and source identity checks, GeoKeys/CRS/affine
+   evidence, original credits, dates and links. Preserve the user-defined USGS
+   projection fix and bounded range handling. Record unsupported examples as
+   gaps rather than fabricate parameters or fall back to a bbox transform.
+4. **Reconcile integrated evidence.** Counts in some notes/docs describe older
+   branches, SLUB's published selection has `verification.sample:0` despite
+   separate live checks, and old docs still mention 48 rather than 50 browser
+   checks. Update the current status after all final merges, with exactly which
+   commit each test/live sample verified. Keep historical logs clearly marked;
+   do not overwrite another member's notes. List fully traversed eligible
+   subsets, partial imports, live-search-only, research-only, rights-pending and
+   access-blocked scopes separately. Unknown dates/alignment are not failures.
+   The newly published `coordination/source-status-20261020-final.md` is
+   provisional while inference is active. Its heading says 12:25 UTC although
+   it was already published when the observed clock was 12:02 UTC: obtain actual
+   UTC time from the runner, never invent a report timestamp. Its “newly usable”
+   list must distinguish the unresolved metadata scopes above from cleared
+   sources. Do not describe a source as both cleared and pending in the report.
+
+Agree who handles the rights decision, bounded importer/raster repairs and
+independent merged-tree verification; the three members choose that arrangement.
+Prefer resolving these blockers over new registry entries or unrelated UI work.
+Keep all generated UI English, archival titles and official names verbatim,
+maps-n-stuff identity, global OSM/NASA layers and historical-border behavior.
+Cloudflare owns the build/deploy pipeline; do not claim deployment from a dry-run.
+
+### Publication and shutdown
+
+The three authorized members are on iteration 7 with the approved model/max
+reasoning/budgets, wait 0, checkpoint 0 and deadline unchanged. Latest completed
+inference diagnostics show actual token use and no exhausted provider quota.
+Member 2's iteration 6 failed another **task-ref atomic publication**, not model
+inference; recovery has already continued it. For final publication, make commits
+in the Shurik worktree/task history, merge current main normally, and push the
+reviewed product HEAD to main. Do not manually race the task ref that native
+publication also updates or leave the checked-out task history behind a task
+branch you have separately pushed. Preserve ancestry; never force-push.
+
+All eight retired members remain stopped and unowned. Keep them stopped. If an
+actual `GoUsageLimitError` / exhausted quota occurs, durably stop that affected
+current member; do not restart it. Do not interrupt healthy members to refresh
+this guidance.
+
+Publish coherent increments and rights decisions early enough for the final
+checks. **By 12:45 UTC focus exclusively on final integration and verification;
+by 12:55 finish commits and source-status evidence. At 13:00 stop.** Leave no
+unpublished useful product work or speculative process intended to continue
+after the deadline. Native shutdown and cleared owners will be verified at the
+deadline; no member may be resumed afterward.
+
 ## Codex review: 14:08 Asia/Jerusalem / 11:08 UTC
 
 This is the current direction; the earlier review below is historical evidence.
