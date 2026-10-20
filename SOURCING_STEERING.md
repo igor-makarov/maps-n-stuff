@@ -112,6 +112,12 @@ Neither check claims Cloudflare deployment success.
    do not overwrite another member's notes. List fully traversed eligible
    subsets, partial imports, live-search-only, research-only, rights-pending and
    access-blocked scopes separately. Unknown dates/alignment are not failures.
+   The newly published `coordination/source-status-20261020-final.md` is
+   provisional while inference is active. Its heading says 12:25 UTC although
+   it was already published when the observed clock was 12:02 UTC: obtain actual
+   UTC time from the runner, never invent a report timestamp. Its “newly usable”
+   list must distinguish the unresolved metadata scopes above from cleared
+   sources. Do not describe a source as both cleared and pending in the report.
 
 Agree who handles the rights decision, bounded importer/raster repairs and
 independent merged-tree verification; the three members choose that arrangement.
