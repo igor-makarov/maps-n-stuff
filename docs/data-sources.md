@@ -3,12 +3,13 @@
 ## Current global atlas (2026-10-20)
 
 The current implementation and verification limits are documented in
-[global integration notes](global-integration.md). The bundle contains **31,692
-records** from six bundled providers: 24,000 USGS Historical Topographic Map
-Collection sheets, 4,464 Stanford public-domain maps, 3,045 e-rara maps, 105
-SLUB Dresden maps, 51 Library of Congress records and 27 swisstopo entries. The
-Library of Congress and USGS slices are verified partial imports, not the whole
-institutions; both record their resumable cursors.
+[global integration notes](global-integration.md). The bundle contains **33,917
+records** from seven bundled providers: 24,000 USGS Historical Topographic Map
+Collection sheets, 4,464 Stanford public-domain maps, 3,045 e-rara maps, 2,225
+National Library of Norway public-domain maps dated 1500–1945, 105 SLUB Dresden
+maps, 51 Library of Congress records and 27 swisstopo entries. The Library of
+Congress and USGS slices are verified partial imports, not the whole
+institutions; all large imports record their resumable cursors and source counts.
 
 Three further scopes were harvested with per-item **image** rights evidence but
 are **withheld** from the shipped catalogue because no primary metadata-reuse
@@ -558,6 +559,39 @@ Example: `slub:285992066` — “Atlas selectus von allen Königreichen und Län
 der Welt”, Johann Georg Schreiber, Leipzig 1730, 155 digitised pages, PDM 1.0.
 The Kartenforum / Deutsche Fotothek search index is **not** imported: its public
 index has no per-record rights field, so it remains research-only.
+
+
+## 7. National Library of Norway — Kart / Maps (imported 2026-10-20)
+
+The National Library of Norway (Nasjonalbiblioteket) publishes its catalogue
+through the documented **Catalog Search API**
+(`https://api.nb.no/catalog/v1/items/api-docs`). The `mediatype:kart` slice was
+read for publication years 1500–1945 in two bounded windows (the API caps page
+offsets at 5,000). **5,447** catalogue items were considered; **2,225** item-level
+Public Domain maps were imported into `/data/records/nb.json`; 2,909
+non-digitised records and 313 items whose item record is not Public Domain were
+withheld.
+
+| Field | Value |
+| --- | --- |
+| Discovery | `https://api.nb.no/catalog/v1/items?q=*&filter=mediatype:kart&filter=year:[1500 TO 1899]&size=100&sort=date,asc` (and the 1900–1945 window); documented at `https://api.nb.no/catalog/v1/items/api-docs` |
+| Item record | `https://api.nb.no/catalog/v1/items/<id>`; viewer `https://www.nb.no/items/<id>` |
+| IIIF manifest | `https://api.nb.no/catalog/v1/iiif/<id>/manifest` (Presentation API 2.0) |
+| Image service | `https://www.nb.no/services/image/resolver/<URN>` (IIIF Image API 2; the thumbnail uses the same resolver) |
+| Item rights gate | `accessInfo.isPublicDomain === true`, `accessInfo.license === "publicdomain"`, `accessInfo.accessAllowedFrom === "EVERYWHERE"`, `accessInfo.viewability === "ALL"`, no legal-deposit reservation, and a URN or thumbnail. The manifest repeats `license: https://www.nb.no/lisens/#public-domain`. |
+| Rights (policy) | <https://www.nb.no/tilgang/lisens/> (retrieved 2026-10-20): a work identified as “falt i det fri” may be copied, changed, distributed, displayed and performed, including commercially, without asking permission. Attribution is retained even though the licence does not require it. |
+| Metadata reuse | `basis-recorded`: only item-level Public Domain objects are redistributed; the published fields are the factual description of that object plus its URN and record link. NB publishes no separate metadata licence, so none is asserted. The licence is not stretched to the withheld copyrighted/CC BY-NC items. |
+| Withheld | 2,909 catalogue records are not digitised; 313 digital items are not Public Domain. Neither group is counted as coverage. |
+| Metadata kept | verbatim title, creators, language codes, place, publisher, issued date, physical extent, subjects and URN/OAI id; no translation or invented date |
+| Georeferencing | none inferred: the catalogue gives a place/publication string, not a map extent. No `extent`, `geo`, projection or image transform is written for these records; the IIIF manifest opens the original scan. |
+| Verification | 12/12 deterministic sample manifests returned 200 JSON with `https://www.nb.no/lisens/#public-domain`; 12/12 thumbnails returned 200 `image/jpeg` with JPEG magic; 12/12 record pages returned 200 HTML (observed 2026-10-20). |
+
+Stable examples: `nb:35db84b72dbb743635fd966f9e5ac0d3` — “[Kart over Europa]”,
+Münzer/Alt/Schönsperger, 1500, URN `URN:NBN:no-nb_digikart_gaa0010000680`; and
+`nb:002851606a8e01acbc223a632c96de51` — “Pascaarte Vande Noort-Zee …”,
+Lootsman, 1663. Both keep their verbatim titles and IIIF manifest. 241 admitted
+records have no publication date in the catalogue and keep no `yearStart`; that
+is an honest unknown, not a fabricated date.
 
 ## Fetching policy (politeness, caching, failure behaviour)
 

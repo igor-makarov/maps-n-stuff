@@ -140,3 +140,39 @@ guards); this does not replace member 1's live 55/55 PDF evidence above.
   document in `fetchPage`, retries it, and refuses a cached error document, so
   it can no longer be recorded as a successful empty page. The resume cursor is
   also monotonic when an earlier slice is replayed. Regression tests added.
+
+## Addendum by member 2 — National Library of Norway (observed 2026-10-20 13:02 UTC)
+
+This addendum updates the merged-tree count without rewriting the 12:51 UTC
+sections above or member 0's evidence addendum. It was measured at the runner
+clock (`date -u` = 2026-10-20 13:02 UTC) after merging member 2's NB import.
+
+- Catalogue: **33,917 records** (7,536 core + six shards), **10 provider
+  entries** of which **seven are bundled**. New bundled provider: **National
+  Library of Norway (Nasjonalbiblioteket)** with **2,225** item-level Public
+  Domain maps dated 1500–1945, in `/data/records/nb.json` (4.76 MiB). No
+  existing record or withheld scope was changed; the Doria/Leventhal/Digital
+  Commonwealth withholding stands.
+- NB discovery: documented `https://api.nb.no/catalog/v1/items/api-docs`,
+  `mediatype:kart`, two bounded `year` windows, 55 pages, 5,447 items
+  considered; 2,909 non-digitised and 313 non-Public-Domain items withheld.
+  Item gate: `isPublicDomain=true`, `license=publicdomain`,
+  `accessAllowedFrom=EVERYWHERE`, `viewability=ALL`, URN/thumbnail. Every
+  record retains its IIIF manifest and `https://www.nb.no/lisens/#public-domain`.
+- NB metadata reuse is `basis-recorded` only for these item-level PD objects:
+  `https://www.nb.no/tilgang/lisens/` permits copying, changing, distributing,
+  displaying and performing PD works, including commercially; the published
+  fields are the factual description of that object plus its URN and link. NB
+  publishes no separate metadata licence, so none is asserted. Copyrighted/CC
+  BY-NC catalogue items are not included.
+- NB live sample (12 deterministic records): 12/12 manifests 200 JSON with the
+  PD licence URL, 12/12 thumbnails 200 `image/jpeg` with JPEG magic, 12/12
+  record pages 200 HTML. Examples `nb:35db84b72dbb743635fd966f9e5ac0d3`
+  (1500) and `nb:002851606a8e01acbc223a632c96de51` (1663). 241 admitted records
+  are undated upstream and carry no invented year; no NB record carries an
+  inferred extent/alignment.
+- Verification on this merged tree: `node scripts/validate.mjs` → 33,917
+  records (7,536 core + six shards), 10 providers, 122 overlays, 54 snapshots;
+  `npm test` → **295/295**; `npm run check` result is recorded in the commit.
+  The browser harness result for the new shard is recorded separately when run;
+  this addendum does not claim a Cloudflare deployment.

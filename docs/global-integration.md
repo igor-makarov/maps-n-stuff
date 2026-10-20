@@ -5,12 +5,13 @@ development logs and implements the recommendations in the Swiss/language audit.
 
 ## What is available
 
-The bundle contains 31,692 maps: 24,000 USGS Historical Topographic Map
-Collection sheets, 4,464 Stanford, 3,045 e-rara, 105 SLUB Dresden, 51 Library of
-Congress and 27 swisstopo records. Stanford and e-rara contribute worldwide
-holdings; USGS adds public-domain coverage of the United States and its
-territories. Dates, thumbnails, extents and alignment are optional. Image reuse
-rights are not.
+The bundle contains 33,917 maps: 24,000 USGS Historical Topographic Map
+Collection sheets, 4,464 Stanford, 3,045 e-rara, 2,225 National Library of Norway
+public-domain maps dated 1500–1945, 105 SLUB Dresden, 51 Library of Congress and
+27 swisstopo records. Stanford, e-rara and the National Library of Norway
+contribute worldwide holdings; USGS adds public-domain coverage of the United
+States and its territories. Dates, thumbnails, extents and alignment are
+optional. Image reuse rights are not.
 
 Doria / National Library of Finland (1,662), Leventhal / Boston Public Library
 (10,242) and the Digital Commonwealth partner-held scope (972) are **withheld**
@@ -20,12 +21,16 @@ established for the catalogue records. The full records and evidence are kept in
 `research/withheld/`, outside the served assets, and are not counted above.
 
 The bundled providers are published either in the core document or in one of the
-registered shards (`/data/records/loc.json`, `/data/records/slub.json`,
-`/data/records/usgs.json`, `/data/records/usgs-2.json`,
-`/data/records/usgs-3.json`). The browser loader and
+registered shards (`/data/records/loc.json`, `/data/records/nb.json`,
+`/data/records/slub.json`, `/data/records/usgs.json`,
+`/data/records/usgs-2.json`, `/data/records/usgs-3.json`). The browser loader and
 the Worker merge them; a failed shard is reported without discarding the rest of
 the catalogue. The USGS shard is a partial prefix of the 186,061-product HTMC
-feed; the full feed remains available through live search.
+feed; the full feed remains available through live search. The National Library
+of Norway shard is the item-level Public Domain subset of the documented
+`mediatype:kart` catalogue for 1500–1945 (2,225 of 5,447 considered); copyrighted
+and non-digitised records are not included, and no extent or alignment is
+inferred from a place string.
 
 The importer reads all 27,783 metadata files at Stanford's institutional
 OpenGeoMetadata revision `ff804e306fb2f79ac837c5045c7e0d9acb1d979b`.

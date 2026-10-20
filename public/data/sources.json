@@ -959,8 +959,276 @@
           }
         ]
       }
+    },
+    {
+      "id": "nb",
+      "name": "National Library of Norway — Kart (maps)",
+      "operator": "National Library of Norway (Nasjonalbiblioteket)",
+      "homepage": "https://www.nb.no/",
+      "home": "https://www.nb.no/",
+      "institutions": [
+        "National Library of Norway (Nasjonalbiblioteket)"
+      ],
+      "rights": "Item-level Public Domain only: isPublicDomain=true, license=publicdomain, accessAllowedFrom=EVERYWHERE and viewability=ALL. The verbatim licence and IIIF manifest stay on each record; copyrighted and CC BY-NC items are withheld.",
+      "attribution": "Nasjonalbiblioteket / National Library of Norway",
+      "terms": "https://www.nb.no/tilgang/lisens/",
+      "retrieved": "2026-10-20",
+      "api": {
+        "discovery": "https://api.nb.no/catalog/v1/items?q=*&filter=mediatype%3Akart&filter=year%3A%5B1500+TO+1899%5D&size=100&page=0&sort=date%2Casc",
+        "documentation": "https://api.nb.no/catalog/v1/items/api-docs",
+        "record": "https://api.nb.no/catalog/v1/items/{id}",
+        "manifest": "https://api.nb.no/catalog/v1/iiif/{id}/manifest",
+        "image": "https://www.nb.no/services/image/resolver/{urn}"
+      },
+      "apiHosts": [
+        "api.nb.no",
+        "www.nb.no"
+      ],
+      "method": "National Library of Norway Catalog Search API (mediatype:kart, publication years 1500–1945): item-level Public Domain gate, verbatim catalogue fields, IIIF manifest/viewer and original image-service links, published as a catalogue shard.",
+      "collections": [
+        {
+          "id": "kart",
+          "name": "Kart / Maps (Nasjonalbiblioteket)",
+          "discovery": "https://api.nb.no/catalog/v1/items?q=*&filter=mediatype%3Akart&filter=year%3A%5B1500+TO+1899%5D&size=100&page=0&sort=date%2Casc"
+        }
+      ],
+      "verification": [
+        {
+          "id": "nb:002851606a8e01acbc223a632c96de51",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 11355,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:13123d96ebb4455800554ce16f41b019",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 6750,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:273e2b09c74814a1ad99ade91cff3468",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 10083,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:3d19dbffcafdd215944201aa51fe35bd",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 8411,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:537d027f65af8a27b594d36eeb4ca3b9",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 13284,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:686ea3f80c38ef3ff6a8a05b76b74002",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 6019,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:7ee8bc7fee4d738d4f0ba75c81019c0e",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 4337,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:94937de569d8d8992aaf9ef7191c8193",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 11259,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:a8ee4a989a3a8a368d884e79fc145009",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 64415,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:becfd1507210a14ba7bb24f9ed65eac2",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 37327,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:d624ad47b41c6a71e1cfcc7ef24771b0",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 4266,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        },
+        {
+          "id": "nb:ebcf13022270e51c714bd917ecf614af",
+          "manifest": {
+            "status": 200,
+            "contentType": "application/json;charset=UTF-8",
+            "license": "https://www.nb.no/lisens/#public-domain"
+          },
+          "thumbnail": {
+            "status": 200,
+            "contentType": "image/jpeg",
+            "bytes": 17663,
+            "jpeg": true
+          },
+          "recordPage": {
+            "status": 200,
+            "contentType": "text/html"
+          }
+        }
+      ],
+      "metadataReuse": {
+        "status": "basis-recorded",
+        "basis": "Only item-level Public Domain works are redistributed. The National Library of Norway states that a work identified as Public Domain may be copied, changed, distributed, displayed and performed, including commercially, without permission. The redistributed fields are the factual description published with that object, plus its URN and record link. NB publishes no separate metadata licence; none is asserted.",
+        "primaryEvidence": [
+          {
+            "url": "https://www.nb.no/tilgang/lisens/",
+            "retrieved": "2026-10-20",
+            "quote": "Dette verket har blitt identifisert som «falt i det fri», det vil si at alle opphavsrettigheter til verket er falt bort, inklusive alle nærstående rettigheter. Du kan kopiere, endre, spre, vise og fremføre verket, også for kommersielle formål, uten å spørre om tillatelse."
+          },
+          {
+            "url": "https://www.nb.no/lisens/#public-domain",
+            "retrieved": "2026-10-20",
+            "quote": "\"license\": \"https://www.nb.no/lisens/#public-domain\" (per-item IIIF manifest)."
+          }
+        ],
+        "limits": "Applies only to the admitted item-level Public Domain objects. Copyrighted and CC BY-NC items are withheld. Attribution and the record/URN links stay on every record."
+      }
     }
   ],
   "method": "provider registry: primary record URL, identifiers, endpoints actually used, rights, attribution, retrieval date",
-  "generatedAt": "2026-10-20T12:29:44.825Z"
+  "generatedAt": "2026-10-20T13:01:56.046Z"
 }

@@ -49,6 +49,8 @@ const REGISTRY_HOSTS = new Set([
   'www.swisstopo.admin.ch',
   'www.zb.uzh.ch',
   'www.doria.fi',
+  'api.nb.no',
+  'www.nb.no',
   'digital.slub-dresden.de',
   'nutzungshinweis.slub-dresden.de',
 ]);
