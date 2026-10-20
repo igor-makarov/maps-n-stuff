@@ -67,14 +67,21 @@ export function rasterProjection(keys) {
     );
   const normalized = { ...keys };
   // A projected GeoTIFF may also name its underlying geographic CRS. The
-  // projected CRS governs pixel coordinates; the converter otherwise treats
-  // these legal GeoTIFF tags as two competing coordinate systems.
-  if (
-    keys.GTModelTypeGeoKey === 1 &&
-    keys.ProjectedCSTypeGeoKey &&
-    keys.ProjectedCSTypeGeoKey !== 32767
-  )
-    delete normalized.GeographicTypeGeoKey;
+  // converter otherwise treats these legal tags as two competing coordinate
+  // systems.
+  if (keys.GTModelTypeGeoKey === 1 && keys.ProjectedCSTypeGeoKey) {
+    if (
+      keys.ProjectedCSTypeGeoKey === 32767 &&
+      keys.ProjCoordTransGeoKey
+    ) {
+      // 32767 means "user-defined": the explicit Proj* parameters define the
+      // projection, while the geographic CRS still supplies the ellipsoid and
+      // datum. Drop the meaningless placeholder, not the datum.
+      delete normalized.ProjectedCSTypeGeoKey;
+    } else if (keys.ProjectedCSTypeGeoKey !== 32767) {
+      delete normalized.GeographicTypeGeoKey;
+    }
+  }
   const definition = toProj4(normalized);
   if (!definition.proj4 || Object.keys(definition.errors).length)
     throw new Error(

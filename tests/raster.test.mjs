@@ -45,7 +45,7 @@ test("range proxy checks actual body length and caches separate truthful fragmen
   globalThis.fetch = async (url, init) => {
     calls++;
     assert.equal(url, source);
-    assert.equal(init.redirect, "error");
+    assert.equal(init.redirect, "manual");
     const [start, end] = init.headers.range.slice(6).split("-").map(Number);
     return new Response(new Uint8Array(end - start + 1 + (oversized ? 1 : 0)), {
       status: 206,
