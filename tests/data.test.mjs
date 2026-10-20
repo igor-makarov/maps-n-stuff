@@ -14,15 +14,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCatalogue } from '../scripts/catalogue.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const readJson = async (rel) => JSON.parse(await readFile(path.join(root, rel), 'utf8'));
 
-const recordsFile = await readJson('public/data/records.json');
+const catalogue = await readCatalogue(path.join(root, 'public/data'));
+const recordsFile = catalogue.core;
 const sourcesFile = await readJson('public/data/sources.json');
 const overlaysFile = await readJson('public/data/overlays.json');
 
-const records = recordsFile.records;
+const records = catalogue.records;
 const providers = sourcesFile.providers;
 const overlays = overlaysFile.overlays;
 

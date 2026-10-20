@@ -2447,7 +2447,13 @@ try {
    */
   const pile = await cdp.eval(`(async () => {
     const seed = await (await fetch('/data/records.json')).json();
-    const records = Array.isArray(seed) ? seed : (seed.records ?? []);
+    let records = Array.isArray(seed) ? seed : (seed.records ?? []);
+    if (!Array.isArray(seed)) {
+      for (const url of seed.shards ?? []) {
+        const shard = await (await fetch(url)).json();
+        records = records.concat(shard.records ?? []);
+      }
+    }
     const groups = new Map();
     for (const record of records) {
       const geo = record.geo;

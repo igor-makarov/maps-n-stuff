@@ -10,8 +10,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCatalogue } from '../scripts/catalogue.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+const committed = await readCatalogue(path.join(root, 'public/data'));
 
 // --- Cloudflare runtime stubs -------------------------------------------------
 class MemoryCache {
@@ -90,6 +92,8 @@ test('GET /api/records serves the committed seed data with a cache header', asyn
   assert.match(res.headers.get('cache-control'), /max-age=\d+/);
   const body = await res.json();
   assert.ok(Array.isArray(body.records) && body.records.length > 0);
+  assert.equal(body.records.length, committed.records.length, 'the route merges every committed shard');
+  assert.ok(body.records.some((record) => record.providerId === 'leventhal'), 'a shard provider is present');
   assert.ok(body.generatedAt);
 });
 
